@@ -1,22 +1,39 @@
 from fastapi import FastAPI, HTTPException
 from .models import Project, Task, Status
 from .engine import PriorityEngine
+from .translator import MarkdownGenerator
+from .injector import DocInjector
 import json
 import os
 
 app = FastAPI(title="Talus Tally API")
 DATA_FILE = "data/talus_master.json"
+README_FILE = "README.md"
 
 def load_project() -> Project:
     if not os.path.exists(DATA_FILE):
-        # Return an empty shell if no data exists yet
         return Project(sub_projects=[])
     with open(DATA_FILE, "r") as f:
-        return Project.parse_obj(json.load(f))
+        # V2 FIX: model_validate instead of parse_obj
+        return Project.model_validate(json.load(f))
 
 def save_project(project: Project):
     with open(DATA_FILE, "w") as f:
-        f.write(project.json(indent=4))
+        # V2 FIX: model_dump_json instead of json()
+        f.write(project.model_dump_json(indent=4))
+
+def trigger_roadmap_update(project: Project):
+    generator = MarkdownGenerator()
+    new_roadmap = generator.render(project)
+    try:
+        injector = DocInjector(README_FILE)
+        success = injector.update_roadmap(new_roadmap)
+        if success:
+            print(f"✅ Roadmap updated in {README_FILE}")
+        else:
+            print(f"⚠️ Roadmap update skipped (Markers missing)")
+    except Exception as e:
+        print(f"⚠️ Roadmap update failed: {e}")
 
 @app.get("/")
 def read_root():
@@ -24,29 +41,22 @@ def read_root():
 
 @app.get("/tasks")
 def get_prioritized_tasks():
-    """Returns the flattened, sorted list of tasks based on Financial Velocity."""
     project = load_project()
     engine = PriorityEngine()
     return engine.get_sorted_tasks(project)
 
 @app.post("/tasks/{task_id}/complete")
 def complete_task(task_id: str):
-    """Marks a task as complete and saves the JSON."""
     project = load_project()
     found = False
-    
-    # Deep search for the task ID
     for sub_p in project.sub_projects:
         for wp in sub_p.work_packages:
             for task in wp.tasks:
                 if task.id == task_id:
                     task.status = Status.COMPLETE
                     found = True
-                    # In a real app, you might want to break here, 
-                    # but we continue in case of duplicate IDs (bad data)
-    
     if not found:
         raise HTTPException(status_code=404, detail="Task not found")
-    
     save_project(project)
-    return {"status": "success", "message": f"Task {task_id} marked complete"}
+    trigger_roadmap_update(project)
+    return {"status": "success", "message": f"Task {task_id} marked complete & Roadmap updated"}

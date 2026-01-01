@@ -13,8 +13,11 @@ def temp_readme(tmp_path):
 This is the intro.
 
 ## Roadmap
+<!-- TALLY_START -->
 - [ ] Old Task 1
 - [ ] Old Task 2
+<!-- TALLY_END -->
+
 ## Footer
 Copyright 2026.
     """
