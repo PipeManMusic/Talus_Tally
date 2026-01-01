@@ -1,6 +1,6 @@
 {
     "name": "Test Project",
-    "last_updated": "2026-01-01T11:41:45.238673",
+    "last_updated": "2026-01-01T11:56:54.064447",
     "sub_projects": [
         {
             "id": "SP-1",
@@ -13,12 +13,21 @@
                     "importance": 5,
                     "tasks": [
                         {
-                            "id": "T-TEST",
-                            "text": "Paint Hood",
-                            "status": "complete",
-                            "estimated_cost": 0.0,
-                            "budget_priority": 5,
-                            "importance": 5,
+                            "id": "T-HIGH",
+                            "text": "Fix Brakes",
+                            "status": "pending",
+                            "estimated_cost": 5.0,
+                            "budget_priority": 10,
+                            "importance": 10,
+                            "blocking": []
+                        },
+                        {
+                            "id": "T-LOW",
+                            "text": "Gold Plated Ash Tray",
+                            "status": "pending",
+                            "estimated_cost": 1000.0,
+                            "budget_priority": 1,
+                            "importance": 1,
                             "blocking": []
                         }
                     ]

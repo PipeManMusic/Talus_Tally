@@ -83,6 +83,9 @@ class TalusWindow(QMainWindow):
         self.setWindowTitle("Talus Tally - Bronco II Control Center")
         self.resize(1000, 600)
         
+        # DEFINED PATH HERE for easy testing/swapping
+        self.data_path = "data/talus_master.json"
+
         # --- TOOLBAR ---
         toolbar = QToolBar("Main Toolbar")
         self.addToolBar(toolbar)
@@ -91,7 +94,6 @@ class TalusWindow(QMainWindow):
         add_action.triggered.connect(self.open_add_task_dialog)
         toolbar.addAction(add_action)
         
-        # NEW: Sort Action
         sort_action = QAction("Sort by Velocity", self)
         sort_action.triggered.connect(self.sort_by_velocity)
         toolbar.addAction(sort_action)
@@ -114,19 +116,27 @@ class TalusWindow(QMainWindow):
         
         self.project_data = None
         self.manager = TaskManager()
-        self.engine = PriorityEngine() # The Brain
+        self.engine = PriorityEngine()
         self.load_project()
 
     def load_project(self):
-        data_path = "data/talus_master.json"
-        if not os.path.exists(data_path): return
+        if not os.path.exists(self.data_path): return
         try:
-            with open(data_path, "r") as f:
+            with open(self.data_path, "r") as f:
                 raw_data = json.load(f)
                 self.project_data = Project.model_validate(raw_data)
             self.populate_tree(self.project_data)
         except Exception as e:
             traceback.print_exc()
+
+    def save_project(self):
+        """Helper to write current state to disk."""
+        if not self.project_data: return
+        try:
+            with open(self.data_path, "w") as f:
+                f.write(self.project_data.model_dump_json(indent=4))
+        except Exception as e:
+            QMessageBox.critical(self, "Save Error", str(e))
 
     def populate_tree(self, project):
         self.tree.clear()
@@ -157,22 +167,22 @@ class TalusWindow(QMainWindow):
                         task_item.setText(0, f"[BLOCKED] {task.text}")
 
     def sort_by_velocity(self):
-        """Re-orders the tasks in memory based on the Triple Threat Algorithm."""
         if not self.project_data: return
         
         # Iterate and Sort
         for sub in self.project_data.sub_projects:
             for wp in sub.work_packages:
-                # Sort tasks in place
-                # We use the engine to calculate the score for the sort key
                 wp.tasks.sort(
                     key=lambda t: self.engine.calculate_task_score(sub.priority, wp.importance, t), 
-                    reverse=True # Highest score first
+                    reverse=True
                 )
         
-        # Refresh the UI to show new order
+        # Save to Disk (PERSISTENCE)
+        self.save_project()
+        
+        # Refresh UI
         self.populate_tree(self.project_data)
-        print("⚡ Sorted by Financial Velocity")
+        print("⚡ Sorted by Financial Velocity and Saved.")
 
     def open_context_menu(self, position):
         item = self.tree.itemAt(position)
@@ -194,8 +204,7 @@ class TalusWindow(QMainWindow):
             self.manager.complete_task(self.project_data, task_id)
             item.setForeground(0, Qt.green)
             item.setText(4, "COMPLETE")
-            with open("data/talus_master.json", "w") as f:
-                f.write(self.project_data.model_dump_json(indent=4))
+            self.save_project() # Use helper
         except Exception as e:
             QMessageBox.critical(self, "Error", str(e))
 
@@ -211,8 +220,7 @@ class TalusWindow(QMainWindow):
             )
             try:
                 self.manager.add_task(self.project_data, data["sub_id"], data["wp_id"], new_task)
-                with open("data/talus_master.json", "w") as f:
-                    f.write(self.project_data.model_dump_json(indent=4))
+                self.save_project() # Use helper
                 self.populate_tree(self.project_data)
             except Exception as e:
                 QMessageBox.critical(self, "Error", str(e))
