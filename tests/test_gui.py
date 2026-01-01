@@ -1,10 +1,9 @@
 import pytest
 from PySide6.QtWidgets import QDialogButtonBox
 from PySide6.QtCore import Qt
-from backend.models import Project, SubProject, WorkPackage
-from frontend.app import AddTaskDialog
+from backend.models import Project, SubProject, WorkPackage, Task, Status
+from frontend.app import AddTaskDialog, TalusWindow
 
-# Fixture to create a dummy project for the GUI to interact with
 @pytest.fixture
 def test_project():
     p = Project(name="Test Project")
@@ -17,71 +16,83 @@ def test_project():
 def test_add_task_dialog_logic(qtbot, test_project):
     """
     TDD: Verify that the AddTaskDialog collects data and returns the correct dict.
-    We use qtbot to interact with the widget without a human.
+    UPDATED: Now uses ComboBoxes instead of SpinBoxes.
     """
-    # 1. ARRANGE: Open the dialog
+    # 1. ARRANGE
     dialog = AddTaskDialog(test_project)
     qtbot.addWidget(dialog)
     
-    # 2. ACT: Fill in the form programmatically
-    # Select SubProject (Index 0 is the one we added)
+    # 2. ACT
     dialog.sub_input.setCurrentIndex(0) 
-    
-    # Select WorkPackage (Wait for the combo box to populate)
     assert dialog.wp_input.count() > 0
     dialog.wp_input.setCurrentIndex(0)
     
-    # Type in the inputs
     qtbot.keyClicks(dialog.name_input, "New Brake Lines")
     dialog.cost_input.setValue(150.0)
-    dialog.budget_input.setValue(8)
-    dialog.imp_input.setValue(9)
     
-    # 3. ASSERT: Check the data *before* we even click OK (Unit Test the Form)
+    # FIX: Select "Smart Investment" (Value 7) for Budget
+    # We find the index for text containing "Smart"
+    for i in range(dialog.budget_input.count()):
+        if "Smart" in dialog.budget_input.itemText(i):
+            dialog.budget_input.setCurrentIndex(i)
+            break
+            
+    # FIX: Select "Core Mechanical" (Value 8) for Importance
+    for i in range(dialog.imp_input.count()):
+        if "Core" in dialog.imp_input.itemText(i):
+            dialog.imp_input.setCurrentIndex(i)
+            break
+    
+    # 3. ASSERT
     data = dialog.get_data()
     
     assert data["sub_id"] == "SP-1"
     assert data["wp_id"] == "WP-1"
     assert data["name"] == "New Brake Lines"
     assert data["cost"] == 150.0
-    assert data["budget"] == 8
-    assert data["importance"] == 9
+    assert data["budget"] == 7   # Updated expectation
+    assert data["importance"] == 8 # Updated expectation
+
+def test_add_task_semantic_selectors(qtbot, test_project):
+    """
+    TDD: Verify that selecting a text description (e.g., Safety) maps to the correct integer (10).
+    """
+    dialog = AddTaskDialog(test_project)
+    qtbot.addWidget(dialog)
+    
+    # Select "Safety" (Value 10)
+    for i in range(dialog.imp_input.count()):
+        if "Safety" in dialog.imp_input.itemText(i):
+            dialog.imp_input.setCurrentIndex(i)
+            break
+            
+    # Select "High Value" (Value 10)
+    for i in range(dialog.budget_input.count()):
+        if "High Value" in dialog.budget_input.itemText(i):
+            dialog.budget_input.setCurrentIndex(i)
+            break
+    
+    data = dialog.get_data()
+    assert data["importance"] == 10
+    assert data["budget"] == 10
 
 def test_gui_complete_task_action(qtbot, test_project):
     """
     TDD: Verify that invoking the complete action updates the item color and status.
     """
-    from frontend.app import TalusWindow
-    from PySide6.QtCore import Qt
-    from backend.models import Status, Task, WorkPackage, SubProject
-    
-    # 1. ARRANGE: Setup a window with one pending task
-    # We need a fresh window that uses our test_project
     window = TalusWindow()
-    # Inject our test project manually to bypass file loading
     window.project_data = test_project
     
-    # Add a specific task to find
     task = Task(id="T-TEST", text="Paint Hood", status=Status.PENDING)
     test_project.sub_projects[0].work_packages[0].tasks.append(task)
     
-    # Refresh tree to show it
     window.populate_tree(test_project)
     qtbot.addWidget(window)
     
-    # 2. ACT: Find the item and simulate "Mark Complete"
-    # (In the real app, this will be a Context Menu action, here we call the method directly)
-    # We expect a method named "mark_selected_complete" to exist
-    
-    # Select the item (it is deep in the tree)
-    # Root -> Sub -> WP -> Task
     iterator = window.tree.topLevelItem(0).child(0).child(0)
     window.tree.setCurrentItem(iterator)
     
-    # Call the action (This method does not exist yet -> RED)
     window.mark_selected_complete()
     
-    # 3. ASSERT
     assert task.status == Status.COMPLETE
-    # Check visual feedback (Green color)
     assert iterator.foreground(0).color() == Qt.green

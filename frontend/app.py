@@ -20,34 +20,45 @@ class AddTaskDialog(QDialog):
         self.layout = QVBoxLayout(self)
         self.form = QFormLayout()
         
+        # 1. SubProject & WorkPackage
         self.sub_input = QComboBox()
         for sub in project.sub_projects:
             self.sub_input.addItem(sub.name, sub.id)
         self.sub_input.currentIndexChanged.connect(self.populate_wps)
         
         self.wp_input = QComboBox()
+        
+        # 2. Basic Info
         self.name_input = QLineEdit()
         self.cost_input = QDoubleSpinBox()
         self.cost_input.setRange(0, 100000)
         self.cost_input.setPrefix("$")
         
-        self.budget_input = QSpinBox()
-        self.budget_input.setRange(1, 10)
-        self.budget_input.setValue(5)
+        # 3. SEMANTIC DROPDOWNS (Replaces SpinBoxes)
+        self.budget_input = QComboBox()
+        self.budget_input.addItem("Standard Maintenance", 5) # Default
+        self.budget_input.addItem("Immediate Impact (High Value)", 10)
+        self.budget_input.addItem("Smart Investment", 7)
+        self.budget_input.addItem("Low Return (Money Pit)", 2)
         
-        self.imp_input = QSpinBox()
-        self.imp_input.setRange(1, 10)
-        self.imp_input.setValue(5)
+        self.imp_input = QComboBox()
+        self.imp_input.addItem("Reliability Upgrade", 6) # Default
+        self.imp_input.addItem("Safety / Critical", 10)
+        self.imp_input.addItem("Core Mechanical", 8)
+        self.imp_input.addItem("Comfort / Interior", 4)
+        self.imp_input.addItem("Cosmetic / Aesthetic", 2)
         
+        # Add Rows
         self.form.addRow("Sub-Project:", self.sub_input)
         self.form.addRow("Work Package:", self.wp_input)
         self.form.addRow("Task Name:", self.name_input)
         self.form.addRow("Est. Cost:", self.cost_input)
-        self.form.addRow("Financial Velocity (1-10):", self.budget_input)
-        self.form.addRow("Technical Importance (1-10):", self.imp_input)
+        self.form.addRow("Financial Logic:", self.budget_input)
+        self.form.addRow("Technical Importance:", self.imp_input)
         
         self.layout.addLayout(self.form)
         
+        # Buttons
         self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         self.buttons.accepted.connect(self.accept)
         self.buttons.rejected.connect(self.reject)
@@ -64,13 +75,14 @@ class AddTaskDialog(QDialog):
                 self.wp_input.addItem(wp.name, wp.id)
 
     def get_data(self):
+        # We now use currentData() to get the integer value (10, 8, etc.)
         return {
             "sub_id": self.sub_input.currentData(),
             "wp_id": self.wp_input.currentData(),
             "name": self.name_input.text(),
             "cost": self.cost_input.value(),
-            "budget": self.budget_input.value(),
-            "importance": self.imp_input.value()
+            "budget": self.budget_input.currentData(),
+            "importance": self.imp_input.currentData()
         }
 
 class TalusWindow(QMainWindow):
@@ -99,7 +111,6 @@ class TalusWindow(QMainWindow):
         header.setSectionResizeMode(1, QHeaderView.ResizeToContents)
         header.setSectionResizeMode(4, QHeaderView.ResizeToContents)
         
-        # Enable Right-Click Context Menu
         self.tree.setContextMenuPolicy(Qt.CustomContextMenu)
         self.tree.customContextMenuRequested.connect(self.open_context_menu)
         
@@ -141,7 +152,6 @@ class TalusWindow(QMainWindow):
                     task_item.setText(3, str(task.importance))
                     task_item.setText(4, task.status.value.upper())
                     
-                    # Store ID in hidden data (UserRole)
                     task_item.setData(0, Qt.UserRole, task.id)
                     
                     if task.status == Status.COMPLETE:
@@ -153,8 +163,6 @@ class TalusWindow(QMainWindow):
     def open_context_menu(self, position):
         item = self.tree.itemAt(position)
         if not item: return
-        
-        # Only show menu for Tasks (which have hidden IDs)
         task_id = item.data(0, Qt.UserRole)
         if not task_id: return
         
@@ -165,27 +173,17 @@ class TalusWindow(QMainWindow):
         menu.exec(self.tree.viewport().mapToGlobal(position))
 
     def mark_selected_complete(self):
-        """Finds the selected task and marks it complete via the Manager."""
         item = self.tree.currentItem()
         if not item: return
-        
         task_id = item.data(0, Qt.UserRole)
         if not task_id: return
-        
         try:
-            # 1. Update Logic
             self.manager.complete_task(self.project_data, task_id)
-            
-            # 2. Update UI (Instant feedback)
             item.setForeground(0, Qt.green)
             item.setText(4, "COMPLETE")
-            
-            # 3. Save to Disk
             with open("data/talus_master.json", "w") as f:
                 f.write(self.project_data.model_dump_json(indent=4))
-                
             print(f"✅ Task {task_id} marked complete.")
-            
         except Exception as e:
             QMessageBox.critical(self, "Error", str(e))
 
