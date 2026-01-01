@@ -11,6 +11,7 @@ from PySide6.QtGui import QAction, QIcon
 from PySide6.QtCore import Qt
 from backend.models import Project, Task, Status
 from backend.manager import TaskManager
+from backend.engine import PriorityEngine
 
 class AddTaskDialog(QDialog):
     def __init__(self, project, parent=None):
@@ -20,35 +21,30 @@ class AddTaskDialog(QDialog):
         self.layout = QVBoxLayout(self)
         self.form = QFormLayout()
         
-        # 1. SubProject & WorkPackage
         self.sub_input = QComboBox()
         for sub in project.sub_projects:
             self.sub_input.addItem(sub.name, sub.id)
         self.sub_input.currentIndexChanged.connect(self.populate_wps)
         
         self.wp_input = QComboBox()
-        
-        # 2. Basic Info
         self.name_input = QLineEdit()
         self.cost_input = QDoubleSpinBox()
         self.cost_input.setRange(0, 100000)
         self.cost_input.setPrefix("$")
         
-        # 3. SEMANTIC DROPDOWNS (Replaces SpinBoxes)
         self.budget_input = QComboBox()
-        self.budget_input.addItem("Standard Maintenance", 5) # Default
+        self.budget_input.addItem("Standard Maintenance", 5)
         self.budget_input.addItem("Immediate Impact (High Value)", 10)
         self.budget_input.addItem("Smart Investment", 7)
         self.budget_input.addItem("Low Return (Money Pit)", 2)
         
         self.imp_input = QComboBox()
-        self.imp_input.addItem("Reliability Upgrade", 6) # Default
+        self.imp_input.addItem("Reliability Upgrade", 6)
         self.imp_input.addItem("Safety / Critical", 10)
         self.imp_input.addItem("Core Mechanical", 8)
         self.imp_input.addItem("Comfort / Interior", 4)
         self.imp_input.addItem("Cosmetic / Aesthetic", 2)
         
-        # Add Rows
         self.form.addRow("Sub-Project:", self.sub_input)
         self.form.addRow("Work Package:", self.wp_input)
         self.form.addRow("Task Name:", self.name_input)
@@ -57,13 +53,10 @@ class AddTaskDialog(QDialog):
         self.form.addRow("Technical Importance:", self.imp_input)
         
         self.layout.addLayout(self.form)
-        
-        # Buttons
         self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         self.buttons.accepted.connect(self.accept)
         self.buttons.rejected.connect(self.reject)
         self.layout.addWidget(self.buttons)
-        
         self.populate_wps()
 
     def populate_wps(self):
@@ -75,7 +68,6 @@ class AddTaskDialog(QDialog):
                 self.wp_input.addItem(wp.name, wp.id)
 
     def get_data(self):
-        # We now use currentData() to get the integer value (10, 8, etc.)
         return {
             "sub_id": self.sub_input.currentData(),
             "wp_id": self.wp_input.currentData(),
@@ -91,19 +83,23 @@ class TalusWindow(QMainWindow):
         self.setWindowTitle("Talus Tally - Bronco II Control Center")
         self.resize(1000, 600)
         
-        # ToolBar
+        # --- TOOLBAR ---
         toolbar = QToolBar("Main Toolbar")
         self.addToolBar(toolbar)
+        
         add_action = QAction("Add Task", self)
         add_action.triggered.connect(self.open_add_task_dialog)
         toolbar.addAction(add_action)
         
-        # Central Widget
+        # NEW: Sort Action
+        sort_action = QAction("Sort by Velocity", self)
+        sort_action.triggered.connect(self.sort_by_velocity)
+        toolbar.addAction(sort_action)
+        
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
         self.layout = QVBoxLayout(self.central_widget)
         
-        # Tree View
         self.tree = QTreeWidget()
         self.tree.setHeaderLabels(["Item / Task", "Cost ($)", "Budget (1-10)", "Importance", "Status"])
         header = self.tree.header()
@@ -118,6 +114,7 @@ class TalusWindow(QMainWindow):
         
         self.project_data = None
         self.manager = TaskManager()
+        self.engine = PriorityEngine() # The Brain
         self.load_project()
 
     def load_project(self):
@@ -151,7 +148,6 @@ class TalusWindow(QMainWindow):
                     task_item.setText(2, str(task.budget_priority))
                     task_item.setText(3, str(task.importance))
                     task_item.setText(4, task.status.value.upper())
-                    
                     task_item.setData(0, Qt.UserRole, task.id)
                     
                     if task.status == Status.COMPLETE:
@@ -160,12 +156,29 @@ class TalusWindow(QMainWindow):
                         task_item.setForeground(0, Qt.red)
                         task_item.setText(0, f"[BLOCKED] {task.text}")
 
+    def sort_by_velocity(self):
+        """Re-orders the tasks in memory based on the Triple Threat Algorithm."""
+        if not self.project_data: return
+        
+        # Iterate and Sort
+        for sub in self.project_data.sub_projects:
+            for wp in sub.work_packages:
+                # Sort tasks in place
+                # We use the engine to calculate the score for the sort key
+                wp.tasks.sort(
+                    key=lambda t: self.engine.calculate_task_score(sub.priority, wp.importance, t), 
+                    reverse=True # Highest score first
+                )
+        
+        # Refresh the UI to show new order
+        self.populate_tree(self.project_data)
+        print("⚡ Sorted by Financial Velocity")
+
     def open_context_menu(self, position):
         item = self.tree.itemAt(position)
         if not item: return
         task_id = item.data(0, Qt.UserRole)
         if not task_id: return
-        
         menu = QMenu()
         complete_action = QAction("Mark Complete", self)
         complete_action.triggered.connect(self.mark_selected_complete)
@@ -183,7 +196,6 @@ class TalusWindow(QMainWindow):
             item.setText(4, "COMPLETE")
             with open("data/talus_master.json", "w") as f:
                 f.write(self.project_data.model_dump_json(indent=4))
-            print(f"✅ Task {task_id} marked complete.")
         except Exception as e:
             QMessageBox.critical(self, "Error", str(e))
 

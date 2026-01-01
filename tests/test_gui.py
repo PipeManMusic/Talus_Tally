@@ -96,3 +96,43 @@ def test_gui_complete_task_action(qtbot, test_project):
     
     assert task.status == Status.COMPLETE
     assert iterator.foreground(0).color() == Qt.green
+
+def test_velocity_sort_button(qtbot, test_project):
+    """
+    TDD: Verify that the Sort button reorders tasks based on Financial Velocity.
+    """
+    from frontend.app import TalusWindow
+    from backend.models import Task
+    from backend.engine import PriorityEngine
+    
+    # 1. ARRANGE
+    window = TalusWindow()
+    window.project_data = test_project
+    
+    # Task A: Money Pit (Cost $1000, Importance 1) -> Low Score
+    task_low = Task(id="T-LOW", text="Gold Plated Ash Tray", 
+                   estimated_cost=1000.0, importance=1, budget_priority=1)
+                   
+    # Task B: Quick Win (Cost $5, Importance 10) -> High Score
+    task_high = Task(id="T-HIGH", text="Fix Brakes", 
+                    estimated_cost=5.0, importance=10, budget_priority=10)
+    
+    # Add them in the "wrong" order (Low first)
+    wp = test_project.sub_projects[0].work_packages[0]
+    wp.tasks = [task_low, task_high]
+    
+    window.populate_tree(test_project)
+    qtbot.addWidget(window)
+    
+    # Check initial order (Index 0 should be T-LOW)
+    top_item = window.tree.topLevelItem(0).child(0)
+    assert top_item.child(0).text(0) == "Gold Plated Ash Tray"
+    
+    # 2. ACT: Click "Sort by Velocity"
+    # We expect a method sort_by_velocity to exist
+    window.sort_by_velocity()
+    
+    # 3. ASSERT: The order should flip
+    # The first task under the WP should now be T-HIGH
+    top_item = window.tree.topLevelItem(0).child(0)
+    assert top_item.child(0).text(0) == "Fix Brakes"
