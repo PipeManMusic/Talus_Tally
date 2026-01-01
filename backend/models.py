@@ -1,39 +1,39 @@
-from typing import List, Optional
 from pydantic import BaseModel, Field
+from typing import List, Optional
 from enum import Enum
 from datetime import datetime
 
 class Status(str, Enum):
-    BACKLOG = "Backlog"
-    IN_PROGRESS = "In-Progress"
-    BLOCKED = "Blocked"
-    COMPLETE = "Complete"
+    BACKLOG = "backlog"
+    PENDING = "pending"
+    IN_PROGRESS = "in_progress"
+    BLOCKED = "blocked"      # <--- ADDED THIS (Fixes the crash)
+    COMPLETE = "complete"
 
 class Task(BaseModel):
     id: str
     text: str
-    importance: int = Field(ge=1, le=10, default=5, description="1-10 Scale")
+    status: Status = Status.PENDING
+    estimated_cost: float = 0.0
+    budget_priority: int = 5
+    importance: int = 5
     
-    # Financial Velocity Fields
-    budget_priority: int = Field(ge=1, le=10, default=5, description="How badly do we need to buy this?")
-    estimated_cost: float = Field(ge=0.0, default=0.0)
-    
-    status: Status = Status.BACKLOG
-    blocks: List[str] = []  # List of Task IDs this task prevents from starting
+    # Timeline Priority: A list of Task IDs that THIS task blocks.
+    blocking: List[str] = Field(default_factory=list)
 
 class WorkPackage(BaseModel):
     id: str
     name: str
-    importance: int = Field(ge=1, le=10, default=5)
-    tasks: List[Task] = []
+    importance: int = 5
+    tasks: List[Task] = Field(default_factory=list)
 
 class SubProject(BaseModel):
     id: str
     name: str
-    priority: int = Field(ge=1, le=10, default=5)
-    work_packages: List[WorkPackage] = []
+    priority: int = 5
+    work_packages: List[WorkPackage] = Field(default_factory=list)
 
 class Project(BaseModel):
-    name: str = "Project Talus"
+    name: str = "New Project"
     last_updated: datetime = Field(default_factory=datetime.now)
-    sub_projects: List[SubProject] = []
+    sub_projects: List[SubProject] = Field(default_factory=list)

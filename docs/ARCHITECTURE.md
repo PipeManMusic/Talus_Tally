@@ -1,33 +1,33 @@
-python3 -c '
-import os
-os.makedirs("docs", exist_ok=True)
-
-content = """# Talus Tally: Architecture & Developer Guide
+# Talus Tally: Architecture & Developer Guide
 
 ## 🎯 Project Goal
-Talus Tally is a **Financial Velocity Project Management System** designed to assist in the restoration of a **Classic Ford Bronco II**. It prioritizes tasks not just by "Importance," but by "Bang for the Buck" (Financial Velocity).
+Talus Tally is a **Financial Velocity Project Management System** designed to assist in the restoration of a **Classic Ford Bronco II**. 
 
-## 🧠 Core Logic: "Financial Velocity"
-The heart of the application is the `PriorityEngine` in `backend/engine.py`.
-It sorts tasks based on a custom algorithm:
-1.  **Hierarchy Score:** Base priority derived from SubProject -> WorkPackage -> Task.
-2.  **Velocity Boost:** `(Budget Priority / (Cost + 1))`.
-    * *Effect:* High-priority items that are CHEAP float to the top ("Quick Wins").
-    * *Effect:* Expensive items require massive importance to outrank cheap ones.
+It prioritizes tasks based on three factors:
+1.  **Hierarchy:** (Structure) What part of the truck is this?
+2.  **Financial Velocity:** (Money) High value, low cost items ("Quick Wins").
+3.  **Timeline Priority:** (Time) Tasks that **block** other tasks must happen first.
 
-## 🏗 System Architecture
-The system follows a **Unidirectional Data Flow**:
+## 🧠 Core Logic: The "Triple-Threat" Algorithm
+The `PriorityEngine` (`backend/engine.py`) calculates a score based on:
 
-1.  **Data Source:** `data/talus_master.json` (The Single Source of Truth).
-2.  **API Layer:** `backend/main.py` (FastAPI) reads/writes JSON.
-3.  **Translator:** `backend/translator.py` converts the Object Model -> Markdown.
-4.  **Injector:** `backend/injector.py` surgically updates `README.md`.
-    * **Safety Mechanism:** Uses `` and `` tags.
-    * **Constraint:** NEVER overwrites outside these tags.
+1.  **Hierarchy Score:** `(SubProject Priority * 100) + (WorkPackage Importance * 10) + Task Importance`
+2.  **Financial Velocity:** `(Budget Priority / (Cost + 1))`
+    * *Effect:* Cheap, critical items float to the top.
+3.  **Dependency Boost (New):** If Task A **blocks** Task B, Task A inherits a score boost.
 
-## 🛠 Developer Workflow
+## 🏗 System Architecture (Evolution 2.0)
+The system is evolving into a **Hybrid Desktop/API Application**.
 
-### 1. Running Tests (The "Green State" Check)
-Always run the full test suite before committing logic changes.
-```bash
-pytest
+1.  **Data Source:** `data/talus_master.json` (Single Source of Truth).
+2.  **Business Logic (The Manager):** `backend/manager.py` (New).
+    * **Role:** Centralizes logic (Create, Block, Complete) for API and GUI.
+3.  **Interfaces:**
+    * **API:** `backend/main.py`
+    * **Desktop GUI:** `frontend/` (PySide6)
+4.  **Automation:** `backend/translator.py` & `injector.py` update `README.md`.
+
+## 🛠 Developer Workflow: TDD (Red-Green-Refactor)
+1.  **RED:** Write test -> Watch fail.
+2.  **GREEN:** Write code -> Watch pass.
+3.  **REFACTOR:** Clean up.
