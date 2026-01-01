@@ -46,3 +46,37 @@ def test_timeline_dependency():
     # ASSERT: Task A should now record that it blocks B
     # Note: We assume the model has a "blocking" field (List[str])
     assert "T-B" in task_a.blocking
+
+def test_complete_task_logic():
+    """
+    TDD: Verify manager can find a task by ID and mark it COMPLETE.
+    """
+    from backend.models import Project, SubProject, WorkPackage, Task, Status
+    from backend.manager import TaskManager
+    import datetime
+
+    # 1. ARRANGE
+    project = Project()
+    sub = SubProject(id="SP-1", name="Sub")
+    wp = WorkPackage(id="WP-1", name="WP")
+    
+    # Create a task that is PENDING
+    task = Task(id="T-500", text="Fix Brakes", status=Status.PENDING)
+    
+    wp.tasks.append(task)
+    sub.work_packages.append(wp)
+    project.sub_projects.append(sub)
+    
+    manager = TaskManager()
+    
+    # Capture old time
+    old_time = project.last_updated
+    
+    # 2. ACT
+    manager.complete_task(project, task_id="T-500")
+    
+    # 3. ASSERT
+    # Status should change
+    assert task.status == Status.COMPLETE
+    # Timestamp should update
+    assert project.last_updated > old_time

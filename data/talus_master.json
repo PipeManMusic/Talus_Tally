@@ -1,34 +1,25 @@
 {
-    "name": "Project Talus - Bronco II",
-    "last_updated": "2026-01-01T10:57:26.395815",
+    "name": "Test Project",
+    "last_updated": "2026-01-01T11:31:29.770241",
     "sub_projects": [
         {
-            "id": "SP1",
-            "name": "Electronics",
-            "priority": 10,
+            "id": "SP-1",
+            "name": "Sub1",
+            "priority": 5,
             "work_packages": [
                 {
-                    "id": "WP1",
-                    "name": "Navigation",
-                    "importance": 10,
+                    "id": "WP-1",
+                    "name": "Work1",
+                    "importance": 5,
                     "tasks": [
                         {
-                            "id": "T1",
-                            "text": "Buy GPS",
-                            "importance": 5,
-                            "budget_priority": 8,
-                            "estimated_cost": 200.0,
-                            "status": "Complete",
-                            "blocks": []
-                        },
-                        {
-                            "id": "T2",
-                            "text": "Install MapLibre",
-                            "importance": 5,
-                            "budget_priority": 5,
+                            "id": "T-TEST",
+                            "text": "Paint Hood",
+                            "status": "complete",
                             "estimated_cost": 0.0,
-                            "status": "Backlog",
-                            "blocks": []
+                            "budget_priority": 5,
+                            "importance": 5,
+                            "blocking": []
                         }
                     ]
                 }
