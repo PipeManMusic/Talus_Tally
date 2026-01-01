@@ -1,0 +1,154 @@
+{
+    "$defs": {
+        "Status": {
+            "enum": [
+                "Backlog",
+                "In-Progress",
+                "Blocked",
+                "Complete"
+            ],
+            "title": "Status",
+            "type": "string"
+        },
+        "SubProject": {
+            "properties": {
+                "id": {
+                    "title": "Id",
+                    "type": "string"
+                },
+                "name": {
+                    "title": "Name",
+                    "type": "string"
+                },
+                "priority": {
+                    "default": 5,
+                    "maximum": 10,
+                    "minimum": 1,
+                    "title": "Priority",
+                    "type": "integer"
+                },
+                "work_packages": {
+                    "default": [],
+                    "items": {
+                        "$ref": "#/$defs/WorkPackage"
+                    },
+                    "title": "Work Packages",
+                    "type": "array"
+                }
+            },
+            "required": [
+                "id",
+                "name"
+            ],
+            "title": "SubProject",
+            "type": "object"
+        },
+        "Task": {
+            "properties": {
+                "id": {
+                    "title": "Id",
+                    "type": "string"
+                },
+                "text": {
+                    "title": "Text",
+                    "type": "string"
+                },
+                "importance": {
+                    "default": 5,
+                    "description": "1-10 Scale",
+                    "maximum": 10,
+                    "minimum": 1,
+                    "title": "Importance",
+                    "type": "integer"
+                },
+                "budget_priority": {
+                    "default": 5,
+                    "description": "How badly do we need to buy this?",
+                    "maximum": 10,
+                    "minimum": 1,
+                    "title": "Budget Priority",
+                    "type": "integer"
+                },
+                "estimated_cost": {
+                    "default": 0.0,
+                    "minimum": 0.0,
+                    "title": "Estimated Cost",
+                    "type": "number"
+                },
+                "status": {
+                    "$ref": "#/$defs/Status",
+                    "default": "Backlog"
+                },
+                "blocks": {
+                    "default": [],
+                    "items": {
+                        "type": "string"
+                    },
+                    "title": "Blocks",
+                    "type": "array"
+                }
+            },
+            "required": [
+                "id",
+                "text"
+            ],
+            "title": "Task",
+            "type": "object"
+        },
+        "WorkPackage": {
+            "properties": {
+                "id": {
+                    "title": "Id",
+                    "type": "string"
+                },
+                "name": {
+                    "title": "Name",
+                    "type": "string"
+                },
+                "importance": {
+                    "default": 5,
+                    "maximum": 10,
+                    "minimum": 1,
+                    "title": "Importance",
+                    "type": "integer"
+                },
+                "tasks": {
+                    "default": [],
+                    "items": {
+                        "$ref": "#/$defs/Task"
+                    },
+                    "title": "Tasks",
+                    "type": "array"
+                }
+            },
+            "required": [
+                "id",
+                "name"
+            ],
+            "title": "WorkPackage",
+            "type": "object"
+        }
+    },
+    "properties": {
+        "name": {
+            "default": "Project Talus",
+            "title": "Name",
+            "type": "string"
+        },
+        "last_updated": {
+            "format": "date-time",
+            "title": "Last Updated",
+            "type": "string"
+        },
+        "sub_projects": {
+            "default": [],
+            "items": {
+                "$ref": "#/$defs/SubProject"
+            },
+            "title": "Sub Projects",
+            "type": "array"
+        }
+    },
+    "title": "Project",
+    "type": "object"
+}
