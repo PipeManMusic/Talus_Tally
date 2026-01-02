@@ -1,0 +1,17 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "deploy-android",
+			"type": "shell",
+			"command": "./deploy_android.sh",
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [],
+			"presentation": {
+				"reveal": "silent"
+			}
+		}
+	]
+}

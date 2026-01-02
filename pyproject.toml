@@ -1,0 +1,55 @@
+[tool.briefcase]
+project_name = "Talus Tally"
+bundle = "com.talus.tally"
+version = "0.1.0"
+url = "https://example.com/talus-tally"
+license.file = "LICENSE"
+author = "D. Worth"
+author_email = "dworth@example.com"
+
+[tool.briefcase.app.talus_tally]
+formal_name = "Talus Tally"
+description = "Bronco II Restoration Project Manager"
+long_description = "A project management tool for vehicle restoration."
+sources = ["talus_tally", "frontend", "backend"]
+test_sources = ["tests"]
+requires = [
+    "toga",
+    "pydantic",
+]
+
+[tool.briefcase.app.talus_tally.mobile]
+requires = [
+    "toga-android",
+    "pydantic",
+]
+
+[tool.briefcase.app.talus_tally.macOS]
+requires = [
+    "toga-cocoa",
+    "std-nslog",
+]
+
+[tool.briefcase.app.talus_tally.linux]
+requires = [
+    "toga-gtk",
+    "system:gtk+3",
+]
+
+[tool.briefcase.app.talus_tally.windows]
+requires = [
+    "toga-winforms",
+]
+
+# Mobile specific settings
+[tool.briefcase.app.talus_tally.android]
+# The entry point for the app
+entry_point = "talus_tally:main"
+requires = [
+    "toga-android",
+    "pydantic",
+    "dropbox",
+]
+
+[tool.briefcase.app.talus_tally.iOS]
+entry_point = "talus_tally:main"

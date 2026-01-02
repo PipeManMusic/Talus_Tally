@@ -5,3 +5,4 @@ __pycache__/
 debug_injector.py
 fix_injector.py
 repair_injector.py
+secrets.py

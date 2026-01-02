@@ -1,0 +1,1161 @@
+Date/Time:       2026-01-02 09:28:24 
+Command line:    /home/dworth/Dropbox/Bronco II/Tallus Tally/.venv/bin/briefcase run android
+
+OS Release:      Linux 6.17.0-8-generic
+OS Version:      #8-Ubuntu SMP PREEMPT_DYNAMIC Fri Nov 14 21:44:46 UTC 2025
+Architecture:    x86_64
+Platform:        Linux-6.17.0-8-generic-x86_64-with-glibc2.42
+
+Python exe:      /home/dworth/Dropbox/Bronco II/Tallus Tally/.venv/bin/python3
+Python version:  3.13.7 (main, Nov 24 2025, 20:51:28) [GCC 15.2.0]
+Virtual env:     True
+Conda env:       False
+
+Briefcase:       0.3.26
+Target platform: android
+Target format:   gradle
+
+Environment Variables:
+	BUNDLED_DEBUGPY_PATH=/home/dworth/.vscode/extensions/ms-python.debugpy-2025.18.0-linux-x64/bundled/libs/debugpy
+	CHROME_DESKTOP=code.desktop
+	COLORTERM=truecolor
+	DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus
+	DEBUGINFOD_URLS=https://debuginfod.ubuntu.com 
+	DESKTOP_SESSION=ubuntu
+	DISPLAY=:0
+	FC_FONTATIONS=1
+	GDK_BACKEND=wayland
+	GDMSESSION=ubuntu
+	GIO_LAUNCHED_DESKTOP_FILE=/usr/share/applications/code.desktop
+	GIO_LAUNCHED_DESKTOP_FILE_PID=186191
+	GIT_ASKPASS=********************
+	GIT_PAGER=cat
+	GJS_DEBUG_OUTPUT=stderr
+	GJS_DEBUG_TOPICS=JS ERROR;JS LOG
+	GNOME_DESKTOP_SESSION_ID=this-is-deprecated
+	GNOME_SETUP_DISPLAY=:1
+	GNOME_SHELL_SESSION_MODE=ubuntu
+	GPG_AGENT_INFO=/run/user/1000/gnupg/S.gpg-agent:0:1
+	GTK_MODULES=gail:atk-bridge
+	HOME=/home/dworth
+	IM_CONFIG_CHECK_ENV=1
+	IM_CONFIG_PHASE=1
+	INVOCATION_ID=569d15f2d6614b779a3ef731972c677e
+	JOURNAL_STREAM=9:25314
+	LANG=en_US.UTF-8
+	LESSCLOSE=/usr/bin/lesspipe %s %s
+	LESSOPEN=| /usr/bin/lesspipe %s
+	LOGNAME=dworth
+	LS_COLORS=rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=00:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.avif=01;35:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:*~=00;90:*#=00;90:*.bak=00;90:*.old=00;90:*.orig=00;90:*.part=00;90:*.rej=00;90:*.swp=00;90:*.tmp=00;90:*.dpkg-dist=00;90:*.dpkg-old=00;90:*.ucf-dist=00;90:*.ucf-new=00;90:*.ucf-old=00;90:*.rpmnew=00;90:*.rpmorig=00;90:*.rpmsave=00;90:
+	MANAGERPID=3016
+	MEMORY_PRESSURE_WATCH=/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/session.slice/org.gnome.Shell@wayland.service/memory.pressure
+	MEMORY_PRESSURE_WRITE=c29tZSAyMDAwMDAgMjAwMDAwMAA=
+	OLDPWD=/home/dworth/Dropbox/Bronco II/Tallus Tally
+	PATH=/home/dworth/Dropbox/Bronco II/Tallus Tally/.venv/bin:/home/dworth/.config/Code/User/globalStorage/github.copilot-chat/debugCommand:/home/dworth/.config/Code/User/globalStorage/github.copilot-chat/copilotCli:/home/dworth/.local/bin:/home/dworth/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/dworth/.vscode/extensions/ms-python.debugpy-2025.18.0-linux-x64/bundled/scripts/noConfigScripts
+	PS1=(.venv) 
+	PWD=/home/dworth/Dropbox/Bronco II/Tallus Tally
+	PYDEVD_DISABLE_FILE_VALIDATION=1
+	PYTHONSTARTUP=/home/dworth/.config/Code/User/workspaceStorage/85864c4b6943fbd56e38e403b47ec7dd/ms-python.python/pythonrc.py
+	PYTHON_BASIC_REPL=1
+	QT_ACCESSIBILITY=1
+	QT_IM_MODULE=ibus
+	QT_IM_MODULES=wayland;ibus
+	SHELL=/bin/bash
+	SHLVL=2
+	SSH_AUTH_SOCK=/run/user/1000/gcr/ssh
+	SYSTEMD_EXEC_PID=3296
+	TERM=xterm-256color
+	TERM_PROGRAM=vscode
+	TERM_PROGRAM_VERSION=1.107.1
+	USER=dworth
+	USERNAME=dworth
+	VIRTUAL_ENV=/home/dworth/Dropbox/Bronco II/Tallus Tally/.venv
+	VIRTUAL_ENV_PROMPT=.venv
+	VSCODE_DEBUGPY_ADAPTER_ENDPOINTS=/home/dworth/.vscode/extensions/ms-python.debugpy-2025.18.0-linux-x64/.noConfigDebugAdapterEndpoints/endpoint-c2f4f3ab83dd5904.txt
+	VSCODE_GIT_ASKPASS_EXTRA_ARGS=********************
+	VSCODE_GIT_ASKPASS_MAIN=********************
+	VSCODE_GIT_ASKPASS_NODE=********************
+	VSCODE_GIT_IPC_HANDLE=/run/user/1000/vscode-git-c2f1d91e38.sock
+	VSCODE_PYTHON_AUTOACTIVATE_GUARD=1
+	WAYLAND_DISPLAY=wayland-0
+	XAUTHORITY=/run/user/1000/.mutter-Xwaylandauth.Q7SLI3
+	XDG_CONFIG_DIRS=/etc/xdg/xdg-ubuntu:/etc/xdg
+	XDG_CURRENT_DESKTOP=ubuntu:GNOME
+	XDG_DATA_DIRS=/usr/share/ubuntu:/usr/share/gnome:/home/dworth/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop
+	XDG_MENU_PREFIX=gnome-
+	XDG_RUNTIME_DIR=/run/user/1000
+	XDG_SESSION_CLASS=user
+	XDG_SESSION_DESKTOP=ubuntu
+	XDG_SESSION_TYPE=wayland
+	XMODIFIERS=@im=ibus
+	_=/home/dworth/Dropbox/Bronco II/Tallus Tally/.venv/bin/briefcase
+
+pyproject.toml:
+[tool.briefcase]
+project_name = "Talus Tally"
+bundle = "com.talus.tally"
+version = "0.1.0"
+url = "https://example.com/talus-tally"
+license.file = "LICENSE"
+author = "D. Worth"
+author_email = "dworth@example.com"
+
+[tool.briefcase.app.talus_tally]
+formal_name = "Talus Tally"
+description = "Bronco II Restoration Project Manager"
+long_description = "A project management tool for vehicle restoration."
+sources = ["talus_tally", "frontend", "backend"]
+test_sources = ["tests"]
+requires = [
+    "toga",
+    "pydantic",
+]
+
+[tool.briefcase.app.talus_tally.mobile]
+requires = [
+    "toga-android",
+    "pydantic",
+]
+
+[tool.briefcase.app.talus_tally.macOS]
+requires = [
+    "toga-cocoa",
+    "std-nslog",
+]
+
+[tool.briefcase.app.talus_tally.linux]
+requires = [
+    "toga-gtk",
+    "system:gtk+3",
+]
+
+[tool.briefcase.app.talus_tally.windows]
+requires = [
+    "toga-winforms",
+]
+
+# Mobile specific settings
+[tool.briefcase.app.talus_tally.android]
+# The entry point for the app
+entry_point = "talus_tally:main"
+
+[tool.briefcase.app.talus_tally.iOS]
+entry_point = "talus_tally:main"
+
+Briefcase Log:
+[09:20:27] Using JDK at /home/dworth/.cache/briefcase/tools/java17                                                                                                       java.py:263
+           Using Android SDK at /home/dworth/.cache/briefcase/tools/android_sdk                                                                                   android_sdk.py:376
+           Android emulator is already installed.                                                                                                                 android_sdk.py:653
+                                                                                                                                                                   subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb devices -l                                                                   subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:20:28] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>     * daemon not running; starting now at tcp:5037                                                                                                  subprocess.py:839
+           >>>     * daemon started successfully                                                                                                                   subprocess.py:839
+           >>>     List of devices attached                                                                                                                        subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/emulator/emulator -list-avds                                                                    subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+                                                                                                                                                                      console.py:719
+                                                                                                                                                                      console.py:720
+           -- Android device ------------------------------------------------------------                                                                             console.py:721
+                                                                                                                                                                      console.py:955
+           Select Android device to use:                                                                                                                              console.py:956
+                                                                                                                                                                      console.py:957
+             1) Create a new Android emulator                                                                                                                         console.py:971
+                                                                                                                                                                      console.py:973
+[09:21:58] Android device:                                                                                                                                            console.py:976
+           User input: TalusPhone                                                                                                                                     console.py:976
+                                                                                                                                                                      console.py:804
+           Invalid Selection                                                                                                                                          console.py:805
+                                                                                                                                                                      console.py:806
+[09:22:02] Android device:                                                                                                                                            console.py:976
+           User input: 1                                                                                                                                              console.py:976
+                                                                                                                                                                   subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/emulator/emulator -list-avds                                                                    subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+                                                                                                                                                                      console.py:719
+                                                                                                                                                                      console.py:720
+           -- Emulator Name -------------------------------------------------------------                                                                             console.py:721
+                                                                                                                                                                      console.py:901
+           You need to select a name for your new emulator. This is an identifier that                                                                                console.py:902
+           can be used to start the emulator in future. It should follow the same naming                                                                                            
+           conventions as a Python package (i.e., it may only contain letters, numbers,                                                                                             
+           hyphens and underscores). If you don't provide a name, Briefcase will use the                                                                                            
+           a default name 'beePhone'.                                                                                                                                               
+                                                                                                                                                                      console.py:903
+[09:22:06] Emulator Name [beePhone]:                                                                                                                             android_sdk.py:1118
+           User input: TalusPhone                                                                                                                                android_sdk.py:1118
+                                                                                                                                                                  android_sdk.py:810
+           [android_sdk] Obtaining pixel_7_pro device skin...                                                                                                     android_sdk.py:810
+[09:22:07] Downloading mirror-goog-studio-main-artwork-resources-device-art-resources-pixel_7_pro.tar.gz...                                                              file.py:227
+           Installing device skin... started                                                                                                                      android_sdk.py:825
+           Installing device skin... done                                                                                                                         android_sdk.py:825
+                                                                                                                                                                  android_sdk.py:779
+           [android_sdk] Downloading the 'system-images;android-31;default;x86_64' Android system image...                                                        android_sdk.py:779
+                                                                                                                                                                   subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/cmdline-tools/19.0/bin/sdkmanager 'system-images;android-31;default;x86_64'                     subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+           >>> Environment Overrides:                                                                                                                              subprocess.py:839
+           >>>     ANDROID_HOME=/home/dworth/.cache/briefcase/tools/android_sdk                                                                                    subprocess.py:839
+           >>>     ANDROID_SDK_ROOT=/home/dworth/.cache/briefcase/tools/android_sdk                                                                                subprocess.py:839
+           >>>     JAVA_HOME=/home/dworth/.cache/briefcase/tools/java17                                                                                            subprocess.py:839
+[09:22:49] >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+           Creating Android emulator TalusPhone... started                                                                                                       android_sdk.py:1188
+                                                                                                                                                                   subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/cmdline-tools/19.0/bin/avdmanager --verbose create avd --name TalusPhone --abi x86_64 --package subprocess.py:839
+           'system-images;android-31;default;x86_64' --device pixel                                                                                                                 
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+           >>> Environment Overrides:                                                                                                                              subprocess.py:839
+           >>>     ANDROID_HOME=/home/dworth/.cache/briefcase/tools/android_sdk                                                                                    subprocess.py:839
+           >>>     ANDROID_SDK_ROOT=/home/dworth/.cache/briefcase/tools/android_sdk                                                                                subprocess.py:839
+           >>>     JAVA_HOME=/home/dworth/.cache/briefcase/tools/java17                                                                                            subprocess.py:839
+           >>>     XDG_CONFIG_HOME=None                                                                                                                            subprocess.py:839
+[09:22:50] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>     Loading local repository...                                                                                                                     subprocess.py:839
+           >>>     [=========                              ] 25% Loading local repository...                                                                       subprocess.py:839
+           >>>     [=========                              ] 25% Fetch remote repository...                                                                        subprocess.py:839
+           >>>     [=======================================] 100% Fetch remote repository...                                                                       subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+           Creating Android emulator TalusPhone... done                                                                                                          android_sdk.py:1188
+           Adding extra device configuration... started                                                                                                          android_sdk.py:1216
+           Adding extra device configuration... done                                                                                                             android_sdk.py:1216
+                                                                                                                                                                 android_sdk.py:1145
+           Android emulator 'TalusPhone' created.                                                                                                                android_sdk.py:1145
+                                                                                                                                                                 android_sdk.py:1145
+           In future, you can specify this device by running:                                                                                                    android_sdk.py:1145
+                                                                                                                                                                 android_sdk.py:1145
+               $ briefcase run android -d @TalusPhone                                                                                                            android_sdk.py:1145
+                                                                                                                                                                       gradle.py:448
+           [talus_tally] Starting emulator TalusPhone...                                                                                                               gradle.py:448
+                                                                                                                                                                   subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/emulator/emulator -list-avds                                                                    subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+           >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>     TalusPhone                                                                                                                                      subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/emulator/emulator @TalusPhone -dns-server 8.8.8.8                                               subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+           >>> Environment Overrides:                                                                                                                              subprocess.py:839
+           >>>     ANDROID_HOME=/home/dworth/.cache/briefcase/tools/android_sdk                                                                                    subprocess.py:839
+           >>>     ANDROID_SDK_ROOT=/home/dworth/.cache/briefcase/tools/android_sdk                                                                                subprocess.py:839
+           >>>     JAVA_HOME=/home/dworth/.cache/briefcase/tools/java17                                                                                            subprocess.py:839
+           Starting emulator... started                                                                                                                          android_sdk.py:1343
+                                                                                                                                                                   subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb devices -l                                                                   subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+           >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>     List of devices attached                                                                                                                        subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:22:52]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb devices -l                                                                   subprocess.py:839
+[09:22:53] >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+           >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>     List of devices attached                                                                                                                        subprocess.py:839
+           >>>     emulator-5554          offline transport_id:1                                                                                                   subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:22:55]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb devices -l                                                                   subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+           >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>     List of devices attached                                                                                                                        subprocess.py:839
+           >>>     emulator-5554          offline transport_id:1                                                                                                   subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:22:57]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb devices -l                                                                   subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+           >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>     List of devices attached                                                                                                                        subprocess.py:839
+           >>>     emulator-5554          offline transport_id:1                                                                                                   subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:22:59]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb devices -l                                                                   subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+           >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>     List of devices attached                                                                                                                        subprocess.py:839
+           >>>     emulator-5554          offline transport_id:1                                                                                                   subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:23:01]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb devices -l                                                                   subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+           >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>     List of devices attached                                                                                                                        subprocess.py:839
+           >>>     emulator-5554          offline transport_id:1                                                                                                   subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+           ... still waiting                                                                                                                                           gradle.py:449
+[09:23:03]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb devices -l                                                                   subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+           >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>     List of devices attached                                                                                                                        subprocess.py:839
+           >>>     emulator-5554          offline transport_id:1                                                                                                   subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:23:05]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb devices -l                                                                   subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+           >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>     List of devices attached                                                                                                                        subprocess.py:839
+           >>>     emulator-5554          offline transport_id:1                                                                                                   subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:23:07]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb devices -l                                                                   subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+           >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>     List of devices attached                                                                                                                        subprocess.py:839
+           >>>     emulator-5554          offline transport_id:1                                                                                                   subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:23:09]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb devices -l                                                                   subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+           >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>     List of devices attached                                                                                                                        subprocess.py:839
+           >>>     emulator-5554          device product:sdk_phone64_x86_64 model:Android_SDK_built_for_x86_64 device:emulator64_x86_64 transport_id:1             subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 emu avd name                                                subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+           >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>     TalusPhone                                                                                                                                      subprocess.py:839
+           >>>     OK                                                                                                                                              subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+           Starting emulator... done                                                                                                                             android_sdk.py:1343
+                                                                                                                                                                   subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+           >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+           Booting emulator... started                                                                                                                           android_sdk.py:1377
+                                                                                                                                                                   subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+           >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:23:11]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+           >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:23:13]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+           >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:23:15]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:23:16] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:23:18]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+           >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:23:20]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:23:21] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+           ... still waiting                                                                                                                                           gradle.py:449
+[09:23:23]                                                                                                                                                         subprocess.py:839
+[09:23:24] >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:23:27] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:23:30]                                                                                                                                                         subprocess.py:839
+[09:23:31] >>> Running Command:                                                                                                                                    subprocess.py:839
+[09:23:32] >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:23:45] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:23:46] ... still waiting                                                                                                                                           gradle.py:449
+[09:23:48]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+[09:23:49] >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:23:53] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:23:55]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:23:56] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:23:58]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:23:59] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+           ... still waiting                                                                                                                                           gradle.py:449
+[09:24:01]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:24:02] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:24:04]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:24:05] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:24:07]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:24:08] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:24:10]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:24:11] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+           ... still waiting                                                                                                                                           gradle.py:449
+[09:24:13]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:24:14] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:24:16]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:24:17] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:24:19]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:24:20] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:24:22]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:24:23] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+           ... still waiting                                                                                                                                           gradle.py:449
+[09:24:25]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:24:26] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:24:28]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+           >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:24:30]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:24:31] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:24:33]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+           >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:24:34] ... still waiting                                                                                                                                           gradle.py:449
+[09:24:36]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+           >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:24:38]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:24:39] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:24:41]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+           >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:24:43]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+           >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:24:45]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:24:48] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+           ... still waiting                                                                                                                                           gradle.py:449
+[09:24:50]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:24:52] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:24:54]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:24:55] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:24:57]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+           >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:24:59]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:25:00] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+           ... still waiting                                                                                                                                           gradle.py:449
+[09:25:02]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+[09:25:03] >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:25:05] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:25:07]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+           >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:25:09]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:25:10] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:25:12]                                                                                                                                                         subprocess.py:839
+[09:25:13] >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:25:14] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:25:35] ... still waiting                                                                                                                                           gradle.py:449
+[09:25:37]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+[09:25:38] >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+[09:25:39] >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:25:42] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:25:44]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:25:45] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+           ... still waiting                                                                                                                                           gradle.py:449
+[09:25:47]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:25:48] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:25:50]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+           >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:25:52]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:25:55] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:25:57]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:25:59] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+           ... still waiting                                                                                                                                           gradle.py:449
+[09:26:01]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:26:03] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:26:05]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+           >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:26:07]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:26:09] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:26:10] ... still waiting                                                                                                                                           gradle.py:449
+[09:26:12]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+           >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:26:14]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:26:19] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+[09:26:21]                                                                                                                                                         subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed                            subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+           >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>     1                                                                                                                                               subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+           Booting emulator... done                                                                                                                              android_sdk.py:1377
+[09:26:23]                                                                                                                                                             gradle.py:456
+           [talus_tally] Starting app on @TalusPhone (running emulator) (device ID emulator-5554)                                                                      gradle.py:456
+[09:26:24]                                                                                                                                                             gradle.py:468
+           [talus_tally] Installing app...                                                                                                                             gradle.py:468
+           Stopping old versions of the app... started                                                                                                                 gradle.py:469
+                                                                                                                                                                   subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 shell am force-stop com.talus.tally.talus_tally             subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:26:27] >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+           Stopping old versions of the app... done                                                                                                                    gradle.py:469
+           Installing new app version... started                                                                                                                       gradle.py:473
+                                                                                                                                                                   subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+[09:26:28] >>>     /home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb -s emulator-5554 install -r '/home/dworth/Dropbox/Bronco II/Tallus           subprocess.py:839
+           Tally/build/talus_tally/android/gradle/app/build/outputs/apk/debug/app-debug.apk'                                                                                        
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+[09:27:49] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>     Performing Streamed Install                                                                                                                     subprocess.py:839
+           >>>     adb: failed to install /home/dworth/Dropbox/Bronco II/Tallus Tally/build/talus_tally/android/gradle/app/build/outputs/apk/debug/app-debug.apk:  subprocess.py:839
+           cmd: Failure calling service package: Broken pipe (32)                                                                                                                   
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 1                                                                                                                                      subprocess.py:839
+[09:27:50]                                                                                                                                                         subprocess.py:839
+           Installing new app version... errored                                                                                                                       gradle.py:473
+[09:27:51]                                                                                                                                                            __main__.py:42
+           Unable to install APK /home/dworth/Dropbox/Bronco II/Tallus Tally/build/talus_tally/android/gradle/app/build/outputs/apk/debug/app-debug.apk on            __main__.py:43
+           emulator-5554                                                                                                                                                            
+[09:27:55] Saving log... started                                                                                                                                      console.py:443
+
+Main thread traceback:
+╭─────────────────────────────────────────────────────────────────────── Traceback (most recent call last) ────────────────────────────────────────────────────────────────────────╮
+│ /home/dworth/Dropbox/Bronco II/Tallus Tally/.venv/lib/python3.13/site-packages/briefcase/integrations/android_sdk.py:1504 in install_apk                                         │
+│                                                                                                                                                                                  │
+│   1501 │   │   :returns: `None` on success; raises an exception on failure.                                                                                                      │
+│   1502 │   │   """                                                                                                                                                               │
+│   1503 │   │   try:                                                                                                                                                              │
+│ ❱ 1504 │   │   │   self.run("install", "-r", apk_path)                                                                                                                           │
+│   1505 │   │   except subprocess.CalledProcessError as e:                                                                                                                        │
+│   1506 │   │   │   raise BriefcaseCommandError(                                                                                                                                  │
+│   1507 │   │   │   │   f"Unable to install APK {apk_path} on {self.device}"                                                                                                      │
+│                                                                                                                                                                                  │
+│ ╭──────────────────────────────────────────────────────────────────── locals ────────────────────────────────────────────────────────────────────╮                               │
+│ │ apk_path = PosixPath('/home/dworth/Dropbox/Bronco II/Tallus Tally/build/talus_tally/android/gradle/app/build/outputs/apk/debug/app-debug.apk') │                               │
+│ │     self = <briefcase.integrations.android_sdk.ADB object at 0x759a00884050>                                                                   │                               │
+│ ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯                               │
+│                                                                                                                                                                                  │
+│ /home/dworth/Dropbox/Bronco II/Tallus Tally/.venv/lib/python3.13/site-packages/briefcase/integrations/android_sdk.py:1479 in run                                                 │
+│                                                                                                                                                                                  │
+│   1476 │   │   # checking that they are valid, then parsing output to notice errors.                                                                                             │
+│   1477 │   │   # This keeps performance good in the success case.                                                                                                                │
+│   1478 │   │   try:                                                                                                                                                              │
+│ ❱ 1479 │   │   │   output = self.tools.subprocess.check_output(                                                                                                                  │
+│   1480 │   │   │   │   [self.tools.android_sdk.adb_path, "-s", self.device, *arguments],                                                                                         │
+│   1481 │   │   │   │   quiet=quiet,                                                                                                                                              │
+│   1482 │   │   │   )                                                                                                                                                             │
+│                                                                                                                                                                                  │
+│ ╭────────────────────────────────────────────────────────────────────────────── locals ──────────────────────────────────────────────────────────────────────────────╮           │
+│ │ arguments = ('install', '-r', PosixPath('/home/dworth/Dropbox/Bronco II/Tallus Tally/build/talus_tally/android/gradle/app/build/outputs/apk/debug/app-debug.apk')) │           │
+│ │     quiet = 0                                                                                                                                                      │           │
+│ │      self = <briefcase.integrations.android_sdk.ADB object at 0x759a00884050>                                                                                      │           │
+│ ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯           │
+│                                                                                                                                                                                  │
+│ /home/dworth/Dropbox/Bronco II/Tallus Tally/.venv/lib/python3.13/site-packages/briefcase/integrations/subprocess.py:145 in inner                                                 │
+│                                                                                                                                                                                  │
+│   142 │   │   │   with sub.tools.console.release_console_control():                                                                                                              │
+│   143 │   │   │   │   return sub_method(sub, args, *wrapped_args, **wrapped_kwargs)                                                                                              │
+│   144 │   │   else:                                                                                                                                                              │
+│ ❱ 145 │   │   │   return sub_method(sub, args, *wrapped_args, **wrapped_kwargs)                                                                                                  │
+│   146 │                                                                                                                                                                          │
+│   147 │   return inner                                                                                                                                                           │
+│   148                                                                                                                                                                            │
+│                                                                                                                                                                                  │
+│ ╭───────────────────────────────────────────────────────────────────────────── locals ──────────────────────────────────────────────────────────────────────────────╮            │
+│ │                    args = [                                                                                                                                       │            │
+│ │                           │   PosixPath('/home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb'),                                                    │            │
+│ │                           │   '-s',                                                                                                                               │            │
+│ │                           │   'emulator-5554',                                                                                                                    │            │
+│ │                           │   'install',                                                                                                                          │            │
+│ │                           │   '-r',                                                                                                                               │            │
+│ │                           │   PosixPath('/home/dworth/Dropbox/Bronco II/Tallus Tally/build/talus_tally/android/gradle/app/build/outputs/apk/debug/app-debug.apk') │            │
+│ │                           ]                                                                                                                                       │            │
+│ │ remove_dynamic_elements = False                                                                                                                                   │            │
+│ │                     sub = <briefcase.integrations.subprocess.Subprocess object at 0x759a00880d70>                                                                 │            │
+│ │            wrapped_args = ()                                                                                                                                      │            │
+│ │          wrapped_kwargs = {'quiet': 0}                                                                                                                            │            │
+│ ╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯            │
+│                                                                                                                                                                                  │
+│ /home/dworth/Dropbox/Bronco II/Tallus Tally/.venv/lib/python3.13/site-packages/briefcase/integrations/subprocess.py:653 in check_output                                          │
+│                                                                                                                                                                                  │
+│   650 │   │   │   self._log_environment(kwargs.get("env"))                                                                                                                       │
+│   651 │   │                                                                                                                                                                      │
+│   652 │   │   try:                                                                                                                                                               │
+│ ❱ 653 │   │   │   cmd_output = self._subprocess.check_output(                                                                                                                    │
+│   654 │   │   │   │   [str(arg) for arg in args], **self.final_kwargs(**kwargs)                                                                                                  │
+│   655 │   │   │   )                                                                                                                                                              │
+│   656 │   │   except subprocess.CalledProcessError as e:                                                                                                                         │
+│                                                                                                                                                                                  │
+│ ╭───────────────────────────────────────────────────────────────────── locals ─────────────────────────────────────────────────────────────────────╮                             │
+│ │   args = [                                                                                                                                       │                             │
+│ │          │   PosixPath('/home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb'),                                                    │                             │
+│ │          │   '-s',                                                                                                                               │                             │
+│ │          │   'emulator-5554',                                                                                                                    │                             │
+│ │          │   'install',                                                                                                                          │                             │
+│ │          │   '-r',                                                                                                                               │                             │
+│ │          │   PosixPath('/home/dworth/Dropbox/Bronco II/Tallus Tally/build/talus_tally/android/gradle/app/build/outputs/apk/debug/app-debug.apk') │                             │
+│ │          ]                                                                                                                                       │                             │
+│ │ kwargs = {'stderr': -2}                                                                                                                          │                             │
+│ │  quiet = 0                                                                                                                                       │                             │
+│ │   self = <briefcase.integrations.subprocess.Subprocess object at 0x759a00880d70>                                                                 │                             │
+│ ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯                             │
+│                                                                                                                                                                                  │
+│ /usr/lib/python3.13/subprocess.py:472 in check_output                                                                                                                            │
+│                                                                                                                                                                                  │
+│    469 │   │   │   empty = b''                                                                                                                                                   │
+│    470 │   │   kwargs['input'] = empty                                                                                                                                           │
+│    471 │                                                                                                                                                                         │
+│ ❱  472 │   return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,                                                                                                      │
+│    473 │   │   │      **kwargs).stdout                                                                                                                                           │
+│    474                                                                                                                                                                           │
+│    475                                                                                                                                                                           │
+│                                                                                                                                                                                  │
+│ ╭───────────────────────────────────────────────── locals ──────────────────────────────────────────────────╮                                                                    │
+│ │        kw = 'check'                                                                                       │                                                                    │
+│ │    kwargs = {'stderr': -2, 'text': True, 'encoding': 'UTF-8', 'errors': 'backslashreplace'}               │                                                                    │
+│ │ popenargs = (                                                                                             │                                                                    │
+│ │             │   [                                                                                         │                                                                    │
+│ │             │   │   '/home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb',                 │                                                                    │
+│ │             │   │   '-s',                                                                                 │                                                                    │
+│ │             │   │   'emulator-5554',                                                                      │                                                                    │
+│ │             │   │   'install',                                                                            │                                                                    │
+│ │             │   │   '-r',                                                                                 │                                                                    │
+│ │             │   │   '/home/dworth/Dropbox/Bronco II/Tallus Tally/build/talus_tally/android/gradle/app'+38 │                                                                    │
+│ │             │   ],                                                                                        │                                                                    │
+│ │             )                                                                                             │                                                                    │
+│ │   timeout = None                                                                                          │                                                                    │
+│ ╰───────────────────────────────────────────────────────────────────────────────────────────────────────────╯                                                                    │
+│                                                                                                                                                                                  │
+│ /usr/lib/python3.13/subprocess.py:577 in run                                                                                                                                     │
+│                                                                                                                                                                                  │
+│    574 │   │   │   raise                                                                                                                                                         │
+│    575 │   │   retcode = process.poll()                                                                                                                                          │
+│    576 │   │   if check and retcode:                                                                                                                                             │
+│ ❱  577 │   │   │   raise CalledProcessError(retcode, process.args,                                                                                                               │
+│    578 │   │   │   │   │   │   │   │   │    output=stdout, stderr=stderr)                                                                                                        │
+│    579 │   return CompletedProcess(process.args, retcode, stdout, stderr)                                                                                                        │
+│    580                                                                                                                                                                           │
+│                                                                                                                                                                                  │
+│ ╭──────────────────────────────────────────────────── locals ────────────────────────────────────────────────────╮                                                               │
+│ │ capture_output = False                                                                                         │                                                               │
+│ │          check = True                                                                                          │                                                               │
+│ │          input = None                                                                                          │                                                               │
+│ │         kwargs = {'stdout': -1, 'stderr': -2, 'text': True, 'encoding': 'UTF-8', 'errors': 'backslashreplace'} │                                                               │
+│ │      popenargs = (                                                                                             │                                                               │
+│ │                  │   [                                                                                         │                                                               │
+│ │                  │   │   '/home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb',                 │                                                               │
+│ │                  │   │   '-s',                                                                                 │                                                               │
+│ │                  │   │   'emulator-5554',                                                                      │                                                               │
+│ │                  │   │   'install',                                                                            │                                                               │
+│ │                  │   │   '-r',                                                                                 │                                                               │
+│ │                  │   │   '/home/dworth/Dropbox/Bronco II/Tallus Tally/build/talus_tally/android/gradle/app'+38 │                                                               │
+│ │                  │   ],                                                                                        │                                                               │
+│ │                  )                                                                                             │                                                               │
+│ │        process = <Popen: returncode: 1 args: ['/home/dworth/.cache/briefcase/tools/android_sd...>              │                                                               │
+│ │        retcode = 1                                                                                             │                                                               │
+│ │         stderr = None                                                                                          │                                                               │
+│ │         stdout = 'Performing Streamed Install\nadb: failed to install /home/dworth/Dropbox/Bronco I'+147       │                                                               │
+│ │        timeout = None                                                                                          │                                                               │
+│ ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯                                                               │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+CalledProcessError: Command '['/home/dworth/.cache/briefcase/tools/android_sdk/platform-tools/adb', '-s', 'emulator-5554', 'install', '-r', '/home/dworth/Dropbox/Bronco II/Tallus Tally/build/talus_tally/android/gradle/app/build/outputs/apk/debug/app-debug.apk']' returned non-zero exit status 1.
+
+The above exception was the direct cause of the following exception:
+
+╭─────────────────────────────────────────────────────────────────────── Traceback (most recent call last) ────────────────────────────────────────────────────────────────────────╮
+│ /home/dworth/Dropbox/Bronco II/Tallus Tally/.venv/lib/python3.13/site-packages/briefcase/__main__.py:27 in main                                                                  │
+│                                                                                                                                                                                  │
+│   24 │   │   │   Path.cwd() / "pyproject.toml",                                                                                                                                  │
+│   25 │   │   │   overrides=overrides,                                                                                                                                            │
+│   26 │   │   )                                                                                                                                                                   │
+│ ❱ 27 │   │   command(**options)                                                                                                                                                  │
+│   28 │   except HelpText as e:                                                                                                                                                   │
+│   29 │   │   console.info()                                                                                                                                                      │
+│   30 │   │   console.info(str(e))                                                                                                                                                │
+│                                                                                                                                                                                  │
+│ ╭─────────────────────────────────────────────────────────────────────────────────── locals ───────────────────────────────────────────────────────────────────────────────────╮ │
+│ │       command = <briefcase.platforms.android.gradle.GradleRunCommand object at 0x759a0093fe00>                                                                               │ │
+│ │       console = <briefcase.console.Console object at 0x759a0093e510>                                                                                                         │ │
+│ │             e = BriefcaseCommandError('Unable to install APK /home/dworth/Dropbox/Bronco II/Tallus                                                                           │ │
+│ │                 Tally/build/talus_tally/android/gradle/app/build/outputs/apk/debug/app-debug.apk on emulator-5554')                                                          │ │
+│ │ extra_cmdline = []                                                                                                                                                           │ │
+│ │       options = {                                                                                                                                                            │ │
+│ │                 │   'appname': None,                                                                                                                                         │ │
+│ │                 │   'update': False,                                                                                                                                         │ │
+│ │                 │   'update_requirements': False,                                                                                                                            │ │
+│ │                 │   'update_support': False,                                                                                                                                 │ │
+│ │                 │   'update_stub': False,                                                                                                                                    │ │
+│ │                 │   'update_resources': False,                                                                                                                               │ │
+│ │                 │   'no_update': False,                                                                                                                                      │ │
+│ │                 │   'test_mode': False,                                                                                                                                      │ │
+│ │                 │   'device_or_avd': None,                                                                                                                                   │ │
+│ │                 │   'extra_emulator_args': None,                                                                                                                             │ │
+│ │                 │   ... +4                                                                                                                                                   │ │
+│ │                 }                                                                                                                                                            │ │
+│ │     overrides = {}                                                                                                                                                           │ │
+│ │        result = 200                                                                                                                                                          │ │
+│ ╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯ │
+│                                                                                                                                                                                  │
+│ /home/dworth/Dropbox/Bronco II/Tallus Tally/.venv/lib/python3.13/site-packages/briefcase/commands/run.py:409 in __call__                                                         │
+│                                                                                                                                                                                  │
+│   406 │   │   │   │   "(apps defining 'external_package_path') cannot be run."                                                                                                   │
+│   407 │   │   │   )                                                                                                                                                              │
+│   408 │   │                                                                                                                                                                      │
+│ ❱ 409 │   │   state = self.run_app(                                                                                                                                              │
+│   410 │   │   │   app,                                                                                                                                                           │
+│   411 │   │   │   passthrough=[] if passthrough is None else passthrough,                                                                                                        │
+│   412 │   │   │   **full_options(state, options),                                                                                                                                │
+│                                                                                                                                                                                  │
+│ ╭───────────────────────────────────────────────────────────────────────── locals ──────────────────────────────────────────────────────────────────────────╮                    │
+│ │                 app = <com.talus.tally.talus-tally v0.1.0 AppConfig>                                                                                      │                    │
+│ │             appname = None                                                                                                                                │                    │
+│ │            debugger = None                                                                                                                                │                    │
+│ │       debugger_host = None                                                                                                                                │                    │
+│ │       debugger_port = None                                                                                                                                │                    │
+│ │           exec_file = PosixPath('/home/dworth/Dropbox/Bronco II/Tallus Tally/build/talus_tally/android/gradle/app/build/outputs/apk/debug/app-debug.apk') │                    │
+│ │           no_update = False                                                                                                                               │                    │
+│ │             options = {'device_or_avd': None, 'extra_emulator_args': None, 'shutdown_on_exit': False, 'forward_ports': None, 'reverse_ports': None}       │                    │
+│ │         passthrough = []                                                                                                                                  │                    │
+│ │                self = <briefcase.platforms.android.gradle.GradleRunCommand object at 0x759a0093fe00>                                                      │                    │
+│ │               state = None                                                                                                                                │                    │
+│ │       template_file = PosixPath('/home/dworth/Dropbox/Bronco II/Tallus Tally/build/talus_tally/android/gradle')                                           │                    │
+│ │           test_mode = False                                                                                                                               │                    │
+│ │              update = False                                                                                                                               │                    │
+│ │ update_requirements = False                                                                                                                               │                    │
+│ │    update_resources = False                                                                                                                               │                    │
+│ │         update_stub = False                                                                                                                               │                    │
+│ │      update_support = False                                                                                                                               │                    │
+│ ╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯                    │
+│                                                                                                                                                                                  │
+│ /home/dworth/Dropbox/Bronco II/Tallus Tally/.venv/lib/python3.13/site-packages/briefcase/platforms/android/gradle.py:474 in run_app                                              │
+│                                                                                                                                                                                  │
+│   471 │   │   │                                                                                                                                                                  │
+│   472 │   │   │   # Install the latest APK file onto the device.                                                                                                                 │
+│   473 │   │   │   with self.console.wait_bar("Installing new app version..."):                                                                                                   │
+│ ❱ 474 │   │   │   │   adb.install_apk(self.binary_path(app))                                                                                                                     │
+│   475 │   │   │                                                                                                                                                                  │
+│   476 │   │   │   forward_ports = forward_ports or []                                                                                                                            │
+│   477 │   │   │   reverse_ports = reverse_ports or []                                                                                                                            │
+│                                                                                                                                                                                  │
+│ ╭─────────────────────────────────────────────── locals ───────────────────────────────────────────────╮                                                                         │
+│ │                 adb = <briefcase.integrations.android_sdk.ADB object at 0x759a00884050>              │                                                                         │
+│ │                 app = <com.talus.tally.talus-tally v0.1.0 AppConfig>                                 │                                                                         │
+│ │                 avd = 'TalusPhone'                                                                   │                                                                         │
+│ │              device = 'emulator-5554'                                                                │                                                                         │
+│ │       device_or_avd = None                                                                           │                                                                         │
+│ │               extra = ''                                                                             │                                                                         │
+│ │ extra_emulator_args = None                                                                           │                                                                         │
+│ │       forward_ports = None                                                                           │                                                                         │
+│ │              kwargs = {}                                                                             │                                                                         │
+│ │               label = 'app'                                                                          │                                                                         │
+│ │                name = '@TalusPhone (running emulator)'                                               │                                                                         │
+│ │             package = 'com.talus.tally.talus_tally'                                                  │                                                                         │
+│ │         passthrough = []                                                                             │                                                                         │
+│ │       reverse_ports = None                                                                           │                                                                         │
+│ │                self = <briefcase.platforms.android.gradle.GradleRunCommand object at 0x759a0093fe00> │                                                                         │
+│ │    shutdown_on_exit = False                                                                          │                                                                         │
+│ ╰──────────────────────────────────────────────────────────────────────────────────────────────────────╯                                                                         │
+│                                                                                                                                                                                  │
+│ /home/dworth/Dropbox/Bronco II/Tallus Tally/.venv/lib/python3.13/site-packages/briefcase/integrations/android_sdk.py:1506 in install_apk                                         │
+│                                                                                                                                                                                  │
+│   1503 │   │   try:                                                                                                                                                              │
+│   1504 │   │   │   self.run("install", "-r", apk_path)                                                                                                                           │
+│   1505 │   │   except subprocess.CalledProcessError as e:                                                                                                                        │
+│ ❱ 1506 │   │   │   raise BriefcaseCommandError(                                                                                                                                  │
+│   1507 │   │   │   │   f"Unable to install APK {apk_path} on {self.device}"                                                                                                      │
+│   1508 │   │   │   ) from e                                                                                                                                                      │
+│   1509                                                                                                                                                                           │
+│                                                                                                                                                                                  │
+│ ╭──────────────────────────────────────────────────────────────────── locals ────────────────────────────────────────────────────────────────────╮                               │
+│ │ apk_path = PosixPath('/home/dworth/Dropbox/Bronco II/Tallus Tally/build/talus_tally/android/gradle/app/build/outputs/apk/debug/app-debug.apk') │                               │
+│ │     self = <briefcase.integrations.android_sdk.ADB object at 0x759a00884050>                                                                   │                               │
+│ ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯                               │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+BriefcaseCommandError: Unable to install APK /home/dworth/Dropbox/Bronco II/Tallus Tally/build/talus_tally/android/gradle/app/build/outputs/apk/debug/app-debug.apk on emulator-5554
+[09:28:07] Collecting extra information for log... started                                                                                                            console.py:481
+                                                                                                                                                                      console.py:485
+           Extra information:                                                                                                                                         console.py:486
+                                                                                                                                                                   subprocess.py:839
+           >>> Running Command:                                                                                                                                    subprocess.py:839
+           >>>     /home/dworth/.cache/briefcase/tools/android_sdk/cmdline-tools/19.0/bin/sdkmanager --list_installed                                              subprocess.py:839
+           >>> Working Directory:                                                                                                                                  subprocess.py:839
+           >>>     /home/dworth/Dropbox/Bronco II/Tallus Tally                                                                                                     subprocess.py:839
+           >>> Environment Overrides:                                                                                                                              subprocess.py:839
+           >>>     ANDROID_HOME=/home/dworth/.cache/briefcase/tools/android_sdk                                                                                    subprocess.py:839
+           >>>     ANDROID_SDK_ROOT=/home/dworth/.cache/briefcase/tools/android_sdk                                                                                subprocess.py:839
+           >>>     JAVA_HOME=/home/dworth/.cache/briefcase/tools/java17                                                                                            subprocess.py:839
+[09:28:23] >>> Command Output:                                                                                                                                     subprocess.py:839
+           >>>     Loading package information...                                                                                                                  subprocess.py:839
+           >>>     Loading local repository...                                                                                                                     subprocess.py:839
+           >>>     [=========                              ] 25% Loading local repository...                                                                       subprocess.py:839
+           >>>     [=========                              ] 25% Fetch remote repository...                                                                        subprocess.py:839
+           >>>     [=======================================] 100% Fetch remote repository...                                                                       subprocess.py:839
+           >>>     Installed packages:                                                                                                                             subprocess.py:839
+           >>>       Path                                    | Version | Description                    | Location                                                 subprocess.py:839
+           >>>       -------                                 | ------- | -------                        | -------                                                  subprocess.py:839
+           >>>       build-tools;35.0.0                      | 35.0.0  | Android SDK Build-Tools 35     | build-tools/35.0.0                                       subprocess.py:839
+[09:28:24] >>>       emulator                                | 36.3.10 | Android Emulator               | emulator                                                 subprocess.py:839
+           >>>       platform-tools                          | 36.0.2  | Android SDK Platform-Tools     | platform-tools                                           subprocess.py:839
+           >>>       platforms;android-35                    | 2       | Android SDK Platform 35        | platforms/android-35                                     subprocess.py:839
+           >>>       system-images;android-31;default;x86_64 | 5       | Intel x86_64 Atom System Image | system-images/android-31/default/x86_64                  subprocess.py:839
+           >>>                                                                                                                                                     subprocess.py:839
+           >>> Return code: 0                                                                                                                                      subprocess.py:839
+                                                                                                                                                                   subprocess.py:839
+           Collecting extra information for log... done                                                                                                               console.py:481

@@ -1,0 +1,30 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Run App",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/frontend/desktop/app.py",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Python: Run Dev Script",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/dev.py",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Python: Run Mobile App",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/frontend/mobile/app.py",
+            "console": "integratedTerminal",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
+        }
+    ]
+}

@@ -1,0 +1,40 @@
+{
+    "name": "Test Persistence",
+    "sub_projects": [
+        {
+            "id": "SP-1",
+            "name": "Sub",
+            "priority": 5,
+            "work_packages": [
+                {
+                    "id": "WP-1",
+                    "name": "WP",
+                    "importance": 5,
+                    "tasks": [
+                        {
+                            "id": "T-LOW",
+                            "text": "Low",
+                            "status": "pending",
+                            "estimated_cost": 1000.0,
+                            "actual_cost": 0.0,
+                            "budget_priority": 1,
+                            "importance": 1,
+                            "blocking": []
+                        },
+                        {
+                            "id": "T-HIGH",
+                            "text": "High",
+                            "status": "pending",
+                            "estimated_cost": 5.0,
+                            "actual_cost": 0.0,
+                            "budget_priority": 10,
+                            "importance": 10,
+                            "blocking": []
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "last_updated": ""
+}

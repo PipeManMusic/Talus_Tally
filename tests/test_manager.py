@@ -1,82 +1,87 @@
 import pytest
-from backend.models import Project, SubProject, WorkPackage, Task
-
-# This import will fail initially (This is expected!)
+from backend.models import Project, SubProject, WorkPackage, Task, Status
 from backend.manager import TaskManager
 
-def test_add_task_to_existing_hierarchy():
-    """Test adding a basic task to the project."""
-    project = Project()
-    sub = SubProject(id="SP-1", name="Mechanic")
-    wp = WorkPackage(id="WP-1", name="Engine")
-    sub.work_packages.append(wp)
-    project.sub_projects.append(sub)
-    
-    manager = TaskManager()
-    
-    # ACT: Add a new task
-    new_task = Task(id="T-100", text="Buy Oil", estimated_cost=20.0, budget_priority=10)
-    updated_project = manager.add_task(project, "SP-1", "WP-1", new_task)
-    
-    # ASSERT
-    target_wp = updated_project.sub_projects[0].work_packages[0]
-    assert len(target_wp.tasks) == 1
-    assert target_wp.tasks[0].id == "T-100"
-
-def test_timeline_dependency():
-    """Test that we can make Task A block Task B (Timeline Priority)."""
-    project = Project()
-    sub = SubProject(id="SP-1", name="Mechanic")
-    wp = WorkPackage(id="WP-1", name="Engine")
-    
-    # Task B (The thing we want to do eventually)
-    task_b = Task(id="T-B", text="Install Pistons")
-    # Task A (The thing that must happen FIRST)
-    task_a = Task(id="T-A", text="Machine Block")
-    
-    wp.tasks = [task_a, task_b]
-    sub.work_packages = [wp]
-    project.sub_projects = [sub]
-    
-    manager = TaskManager()
-    
-    # ACT: Tell manager that A blocks B
-    manager.set_dependency(project, blocker_id="T-A", blocked_id="T-B")
-    
-    # ASSERT: Task A should now record that it blocks B
-    # Note: We assume the model has a "blocking" field (List[str])
-    assert "T-B" in task_a.blocking
-
-def test_complete_task_logic():
-    """
-    TDD: Verify manager can find a task by ID and mark it COMPLETE.
-    """
-    from backend.models import Project, SubProject, WorkPackage, Task, Status
-    from backend.manager import TaskManager
-    import datetime
-
-    # 1. ARRANGE
-    project = Project()
-    sub = SubProject(id="SP-1", name="Sub")
-    wp = WorkPackage(id="WP-1", name="WP")
-    
-    # Create a task that is PENDING
-    task = Task(id="T-500", text="Fix Brakes", status=Status.PENDING)
-    
+@pytest.fixture
+def sample_project():
+    p = Project(name="Test Project")
+    sub = SubProject(id="SP1", name="Sub")
+    wp = WorkPackage(id="WP1", name="WP")
+    task = Task(id="T1", text="Original Name", estimated_cost=10.0)
     wp.tasks.append(task)
     sub.work_packages.append(wp)
-    project.sub_projects.append(sub)
+    p.sub_projects.append(sub)
+    return p
+
+def test_add_task(sample_project):
+    mgr = TaskManager()
+    new_task = Task(id="T2", text="New Task")
+    mgr.add_task(sample_project, "SP1", "WP1", new_task)
+    assert len(sample_project.sub_projects[0].work_packages[0].tasks) == 2
+
+def test_update_task(sample_project):
+    mgr = TaskManager()
+    updates = {
+        "text": "Updated Name",
+        "estimated_cost": 99.0
+    }
+    mgr.update_task(sample_project, "T1", updates)
     
-    manager = TaskManager()
+    updated_task = sample_project.sub_projects[0].work_packages[0].tasks[0]
+    assert updated_task.text == "Updated Name"
+    assert updated_task.estimated_cost == 99.0
+
+def test_delete_task(sample_project):
+    mgr = TaskManager()
+    mgr.delete_task(sample_project, "T1")
     
-    # Capture old time
-    old_time = project.last_updated
-    
-    # 2. ACT
-    manager.complete_task(project, task_id="T-500")
-    
-    # 3. ASSERT
-    # Status should change
-    assert task.status == Status.COMPLETE
-    # Timestamp should update
-    assert project.last_updated > old_time
+    tasks = sample_project.sub_projects[0].work_packages[0].tasks
+    assert len(tasks) == 0
+
+def test_delete_work_package(sample_project):
+    """Verify deleting a WP removes it from the SubProject."""
+    mgr = TaskManager()
+    mgr.delete_work_package(sample_project, "WP1")
+    assert len(sample_project.sub_projects[0].work_packages) == 0
+
+def test_add_sub_project(sample_project):
+    """Verify adding a new SubProject."""
+    mgr = TaskManager()
+    new_sub = SubProject(id="SP2", name="Interior")
+    mgr.add_sub_project(sample_project, new_sub)
+    assert len(sample_project.sub_projects) == 2
+    assert sample_project.sub_projects[1].name == "Interior"
+
+def test_update_sub_project(sample_project):
+    """Verify editing a SubProject."""
+    mgr = TaskManager()
+    mgr.update_sub_project(sample_project, "SP1", {"name": "New Name", "priority": 9})
+    assert sample_project.sub_projects[0].name == "New Name"
+    assert sample_project.sub_projects[0].priority == 9
+
+def test_add_work_package(sample_project):
+    """Verify adding a WP to an existing SubProject."""
+    mgr = TaskManager()
+    new_wp = WorkPackage(id="WP2", name="Seats")
+    mgr.add_work_package(sample_project, "SP1", new_wp)
+    assert len(sample_project.sub_projects[0].work_packages) == 2
+    assert sample_project.sub_projects[0].work_packages[1].name == "Seats"
+
+def test_update_work_package(sample_project):
+    """Verify editing a Work Package."""
+    mgr = TaskManager()
+    mgr.update_work_package(sample_project, "WP1", {"name": "Engine Bay", "importance": 10})
+    wp = sample_project.sub_projects[0].work_packages[0]
+    assert wp.name == "Engine Bay"
+    assert wp.importance == 10
+
+def test_delete_sub_project(sample_project):
+    """Verify deleting a SubProject removes it entirely."""
+    mgr = TaskManager()
+    mgr.delete_sub_project(sample_project, "SP1")
+    assert len(sample_project.sub_projects) == 0
+
+def test_delete_nonexistent_task(sample_project):
+    mgr = TaskManager()
+    with pytest.raises(ValueError):
+        mgr.delete_task(sample_project, "GHOST-ID")

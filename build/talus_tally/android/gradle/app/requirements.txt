@@ -1,0 +1,6 @@
+# Generated 2026-01-02 14:48:56.044090
+toga
+pydantic
+toga-android
+pydantic
+dropbox
