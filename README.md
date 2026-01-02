@@ -6,31 +6,28 @@ Restoring a classic Ford Bronco II using Financial Velocity to prioritize tasks.
 ## Roadmap
 <!-- TALLY_START -->
 # Project Roadmap: Talus Build Master
-Last Updated: 2026-01-02T22:05:11.815451+00:00
+Last Updated: 2026-01-02T22:24:27.741110+00:00
 
-### Mechanical
-#### Engine
-- [ ] Buy Engine (📋 BACKLOG) [Est: $1,000.00 | Act: $0.00]
-- [ ] Install engine (📋 BACKLOG)
-- [ ] Rebuild (📋 BACKLOG) [Est: $1,000.00 | Act: $0.00]
-- [ ] Radiator (⏳ PENDING) [Est: $200.00 | Act: $0.00]
+### Acquisition & 2-Week Compliance
+#### Acquisition
+- [ ] Clean Workspace (Wife Contract Compliance) (⏳ PENDING)
+- [ ] Purchase Bronco II (Base Vehicle) (📋 BACKLOG) [Est: $3,500.00 | Act: $0.00]
 
-### Digital Dash
-#### Software
-- [ ] Finish and test software (⏳ PENDING)
+### Digital Dash & Electronics
+#### Dash Hardware
+- [x] Wisecoco 12.3in HSD123KPW1-A30 Display (✅ COMPLETE) [Est: $300.00 | Act: $0.00]
 
-#### Hardware
-- [x] Display (✅ COMPLETE) [Est: $300.00 | Act: $0.00]
+### Powertrain (SVT Capability)
+#### 5.0L Windsor Conversion
+- [ ] 5.0L Ford Windsor (Explorer Donor) (📋 BACKLOG) [Est: $1,200.00 | Act: $0.00]
+- [ ] BMW MK60E5 ABS Module (Sensors) (⏳ PENDING) [Est: $250.00 | Act: $0.00]
+- [ ] Mazda M5OD-R2 5-Speed Transmission (📋 BACKLOG) [Est: $600.00 | Act: $0.00]
+- [ ] Advance Adapters Atlas II Transfer Case (📋 BACKLOG) [Est: $3,000.00 | Act: $0.00]
 
-#### Install
-- [ ] Put Display Into Dash (📋 BACKLOG)
-
-### INFOTAINMENT SYTEM
-#### General
-
-### Welded
-#### Front Bumper
-- [ ] Buy Bumper Kit (📋 BACKLOG) [Est: $1,000.00 | Act: $0.00]
+### Suspension & Steering
+#### Ranger/Navigator Steering Conversion
+- [ ] 1998-2003 Ford Ranger Steering Column (📋 BACKLOG) [Est: $150.00 | Act: $0.00]
+- [ ] Lincoln Navigator Wood/Leather Wheel (📋 BACKLOG) [Est: $100.00 | Act: $0.00]
 
 <!-- TALLY_END -->
 
