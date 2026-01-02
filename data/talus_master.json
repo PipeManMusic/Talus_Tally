@@ -1,33 +1,24 @@
 {
     "name": "Test Project",
-    "last_updated": "2026-01-01T11:56:54.064447",
+    "last_updated": "2026-01-01T17:40:39.071865",
     "sub_projects": [
         {
-            "id": "SP-1",
-            "name": "Sub1",
+            "id": "SP-7f2c4ea3",
+            "name": "Display",
             "priority": 5,
             "work_packages": [
                 {
-                    "id": "WP-1",
-                    "name": "Work1",
+                    "id": "WP-9ebccb69",
+                    "name": "Update UI",
                     "importance": 5,
                     "tasks": [
                         {
-                            "id": "T-HIGH",
-                            "text": "Fix Brakes",
-                            "status": "pending",
-                            "estimated_cost": 5.0,
-                            "budget_priority": 10,
-                            "importance": 10,
-                            "blocking": []
-                        },
-                        {
-                            "id": "T-LOW",
-                            "text": "Gold Plated Ash Tray",
-                            "status": "pending",
-                            "estimated_cost": 1000.0,
-                            "budget_priority": 1,
-                            "importance": 1,
+                            "id": "T-d8d3aa9a",
+                            "text": "Test",
+                            "status": "complete",
+                            "estimated_cost": 0.0,
+                            "budget_priority": 5,
+                            "importance": 6,
                             "blocking": []
                         }
                     ]

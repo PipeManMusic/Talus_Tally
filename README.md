@@ -5,13 +5,12 @@ Restoring a classic Ford Bronco II using Financial Velocity to prioritize tasks.
 
 ## Roadmap
 <!-- TALLY_START -->
-# Project Talus - Bronco II Roadmap
-> Last Updated: 2026-01-01 10:57
+# Test Project Roadmap
+> Last Updated: 2026-01-01 17:40
 
-### Electronics
-#### Navigation
-- [x] Buy GPS _[$200]_
-- [ ] Install MapLibre
+### Display
+#### Update UI
+- [x] Test
 
 ---
 <!-- TALLY_END -->
