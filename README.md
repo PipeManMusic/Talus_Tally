@@ -6,28 +6,107 @@ Restoring a classic Ford Bronco II using Financial Velocity to prioritize tasks.
 ## Roadmap
 <!-- TALLY_START -->
 # Project Roadmap: Talus Build Master
-Last Updated: 2026-01-02T22:24:27.741110+00:00
+Last Updated: 2026-01-03T15:59:05.154477+00:00
 
-### Acquisition & 2-Week Compliance
-#### Acquisition
-- [ ] Clean Workspace (Wife Contract Compliance) (⏳ PENDING)
+### Vehicle
+#### Vehicle
 - [ ] Purchase Bronco II (Base Vehicle) (📋 BACKLOG) [Est: $3,500.00 | Act: $0.00]
 
-### Digital Dash & Electronics
+### Digital Dash
 #### Dash Hardware
+- [x] Pi Can Hat (✅ COMPLETE) [Est: $20.00 | Act: $0.00]
 - [x] Wisecoco 12.3in HSD123KPW1-A30 Display (✅ COMPLETE) [Est: $300.00 | Act: $0.00]
+- [x] RaspBerry Pi 4 (✅ COMPLETE)
 
-### Powertrain (SVT Capability)
+#### Software
+- [ ] Front End (📋 BACKLOG)
+
+### Powertrain
 #### 5.0L Windsor Conversion
 - [ ] 5.0L Ford Windsor (Explorer Donor) (📋 BACKLOG) [Est: $1,200.00 | Act: $0.00]
-- [ ] BMW MK60E5 ABS Module (Sensors) (⏳ PENDING) [Est: $250.00 | Act: $0.00]
+- [ ] MS3Pro Ultimate (📋 BACKLOG) [Est: $2,000.00 | Act: $0.00]
+
+#### Brakes
+- [ ] BMW MK60E5 ABS Module (Sensors) (📋 BACKLOG) [Est: $250.00 | Act: $0.00]
+
+#### Transmission
 - [ ] Mazda M5OD-R2 5-Speed Transmission (📋 BACKLOG) [Est: $600.00 | Act: $0.00]
+
+#### Transfer Case
 - [ ] Advance Adapters Atlas II Transfer Case (📋 BACKLOG) [Est: $3,000.00 | Act: $0.00]
 
 ### Suspension & Steering
 #### Ranger/Navigator Steering Conversion
 - [ ] 1998-2003 Ford Ranger Steering Column (📋 BACKLOG) [Est: $150.00 | Act: $0.00]
 - [ ] Lincoln Navigator Wood/Leather Wheel (📋 BACKLOG) [Est: $100.00 | Act: $0.00]
+
+#### Axel Swap
+- [ ] Dana 35 TTB (Ford Explorer) (📋 BACKLOG) [Est: $500.00 | Act: $0.00]
+- [ ] 8.8" Rear Axel w/Disc Brakes (Ford Explorer) (📋 BACKLOG) [Est: $500.00 | Act: $0.00]
+
+#### Lift Kit
+- [ ] James Duff Front Springs (📋 BACKLOG) [Est: $250.00 | Act: $0.00]
+
+### Infotainment
+#### Hardware
+- [x] Waveshare HDMI to USB Adapter (✅ COMPLETE) [Est: $20.00 | Act: $0.00]
+- [x] Carlinkit CPC-200-CCPA (Andoid Auto/ Apple Carplay (✅ COMPLETE) [Est: $30.00 | Act: $0.00]
+- [x] RTL SDR Blog V4 (Software Defined Radio) (✅ COMPLETE) [Est: $30.00 | Act: $0.00]
+- [ ] RaspBerry Pi 5 16g (📋 BACKLOG) [Est: $140.00 | Act: $0.00]
+- [ ] Display (📋 BACKLOG) [Est: $300.00 | Act: $0.00]
+- [ ] Car Pi Hat (📋 BACKLOG) [Est: $130.00 | Act: $0.00]
+- [ ] 360 Backup Camera System (📋 BACKLOG) [Est: $300.00 | Act: $0.00]
+
+#### Software
+- [ ] Back End (🛠️ IN_PROGRESS)
+- [ ] Front End (🛠️ IN_PROGRESS)
+
+### Promises
+#### Promises
+- [ ] Clean Garage (⏳ PENDING)
+
+### Welded
+#### Bumpers
+- [ ] Front Bumper (Move weld together kit) (📋 BACKLOG) [Est: $900.00 | Act: $0.00]
+- [ ] Back Bumper (Move weld together kit) (📋 BACKLOG) [Est: $400.00 | Act: $0.00]
+
+#### Roll Cage
+- [ ] Materials (📋 BACKLOG) [Est: $1,500.00 | Act: $0.00]
+
+#### Roof Rack
+- [ ] Materials (📋 BACKLOG) [Est: $1,000.00 | Act: $0.00]
+
+### Interior
+#### Comfort
+- [ ] Corbeau Trailcat Seats (📋 BACKLOG) [Est: $1,500.00 | Act: $0.00]
+
+#### HVAC
+- [ ] Vintage Air (📋 BACKLOG)
+- [ ] Remove Stock Heater Box and Controls (📋 BACKLOG)
+
+### MISC
+#### TAX
+- [ ] Sales Tax (📋 BACKLOG)
+
+### Electrical
+#### Custom Can Bus System
+
+### Cosmetic
+#### Paint Prep
+- [ ] Primer (📋 BACKLOG) [Est: $500.00 | Act: $0.00]
+
+#### Paint
+- [ ] Steel It Polyurethane 4 gallons (📋 BACKLOG) [Est: $2,000.00 | Act: $0.00]
+- [ ] Ford Molten Orange (📋 BACKLOG) [Est: $500.00 | Act: $0.00]
+- [ ] Black Lower Paint (📋 BACKLOG) [Est: $200.00 | Act: $0.00]
+- [ ] 2K Clear (📋 BACKLOG) [Est: $400.00 | Act: $0.00]
+
+#### Panels
+- [ ] US Body Mach I Style Fiberglass Hood (📋 BACKLOG) [Est: $700.00 | Act: $0.00]
+
+### Can Bus
+#### Control Modules
+- [ ] PCB Boards (📋 BACKLOG) [Est: $300.00 | Act: $0.00]
 
 <!-- TALLY_END -->
 
