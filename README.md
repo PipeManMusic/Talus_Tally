@@ -6,11 +6,11 @@ Restoring a classic Ford Bronco II using Financial Velocity to prioritize tasks.
 ## Roadmap
 <!-- TALLY_START -->
 # Project Roadmap: Talus Build Master
-Last Updated: 2026-01-03T15:59:05.154477+00:00
+Last Updated: 2026-01-13T20:16:12.637333+00:00
 
 ### Vehicle
 #### Vehicle
-- [ ] Purchase Bronco II (Base Vehicle) (📋 BACKLOG) [Est: $3,500.00 | Act: $0.00]
+- [x] Purchase Bronco II (Base Vehicle) (✅ COMPLETE) [Est: $3,500.00 | Act: $3,500.00]
 
 ### Digital Dash
 #### Dash Hardware
