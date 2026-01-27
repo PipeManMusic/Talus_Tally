@@ -1,0 +1,21 @@
+meta:
+  version: "1.0"
+  description: "Defines the allowed structure for User Blueprints."
+
+property_types:
+  - id: "text"
+    python_type: "str"
+  - id: "number"
+    python_type: "float"
+  - id: "currency"
+    python_type: "Decimal"
+  - id: "boolean"
+    python_type: "bool"
+  - id: "select"
+    python_type: "str"
+    requires_options: true
+
+capabilities:
+  - id: "inventory"
+  - id: "media"
+  - id: "time_tracking"

@@ -1,0 +1,35 @@
+id: restomod_v1
+name: Restomod Creator
+version: "1.0"
+
+node_types:
+  - id: project_root
+    name: "Project"
+    allowed_children:
+      - phase
+  
+  - id: phase
+    name: "Phase"
+    allowed_children:
+      - job
+  
+  - id: job
+    name: "Job"
+    allowed_children:
+      - task
+  
+  - id: task
+    name: "Task"
+    has_time_log: true
+    allowed_children: []
+
+properties:
+  - name: cost
+    type: currency
+  - name: impact
+    type: number
+  - name: effort
+    type: number
+  - name: status
+    type: select
+    options: [not_started, in_progress, completed, blocked]
