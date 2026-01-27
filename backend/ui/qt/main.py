@@ -9,14 +9,17 @@ from typing import Optional
 
 try:
     from PySide6.QtWidgets import (
-        QApplication, QMainWindow, QSplitter, QWidget, QVBoxLayout
+        QApplication, QMainWindow, QSplitter, QWidget, QVBoxLayout,
+        QDockWidget, QTreeView
     )
     from PySide6.QtCore import Qt
+    from backend.ui.qt.tree_model import GraphModel
     PYSIDE6_AVAILABLE = True
 except ImportError:
     PYSIDE6_AVAILABLE = False
     QApplication = None
     QMainWindow = None
+    GraphModel = None
 
 logger = logging.getLogger(__name__)
 
@@ -47,46 +50,45 @@ class TalusQtMainWindow(QMainWindow if PYSIDE6_AVAILABLE else object):
         self.dispatcher = CommandDispatcher(self.graph)
         self.service = GraphService(self.graph)
         
+        # Initialize the tree model
+        self.model = GraphModel(self.graph)
+        
         # Configure window
         self.setWindowTitle(app_title)
         self.resize(*window_size)
         
-        # Create central widget and layout
+        # Create central widget
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         
-        layout = QVBoxLayout(central_widget)
-        
-        # Create split container for three panels
-        splitter = QSplitter(Qt.Horizontal)
-        
-        # Left panel: Tree view (placeholder)
-        left_widget = QWidget()
-        left_widget.setMinimumWidth(200)
-        
-        # Middle panel: Workspace/editor (placeholder)
-        middle_widget = QWidget()
-        middle_widget.setMinimumWidth(400)
-        
-        # Right panel: Inspector (placeholder)
-        right_widget = QWidget()
-        right_widget.setMinimumWidth(250)
-        
-        # Add panels to splitter
-        splitter.addWidget(left_widget)
-        splitter.addWidget(middle_widget)
-        splitter.addWidget(right_widget)
-        
-        # Set equal initial sizing
-        splitter.setSizes([200, 800, 200])
-        splitter.setCollapsible(0, False)
-        splitter.setCollapsible(1, False)
-        splitter.setCollapsible(2, False)
-        
-        # Add splitter to layout
-        layout.addWidget(splitter)
+        # Setup UI
+        self._setup_dock_widgets()
         
         logger.info("Qt main window initialized successfully")
+    
+    def _setup_dock_widgets(self):
+        """Create and configure dock widgets for the UI."""
+        # Left dock: Project Browser with tree view
+        left_dock = QDockWidget("Project Browser", self)
+        left_dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
+        
+        # Create tree view
+        self.tree_view = QTreeView()
+        self.tree_view.setModel(self.model)
+        self.tree_view.setHeaderHidden(True)
+        self.tree_view.expandAll()
+        
+        left_dock.setWidget(self.tree_view)
+        self.addDockWidget(Qt.LeftDockWidgetArea, left_dock)
+        
+        # Right dock: Properties inspector
+        right_dock = QDockWidget("Properties", self)
+        right_dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
+        
+        # Placeholder widget for properties
+        properties_widget = QWidget()
+        right_dock.setWidget(properties_widget)
+        self.addDockWidget(Qt.RightDockWidgetArea, right_dock)
 
 
 def create_qt_app(app_title: str = "Talus Tally") -> Optional[QApplication]:
