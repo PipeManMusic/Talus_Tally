@@ -16,12 +16,13 @@ class NodeTypeDef:
 class Blueprint:
     """Represents a loaded blueprint definition."""
     
-    def __init__(self, id: str, name: str, version: str, node_types: List[NodeTypeDef]):
+    def __init__(self, id: str, name: str, version: str, node_types: List[NodeTypeDef], **kwargs):
         self.id = id
         self.name = name
         self.version = version
         self.node_types = node_types
         self._node_type_map = {nt.id: nt for nt in node_types}
+        self._extra_props = kwargs
     
     def is_allowed_child(self, parent_type: str, child_type: str) -> bool:
         """
@@ -68,4 +69,7 @@ class SchemaLoader:
             node_type = NodeTypeDef(**nt_data)
             node_types.append(node_type)
         
-        return Blueprint(id=blueprint_id, name=name, version=version, node_types=node_types)
+        # Pass remaining properties as kwargs
+        extra_props = {k: v for k, v in data.items() if k not in ['id', 'name', 'version', 'node_types']}
+        
+        return Blueprint(id=blueprint_id, name=name, version=version, node_types=node_types, **extra_props)
