@@ -24,11 +24,8 @@ node_types:
     allowed_children: []
 
 properties:
-  - name: cost_estimate
+  - name: cost
     type: currency
-  - name: difficulty
-    type: select
-    options: [easy, medium, hard]
   - name: impact
     type: number
   - name: effort

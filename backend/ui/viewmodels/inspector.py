@@ -113,6 +113,16 @@ class InspectorViewModel:
                 return False
         
         return True
+    
+    def update_node_property(self, node: Node, field_id: str, new_value: Any) -> None:
+        """Update a property on a node.
+        
+        Args:
+            node: The node to update
+            field_id: The ID of the property/field
+            new_value: The new value to set
+        """
+        node.properties[field_id] = new_value
 
 
 def main():

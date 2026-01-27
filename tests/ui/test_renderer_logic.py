@@ -2,7 +2,7 @@ import pytest
 from backend.core.node import Node
 from backend.infra.velocity import VelocityEngine
 # Note: You will need to implement 'TreeViewModel'
-from backend.ui.renderer import TreeViewModel
+from backend.ui.viewmodels.renderer import TreeViewModel
 
 def test_node_icon_resolution():
     """Phase 6.2: Verify nodes get the correct icon based on type."""

@@ -2,7 +2,7 @@ import pytest
 from backend.core.node import Node
 from backend.infra.schema_loader import SchemaLoader
 # These imports will fail until implementation (Red Phase)
-from backend.ui.inspector import InspectorViewModel, FieldDefinition
+from backend.ui.viewmodels.inspector import InspectorViewModel, FieldDefinition
 
 def test_inspector_resolves_fields_from_blueprint(sample_blueprint_path):
     """Phase 6.3: Verify the inspector finds the correct fields for a Node Type."""

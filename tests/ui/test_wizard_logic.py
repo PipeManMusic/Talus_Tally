@@ -1,6 +1,6 @@
 import pytest
 from backend.infra.schema_loader import Blueprint, NodeTypeDef
-from backend.ui.wizard import WizardLogic
+from backend.ui.viewmodels.wizard import WizardLogic
 
 def test_wizard_question_filtering():
     """Phase 6.1: Verify wizard generates correct config based on answers."""
