@@ -1,0 +1,28 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.talus.tally.talus_tally.app-mergeDebugResources-7:/values-v35/values-v35.xml",
+            "map": [
+                {
+                    "source": "/home/dworth/Dropbox/Bronco II/Tallus Tally/build/talus_tally/android/gradle/app/src/main/res/values-v35/styles.xml",
+                    "from": {
+                        "startLines": "7,3",
+                        "startColumns": "4,4",
+                        "startOffsets": "263,119",
+                        "endLines": "7,5",
+                        "endColumns": "50,12",
+                        "endOffsets": "309,257"
+                    },
+                    "to": {
+                        "startLines": "2,3",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,106",
+                        "endLines": "2,5",
+                        "endColumns": "50,12",
+                        "endOffsets": "101,244"
+                    }
+                }
+            ]
+        }
+    ]
+}

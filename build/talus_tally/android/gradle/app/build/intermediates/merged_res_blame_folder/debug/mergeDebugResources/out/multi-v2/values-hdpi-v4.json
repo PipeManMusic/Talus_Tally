@@ -1,0 +1,20 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.talus.tally.talus_tally.app-mergeDebugResources-7:/values-hdpi-v4/values-hdpi-v4.xml",
+            "map": [
+                {
+                    "source": "/home/dworth/.gradle/caches/8.13/transforms/d03b1cda4b03fc427fce7501a6958aad/transformed/appcompat-1.0.2/res/values-hdpi-v4/values-hdpi-v4.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endLines": "6",
+                        "endColumns": "13",
+                        "endOffsets": "327"
+                    }
+                }
+            ]
+        }
+    ]
+}

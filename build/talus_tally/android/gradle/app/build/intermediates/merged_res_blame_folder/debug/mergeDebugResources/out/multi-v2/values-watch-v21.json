@@ -1,0 +1,20 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.talus.tally.talus_tally.app-mergeDebugResources-7:/values-watch-v21/values-watch-v21.xml",
+            "map": [
+                {
+                    "source": "/home/dworth/.gradle/caches/8.13/transforms/d03b1cda4b03fc427fce7501a6958aad/transformed/appcompat-1.0.2/res/values-watch-v21/values-watch-v21.xml",
+                    "from": {
+                        "startLines": "2,6,10",
+                        "startColumns": "4,4,4",
+                        "startOffsets": "55,271,499",
+                        "endLines": "5,9,13",
+                        "endColumns": "12,12,12",
+                        "endOffsets": "266,494,724"
+                    }
+                }
+            ]
+        }
+    ]
+}
