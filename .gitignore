@@ -1,0 +1,31 @@
+# Secrets & Credentials
+secrets.py
+.env
+*.env
+client_secrets.json
+token.json
+credentials.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv
+env/
+venv/
+
+# Build & Dist (The heavy stuff)
+build/
+dist/
+*.egg-info/
+.beeware/
+
+# Editor
+.vscode/
+.idea/
+
+# Project Specific
+backups/
+logs/
+*.bak
+*.log

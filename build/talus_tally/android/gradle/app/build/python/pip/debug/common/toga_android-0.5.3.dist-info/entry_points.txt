@@ -1,2 +1,0 @@
-[toga.backends]
-android = toga_android
