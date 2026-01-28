@@ -10,11 +10,12 @@ from typing import Optional
 try:
     from PySide6.QtWidgets import (
         QApplication, QMainWindow, QSplitter, QWidget, QVBoxLayout,
-        QDockWidget, QTreeView
+        QDockWidget, QTreeView, QFileDialog
     )
     from PySide6.QtCore import Qt
     from backend.ui.qt.tree_model import GraphModel
     from backend.ui.qt.wizard import ProjectWizardDialog
+    from backend.infra.persistence import PersistenceManager
     PYSIDE6_AVAILABLE = True
 except ImportError:
     PYSIDE6_AVAILABLE = False
@@ -22,6 +23,8 @@ except ImportError:
     QMainWindow = None
     GraphModel = None
     ProjectWizardDialog = None
+    QFileDialog = None
+    PersistenceManager = None
 
 logger = logging.getLogger(__name__)
 
@@ -117,6 +120,58 @@ class TalusQtMainWindow(QMainWindow if PYSIDE6_AVAILABLE else object):
                 self.tree_view.expandAll()
                 
                 logger.info(f"Created new project with {len(self.graph.nodes)} nodes")
+    
+    def save_project(self):
+        """Save the current project to a file."""
+        if QFileDialog is None or PersistenceManager is None:
+            logger.error("QFileDialog or PersistenceManager not available")
+            return
+        
+        # Show save file dialog
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save Project",
+            "",
+            "JSON Files (*.json)"
+        )
+        
+        if file_path:
+            # Save using PersistenceManager
+            manager = PersistenceManager(file_path)
+            manager.save(self.graph)
+            logger.info(f"Saved project to {file_path}")
+    
+    def open_project(self):
+        """Open a project from a file."""
+        if QFileDialog is None or PersistenceManager is None:
+            logger.error("QFileDialog or PersistenceManager not available")
+            return
+        
+        # Show open file dialog
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Open Project",
+            "",
+            "JSON Files (*.json)"
+        )
+        
+        if file_path:
+            # Load using PersistenceManager
+            manager = PersistenceManager(file_path)
+            loaded_graph = manager.load()
+            
+            if loaded_graph:
+                # Replace the current graph
+                self.graph = loaded_graph
+                self.dispatcher.graph = loaded_graph
+                self.service.graph = loaded_graph
+                
+                # Update the model
+                self.model = GraphModel(self.graph)
+                self.tree_view.setModel(self.model)
+                self.tree_view.expandAll()
+                
+                logger.info(f"Loaded project from {file_path} with {len(self.graph.nodes)} nodes")
 
 
 def create_qt_app(app_title: str = "Talus Tally") -> Optional[QApplication]:
