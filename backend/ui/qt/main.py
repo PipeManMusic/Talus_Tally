@@ -14,12 +14,14 @@ try:
     )
     from PySide6.QtCore import Qt
     from backend.ui.qt.tree_model import GraphModel
+    from backend.ui.qt.wizard import ProjectWizardDialog
     PYSIDE6_AVAILABLE = True
 except ImportError:
     PYSIDE6_AVAILABLE = False
     QApplication = None
     QMainWindow = None
     GraphModel = None
+    ProjectWizardDialog = None
 
 logger = logging.getLogger(__name__)
 
@@ -89,6 +91,32 @@ class TalusQtMainWindow(QMainWindow if PYSIDE6_AVAILABLE else object):
         properties_widget = QWidget()
         right_dock.setWidget(properties_widget)
         self.addDockWidget(Qt.RightDockWidgetArea, right_dock)
+    
+    def new_project(self):
+        """Launch the new project wizard and create a new project."""
+        if ProjectWizardDialog is None:
+            logger.error("ProjectWizardDialog not available")
+            return
+        
+        # Show wizard dialog
+        wizard = ProjectWizardDialog(self)
+        result = wizard.exec()
+        
+        # If user accepted, get the new graph
+        if result == 1:  # QDialog.Accepted
+            new_graph = wizard.get_result_graph()
+            if new_graph:
+                # Replace the current graph
+                self.graph = new_graph
+                self.dispatcher.graph = new_graph
+                self.service.graph = new_graph
+                
+                # Update the model
+                self.model = GraphModel(self.graph)
+                self.tree_view.setModel(self.model)
+                self.tree_view.expandAll()
+                
+                logger.info(f"Created new project with {len(self.graph.nodes)} nodes")
 
 
 def create_qt_app(app_title: str = "Talus Tally") -> Optional[QApplication]:
