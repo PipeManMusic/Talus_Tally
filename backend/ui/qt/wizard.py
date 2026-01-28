@@ -1,22 +1,17 @@
-"""Qt Wizard Dialog for creating new projects.
-
-This module provides a dialog for the initial project setup wizard,
-allowing users to create new projects with a name and initial configuration.
-"""
-from typing import Optional
+from typing import Optional, Tuple
 from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QLineEdit, QLabel, 
-    QDialogButtonBox, QFormLayout
+    QDialogButtonBox, QFormLayout, QComboBox
 )
 from PySide6.QtCore import Qt
+import os
 
-from backend.core.graph import ProjectGraph
-from backend.core.node import Node
 from backend.ui.viewmodels.wizard import WizardLogic
+from backend.infra.schema_loader import SchemaLoader
 
 
 class ProjectWizardDialog(QDialog):
-    """Dialog for creating a new project."""
+    """Dialog for creating a new project - returns only template and name data."""
     
     def __init__(self, parent=None):
         """
@@ -29,7 +24,8 @@ class ProjectWizardDialog(QDialog):
         
         # Initialize wizard logic
         self.wizard_logic = WizardLogic()
-        self.result_graph: Optional[ProjectGraph] = None
+        self.result_template_path: Optional[str] = None
+        self.result_project_name: Optional[str] = None
         
         # Setup UI
         self._setup_ui()
@@ -41,7 +37,7 @@ class ProjectWizardDialog(QDialog):
         """Setup the dialog UI."""
         self.setWindowTitle("New Project")
         self.setModal(True)
-        self.resize(400, 200)
+        self.resize(400, 250)
         
         # Main layout
         layout = QVBoxLayout(self)
@@ -54,6 +50,12 @@ class ProjectWizardDialog(QDialog):
         self.project_name_input.setObjectName("project_name")
         self.project_name_input.setPlaceholderText("Enter project name...")
         form_layout.addRow("Project Name:", self.project_name_input)
+        
+        # Template selection
+        self.template_combo = QComboBox()
+        self.template_combo.setObjectName("template_selector")
+        self._load_templates()
+        form_layout.addRow("Template:", self.template_combo)
         
         layout.addLayout(form_layout)
         
@@ -68,6 +70,22 @@ class ProjectWizardDialog(QDialog):
         
         # Initially disable OK button
         self.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
+    
+    def _load_templates(self):
+        """Load available templates from the templates directory."""
+        templates_dir = os.path.join("data", "templates")
+        
+        if os.path.exists(templates_dir):
+            for filename in os.listdir(templates_dir):
+                if filename.endswith('.yaml') or filename.endswith('.yml'):
+                    # Store the full path as data, display name without extension
+                    template_path = os.path.join(templates_dir, filename)
+                    display_name = os.path.splitext(filename)[0].replace('_', ' ').title()
+                    self.template_combo.addItem(display_name, template_path)
+        
+        # If no templates found, add a default option
+        if self.template_combo.count() == 0:
+            self.template_combo.addItem("Default", None)
     
     def _connect_signals(self):
         """Connect widget signals to slots."""
@@ -87,27 +105,24 @@ class ProjectWizardDialog(QDialog):
         ok_button.setEnabled(is_valid)
     
     def accept(self):
-        """Handle dialog acceptance - create the project graph."""
+        """Handle dialog acceptance - store template and project name."""
         project_name = self.project_name_input.text().strip()
         
         if not self.wizard_logic.validate_project_name(project_name):
             return
         
-        # Create the result graph
-        self.result_graph = ProjectGraph()
-        
-        # Create root node using wizard logic
-        root_node = self.wizard_logic.create_project_root(project_name)
-        self.result_graph.add_node(root_node)
+        # Store the results (view will use these to create commands)
+        self.result_project_name = project_name
+        self.result_template_path = self.template_combo.currentData()
         
         # Call parent accept to close dialog
         super().accept()
     
-    def get_result_graph(self) -> Optional[ProjectGraph]:
+    def get_result(self) -> Tuple[Optional[str], Optional[str]]:
         """
-        Get the created project graph.
+        Get the template path and project name selected by user.
         
         Returns:
-            The ProjectGraph created by the wizard, or None if cancelled
+            Tuple of (template_path, project_name) or (None, None) if cancelled
         """
-        return self.result_graph
+        return self.result_template_path, self.result_project_name

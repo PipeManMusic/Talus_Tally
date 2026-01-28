@@ -87,24 +87,97 @@ This document outlines the step-by-step execution plan to build Talus Core. It i
 ## Phase 5: The API (The Gateway)
 **Goal:** Expose the logic to the outside world (UI or CLI).
 
-* [ ] **5.1 Build Graph Service**
+* [x] **5.1 Build Graph Service**
     * File: `backend/api/graph_service.py`
     * Logic: High-level methods (`get_tree`, `search_nodes`).
+    * Status: COMPLETE ✅
 
-* [ ] **5.2 Build Session Manager**
+* [x] **5.2 Build Session Manager**
     * File: `backend/api/session.py`
     * Logic: Manage "Active Blueprint" and "Current Selection".
+    * Status: COMPLETE ✅
+
+* [x] **5.3 Build Project Manager**
+    * File: `backend/api/project_manager.py`
+    * Logic: Create/load/save projects, manage templates.
+    * Status: COMPLETE ✅
 
 ---
 
-## Phase 6: The UI (The Viewer)
-**Goal:** Visual interface.
+## Phase 5.5: The REST API (The Bridge)
+**Goal:** Expose Python backend as JSON/REST API for web-based UI.
 
-* [ ] **6.1 Build "Wizard" Dialog**
-    * Logic: Read `Blueprint.wizard_questions` -> Render Form -> Generate Config.
+* [ ] **5.5.1 Create Flask Application**
+    * File: `backend/app.py`
+    * Logic: Initialize Flask, set up routes, error handlers, middleware.
+    * Test: `tests/api/test_flask_endpoints.py` (Verify endpoints work).
 
-* [ ] **6.2 Build Tree Renderer**
-    * Logic: Recursive draw of `GraphService.get_tree()`.
+* [ ] **5.5.2 Implement Project Endpoints**
+    * Endpoints: `POST /api/projects/new`, `GET /api/projects/<id>`, etc.
+    * Logic: Wrap ProjectManager API, serialize to JSON.
+    * Test: TDD - write failing tests first.
 
-* [ ] **6.3 Build Property Inspector**
-    * Logic: Listen to Selection -> Look up Node Type -> Render specific fields (Currency, Text, Markdown).
+* [ ] **5.5.3 Implement Command Endpoints**
+    * Endpoints: `POST /api/commands/execute`, `GET /api/commands/undo`, etc.
+    * Logic: Wrap CommandDispatcher, serialize results.
+    * Test: TDD - write failing tests first.
+
+* [ ] **5.5.4 Implement Graph Query Endpoints**
+    * Endpoints: `GET /api/graph/nodes`, `GET /api/graph/tree`, etc.
+    * Logic: Wrap GraphService, serialize results.
+    * Test: TDD - write failing tests first.
+
+* [ ] **5.5.5 Implement WebSocket Layer**
+    * Logic: Real-time GraphService subscriptions via SocketIO.
+    * Events: `property-changed`, `node-created`, `command-executed`.
+    * Test: Test multi-client synchronization.
+
+---
+
+## Phase 6: The React Frontend (The Viewer)
+**Goal:** Modern, responsive web-based UI (separate repo).
+
+* [ ] **6.1 Scaffold React App**
+    * Location: `frontend/` folder (separate from backend)
+    * Setup: TypeScript, Vite, testing libraries.
+    * Test: TDD - component tests use React Testing Library.
+
+* [ ] **6.2 Build API Client Library**
+    * File: `frontend/src/api/client.ts`
+    * Logic: Axios wrapper, request/response serialization, error handling.
+    * Test: Mock API responses, verify serialization.
+
+* [ ] **6.3 Build Tree Component**
+    * Logic: Render node graph hierarchically.
+    * Features: Expand/collapse, drag-and-drop, context menu.
+    * Test: TDD - test without backend (mock API).
+
+* [ ] **6.4 Build Inspector Component**
+    * Logic: Display/edit node properties based on blueprint.
+    * Features: Dynamic forms, save/cancel, validation.
+    * Test: TDD - test without backend (mock API).
+
+* [ ] **6.5 Build Toolbar**
+    * Logic: Undo/redo buttons, file menu, view options.
+    * Features: Command routing through API.
+    * Test: TDD - verify button clicks trigger API calls.
+
+* [ ] **6.6 Implement GraphService Subscriptions**
+    * Logic: Hook into WebSocket, update tree/inspector in real-time.
+    * Features: Multi-tab synchronization, live collaboration prep.
+    * Test: Test real-time updates in multiple tabs.
+
+---
+
+## Phase 7: Desktop Packaging
+**Goal:** Distribute as desktop app (Windows/Mac/Linux).
+
+* [ ] **7.1 Choose Packaging Strategy**
+    * Option A: Tauri (lightweight, Rust backend)
+    * Option B: Electron (widely-used, larger footprint)
+    * Decision: TBD based on performance requirements.
+
+* [ ] **7.2 Package React App**
+    * Logic: Build React (`npm run build`), configure Tauri/Electron.
+    * Test: Test on Windows, Mac, Linux.
+    * Release: Publish installers.

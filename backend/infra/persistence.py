@@ -27,15 +27,17 @@ class PersistenceManager:
         """
         self.file_path = Path(file_path)
     
-    def save(self, graph: ProjectGraph) -> None:
+    def save(self, graph: ProjectGraph, template_paths: list[str] = None) -> None:
         """
         Save a graph to a JSON file.
         
         Args:
             graph: The ProjectGraph to save
+            template_paths: Optional list of template file paths used in this project
         """
         data = {
             'version': '1.0',
+            'templates': template_paths or [],
             'nodes': {}
         }
         
@@ -56,17 +58,18 @@ class PersistenceManager:
         with open(self.file_path, 'w') as f:
             json.dump(data, f, indent=2)
     
-    def load(self) -> ProjectGraph:
+    def load(self) -> tuple[ProjectGraph, list[str]]:
         """
         Load a graph from a JSON file.
         
         Returns:
-            A ProjectGraph loaded from the file
+            A tuple of (ProjectGraph, list of template paths)
         """
         with open(self.file_path, 'r') as f:
             data = json.load(f)
         
         graph = ProjectGraph()
+        template_paths = data.get('templates', [])
         
         # Deserialize each node from dict
         nodes_dict = data.get('nodes', {})
@@ -94,4 +97,4 @@ class PersistenceManager:
             
             graph.add_node(node)
         
-        return graph
+        return graph, template_paths

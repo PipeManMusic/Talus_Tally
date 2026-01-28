@@ -1,13 +1,111 @@
 import yaml
+import uuid
+import hashlib
+import os
 from typing import List, Dict, Any, Optional
+
+
+def _generate_stable_uuid(namespace: str, name: str) -> str:
+    """Generate a stable UUID based on content hash (deterministic).
+    
+    Args:
+        namespace: Context for the UUID (e.g., "task.status" for status option)
+        name: The name/value to generate UUID for (e.g., "In Progress")
+        
+    Returns:
+        A stable UUID string
+    """
+    # Create a deterministic UUID based on the namespace and name
+    # This ensures the same option always gets the same UUID
+    seed = f"{namespace}:{name}".encode('utf-8')
+    hash_obj = hashlib.sha1(seed)
+    return str(uuid.UUID(bytes=hash_obj.digest()[:16]))
+
+
+class IndicatorCatalog:
+    """Registry of indicator sets with themes."""
+    
+    def __init__(self, indicator_sets: Dict[str, Dict[str, Any]], catalog_dir: str):
+        """Initialize indicator catalog.
+        
+        Args:
+            indicator_sets: Dict of indicator set definitions
+            catalog_dir: Directory where catalog.yaml is located (for resolving SVG paths)
+        """
+        self.indicator_sets = indicator_sets
+        self.catalog_dir = catalog_dir
+    
+    @classmethod
+    def load(cls, filepath: str) -> "IndicatorCatalog":
+        """Load indicator catalog from YAML file.
+        
+        Args:
+            filepath: Path to catalog.yaml
+            
+        Returns:
+            IndicatorCatalog instance
+        """
+        with open(filepath, 'r') as f:
+            data = yaml.safe_load(f)
+        
+        indicator_sets = data.get('indicator_sets', {})
+        catalog_dir = os.path.dirname(os.path.abspath(filepath))
+        
+        return cls(indicator_sets, catalog_dir)
+    
+    def get_indicator_file(self, set_id: str, indicator_id: str) -> Optional[str]:
+        """Get the full path to an indicator SVG file.
+        
+        Args:
+            set_id: Indicator set ID (e.g., "status")
+            indicator_id: Indicator ID within the set (e.g., "empty")
+            
+        Returns:
+            Full path to SVG file or None if not found
+        """
+        if set_id not in self.indicator_sets:
+            return None
+        
+        indicator_set = self.indicator_sets[set_id]
+        indicators = indicator_set.get("indicators", [])
+        
+        for indicator in indicators:
+            if indicator.get("id") == indicator_id:
+                filename = indicator.get("file")
+                if filename:
+                    return os.path.join(self.catalog_dir, filename)
+        
+        return None
+    
+    def get_indicator_theme(self, set_id: str, indicator_id: str) -> Optional[Dict[str, Any]]:
+        """Get the theme (color, styling) for an indicator.
+        
+        Args:
+            set_id: Indicator set ID (e.g., "status")
+            indicator_id: Indicator ID within the set (e.g., "empty")
+            
+        Returns:
+            Theme dict with indicator_color, text_color, text_style, or None
+        """
+        if set_id not in self.indicator_sets:
+            return None
+        
+        indicator_set = self.indicator_sets[set_id]
+        default_theme = indicator_set.get("default_theme", {})
+        
+        if indicator_id in default_theme:
+            return default_theme[indicator_id].copy()
+        
+        return None
 
 
 class NodeTypeDef:
     """Definition of a node type from a blueprint."""
     
-    def __init__(self, id: str, name: str, allowed_children: List[str] = None, **kwargs):
+    def __init__(self, id: str, label: str = None, name: str = None, allowed_children: List[str] = None, **kwargs):
         self.id = id
-        self.name = name
+        # Accept either 'label' or 'name', prefer 'label'
+        self.name = label or name or id
         self.allowed_children = allowed_children or []
         self.has_time_log = kwargs.get('has_time_log', False)
         self._extra_props = kwargs
@@ -40,21 +138,86 @@ class Blueprint:
         
         parent_def = self._node_type_map[parent_type]
         return child_type in parent_def.allowed_children
+    
+    def get_option_by_uuid(self, property_id: str, option_uuid: str) -> Optional[Dict[str, Any]]:
+        """Get an option definition by its UUID.
+        
+        Args:
+            property_id: The property ID (e.g., "status")
+            option_uuid: The UUID of the option
+            
+        Returns:
+            The option dict or None if not found
+        """
+        for node_type in self.node_types:
+            properties = node_type._extra_props.get('properties', [])
+            for prop in properties:
+                if prop.get('id') == property_id and 'options' in prop:
+                    for option in prop['options']:
+                        if option.get('id') == option_uuid:
+                            return option
+        return None
+    
+    def get_option_uuid(self, node_type_id: str, property_id: str, option_name: str) -> Optional[str]:
+        """Get the UUID for an option by its name.
+        
+        Args:
+            node_type_id: The node type ID
+            property_id: The property ID (e.g., "status")
+            option_name: The option name/value
+            
+        Returns:
+            The option UUID or None if not found
+        """
+        if node_type_id not in self._node_type_map:
+            return None
+        
+        node_type = self._node_type_map[node_type_id]
+        properties = node_type._extra_props.get('properties', [])
+        
+        for prop in properties:
+            if prop.get('id') == property_id and 'options' in prop:
+                for option in prop['options']:
+                    if option.get('name') == option_name:
+                        return option.get('id')
+        
+        return None
 
 
 class SchemaLoader:
     """Loads and parses blueprint YAML files."""
     
+    def __init__(self):
+        """Initialize schema loader with optional indicator catalog."""
+        self.indicator_catalog = None
+        # Try to load indicator catalog if it exists
+        catalog_path = os.path.join(os.path.dirname(__file__), '../../assets/indicators/catalog.yaml')
+        if os.path.exists(catalog_path):
+            try:
+                self.indicator_catalog = IndicatorCatalog.load(catalog_path)
+            except Exception:
+                pass  # Catalog not available, continue without it
+        
+        # Store templates directory for discovery
+        self.templates_dir = os.path.join(os.path.dirname(__file__), '../../data/templates')
+    
     def load(self, filepath: str) -> Blueprint:
         """
         Load a blueprint from a YAML file.
-        
+
+        Generates stable UUIDs for all select option values to enable
+        UUID-based reference instead of string matching.
+
         Args:
-            filepath: Path to the blueprint YAML file
-            
+            filepath: Path to the blueprint YAML file (or template ID like 'restomod.yaml')
+
         Returns:
-            A Blueprint object
+            A Blueprint object with UUIDs generated for options
         """
+        # If filepath doesn't include a directory, look in templates_dir
+        if not os.path.isabs(filepath) and os.path.sep not in filepath:
+            filepath = os.path.join(self.templates_dir, filepath)
+        
         with open(filepath, 'r') as f:
             data = yaml.safe_load(f)
         
@@ -62,10 +225,12 @@ class SchemaLoader:
         name = data.get('name')
         version = data.get('version', '1.0')
         
-        # Parse node types
+        # Parse node types and generate UUIDs for options
         node_types_data = data.get('node_types', [])
         node_types = []
         for nt_data in node_types_data:
+            # Generate UUIDs for options in properties
+            self._generate_option_uuids(nt_data)
             node_type = NodeTypeDef(**nt_data)
             node_types.append(node_type)
         
@@ -73,3 +238,38 @@ class SchemaLoader:
         extra_props = {k: v for k, v in data.items() if k not in ['id', 'name', 'version', 'node_types']}
         
         return Blueprint(id=blueprint_id, name=name, version=version, node_types=node_types, **extra_props)
+    
+    def _generate_option_uuids(self, node_type_data: Dict[str, Any]) -> None:
+        """Generate UUIDs for select options in a node type.
+        
+        Modifies node_type_data in place to add 'id' to each option.
+        UUIDs are deterministic based on content, ensuring stability across reloads.
+        
+        Args:
+            node_type_data: The node type definition dict from YAML
+        """
+        node_type_id = node_type_data.get('id')
+        properties = node_type_data.get('properties', [])
+        
+        for prop in properties:
+            if prop.get('type') == 'select' and 'options' in prop:
+                property_id = prop.get('id')
+                options = prop['options']
+                
+                # Handle both string and dict option formats
+                normalized_options = []
+                for option in options:
+                    if isinstance(option, str):
+                        # String format: convert to dict and add UUID
+                        normalized_options.append({
+                            'name': option,
+                            'id': _generate_stable_uuid(f"{node_type_id}.{property_id}", option)
+                        })
+                    elif isinstance(option, dict):
+                        # Dict format: add UUID if not present
+                        if 'id' not in option and 'name' in option:
+                            option['id'] = _generate_stable_uuid(f"{node_type_id}.{property_id}", option['name'])
+                        normalized_options.append(option)
+                
+                prop['options'] = normalized_options
+

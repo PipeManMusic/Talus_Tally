@@ -47,7 +47,11 @@ def _run_headless():
     logger.info("Creating sample project structure")
     
     # Create root
-    root_cmd = CreateNodeCommand(blueprint_type_id="project_root", name="Sample Project")
+    root_cmd = CreateNodeCommand(
+        blueprint_type_id="project_root",
+        name="Sample Project",
+        blueprint=blueprint
+    )
     root_id = dispatcher.execute(root_cmd)
     logger.info(f"Created project root: {root_id}")
     

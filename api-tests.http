@@ -1,0 +1,67 @@
+### Talus Tally API Testing
+### Use VS Code REST Client extension
+### Workflow: 1) Health Check 2) Create Project 3) Copy session_id below 4) Try other requests
+
+@baseUrl = http://127.0.0.1:5000/api/v1
+@session_id = 
+@root_node_id = 
+
+### Health Check
+GET {{baseUrl}}/health
+
+###
+
+### List Templates
+GET {{baseUrl}}/templates
+
+###
+
+### Get Template Schema
+GET {{baseUrl}}/templates/restomod/schema
+
+###
+
+### 1. CREATE NEW PROJECT FIRST - Copy session_id and root id from response
+POST {{baseUrl}}/projects
+Content-Type: application/json
+
+{
+  "template_id": "restomod",
+  "project_name": "My Test Project"
+}
+
+###
+
+### 2. AFTER creating project, paste session_id into @session_id variable above
+### Then uncomment and use the requests below:
+
+### Get Project Tree
+# GET {{baseUrl}}/sessions/{{session_id}}/graph/tree
+
+###
+
+### Execute Command - Create Node
+# POST {{baseUrl}}/commands/execute
+# Content-Type: application/json
+# 
+# {
+#   "session_id": "{{session_id}}",
+#   "command_type": "CreateNode",
+#   "data": {
+#     "parent_id": "{{root_node_id}}",
+#     "blueprint_type_id": "task",
+#     "name": "New Task"
+#   }
+# }
+
+###
+
+### Undo Last Command
+# POST {{baseUrl}}/sessions/{{session_id}}/undo
+
+###
+
+### Redo Last Command
+# POST {{baseUrl}}/sessions/{{session_id}}/redo
+
+###

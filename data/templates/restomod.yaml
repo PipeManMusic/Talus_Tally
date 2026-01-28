@@ -1,35 +1,133 @@
 id: restomod_v1
-name: Restomod Creator
 version: "1.0"
+name: "Restomod Creator"
+description: "A template for vehicle restoration and modification projects."
 
 node_types:
-  - id: project_root
-    name: "Project"
-    allowed_children:
-      - phase
-  
-  - id: phase
-    name: "Phase"
-    allowed_children:
-      - job
-  
-  - id: job
-    name: "Job"
-    allowed_children:
-      - task
-  
-  - id: task
-    name: "Task"
-    has_time_log: true
-    allowed_children: []
+  - id: "project_root"
+    label: "Project"
+    allowed_children: ["phase"]
+    properties:
+      - id: "vehicle"
+        label: "Vehicle Name"
+        type: "text"
+        required: true
+      - id: "vin"
+        label: "VIN"
+        type: "text"
+      - id: "budget"
+        label: "Total Budget"
+        type: "currency"
 
-properties:
-  - name: cost
-    type: currency
-  - name: impact
-    type: number
-  - name: effort
-    type: number
-  - name: status
-    type: select
-    options: [not_started, in_progress, completed, blocked]
+  - id: "phase"
+    label: "Phase"
+    allowed_children: ["job"]
+    properties:
+      - id: "status"
+        label: "Status"
+        type: "select"
+        indicator_set: "status"
+        options:
+          - name: "Planned"
+            indicator_id: "empty"
+            bullet: "◯"
+          - name: "In Progress"
+            indicator_id: "partial"
+            bullet: "◐"
+          - name: "Completed"
+            indicator_id: "filled"
+            bullet: "✓"
+      - id: "start_date"
+        label: "Start Date"
+        type: "date"
+
+  - id: "job"
+    label: "Job"
+    allowed_children: ["task"]
+    properties:
+      - id: "priority"
+        label: "Priority"
+        type: "select"
+        options: ["Low", "Medium", "High", "Critical"]
+      - id: "description"
+        label: "Description"
+        type: "text"
+
+  - id: "task"
+    label: "Task"
+    has_time_log: true
+    allowed_children: ["part"]  # <--- Task can now contain Parts
+    properties:
+      - id: "status"
+        label: "Status"
+        type: "select"
+        indicator_set: "status"
+        options:
+          - name: "Not Started"
+            indicator_id: "empty"
+            bullet: "◯"
+          - name: "In Progress"
+            indicator_id: "partial"
+            bullet: "◐"
+          - name: "Blocked"
+            indicator_id: "alert"
+            bullet: "●"
+          - name: "Done"
+            indicator_id: "filled"
+            bullet: "✓"
+      - id: "cost"
+        label: "Cost"
+        type: "currency"
+      - id: "impact"
+        label: "Impact"
+        type: "number"
+      - id: "effort"
+        label: "Effort"
+        type: "number"
+      - id: "estimated_hours"
+        label: "Est. Hours"
+        type: "number"
+      - id: "notes"
+        label: "Notes"
+        type: "text"
+
+  - id: "part"  # <--- NEW NODE TYPE
+    label: "Part"
+    allowed_children: []
+    properties:
+      - id: "sku"
+        label: "SKU / Part #"
+        type: "text"
+      - id: "supplier"
+        label: "Supplier"
+        type: "text"
+      - id: "status"
+        label: "Status"
+        type: "select"
+        indicator_set: "status"
+        options:
+          - name: "Need to Order"
+            indicator_id: "empty"
+            bullet: "◯"
+          - name: "Ordered"
+            indicator_id: "partial"
+            bullet: "◐"
+          - name: "Shipped"
+            indicator_id: "partial"
+            bullet: "◐"
+          - name: "Received"
+            indicator_id: "alert"
+            bullet: "●"
+          - name: "Installed"
+            indicator_id: "filled"
+            bullet: "✓"
+      - id: "cost"
+        label: "Unit Cost"
+        type: "currency"
+      - id: "quantity"
+        label: "Qty"
+        type: "number"
+        value: 1
+      - id: "link"
+        label: "URL"
+        type: "text"

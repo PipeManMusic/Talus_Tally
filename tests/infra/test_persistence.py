@@ -30,6 +30,7 @@ def test_load_graph(tmp_path):
     with open(file_path, "w") as f:
         json.dump({
             "version": "1.0",
+            "templates": ["data/templates/restomod.yaml"],
             "nodes": {
                 "uuid-1": {
                     "id": "uuid-1",
@@ -42,9 +43,10 @@ def test_load_graph(tmp_path):
         }, f)
         
     manager = PersistenceManager(file_path)
-    graph = manager.load()
+    graph, template_paths = manager.load()
     
     assert len(graph.nodes) == 1
     node = list(graph.nodes.values())[0]
     assert node.name == "Loaded Node"
     assert node.properties["cost"] == 10
+    assert "data/templates/restomod.yaml" in template_paths

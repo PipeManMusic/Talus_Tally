@@ -5,15 +5,57 @@ meta:
 property_types:
   - id: "text"
     python_type: "str"
+    description: "Plain text input"
+    
   - id: "number"
     python_type: "float"
+    description: "Numeric input"
+    
   - id: "currency"
     python_type: "Decimal"
+    description: "Currency amount"
+    
   - id: "boolean"
     python_type: "bool"
+    description: "True/false toggle"
+    
+  - id: "date"
+    python_type: "str"
+    description: "Date value"
+    
   - id: "select"
     python_type: "str"
     requires_options: true
+    description: "Single selection from predefined options"
+    options_format: 
+      description: "Options can be either simple strings or objects with name, bullet, and optional id"
+      note: "IDs are optional in templates; generated on load for stable reference"
+      string_format: ["Option1", "Option2", "Option3"]
+      object_format:
+        - name: "string (required)"
+          description: "The option value/label (human-readable)"
+        - bullet: "string (optional)"
+          description: "Bullet/indicator character to display for this option"
+        - id: "string (optional)"
+          description: "UUID for stable reference; auto-generated if not provided"
+
+node_types:
+  required_fields:
+    - id: "required - unique identifier for the node type"
+    - label: "required - display name for the node type"
+    - allowed_children: "optional - array of allowed child node type ids"
+    - has_time_log: "optional - boolean for time tracking capability"
+    - properties: "optional - array of property definitions"
+
+property_definition:
+  required_fields:
+    - id: "required - unique property identifier"
+    - label: "required - display name for property"
+    - type: "required - property type id from property_types"
+  optional_fields:
+    - required: "optional - boolean, defaults to false"
+    - value: "optional - default value for the property"
+    - options: "required if type is 'select', array of string or object options"
 
 capabilities:
   - id: "inventory"

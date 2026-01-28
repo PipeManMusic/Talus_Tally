@@ -10,6 +10,11 @@ class ProjectGraph:
         """Initialize an empty graph."""
         self.nodes: Dict[UUID, Node] = {}
     
+    @property
+    def roots(self) -> List[Node]:
+        """Get all root nodes (nodes without parents)."""
+        return [node for node in self.nodes.values() if node.parent_id is None]
+    
     def add_node(self, node: Node) -> None:
         """
         Add a node to the graph.

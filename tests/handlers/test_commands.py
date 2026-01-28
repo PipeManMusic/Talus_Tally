@@ -3,11 +3,14 @@ from backend.handlers.dispatcher import CommandDispatcher
 from backend.handlers.commands.node_commands import (
     CreateNodeCommand, 
     DeleteNodeCommand, 
-    LinkNodeCommand
+    LinkNodeCommand,
+    UpdatePropertyCommand
 )
 from backend.core.graph import ProjectGraph
 from backend.core.node import Node
 from backend.infra.logging import LogManager
+from backend.infra.schema_loader import SchemaLoader
+import os
 
 def test_create_node_command_undo():
     """Phase 4.1: Verify we can Create a node and then Undo it."""
@@ -89,3 +92,28 @@ def test_create_node_signal_flow():
     assert history[0].event_type == "EXECUTE_START"
     assert history[1].event_type == "EXECUTE_COMPLETE"
     assert history[1].payload["command"] == "CreateNodeCommand"
+
+
+def test_create_node_default_status_initialized():
+    """Verify CreateNodeCommand initializes default status from blueprint."""
+    loader = SchemaLoader()
+    blueprint_path = os.path.join(
+        os.path.dirname(__file__),
+        "../../data/templates/restomod.yaml"
+    )
+    blueprint = loader.load(blueprint_path)
+
+    graph = ProjectGraph()
+    dispatcher = CommandDispatcher(graph)
+
+    cmd = CreateNodeCommand(
+        blueprint_type_id="task",
+        name="Default Status Task",
+        blueprint=blueprint,
+        graph=graph
+    )
+    node_id = dispatcher.execute(cmd)
+
+    node = graph.get_node(node_id)
+    assert node is not None
+    assert node.properties.get("status") is not None

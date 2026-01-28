@@ -1,0 +1,500 @@
+# Talus Tally REST API Contract
+
+**Version:** 1.0  
+**Status:** ✅ Implemented & Production Ready  
+**Base URL:** `http://localhost:5000/api/v1`  
+**Last Updated:** January 28, 2026
+
+This document defines the complete API contract between the Python backend and web-based frontend. All endpoints are prefixed with `/api/v1`.
+
+---
+
+## 1. Authentication & Sessions
+
+### 1.1 Session Management
+```
+POST /api/v1/sessions/create
+  Request:  { }
+  Response: { session_id: "uuid" }
+```
+
+**Purpose:** Create a new session. Returns a session ID to use in subsequent requests.
+
+**Headers:** All requests must include `X-Session-ID: <session_id>` (except this endpoint).
+
+---
+
+## 2. Projects
+
+### 2.1 Create New Project
+```
+POST /api/v1/projects
+  Request: {
+    template_id: "string",      # e.g., "restomod", "music-production"
+    project_name: "string"       # User-provided name
+  }
+  Response: {
+    project_id: "uuid",
+    graph: { ... }               # Serialized ProjectGraph
+  }
+```
+
+**Behavior:** 
+- Creates a new empty graph using the specified template
+- Returns the graph data (ready for tree rendering)
+- Session now has an "active project"
+
+---
+
+### 2.2 Load Project
+```
+GET /api/v1/projects/<project_id>
+  Response: {
+    project_id: "uuid",
+    graph: { ... }               # Serialized ProjectGraph
+  }
+```
+
+**Behavior:**
+- Loads a previously saved project from disk
+- Session's "active project" is set to this project
+
+---
+
+### 2.3 Save Project
+```
+POST /api/v1/projects/<project_id>/save
+  Request: { }
+  Response: { success: true }
+```
+
+**Behavior:**
+- Saves the current graph state to disk
+- Includes all nodes, properties, and template metadata
+- Idempotent (can be called multiple times)
+
+---
+
+### 2.4 Export Project
+```
+GET /api/v1/projects/<project_id>/export?format=<format>
+  Query Params:
+    format: "json" | "csv" | "pdf"
+  Response: Binary data (JSON, CSV, or PDF file)
+```
+
+**Behavior:**
+- Exports project in requested format
+- Returns file content as attachment
+
+---
+
+### 2.5 Delete Project
+```
+DELETE /api/v1/projects/<project_id>
+  Response: { success: true }
+```
+
+**Behavior:**
+- Deletes project from disk
+- If active project, UI should prompt to select new project
+
+---
+
+## 3. Templates
+
+### 3.1 List Available Templates
+```
+GET /api/v1/templates
+  Response: {
+    templates: [
+      {
+        id: "restomod",
+        name: "Restomod Creator",
+        description: "Template for restoration projects"
+      },
+      ...
+    ]
+  }
+```
+
+**Purpose:** Let UI show template selection dialog.
+
+---
+
+### 3.2 Get Template Schema
+```
+GET /api/v1/templates/<template_id>/schema
+  Response: {
+    id: "string",
+    name: "string",
+    description: "string",
+    node_types: [
+      {
+        id: "uuid",
+        name: "string",
+        properties: [
+          {
+            id: "uuid",
+            name: "string",
+            type: "text" | "number" | "select" | "currency",
+            required: boolean,
+            options: [
+              {
+                id: "uuid",          # Canonical identifier
+                name: "string",      # Display name
+                indicator_id: "string"  # For status indicators
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+```
+
+**Purpose:** UI needs to know:
+- What fields exist for each node type
+- What options are valid for select fields
+- What indicator should show for each status
+
+---
+
+## 4. Graph Queries
+
+### 4.1 Get Full Tree
+```
+GET /api/v1/graph/tree
+  Response: {
+    roots: [
+      {
+        id: "uuid",
+        blueprint_type_id: "uuid",
+        blueprint_type_name: "string",
+        properties: { ... },
+        children: [ ... ]      # Recursive
+      }
+    ]
+  }
+```
+
+**Purpose:** Get entire graph structure for tree view rendering.
+
+---
+
+### 4.2 Get Specific Node
+```
+GET /api/v1/graph/nodes/<node_id>
+  Response: {
+    id: "uuid",
+    blueprint_type_id: "uuid",
+    blueprint_type_name: "string",
+    properties: { ... },
+    parent_id: "uuid" | null
+  }
+```
+
+**Purpose:** Get node data for inspector (when node is selected).
+
+---
+
+### 4.3 Search Nodes
+```
+POST /api/v1/graph/search
+  Request: {
+    query: "string",             # Free text search
+    filter_by_type: "uuid" | null # Optional: filter by node type
+  }
+  Response: {
+    results: [
+      {
+        id: "uuid",
+        name: "string",
+        type: "string",
+        breadcrumb: "path/to/node"  # For context
+      }
+    ]
+  }
+```
+
+**Purpose:** Search nodes by text (for inspector's quick find).
+
+---
+
+## 5. Commands (State Mutations)
+
+### 5.1 Execute Single Command
+```
+POST /api/v1/commands/execute
+  Request: {
+    command_type: "string",      # e.g., "CreateNode", "UpdateProperty", "DeleteNode"
+    data: { ... }                # Command-specific payload
+  }
+  Response: {
+    success: true,
+    graph: { ... },              # Updated graph
+    command_id: "uuid"           # For undo/redo tracking
+  }
+```
+
+**Command Types:**
+
+#### CreateNode
+```json
+{
+  "command_type": "CreateNode",
+  "data": {
+    "parent_id": "uuid",
+    "blueprint_type_id": "uuid"
+  }
+}
+```
+
+#### UpdateProperty
+```json
+{
+  "command_type": "UpdateProperty",
+  "data": {
+    "node_id": "uuid",
+    "property_id": "uuid",
+    "value": "any"  # Depends on property type
+  }
+}
+```
+
+#### DeleteNode
+```json
+{
+  "command_type": "DeleteNode",
+  "data": {
+    "node_id": "uuid"
+  }
+}
+```
+
+#### LinkNode
+```json
+{
+  "command_type": "LinkNode",
+  "data": {
+    "source_id": "uuid",
+    "target_id": "uuid"
+  }
+}
+```
+
+---
+
+### 5.2 Undo
+```
+POST /api/v1/commands/undo
+  Response: {
+    success: true,
+    graph: { ... },
+    undo_available: boolean,
+    redo_available: boolean
+  }
+```
+
+**Behavior:**
+- Undoes last command
+- Returns updated graph + undo/redo availability
+
+---
+
+### 5.3 Redo
+```
+POST /api/v1/commands/redo
+  Response: {
+    success: true,
+    graph: { ... },
+    undo_available: boolean,
+    redo_available: boolean
+  }
+```
+
+**Behavior:**
+- Redoes last undone command
+- Returns updated graph + undo/redo availability
+
+---
+
+### 5.4 Get Undo/Redo State
+```
+GET /api/v1/commands/state
+  Response: {
+    undo_available: boolean,
+    redo_available: boolean,
+    history_count: integer
+  }
+```
+
+**Purpose:** For toolbar button states (enable/disable undo/redo).
+
+---
+
+## 6. WebSocket Events (Real-Time Updates)
+
+### 6.1 Connection
+```javascript
+// Client
+socket.on('connect', () => {
+  socket.emit('join', { session_id: '...' });
+});
+
+// Server
+socket.on('join', (data) => {
+  socket.emit('ready', { status: 'connected' });
+});
+```
+
+---
+
+### 6.2 Property Change Event
+```javascript
+// Server → Client
+socket.emit('property-changed', {
+  node_id: "uuid",
+  property_id: "uuid",
+  old_value: "any",
+  new_value: "any"
+});
+```
+
+**When:** GraphService notifies of property change (via UpdatePropertyCommand).
+
+---
+
+### 6.3 Node Created Event
+```javascript
+// Server → Client
+socket.emit('node-created', {
+  node_id: "uuid",
+  parent_id: "uuid",
+  blueprint_type_id: "uuid",
+  blueprint_type_name: "string"
+});
+```
+
+**When:** CreateNodeCommand executes.
+
+---
+
+### 6.4 Node Deleted Event
+```javascript
+// Server → Client
+socket.emit('node-deleted', {
+  node_id: "uuid",
+  parent_id: "uuid"
+});
+```
+
+**When:** DeleteNodeCommand executes.
+
+---
+
+### 6.5 Command Executed Event
+```javascript
+// Server → Client
+socket.emit('command-executed', {
+  command_type: "string",
+  command_id: "uuid",
+  undo_available: boolean,
+  redo_available: boolean
+});
+```
+
+**When:** Any command executes (for toolbar state sync).
+
+---
+
+## 7. Error Responses
+
+All error responses follow this format:
+
+```json
+{
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human-readable error message",
+    "details": { ... }  // Optional debugging info
+  }
+}
+```
+
+### Common Error Codes
+- `INVALID_SESSION` - Session expired or invalid
+- `PROJECT_NOT_FOUND` - Project doesn't exist
+- `INVALID_COMMAND` - Command type or payload is invalid
+- `COMMAND_FAILED` - Command executed but failed validation
+- `TEMPLATE_NOT_FOUND` - Template doesn't exist
+- `NODE_NOT_FOUND` - Node doesn't exist
+- `INTERNAL_ERROR` - Server-side error
+
+---
+
+## 8. Implementation Notes
+
+### Thread Safety
+- Each session has its own `CommandDispatcher` instance
+- Sessions don't share graph state
+- WebSocket broadcasts to all clients connected to same session
+
+### Performance Considerations
+- Graph serialization happens after every command (consider caching)
+- Search is O(n) - consider indexing for large graphs
+- WebSocket uses server-sent updates (not polling)
+
+### Future Extensions
+- Batch commands (execute multiple atomically)
+- Live collaboration (CRDT-based synchronization)
+- Template editing API
+- User authentication
+- Project sharing/permissions
+
+---
+
+## 9. Example Client Usage
+
+```typescript
+// Create session
+const session = await api.createSession();
+
+// Create project
+const project = await api.createProject(session, 'restomod', 'My Restoration');
+
+// Load template schema
+const schema = await api.getTemplateSchema('restomod');
+
+// Create a node
+const result = await api.executeCommand(session, 'CreateNode', {
+  parent_id: project.roots[0].id,
+  blueprint_type_id: schema.node_types[0].id
+});
+
+// Update property
+await api.executeCommand(session, 'UpdateProperty', {
+  node_id: result.new_node_id,
+  property_id: 'status',
+  value: 'in-progress-uuid'
+});
+
+// Subscribe to real-time updates
+socket.on('property-changed', (event) => {
+  // Refresh tree/inspector
+});
+
+// Undo
+await api.undo(session);
+
+// Save
+await api.saveProject(session, project.id);
+```
+
+---
+
+## 10. API Evolution
+
+This API is versioned (`/api/v1/`). Future versions can introduce breaking changes while maintaining backwards compatibility on `/api/v1/`.
+
+**Deprecation:** Old endpoints will be marked `@deprecated` in comments before removal.

@@ -11,6 +11,7 @@ class FieldDefinition:
     ui_type: str
     required: bool = False
     value: Optional[Any] = None
+    options: Optional[list] = None
     
     # Legacy compatibility
     @property
@@ -44,32 +45,41 @@ class InspectorViewModel:
         """
         fields = []
         
-        # If we have a blueprint, use it to generate fields
-        if self.blueprint and hasattr(self.blueprint, '_extra_props'):
-            # Check if blueprint has properties defined
-            properties = self.blueprint._extra_props.get('properties', [])
+        # If we have a blueprint, use it to generate fields from node type definition
+        if self.blueprint and hasattr(self.blueprint, '_node_type_map'):
+            # Get the node type definition for this node
+            node_type_def = self.blueprint._node_type_map.get(node.blueprint_type_id)
             
-            for prop in properties:
-                prop_id = prop.get('name') or prop.get('id')
-                value = node.properties.get(prop_id) if hasattr(node, 'properties') else None
-                fields.append(FieldDefinition(
-                    id=prop_id,
-                    label=prop.get('label', prop_id.replace('_', ' ').title()),
-                    ui_type=prop.get('type', 'text'),
-                    required=prop.get('required', False),
-                    value=value
-                ))
-            
-            if fields:
-                return fields
+            if node_type_def and hasattr(node_type_def, '_extra_props'):
+                # Check if node type has properties defined
+                properties = node_type_def._extra_props.get('properties', [])
+                
+                for prop in properties:
+                    prop_id = prop.get('name') or prop.get('id')
+                    value = node.properties.get(prop_id) if hasattr(node, 'properties') else None
+                    
+                    # Extract options if available
+                    options = prop.get('options', None)
+                    
+                    fields.append(FieldDefinition(
+                        id=prop_id,
+                        label=prop.get('label', prop_id.replace('_', ' ').title()),
+                        ui_type=prop.get('type', 'text'),
+                        required=prop.get('required', False),
+                        value=value,
+                        options=options
+                    ))
+                
+                if fields:
+                    return fields
         
-        # Fallback to default fields
+        # Fallback to default fields with options
         base_fields = [
             FieldDefinition(id="name", label="Name", ui_type="text", required=True),
             FieldDefinition(id="description", label="Description", ui_type="text")
         ]
         
-        # Type-specific fields
+        # Type-specific fields with options for dropdowns
         type_fields = {
             "part": [
                 FieldDefinition(id="quantity", label="Quantity", ui_type="number"),
@@ -77,9 +87,19 @@ class InspectorViewModel:
             ],
             "task": [
                 FieldDefinition(id="cost_estimate", label="Cost Estimate", ui_type="currency"),
-                FieldDefinition(id="difficulty", label="Difficulty", ui_type="select"),
+                FieldDefinition(
+                    id="difficulty", 
+                    label="Difficulty", 
+                    ui_type="select",
+                    options=["Easy", "Medium", "Hard", "Very Hard"]
+                ),
                 FieldDefinition(id="duration", label="Duration", ui_type="number"),
-                FieldDefinition(id="status", label="Status", ui_type="select")
+                FieldDefinition(
+                    id="status", 
+                    label="Status", 
+                    ui_type="select",
+                    options=["Not Started", "In Progress", "Complete", "On Hold"]
+                )
             ]
         }
         

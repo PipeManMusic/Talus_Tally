@@ -12,9 +12,9 @@ def test_node_icon_resolution():
     
     view_model = TreeViewModel()
     
-    # 2. Assert Icons (Hypothetical mapping)
-    assert view_model.get_icon(job_node) == "folder"
-    assert view_model.get_icon(part_node) == "box"
+    # 2. Assert Icons (Updated to new icon mapping)
+    assert view_model.get_icon(job_node) == "briefcase"
+    assert view_model.get_icon(part_node) == "cube"
 
 def test_velocity_color_coding():
     """Phase 6.2: Verify high-velocity nodes get visual emphasis."""
