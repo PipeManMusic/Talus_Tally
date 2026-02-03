@@ -1,0 +1,1380 @@
+import { TitleBar } from './components/layout/TitleBar';
+import { MenuBar } from './components/layout/MenuBar';
+import { Toolbar } from './components/layout/Toolbar';
+import type { ToolbarButton } from './components/layout/Toolbar';
+import { Plus, Save, Undo2, Redo2 } from 'lucide-react';
+import { Sidebar } from './components/layout/Sidebar';
+import type { TreeNode } from './components/layout/Sidebar';
+import { Inspector } from './components/layout/Inspector';
+import type { NodeProperty, LinkedAssetMetadata } from './components/layout/Inspector';
+import { NewProjectDialog } from './components/dialogs/NewProjectDialog';
+import { AddChildDialog } from './components/dialogs/AddChildDialog';
+import { AssetSelectDialog } from './components/dialogs/AssetSelectDialog';
+import { AssetCategoryDialog } from './components/dialogs/AssetCategoryDialog';
+import { SettingsDialog } from './components/dialogs/SettingsDialog';
+import { SaveConfirmDialog, type SaveAction } from './components/dialogs/SaveConfirmDialog';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { DebugPanel, type DebugLogEntry } from './components/dev/DebugPanel';
+import { ErrorBoundary } from './components/dev/ErrorBoundary';
+// Toggleable debug logging for tree/expansion state
+const DEBUG_TREE = process.env.NODE_ENV !== 'production';
+import { useGraphStore } from './store';
+import { useGraphSync } from './hooks';
+import { apiClient, type Node, type Template, type Graph, type TemplateSchema } from './api/client';
+
+function App() {
+  const [selectedNode, setSelectedNode] = useState<string | null>(null);
+  const [inspectorOpen, setInspectorOpen] = useState(true);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [isDirty, setIsDirty] = useState(false);  // Track dirty state
+  const isDirtyRef = useRef(false);  // Ref to access current dirty state in callbacks
+  const [treeNodes, setTreeNodes] = useState<TreeNode[]>([]);
+  const [selectedNodeData, setSelectedNodeData] = useState<Node | null>(null);
+  const [showNewProjectDialog, setShowNewProjectDialog] = useState(false);
+  const [showAddRootDialog, setShowAddRootDialog] = useState(false);
+  const [showAddChildDialog, setShowAddChildDialog] = useState(false);
+  const [showAssetSelectDialog, setShowAssetSelectDialog] = useState(false);
+  const [showAssetCategoryDialog, setShowAssetCategoryDialog] = useState(false);
+  const [showSettingsDialog, setShowSettingsDialog] = useState(false);
+  const [showSaveConfirmDialog, setShowSaveConfirmDialog] = useState(false);
+  const pendingCloseActionRef = useRef<(() => Promise<void>) | null>(null);
+  const [addChildParentId, setAddChildParentId] = useState<string | null>(null);
+  const [addChildTitle, setAddChildTitle] = useState<string | undefined>(undefined);
+  const [assetSelectParentId, setAssetSelectParentId] = useState<string | null>(null);
+  const [assetCategoryParentId, setAssetCategoryParentId] = useState<string | null>(null);
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [templateSchema, setTemplateSchema] = useState<TemplateSchema | null>(null);
+  const [lastFilePath, setLastFilePath] = useState<string | null>(null);
+  const [expandAllSignal, setExpandAllSignal] = useState(0);
+  const [collapseAllSignal, setCollapseAllSignal] = useState(0);
+  const [debugLogs, setDebugLogs] = useState<DebugLogEntry[]>([]);
+  const debugLogCounterRef = useRef(0);
+  // Track which nodes are expanded (by id)
+  const [expandedMap, setExpandedMap] = useState<Record<string, boolean>>({});
+  const { nodes: storeNodes, currentGraph, setCurrentGraph } = useGraphStore();
+  
+  // Enable real-time WebSocket synchronization
+  useGraphSync();
+
+  // Keep ref in sync with state for use in event handlers
+  useEffect(() => {
+    isDirtyRef.current = isDirty;
+  }, [isDirty]);
+
+  // Load saved indicator size on mount
+  useEffect(() => {
+    const savedSize = localStorage.getItem('indicator_size');
+    if (savedSize) {
+      const size = parseInt(savedSize, 10);
+      if (!isNaN(size)) {
+        document.documentElement.style.setProperty('--indicator-size', `${size}px`);
+        console.log('✓ Restored indicator size:', size + 'px');
+      }
+    }
+  }, []);
+
+  // Wait for backend and create/restore session on mount
+  useEffect(() => {
+    const initApp = async () => {
+      try {
+        // Wait for backend to be ready (especially for Tauri)
+        const ready = await apiClient.waitForBackend();
+        if (!ready) {
+          console.warn('Backend not responding, will retry');
+        }
+        
+        // Try to restore existing session from localStorage
+        const savedSessionId = localStorage.getItem('talus_tally_session_id');
+        if (savedSessionId) {
+          console.log('Found saved session ID:', savedSessionId);
+          try {
+            // Validate session still exists on backend
+            const sessionInfo = await apiClient.getSessionInfo(savedSessionId);
+            if (sessionInfo && sessionInfo.session_id) {
+              console.log('✓ Restored session:', savedSessionId);
+              setSessionId(savedSessionId);
+              
+              // If session has a project, restore it
+              if (sessionInfo.has_project) {
+                console.log('✓ Session has existing project, restoring graph...');
+                try {
+                  const restoredTemplateId = sessionInfo.template_id || localStorage.getItem('talus_tally_template_id');
+                  if (restoredTemplateId) {
+                    try {
+                      const schema = await apiClient.getTemplateSchema(restoredTemplateId);
+                      setTemplateSchema(schema);
+                      console.log('✓ Template schema restored:', restoredTemplateId);
+                    } catch (err) {
+                      console.warn('Failed to restore template schema:', err);
+                    }
+                  }
+                  const graphData = await apiClient.getSessionGraph(savedSessionId);
+                  console.log('[DEBUG] Raw graphData from backend:', JSON.stringify(graphData, null, 2));
+                  const graph = normalizeGraph(graphData.graph);
+                  console.log('[DEBUG] Normalized graph nodes:', graph.nodes);
+                  setCurrentGraph(graph);
+                  console.log('✓ Graph restored with', Object.keys(graph.nodes).length, 'nodes');
+                } catch (err) {
+                  console.warn('Failed to restore graph:', err);
+                }
+              }
+              return;
+            }
+          } catch (err) {
+            console.warn('Saved session invalid, creating new session:', err);
+            localStorage.removeItem('talus_tally_session_id');
+          }
+        }
+        
+        // Create new session
+        const session = await apiClient.createSession();
+        const sid = session.session_id || session.id || 'unknown';
+        setSessionId(sid);
+        localStorage.setItem('talus_tally_session_id', sid);
+        console.log('✓ Session created:', sid);
+      } catch (err) {
+        console.error('✗ Failed to initialize app:', err);
+      }
+    };
+    initApp();
+  }, []);
+
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'production') return;
+
+    const maxEntries = 500;
+    const original = {
+      log: console.log,
+      info: console.info,
+      warn: console.warn,
+      error: console.error,
+      debug: console.debug,
+    };
+
+    const formatArg = (arg: unknown) => {
+      if (typeof arg === 'string') return arg;
+      try {
+        return JSON.stringify(arg);
+      } catch (err) {
+        return String(arg);
+      }
+    };
+
+    const pushLog = (level: DebugLogEntry['level'], args: unknown[]) => {
+      const now = new Date();
+      const time = now.toISOString().slice(11, 23);
+      const message = args.map(formatArg).join(' ');
+      setDebugLogs((prev) => {
+        const entry: DebugLogEntry = {
+          id: ++debugLogCounterRef.current,
+          level,
+          time,
+          message,
+        };
+        if (prev.length >= maxEntries) {
+          return [...prev.slice(prev.length - maxEntries + 1), entry];
+        }
+        return [...prev, entry];
+      });
+    };
+
+    console.log = (...args: unknown[]) => {
+      original.log(...args);
+      pushLog('log', args);
+    };
+    console.info = (...args: unknown[]) => {
+      original.info(...args);
+      pushLog('info', args);
+    };
+    console.warn = (...args: unknown[]) => {
+      original.warn(...args);
+      pushLog('warn', args);
+    };
+    console.error = (...args: unknown[]) => {
+      original.error(...args);
+      pushLog('error', args);
+    };
+    console.debug = (...args: unknown[]) => {
+      original.debug(...args);
+      pushLog('debug', args);
+    };
+
+    return () => {
+      console.log = original.log;
+      console.info = original.info;
+      console.warn = original.warn;
+      console.error = original.error;
+      console.debug = original.debug;
+    };
+  }, []);
+
+  // Convert backend nodes to tree structure
+  const convertNodesToTree = useCallback((nodes: Record<string, Node>): TreeNode[] => {
+    const nodeList = Object.values(nodes);
+    if (nodeList.length === 0) return [];
+
+    // Helper to get allowed_children from templateSchema
+    const getAllowedChildren = (type: string): string[] => {
+      if (!templateSchema) return [];
+      const typeSchema = templateSchema.node_types.find(nt => nt.id === type);
+      return typeSchema?.allowed_children || [];
+    };
+
+    const buildTree = (node: Node, nodesMap: Record<string, Node>): TreeNode => {
+      return {
+        id: node.id,
+        name: node.properties?.name || node.type,
+        type: (node.type as any) || 'project',
+        indicator_id: node.indicator_id ?? undefined,
+        indicator_set: node.indicator_set ?? undefined,
+        allowed_children: getAllowedChildren(node.type),
+        children: node.children?.map(childId => {
+          const childNode = nodesMap[childId];
+          return childNode ? buildTree(childNode, nodesMap) : { id: childId, name: 'Unknown', type: 'unknown', allowed_children: [], children: [] };
+        }) || []
+      };
+    };
+
+    // Find root nodes (nodes without parents)
+    const roots = nodeList.filter(n => !nodeList.some(p => 
+      p.children?.includes(n.id)
+    ));
+
+    return roots.map(root => buildTree(root, nodes));
+  }, [templateSchema]);
+
+  // Track if this is the first tree build after project load
+  const firstTreeBuild = useRef(true);
+  // Track previous child counts for root nodes (do not store in expandedMap)
+  const rootChildCounts = useRef<Record<string, number>>({});
+  useEffect(() => {
+    const nodeList = Object.values(storeNodes || {}) as any[];
+    const nodeSignature = JSON.stringify(
+      nodeList.map(n => ({
+        id: n.id,
+        indicator_id: n.indicator_id,
+        indicator_set: n.indicator_set,
+        status: n.properties?.status,
+        type: n.type,
+        name: n.properties?.name,
+      }))
+    );
+    const tree = convertNodesToTree(storeNodes);
+    setTreeNodes(tree);
+    // Debug: log root node allowed_children and tree structure
+    if (DEBUG_TREE) {
+      tree.forEach(root => {
+        console.log('[App][DEBUG] Root node:', {
+          id: root.id,
+          name: root.name,
+          type: root.type,
+          allowed_children: root.allowed_children,
+          children: root.children?.map(c => c.id),
+        });
+      });
+      console.log('[App][DEBUG] Full tree:', tree);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storeNodes, convertNodesToTree, JSON.stringify(Object.values(storeNodes || {}).map(n => ({
+    id: n.id,
+    indicator_id: n.indicator_id,
+    indicator_set: n.indicator_set,
+    status: n.properties?.status,
+    type: n.type,
+    name: n.properties?.name,
+  })))]);
+
+  // Get selected node data
+  useEffect(() => {
+    if (selectedNode && storeNodes[selectedNode]) {
+      setSelectedNodeData(storeNodes[selectedNode]);
+    } else {
+      setSelectedNodeData(null);
+    }
+  }, [selectedNode, storeNodes]);
+
+  // Convert node properties to inspector format
+  const getNodeProperties = (): NodeProperty[] => {
+    if (!selectedNodeData || !templateSchema) return [];
+
+    // Find the node type schema
+    const nodeTypeSchema = templateSchema.node_types.find(nt => nt.id === selectedNodeData.type);
+    if (!nodeTypeSchema) return [];
+
+    // Build properties from schema
+    return nodeTypeSchema.properties.map((prop) => {
+      let value = selectedNodeData.properties?.[prop.id];
+      if (value === undefined && prop.id === 'name') {
+        value = selectedNodeData.properties?.name || '';
+      }
+      let type: NodeProperty['type'] = 'text';
+      if (prop.type === 'number') type = 'number';
+      else if (prop.type === 'select') type = 'select';
+      else if (prop.type === 'textarea') type = 'textarea';
+      else if (prop.type === 'currency') type = 'currency';
+      else if (prop.type === 'date') type = 'date';
+      // Build options for select
+      let options = undefined;
+      if (prop.type === 'select' && prop.options) {
+        options = prop.options.map(opt => ({ value: opt.id ?? opt, label: opt.name ?? opt }));
+      }
+      return {
+        id: prop.id,
+        name: prop.label || prop.name,
+        type,
+        value: value ?? '',
+        options,
+        required: prop.required,
+      };
+    });
+  };
+
+  // Get linked asset metadata if this node has an asset_id property
+  const getLinkedAssetMetadata = (): any => {
+    if (!selectedNodeData || !templateSchema) return null;
+
+    // Check if this node has an asset_id property (like asset_reference nodes)
+    const assetId = selectedNodeData.properties?.asset_id;
+    if (!assetId) return null;
+
+    // Find the asset node in the store
+    const assetNode = storeNodes[assetId];
+    if (!assetNode) return null;
+
+    // Get the schema for the asset node type
+    const assetTypeSchema = templateSchema.node_types.find(nt => nt.id === assetNode.type);
+    if (!assetTypeSchema) return null;
+
+    // Build asset properties
+    const assetProperties = assetTypeSchema.properties.map((prop) => {
+      let value = assetNode.properties?.[prop.id];
+      if (value === undefined && prop.id === 'name') {
+        value = assetNode.properties?.name || '';
+      }
+      let type: NodeProperty['type'] = 'text';
+      if (prop.type === 'number') type = 'number';
+      else if (prop.type === 'select') type = 'select';
+      else if (prop.type === 'textarea') type = 'textarea';
+      else if (prop.type === 'currency') type = 'currency';
+      else if (prop.type === 'date') type = 'date';
+      // Build options for select
+      let options = undefined;
+      if (prop.type === 'select' && prop.options) {
+        options = prop.options.map(opt => ({ value: opt.id ?? opt, label: opt.name ?? opt }));
+      }
+      return {
+        id: prop.id,
+        name: prop.label || prop.name,
+        type,
+        value: value ?? '',
+        options,
+        required: prop.required,
+      };
+    });
+
+    return {
+      nodeId: assetNode.id,
+      nodeType: assetTypeSchema.label || assetNode.type,
+      name: assetNode.properties?.name || 'Asset',
+      properties: assetProperties,
+    };
+  };
+
+  // Menu handlers
+  const handleNew = useCallback(async () => {
+    try {
+      // Check if current project has unsaved changes
+      if (isDirty && sessionId) {
+        const confirmed = window.confirm(
+          'You have unsaved changes. Do you want to discard them and create a new project?'
+        );
+        if (!confirmed) {
+          return;
+        }
+        // Discard changes
+        try {
+          await apiClient.resetDirtyState(sessionId);
+          setIsDirty(false);
+        } catch (err) {
+          console.warn('Failed to reset dirty state:', err);
+          setIsDirty(false);  // Reset locally anyway
+        }
+      }
+      
+      // Load templates if not already loaded
+      if (templates.length === 0) {
+        const loadedTemplates = await apiClient.listTemplates();
+        console.log('Loaded templates:', loadedTemplates);
+        setTemplates(loadedTemplates);
+        if (loadedTemplates.length === 0) {
+          alert('No templates available. Please add templates to the backend.');
+          return;
+        }
+      }
+      // Show new project dialog
+      setShowNewProjectDialog(true);
+    } catch (err) {
+      console.error('✗ Failed to load templates:', err);
+      alert(`Failed to load templates. Error: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }, [templates.length, isDirty, sessionId]);
+
+  const handleAddRoot = useCallback(async () => {
+    try {
+      if (templates.length === 0) {
+        const loadedTemplates = await apiClient.listTemplates();
+        console.log('Loaded templates:', loadedTemplates);
+        setTemplates(loadedTemplates);
+        if (loadedTemplates.length === 0) {
+          alert('No templates available. Please add templates to the backend.');
+          return;
+        }
+      }
+      setShowAddRootDialog(true);
+    } catch (err) {
+      console.error('✗ Failed to load templates:', err);
+      alert(`Failed to load templates. Error: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }, [templates.length]);
+
+  const normalizeGraph = useCallback((graphLike: any): Graph => {
+    if (!graphLike) {
+      return { id: 'default', nodes: [], edges: [] };
+    }
+
+    const source = graphLike.graph ?? graphLike;
+
+    if (source && Array.isArray(source.nodes)) {
+      return {
+        id: source.id || 'default',
+        nodes: source.nodes,
+        edges: source.edges || [],
+      };
+    }
+
+    if (source && Array.isArray(source.roots)) {
+      const nodes: Node[] = [];
+
+      const flattenNodes = (nestedNode: any): Node => {
+        console.log('[normalizeGraph] Processing nested node:', {
+          id: nestedNode.id,
+          type: nestedNode.blueprint_type_id,
+          indicator_id: nestedNode.indicator_id,
+          indicator_set: nestedNode.indicator_set,
+          properties: nestedNode.properties
+        });
+        
+        const node: Node = {
+          id: nestedNode.id || nestedNode.blueprint_type_id,
+          type: nestedNode.blueprint_type_id || 'unknown',
+          properties: {
+            name: nestedNode.name || 'Unnamed',
+            ...nestedNode.properties,
+          },
+          children: [],
+          indicator_id: nestedNode.indicator_id,
+          indicator_set: nestedNode.indicator_set,
+        };
+        
+        console.log('[normalizeGraph] Created node:', node);
+
+        nodes.push(node);
+
+        if (nestedNode.children && Array.isArray(nestedNode.children)) {
+          node.children = nestedNode.children.map((child: any) => {
+            const childNode = flattenNodes(child);
+            return childNode.id;
+          });
+        }
+
+        return node;
+      };
+
+      for (const rootNode of source.roots || []) {
+        flattenNodes(rootNode);
+      }
+
+      return { id: 'default', nodes, edges: [] };
+    }
+
+    return { id: 'default', nodes: [], edges: [] };
+  }, []);
+
+  const handleCreateProject = useCallback(async (templateId: string, projectName: string) => {
+    try {
+      console.log('Creating project with template:', templateId, 'and name:', projectName);
+      const result = await apiClient.createProject(templateId, projectName);
+      console.log('✓ API Response:', result);
+      console.log('✓ API Response keys:', Object.keys(result));
+      
+      // Check for API error response
+      if (result.error) {
+        const errorMsg = result.error.message || result.error.code || 'Unknown error';
+        console.error('✗ API Error:', errorMsg);
+        alert(`Failed to create project: ${errorMsg}`);
+        return;
+      }
+      
+      console.log('✓ API Response.graph:', result.graph);
+      
+      const graph = normalizeGraph(result.graph);
+      console.log('Setting graph with nodes:', graph.nodes?.length || 0);
+      console.log('Final graph structure:', graph);
+      
+      // Load template schema for type information
+      const schema = await apiClient.getTemplateSchema(templateId);
+      setTemplateSchema(schema);
+      localStorage.setItem('talus_tally_template_id', templateId);
+      console.log('✓ Template schema loaded:', schema);
+      
+      // Update session and load graph
+      const newSessionId = result.session_id || result.id || 'unknown';
+      setSessionId(newSessionId);
+      localStorage.setItem('talus_tally_session_id', newSessionId);
+      setCurrentGraph(graph);
+      setShowNewProjectDialog(false);
+      setIsDirty(false);  // New project is clean
+      console.log('✓ Project created with session:', newSessionId);
+    } catch (err) {
+      console.error('✗ Failed to create project:', err);
+      alert(`Failed to create project. Error: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }, [normalizeGraph, setCurrentGraph]);
+
+  const handleAddProjectRoot = useCallback(async (templateId: string, rootName: string) => {
+    if (!sessionId) {
+      alert('No active session');
+      return;
+    }
+    try {
+      const result = await apiClient.executeCommand(sessionId, 'CreateNode', {
+        blueprint_type_id: templateId,
+        name: rootName,
+        parent_id: null,
+      });
+      const graph = normalizeGraph(result.graph ?? result);
+      setCurrentGraph(graph);
+      setShowAddRootDialog(false);
+      setIsDirty(result.is_dirty ?? true);  // Update dirty state from API
+      console.log('✓ Project root added');
+    } catch (err) {
+      console.error('✗ Failed to add project root:', err);
+      alert('Failed to add project root');
+    }
+  }, [normalizeGraph, sessionId, setCurrentGraph]);
+
+  const handleSave = useCallback(async (): Promise<boolean> => {
+    if (!sessionId) {
+      alert('No active session');
+      return false;
+    }
+    try {
+      const { isTauri } = await import('@tauri-apps/api/core');
+      if (!isTauri()) {
+        alert('Save is only available in the desktop app.');
+        return false;
+      }
+
+      const graph = currentGraph || { id: 'default', nodes: [], edges: [] };
+      const payload = JSON.stringify({ graph }, null, 2);
+
+      if (!lastFilePath) {
+        const { save } = await import('@tauri-apps/plugin-dialog');
+        const filePath = await save({
+          title: 'Save Project',
+          defaultPath: 'talus-project.json',
+          filters: [{ name: 'Talus Project', extensions: ['json'] }],
+        });
+        if (!filePath) return false;
+        setLastFilePath(filePath);
+        const { writeTextFile } = await import('@tauri-apps/plugin-fs');
+        await writeTextFile(filePath, payload);
+      } else {
+        const { writeTextFile } = await import('@tauri-apps/plugin-fs');
+        await writeTextFile(lastFilePath, payload);
+      }
+      // Mark session as clean after saving
+      await apiClient.saveSession(sessionId);
+      setIsDirty(false);
+      console.log('✓ Project saved');
+      return true;
+    } catch (err) {
+      console.error('✗ Save failed:', err);
+      alert('Save failed.');
+      return false;
+    }
+  }, [currentGraph, lastFilePath, sessionId]);
+
+  const handleSaveAs = useCallback(async (): Promise<boolean> => {
+    try {
+      const { isTauri } = await import('@tauri-apps/api/core');
+      if (!isTauri()) {
+        alert('Save is only available in the desktop app.');
+        return false;
+      }
+      const graph = currentGraph || { id: 'default', nodes: [], edges: [] };
+      const payload = JSON.stringify({ graph }, null, 2);
+      const { save } = await import('@tauri-apps/plugin-dialog');
+      const filePath = await save({
+        title: 'Save Project As',
+        defaultPath: 'talus-project.json',
+        filters: [{ name: 'Talus Project', extensions: ['json'] }],
+      });
+      if (!filePath) return false;
+      setLastFilePath(filePath);
+      const { writeTextFile } = await import('@tauri-apps/plugin-fs');
+      await writeTextFile(filePath, payload);
+      // Mark session as clean after saving
+      if (sessionId) {
+        await apiClient.saveSession(sessionId);
+        setIsDirty(false);
+      }
+      console.log('✓ Project saved');
+      return true;
+    } catch (err) {
+      console.error('✗ Save As failed:', err);
+      alert('Save failed.');
+      return false;
+    }
+  }, [currentGraph, sessionId]);
+
+  const handleOpen = useCallback(async () => {
+    try {
+      const { isTauri } = await import('@tauri-apps/api/core');
+      if (!isTauri()) {
+        alert('Open is only available in the desktop app.');
+        return;
+      }
+      const { open } = await import('@tauri-apps/plugin-dialog');
+      const filePath = await open({
+        title: 'Open Project',
+        multiple: false,
+        filters: [{ name: 'Talus Project', extensions: ['json'] }],
+      });
+      if (!filePath || Array.isArray(filePath)) return;
+      const { readTextFile } = await import('@tauri-apps/plugin-fs');
+      const fileContents = await readTextFile(filePath);
+      const parsed = JSON.parse(fileContents);
+      const graph = normalizeGraph(parsed.graph ?? parsed);
+      setCurrentGraph(graph);
+      setLastFilePath(filePath);
+      console.log('✓ Project opened');
+    } catch (err) {
+      console.error('✗ Open failed:', err);
+      alert('Open failed.');
+    }
+  }, [normalizeGraph, setCurrentGraph]);
+
+  const handleUndo = useCallback(async () => {
+    if (!sessionId) return;
+    try {
+      const result = await apiClient.undo(sessionId);
+      console.log('✓ Undo executed:', result);
+      const graph = normalizeGraph(result.graph ?? result);
+      setCurrentGraph(graph);
+    } catch (err) {
+      console.error('✗ Undo failed:', err);
+    }
+  }, [normalizeGraph, sessionId, setCurrentGraph]);
+
+  const handleRedo = useCallback(async () => {
+    if (!sessionId) return;
+    try {
+      const result = await apiClient.redo(sessionId);
+      console.log('✓ Redo executed:', result);
+      const graph = normalizeGraph(result.graph ?? result);
+      setCurrentGraph(graph);
+    } catch (err) {
+      console.error('✗ Redo failed:', err);
+    }
+  }, [normalizeGraph, sessionId, setCurrentGraph]);
+
+  const toggleInspector = useCallback(() => {
+    setInspectorOpen(prev => !prev);
+  }, []);
+
+  const handleExpandAll = useCallback(() => {
+    setExpandAllSignal((prev) => prev + 1);
+  }, []);
+
+  const handleCollapseAll = useCallback(() => {
+    setCollapseAllSignal((prev) => prev + 1);
+  }, []);
+
+  const handleCloseApp = useCallback(async () => {
+    const currentIsDirty = isDirtyRef.current;
+    console.log('handleCloseApp called, isDirty:', currentIsDirty);
+    if (currentIsDirty) {
+      // Set up the action to execute after user makes their choice
+      pendingCloseActionRef.current = async () => {
+        console.log('[CLOSE] Proceeding with force close...');
+        try {
+          const { invoke } = await import('@tauri-apps/api/core');
+          console.log('[CLOSE] Calling force_close_window command');
+          await invoke('force_close_window');
+          console.log('[CLOSE] force_close_window returned');
+          return;
+        } catch (tauriErr) {
+          console.error('[CLOSE] Tauri force close failed:', tauriErr);
+          console.log('[CLOSE] Trying fallback window.close()');
+          window.close?.();
+        }
+      };
+      // Show the save confirm dialog
+      console.log('Opening save confirmation dialog');
+      setShowSaveConfirmDialog(true);
+    } else {
+      // No unsaved changes, close immediately with force_close_window
+      console.log('No unsaved changes, force closing immediately');
+      try {
+        const { invoke } = await import('@tauri-apps/api/core');
+        console.log('[CLOSE] Calling force_close_window for clean state');
+        await invoke('force_close_window');
+      } catch (err) {
+        console.error('[CLOSE] Clean force close failed:', err);
+        window.close?.();
+      }
+    }
+  }, []);
+
+  const [addChildType, setAddChildType] = useState<string | undefined>(undefined);
+  const openAddChildDialog = useCallback((parentId: string, parentName?: string, childTypeName?: string, childTypeId?: string) => {
+    setAddChildParentId(parentId);
+    setAddChildType(childTypeId);
+    const typeName = childTypeName || 'Child';
+    setAddChildTitle(parentName ? `Add ${typeName} to ${parentName}` : `Add ${typeName}`);
+    setShowAddChildDialog(true);
+    // Expand the parent node so the new child will be visible
+    setExpandedMap((prev) => ({ ...prev, [parentId]: true }));
+  }, []);
+
+  const getAssetNodeTypes = useCallback(() => {
+    if (!templateSchema) return ['part_asset', 'tool_asset', 'vehicle_asset'];
+    const types = new Set<string>();
+    const addAllowed = (typeId: string) => {
+      const schema = templateSchema.node_types.find(nt => nt.id === typeId);
+      schema?.allowed_children?.forEach((child) => types.add(child));
+    };
+
+    addAllowed('part_category');
+    addAllowed('tool_category');
+    addAllowed('vehicles');
+
+    if (types.size === 0) {
+      templateSchema.node_types
+        .map((t) => t.id)
+        .filter((id) => id.endsWith('_asset'))
+        .forEach((id) => types.add(id));
+    }
+
+    return Array.from(types);
+  }, [templateSchema]);
+
+  const assetOptions = useCallback(() => {
+    const assetTypes = new Set(getAssetNodeTypes());
+    return Object.values(storeNodes)
+      .filter((node) => assetTypes.has(node.type))
+      .map((node) => ({
+        id: node.id,
+        name: node.properties?.name || node.type,
+        type: node.type,
+        typeLabel: templateSchema?.node_types.find(nt => nt.id === node.type)?.name || node.type,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [getAssetNodeTypes, storeNodes, templateSchema]);
+
+  const assetCategoryOptions = useCallback(() => {
+    const fallback = [
+      { id: 'parts_inventory', label: 'Parts Inventory' },
+      { id: 'tools_inventory', label: 'Tools Inventory' },
+      { id: 'vehicles', label: 'Vehicles' },
+    ];
+    if (!templateSchema) return fallback;
+    const root = templateSchema.node_types.find(nt => nt.id === 'project_root');
+    const allowed = root?.allowed_children || [];
+    const isAssetCategory = (id: string) => id.endsWith('_inventory') || id === 'vehicles';
+    const options = allowed
+      .filter(isAssetCategory)
+      .map((id) => ({
+        id,
+        label: templateSchema.node_types.find(nt => nt.id === id)?.name || id,
+      }));
+    return options.length > 0 ? options : fallback;
+  }, [templateSchema]);
+
+  const handleAddChildConfirm = useCallback((childName: string) => {
+    if (!addChildParentId || !sessionId) {
+      alert('No active session or parent selected');
+      return;
+    }
+    const parentNode = storeNodes[addChildParentId];
+    if (!parentNode) {
+      alert('Parent node not found');
+      return;
+    }
+    // Use the child type selected from the flyout
+    let childType = addChildType || 'task';
+    console.log(`Creating child node: type="${childType}", parent type="${parentNode.type}"`);
+    apiClient
+      .executeCommand(sessionId, 'CreateNode', {
+        blueprint_type_id: childType,
+        name: childName,
+        parent_id: addChildParentId,
+      })
+      .then((result) => {
+        const graph = normalizeGraph(result.graph ?? result);
+        setCurrentGraph(graph);
+        // Ensure parent node remains expanded after adding child
+        setExpandedMap((prev) => ({ ...prev, [addChildParentId]: true }));
+        setShowAddChildDialog(false);
+        setAddChildParentId(null);
+        setAddChildType(undefined);
+        setIsDirty(result.is_dirty ?? true);  // Update dirty state from API
+      })
+      .catch((err) => {
+        console.error('Failed to add child:', err);
+        alert('Failed to add child node');
+      });
+  }, [addChildParentId, addChildType, normalizeGraph, sessionId, setCurrentGraph, storeNodes]);
+
+  const handleAssetSelectConfirm = useCallback(async (assetId: string) => {
+    if (!assetSelectParentId || !sessionId) {
+      alert('No active session or parent selected');
+      return;
+    }
+    const assetNode = storeNodes[assetId];
+    if (!assetNode) {
+      alert('Asset not found');
+      return;
+    }
+    try {
+      const createResult = await apiClient.executeCommand(sessionId, 'CreateNode', {
+        blueprint_type_id: 'asset_reference',
+        name: assetNode.properties?.name || 'Asset Reference',
+        parent_id: assetSelectParentId,
+      });
+
+      const createdGraph = normalizeGraph(createResult.graph ?? createResult);
+      const createdNodeId = createdGraph.nodes.find(
+        (n) => n.type === 'asset_reference' && n.properties?.name === (assetNode.properties?.name || 'Asset Reference')
+      )?.id;
+
+      if (createdNodeId) {
+        await apiClient.executeCommand(sessionId, 'UpdateProperty', {
+          node_id: createdNodeId,
+          property_id: 'asset_id',
+          old_value: null,
+          new_value: assetId,
+        });
+      }
+
+      const refreshedGraph = createdNodeId
+        ? normalizeGraph((await apiClient.getSessionGraph(sessionId)).graph)
+        : createdGraph;
+
+      setCurrentGraph(refreshedGraph);
+      setExpandedMap((prev) => ({ ...prev, [assetSelectParentId]: true }));
+      setShowAssetSelectDialog(false);
+      setAssetSelectParentId(null);
+      setIsDirty(true);
+    } catch (err) {
+      console.error('Failed to add asset reference:', err);
+      alert('Failed to add asset reference');
+    }
+  }, [assetSelectParentId, normalizeGraph, sessionId, setCurrentGraph, storeNodes]);
+
+  const handleAssetCategoryConfirm = useCallback(async (categoryId: string, name: string) => {
+    if (!assetCategoryParentId || !sessionId) {
+      alert('No active session or parent selected');
+      return;
+    }
+    try {
+      const result = await apiClient.executeCommand(sessionId, 'CreateNode', {
+        blueprint_type_id: categoryId,
+        name,
+        parent_id: assetCategoryParentId,
+      });
+      const graph = normalizeGraph(result.graph ?? result);
+      setCurrentGraph(graph);
+      setExpandedMap((prev) => ({ ...prev, [assetCategoryParentId]: true }));
+      setShowAssetCategoryDialog(false);
+      setAssetCategoryParentId(null);
+      setIsDirty(result.is_dirty ?? true);
+    } catch (err) {
+      console.error('Failed to add asset category:', err);
+      alert('Failed to add asset category');
+    }
+  }, [assetCategoryParentId, normalizeGraph, sessionId, setCurrentGraph]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl/Cmd + N - New Project
+      if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+        e.preventDefault();
+        handleNew();
+      }
+      // Ctrl/Cmd + S - Save
+      else if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        handleSave();
+      }
+      // Ctrl/Cmd + Z - Undo
+      else if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        handleUndo();
+      }
+      // Ctrl/Cmd + Shift + Z or Ctrl/Cmd + Y - Redo
+      else if ((e.ctrlKey || e.metaKey) && (e.shiftKey && e.key === 'z' || e.key === 'y')) {
+        e.preventDefault();
+        handleRedo();
+      }
+      // Ctrl/Cmd + I - Toggle Inspector
+      else if ((e.ctrlKey || e.metaKey) && e.key === 'i') {
+        e.preventDefault();
+        toggleInspector();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleNew, handleSave, handleUndo, handleRedo, toggleInspector]);
+
+  // Intercept Tauri window close request
+  useEffect(() => {
+    let unlisten: (() => void) | null = null;
+    
+    const setupCloseHandler = async () => {
+      console.log('[CLOSE HANDLER SETUP] Starting setup');
+      try {
+        const { getCurrentWindow } = await import('@tauri-apps/api/window');
+        const { listen } = await import('@tauri-apps/api/event');
+        const appWindow = getCurrentWindow();
+        console.log('[CLOSE HANDLER SETUP] Got window reference');
+        
+        // Listen for the custom close event emitted by Rust
+        unlisten = await listen('tauri://close-requested', async () => {
+          const currentIsDirty = isDirtyRef.current;
+          console.log('====================================');
+          console.log('[CLOSE REQUESTED] EVENT RECEIVED!');
+          console.log('[CLOSE REQUESTED] isDirtyRef.current:', currentIsDirty);
+          console.log('====================================');
+          
+          if (currentIsDirty) {
+            console.log('[CLOSE REQUESTED] Dirty state detected, showing save dialog');
+            // Set up the action to execute after user makes their choice
+            pendingCloseActionRef.current = async () => {
+              console.log('[CLOSE REQUESTED DESTROY] About to force close window...');
+              try {
+                const { invoke } = await import('@tauri-apps/api/core');
+                console.log('[CLOSE REQUESTED DESTROY] Calling force_close_window');
+                await invoke('force_close_window');
+                console.log('[CLOSE REQUESTED DESTROY] Force close completed');
+              } catch (err) {
+                console.error('[CLOSE REQUESTED DESTROY] Error:', err);
+              }
+            };
+            // Trigger the save dialog to show
+            // Use setTimeout to ensure state update happens after event listener completes
+            setTimeout(() => {
+              console.log('[CLOSE REQUESTED] Setting showSaveConfirmDialog to true');
+              setShowSaveConfirmDialog(true);
+            }, 0);
+          } else {
+            console.log('[CLOSE REQUESTED] Clean state, force closing window...');
+            try {
+              const { invoke } = await import('@tauri-apps/api/core');
+              console.log('[CLOSE REQUESTED] Calling force_close_window');
+              await invoke('force_close_window');
+              console.log('[CLOSE REQUESTED] Force close completed');
+            } catch (err) {
+              console.error('[CLOSE REQUESTED] Force close failed:', err);
+            }
+          }
+        });
+        console.log('[CLOSE HANDLER SETUP] ✓ Event listener registered for tauri://close-requested');
+      } catch (err) {
+        console.error('[CLOSE HANDLER SETUP] ❌ Failed to setup close handler:', err);
+      }
+    };
+    
+    setupCloseHandler();
+    
+    return () => {
+      console.log('[CLOSE HANDLER CLEANUP] Cleaning up event listener');
+      if (unlisten) {
+        unlisten();
+      }
+    };
+  }, []);  // Empty deps - only setup once, use ref for current state
+
+  // Handle save dialog confirmation
+  const handleSaveConfirm = useCallback(async (action: SaveAction) => {
+    console.log('[SAVE DIALOG] User selected action:', action);
+    setShowSaveConfirmDialog(false);
+
+    // Execute the action
+    if (action === 'save') {
+      console.log('[SAVE DIALOG] Saving...');
+      const saved = await handleSave();
+      if (!saved) {
+        console.log('[SAVE DIALOG] Save canceled or failed, staying open');
+        pendingCloseActionRef.current = null;
+        return;
+      }
+    } else if (action === 'save-as') {
+      console.log('[SAVE DIALOG] Save As...');
+      const savedAs = await handleSaveAs();
+      if (!savedAs) {
+        console.log('[SAVE DIALOG] Save As canceled or failed, staying open');
+        pendingCloseActionRef.current = null;
+        return;
+      }
+    } else if (action === 'dont-save') {
+      console.log('[SAVE DIALOG] Don\'t save, closing immediately');
+    } else if (action === 'cancel') {
+      console.log('[SAVE DIALOG] Cancel, staying open');
+      pendingCloseActionRef.current = null;
+      return;
+    }
+
+    // Execute the pending close action if user didn't cancel
+    if (action !== 'cancel' && pendingCloseActionRef.current) {
+      console.log('[SAVE DIALOG] Executing pending close action, pendingCloseActionRef.current exists:', !!pendingCloseActionRef.current);
+      try {
+        console.log('[SAVE DIALOG] About to call close action...');
+        // Use a timeout to ensure we actually close even if the promise hangs
+        const closePromise = pendingCloseActionRef.current();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Close timeout')), 5000)
+        );
+        const result = await Promise.race([closePromise, timeoutPromise]);
+        console.log('[SAVE DIALOG] Close action completed, result:', result);
+      } catch (err) {
+        console.error('[SAVE DIALOG] Close action failed or timed out:', err);
+        // If destroy failed or timed out, try immediate fallback
+        try {
+          console.log('[SAVE DIALOG] Trying immediate fallback methods');
+          // Try Tauri destroy with short timeout
+          try {
+            const { getCurrentWindow } = await import('@tauri-apps/api/window');
+            const win = getCurrentWindow();
+            await Promise.race([
+              win.destroy(),
+              new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 2000))
+            ]);
+            console.log('[SAVE DIALOG] Emergency destroy succeeded');
+          } catch (tauri) {
+            console.error('[SAVE DIALOG] Emergency destroy failed:', tauri);
+            // Final fallback
+            window.close?.();
+          }
+        } catch (fallbackErr) {
+          console.error('[SAVE DIALOG] All close attempts failed:', fallbackErr);
+        }
+      }
+      pendingCloseActionRef.current = null;
+    }
+  }, [handleSave, handleSaveAs]);
+
+  // Menu configuration
+  const menus = {
+    File: [
+      { label: 'New Project', onClick: handleNew },
+      { label: 'Open Project...', onClick: handleOpen },
+      { label: 'Save', onClick: handleSave },
+      { label: 'Save As...', onClick: handleSaveAs },
+      { label: '---', onClick: () => {} },
+      { label: 'Exit', onClick: async () => {
+        try {
+          const { invoke } = await import('@tauri-apps/api/core');
+          await invoke('exit_app');
+        } catch {
+          window.close?.();
+        }
+      } },
+    ],
+    Edit: [
+      { label: 'Undo', onClick: handleUndo },
+      { label: 'Redo', onClick: handleRedo },
+    ],
+    View: [
+      { label: 'Toggle Properties Panel', onClick: toggleInspector },
+      { label: 'Expand All', onClick: handleExpandAll },
+      { label: 'Collapse All', onClick: handleCollapseAll },
+    ],
+    Tools: [
+      { label: 'Settings', onClick: () => setShowSettingsDialog(true) },
+    ],
+    Help: [
+      { label: 'Documentation', onClick: () => console.log('Docs - TODO') },
+      { label: 'About', onClick: () => console.log('About - TODO') },
+    ],
+  };
+
+  const toolbarButtons: ToolbarButton[] = [
+    { id: 'new', label: 'New', icon: <Plus size={16} />, onClick: handleNew },
+    { id: 'save', label: 'Save', icon: <Save size={16} />, onClick: handleSave },
+    { id: 'separator1', label: '', icon: null, onClick: () => {} },
+    { id: 'undo', label: 'Undo', icon: <Undo2 size={16} />, onClick: handleUndo },
+    { id: 'redo', label: 'Redo', icon: <Redo2 size={16} />, onClick: handleRedo },
+  ];
+
+  return (
+    <ErrorBoundary>
+      <div className="flex flex-col h-screen bg-bg-dark text-fg-primary">
+      <TitleBar title={isDirty ? "TALUS TALLY *" : "TALUS TALLY"} isDirty={isDirty} onClose={handleCloseApp} />
+      <MenuBar menus={menus} />
+      <Toolbar buttons={toolbarButtons} />
+
+      {/* Main Content - Tree View with Optional Inspector */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Main Tree View */}
+        <main className="flex-1 bg-bg-dark border-r border-border overflow-auto p-4">
+          {treeNodes.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-fg-secondary">
+              <div className="text-lg mb-4">No project loaded</div>
+              <div className="text-sm">Use File → New Project to get started</div>
+            </div>
+          ) : (
+            <Sidebar
+              nodes={treeNodes}
+              onSelectNode={setSelectedNode}
+              onBackgroundMenu={(action) => {
+                if (action === 'add-project-root') {
+                  handleAddRoot();
+                }
+              }}
+              expandAllSignal={expandAllSignal}
+              collapseAllSignal={collapseAllSignal}
+              getTypeLabel={(typeId) => {
+                if (!templateSchema) return typeId;
+                const typeSchema = templateSchema.node_types.find(nt => nt.id === typeId);
+                return typeSchema?.name || typeId;
+              }}
+              expandedMap={expandedMap}
+              setExpandedMap={setExpandedMap}
+              onContextMenu={(nodeId, action) => {
+                console.log(`Context menu action "${action}" on node:`, nodeId);
+                if (action === 'add-asset-category') {
+                  setAssetCategoryParentId(nodeId);
+                  setShowAssetCategoryDialog(true);
+                  return;
+                }
+                if (action.startsWith('add:')) {
+                  const type = action.split(':')[1];
+                  const node = storeNodes[nodeId];
+                  if (!node) {
+                    alert('Node not found');
+                    return;
+                  }
+                  if (type === 'assets' || type === 'asset_category') {
+                    setAssetCategoryParentId(nodeId);
+                    setShowAssetCategoryDialog(true);
+                    return;
+                  }
+                  if (type === 'asset_reference') {
+                    setAssetSelectParentId(nodeId);
+                    setShowAssetSelectDialog(true);
+                    return;
+                  }
+                  // Find the child type name from template schema for dialog title
+                  let childTypeName = type;
+                  if (templateSchema) {
+                    const childTypeSchema = templateSchema.node_types.find(nt => nt.id === type);
+                    if (childTypeSchema) {
+                      childTypeName = childTypeSchema.name;
+                    }
+                  }
+                  openAddChildDialog(nodeId, node.properties?.name, childTypeName, type);
+                } else if (action === 'rename') {
+                  // Select the node and open inspector (name field will be first property)
+                  setSelectedNode(nodeId);
+                  setInspectorOpen(true);
+                  console.log('✓ Node selected for renaming, open Inspector to edit name');
+                } else if (action === 'delete') {
+                  if (confirm('Delete this node?')) {
+                    if (!sessionId) {
+                      alert('No active session');
+                      return;
+                    }
+                    apiClient
+                      .executeCommand(sessionId, 'DeleteNode', {
+                        node_id: nodeId,
+                      })
+                      .then((result) => {
+                        const graph = normalizeGraph(result.graph ?? result);
+                        setCurrentGraph(graph);
+                        setIsDirty(result.is_dirty ?? true);  // Update dirty state from API
+                        console.log('✓ Node deleted via API');
+                      })
+                      .catch((err) => {
+                        console.error('Failed to delete node:', err);
+                        alert('Failed to delete node');
+                      });
+                  }
+                }
+              }}
+            />
+          )}
+        </main>
+
+        {/* Inspector Panel - Collapsible */}
+        {inspectorOpen && (
+          <aside className="w-80 h-full bg-bg-darker border-l border-border flex flex-col flex-shrink-0">
+            <Inspector
+              nodeId={selectedNode || undefined}
+              nodeName={selectedNodeData?.properties?.name || selectedNode || undefined}
+              nodeType={selectedNodeData?.type || undefined}
+              properties={getNodeProperties()}
+              linkedAsset={getLinkedAssetMetadata()}
+              onPropertyChange={(propId, value) => {
+                if (!selectedNodeData || !sessionId) {
+                  alert('No active session or node selected');
+                  return;
+                }
+                apiClient
+                  .executeCommand(sessionId, 'UpdateProperty', {
+                    node_id: selectedNodeData.id,
+                    property_id: propId,
+                    old_value: selectedNodeData.properties?.[propId],
+                    new_value: value,
+                  })
+                  .then((result) => {
+                    const graph = normalizeGraph(result.graph ?? result);
+                    setCurrentGraph(graph);
+                    setIsDirty(result.is_dirty ?? true);  // Update dirty state from API
+                    console.log('✓ Property updated');
+                  })
+                  .catch((err) => {
+                    console.error('Failed to update property:', err);
+                    alert('Failed to update property');
+                  });
+              }}
+              onLinkedAssetPropertyChange={(propId, value) => {
+                const linkedAssetMetadata = getLinkedAssetMetadata();
+                if (!linkedAssetMetadata || !sessionId) {
+                  alert('No linked asset or active session');
+                  return;
+                }
+                // Update the linked asset node, not the reference node
+                apiClient
+                  .executeCommand(sessionId, 'UpdateProperty', {
+                    node_id: linkedAssetMetadata.nodeId,
+                    property_id: propId,
+                    old_value: storeNodes[linkedAssetMetadata.nodeId]?.properties?.[propId],
+                    new_value: value,
+                  })
+                  .then((result) => {
+                    const graph = normalizeGraph(result.graph ?? result);
+                    setCurrentGraph(graph);
+                    setIsDirty(result.is_dirty ?? true);  // Update dirty state from API
+                    console.log('✓ Asset property updated');
+                  })
+                  .catch((err) => {
+                    console.error('Failed to update asset property:', err);
+                    alert('Failed to update asset property');
+                  });
+              }}
+            />
+          </aside>
+        )}
+      </div>
+
+      {/* New Project Dialog */}
+      {showNewProjectDialog && (
+        <NewProjectDialog
+          templates={templates}
+          onConfirm={handleCreateProject}
+          onCancel={() => setShowNewProjectDialog(false)}
+        />
+      )}
+
+
+      {/* Dev-only Debug Panel */}
+      {process.env.NODE_ENV !== 'production' && (
+        <DebugPanel treeNodes={treeNodes} expandedMap={expandedMap} logs={debugLogs} />
+      )}
+
+      {/* New Project Dialog */}
+      {showNewProjectDialog && (
+        <NewProjectDialog
+          templates={templates}
+          onConfirm={handleCreateProject}
+          onCancel={() => setShowNewProjectDialog(false)}
+        />
+      )}
+
+      {/* Add Root Dialog */}
+      {showAddRootDialog && (
+        <NewProjectDialog
+          templates={templates}
+          title="Add Project Root"
+          confirmLabel="Add Root"
+          onConfirm={handleAddProjectRoot}
+          onCancel={() => setShowAddRootDialog(false)}
+        />
+      )}
+
+      {/* Add Child Dialog */}
+      {showAddChildDialog && (
+        <AddChildDialog
+          title={addChildTitle}
+          confirmLabel={addChildTitle?.replace(/^Add /, 'Add ') || 'Add Child'}
+          onConfirm={handleAddChildConfirm}
+          onCancel={() => {
+            setShowAddChildDialog(false);
+            setAddChildParentId(null);
+            setAddChildType(undefined);
+          }}
+        />
+      )}
+
+      {showAssetSelectDialog && (
+        <AssetSelectDialog
+          title="Select Asset to Use"
+          assets={assetOptions()}
+          onConfirm={handleAssetSelectConfirm}
+          onCancel={() => {
+            setShowAssetSelectDialog(false);
+            setAssetSelectParentId(null);
+          }}
+        />
+      )}
+
+      {showAssetCategoryDialog && (
+        <AssetCategoryDialog
+          title="Add Asset Category"
+          categories={assetCategoryOptions()}
+          onConfirm={handleAssetCategoryConfirm}
+          onCancel={() => {
+            setShowAssetCategoryDialog(false);
+            setAssetCategoryParentId(null);
+          }}
+        />
+      )}
+
+      {/* Settings Dialog */}
+      {showSettingsDialog && (
+        <SettingsDialog
+          isOpen={showSettingsDialog}
+          onClose={() => setShowSettingsDialog(false)}
+        />
+      )}
+
+      {/* Save Confirm Dialog */}
+      <SaveConfirmDialog
+        isOpen={showSaveConfirmDialog}
+        onConfirm={handleSaveConfirm}
+        onCancel={() => {
+          console.log('[SAVE DIALOG] User clicked Cancel');
+          setShowSaveConfirmDialog(false);
+          pendingCloseActionRef.current = null;
+        }}
+      />
+    </div>
+  </ErrorBoundary>
+  );
+}
+
+export default App;

@@ -1,0 +1,199 @@
+/* Graph Canvas Styles */
+
+.graph-canvas-container {
+  position: relative;
+  background: linear-gradient(135deg, #0f1419 0%, #1a202c 100%);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+}
+
+/* React Flow Customization */
+.reactflow {
+  background: linear-gradient(135deg, #0f1419 0%, #1a202c 100%);
+}
+
+.reactflow-wrapper {
+  flex: 1;
+}
+
+/* Custom Node Styles */
+.custom-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  font-family: 'Michroma', sans-serif;
+}
+
+.custom-node.selected {
+  box-shadow: 0 0 12px rgba(230, 57, 70, 0.6), inset 0 0 6px rgba(230, 57, 70, 0.3);
+}
+
+.custom-node:hover {
+  box-shadow: 0 0 8px rgba(168, 218, 220, 0.4);
+  transition: box-shadow 0.2s ease;
+}
+
+/* React Flow Controls */
+.react-flow__controls {
+  background: rgba(26, 32, 44, 0.8);
+  border: 1px solid #a8dadc;
+  border-radius: 8px;
+  padding: 8px;
+  gap: 8px;
+}
+
+.react-flow__controls button {
+  background: #457b9d;
+  border: 1px solid #a8dadc;
+  color: #f1faee;
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.react-flow__controls button:hover {
+  background: #e63946;
+  border-color: #e63946;
+}
+
+/* React Flow Minimap */
+.react-flow__minimap {
+  background: rgba(26, 32, 44, 0.8);
+  border: 1px solid #a8dadc;
+  border-radius: 8px;
+}
+
+/* Graph Info Panel */
+.graph-info-panel {
+  background: rgba(26, 32, 44, 0.8);
+  border: 1px solid #a8dadc;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 8px;
+}
+
+/* Handles (input/output connectors) */
+.react-flow__handle {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 2px solid #f1faee;
+  background: #a8dadc;
+  cursor: crosshair;
+}
+
+.react-flow__handle.connectable {
+  cursor: pointer;
+}
+
+.react-flow__handle-top {
+  top: -4px;
+}
+
+.react-flow__handle-right {
+  right: -4px;
+}
+
+.react-flow__handle-bottom {
+  bottom: -4px;
+}
+
+.react-flow__handle-left {
+  left: -4px;
+}
+
+/* Edges */
+.react-flow__edge {
+  stroke: #a8dadc;
+  stroke-width: 2;
+}
+
+.react-flow__edge.animated {
+  animation: dashedAnimation 20s linear infinite;
+}
+
+@keyframes dashedAnimation {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: 8;
+  }
+}
+
+.react-flow__edge.selected {
+  stroke: #e63946;
+  stroke-width: 3;
+}
+
+/* Edge label */
+.react-flow__edge-label {
+  background: rgba(26, 32, 44, 0.9);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #a8dadc;
+  border: 1px solid #a8dadc;
+}
+
+/* Background */
+.react-flow__background {
+  background: linear-gradient(135deg, #0f1419 0%, #1a202c 100%);
+}
+
+/* Selection */
+.react-flow__selection {
+  stroke: #e63946;
+  stroke-width: 1;
+  fill: rgba(230, 57, 70, 0.05);
+}
+
+/* Pane */
+.react-flow__pane {
+  cursor: grab;
+}
+
+.react-flow__pane.dragging {
+  cursor: grabbing;
+}
+
+/* Zoom controls position */
+.react-flow__controls-top-left {
+  top: 16px;
+  left: 16px;
+}
+
+.react-flow__controls-top-right {
+  top: 16px;
+  right: 16px;
+}
+
+.react-flow__controls-bottom-left {
+  bottom: 16px;
+  left: 16px;
+}
+
+.react-flow__controls-bottom-right {
+  bottom: 16px;
+  right: 16px;
+}
+
+/* Minimap position */
+.react-flow__minimap-bottom-right {
+  bottom: 16px;
+  right: 16px;
+}
+
+/* Focus outline */
+.react-flow__node.selected {
+  outline: 2px solid #e63946;
+  outline-offset: 2px;
+}

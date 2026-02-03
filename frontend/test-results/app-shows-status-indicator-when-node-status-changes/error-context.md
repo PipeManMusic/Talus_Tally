@@ -1,0 +1,56 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - heading "TALUS TALLY" [level=1] [ref=e5]
+    - generic [ref=e6] [cursor=pointer]:
+      - button "Minimize" [ref=e7]:
+        - img [ref=e8]
+      - button "Maximize" [ref=e9]:
+        - img [ref=e10]
+      - button "Close" [ref=e12]:
+        - img [ref=e13]
+  - navigation [ref=e16]:
+    - generic [ref=e17]:
+      - button "File" [ref=e19] [cursor=pointer]:
+        - text: File
+        - img [ref=e20]
+      - button "Edit" [ref=e23] [cursor=pointer]:
+        - text: Edit
+        - img [ref=e24]
+      - button "View" [ref=e27] [cursor=pointer]:
+        - text: View
+        - img [ref=e28]
+      - button "Tools" [ref=e31] [cursor=pointer]:
+        - text: Tools
+        - img [ref=e32]
+      - button "Help" [ref=e35] [cursor=pointer]:
+        - text: Help
+        - img [ref=e36]
+  - generic [ref=e38]:
+    - button "New" [ref=e39] [cursor=pointer]:
+      - img [ref=e40]
+      - generic [ref=e41]: New
+    - button "Save" [ref=e42] [cursor=pointer]:
+      - img [ref=e43]
+      - generic [ref=e47]: Save
+    - button "Undo" [ref=e49] [cursor=pointer]:
+      - img [ref=e50]
+      - generic [ref=e53]: Undo
+    - button "Redo" [ref=e54] [cursor=pointer]:
+      - img [ref=e55]
+      - generic [ref=e58]: Redo
+    - button "Settings" [ref=e59] [cursor=pointer]:
+      - img [ref=e60]
+      - generic [ref=e63]: Settings
+  - generic [ref=e64]:
+    - main [ref=e65]:
+      - generic [ref=e66]:
+        - generic [ref=e67]: No project loaded
+        - generic [ref=e68]: Use File → New Project to get started
+    - complementary [ref=e69]:
+      - complementary [ref=e70]:
+        - generic [ref=e71]: Select a node to view properties
+  - button "▲ Debug Panel" [ref=e73] [cursor=pointer]
+```

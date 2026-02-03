@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "Michroma";
+  src: url("/assets/fonts/Michroma-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+  font-family: "Segoe UI", Arial, sans-serif;
+  line-height: 1.4;
+  font-weight: 400;
+
+  --color-bg-dark: #121212;
+  --color-bg-light: #1e1e1e;
+  --color-bg-selection: #2d2d2d;
+
+  --color-fg-primary: #e0e0e0;
+  --color-fg-secondary: #b0b0b0;
+  --color-fg-disabled: #333333;
+
+  --color-accent-primary: #D94E1F;
+  --color-accent-hover: #FF6B3B;
+
+  --color-border-default: #333333;
+  --color-border-focus: #D94E1F;
+
+  --color-success: #28a745;
+  --color-warning: #ffc107;
+  --color-danger: #dc3545;
+
+  --indicator-size: 14px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-bg-dark);
+  color: var(--color-fg-primary);
+}
+
+.status-indicator-svg {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-fg-primary);
+}
+
+.status-indicator-svg svg {
+  width: var(--indicator-size);
+  height: var(--indicator-size);
+  display: block;
+}
