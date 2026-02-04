@@ -40,7 +40,9 @@ def create_app(config=None):
     app = Flask(__name__)
     
     # Initialize Socket.IO
-    socketio = SocketIO(app, cors_allowed_origins="*")
+    # Explicitly use threading mode for PyInstaller compatibility
+    # Auto-detection fails in frozen executables
+    socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
     
     # Enable CORS for development with explicit configuration
     CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
