@@ -1,0 +1,12 @@
+Package: talus-tally
+Version: 0.1.0
+Architecture: amd64
+Installed-Size: 500000
+Maintainer: Talus Tally Dev <dev@talusstally.local>
+Depends: libssl3, libwebkit2gtk-4.1-0, libgtk-3-0, libglib2.0-0, libc6, python3 (>= 3.9)
+Homepage: https://github.com/PipeManMusic/Talus_Tally
+Description: Talus Tally - Project Management Application
+ A desktop application for managing projects with hierarchical node structures,
+ indicator systems, and real-time data synchronization.
+ .
+ Includes pre-compiled Python dependencies for offline installation.

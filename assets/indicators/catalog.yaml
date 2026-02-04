@@ -22,6 +22,15 @@ indicator_sets:
       - id: "alert"
         file: "status_alert.svg"
         description: "Alert/blocked/error state"
+      - id: "low"
+        file: "status_priority.svg"
+        description: "Low priority state"
+      - id: "medium"
+        file: "status_priority.svg"
+        description: "Medium priority state"
+      - id: "high"
+        file: "status_priority.svg" 
+        description: "High priority state"
     
     default_theme:
       empty:
@@ -38,3 +47,12 @@ indicator_sets:
       alert:
         indicator_color: "#F5A623"
         text_color: "#F5A623"
+      low:
+        indicator_color: "#7ED321"
+        text_color: "#7ED321"
+      medium:
+        indicator_color: "#F5A623"
+        text_color: "#F5A623"
+      high:
+        indicator_color: "#D0021B"
+        text_color: "#D0021B"

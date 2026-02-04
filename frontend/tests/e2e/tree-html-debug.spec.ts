@@ -1,16 +1,13 @@
 import { test, expect } from '@playwright/test';
+import { createNewProject } from './utils';
 
 test('debug: print tree HTML if "+" button not found', async ({ page }) => {
   await page.goto('/');
 
-  // Create a new project
-  await page.getByRole('button', { name: /^File$/ }).click();
-  const newProjectBtn = page.getByRole('button', { name: /New Project/i });
-  await newProjectBtn.waitFor({ state: 'visible' });
-  await newProjectBtn.click();
+  await createNewProject(page, 'Debug Project');
 
   // Wait for the tree to appear
-  const tree = page.locator('.tree-item');
+  const tree = page.locator('[data-testid="tree-item-row"]');
   await expect(tree.first()).toBeVisible({ timeout: 10000 });
 
   // Try to find the "+" button

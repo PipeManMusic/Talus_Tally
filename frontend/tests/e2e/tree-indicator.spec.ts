@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { createNewProject } from './utils';
 
 test('tree view displays node labels and status indicators', async ({ page }) => {
       // Log all network requests for debugging
@@ -16,7 +17,7 @@ test('tree view displays node labels and status indicators', async ({ page }) =>
       });
       // Utility: log SVG/text indicator data for all nodes in the tree
       async function logTreeIndicators() {
-        const nodes = await page.locator('.tree-item').all();
+        const nodes = await page.locator('[data-testid="tree-item-row"]').all();
         for (const node of nodes) {
           const label = await node.locator('.text-sm').textContent();
           const svg = await node.locator('.status-indicator-svg').count() > 0 ? 'SVG' : '';
@@ -32,41 +33,7 @@ test('tree view displays node labels and status indicators', async ({ page }) =>
   await page.goto('/');
 
 
-  // Create a new project (always fill and submit dialog)
-  await page.getByRole('button', { name: /^File$/ }).click();
-  const newProjectBtn = page.getByRole('button', { name: /New Project/i });
-  await newProjectBtn.waitFor({ state: 'visible' });
-  await newProjectBtn.click();
-  // Wait for the New Project dialog (use input[placeholder] as anchor)
-  const projectNameInput = page.locator('input[placeholder="Enter project name"]');
-  const createBtn = page.getByRole('button', { name: /Create/i });
-  try {
-    await expect(projectNameInput).toBeVisible({ timeout: 5000 });
-    await projectNameInput.fill('E2E Project');
-    await expect(createBtn).toBeVisible({ timeout: 2000 });
-    await createBtn.click();
-    // Wait and retry if dialog is still present
-    await page.waitForTimeout(2000);
-    await page.screenshot({ path: 'after-create-wait.png', fullPage: true });
-    if (await createBtn.isVisible()) {
-      console.log('Create button still visible after wait, retrying click.');
-      await createBtn.click();
-      await page.waitForTimeout(2000);
-      await page.screenshot({ path: 'after-create-retry.png', fullPage: true });
-    }
-    // Print any visible error messages in the dialog
-    const errorMsg = await page.locator('.text-status-danger, .text-red-500, .text-error').allTextContents();
-    if (errorMsg.length > 0) {
-      console.log('VISIBLE ERROR MESSAGES:', errorMsg);
-    }
-    // Wait longer for dialog to disappear
-    await expect(createBtn).toBeHidden({ timeout: 20000 });
-  } catch (e) {
-    const html = await page.content();
-    await page.screenshot({ path: 'dialog-failure.png', fullPage: true });
-    console.log('PAGE HTML:', html);
-    throw new Error('New Project dialog did not complete. See PAGE HTML and dialog-failure.png above.');
-  }
+  await createNewProject(page, 'Indicator Project');
 
   // Add a child node via the "+" button in the tree (using testid)
   const addChildBtn = page.locator('[data-testid="add-child-btn"]');
@@ -181,7 +148,7 @@ test('tree view displays node labels and status indicators', async ({ page }) =>
   await page.screenshot({ path: 'after-child-node-wait.png', fullPage: true });
   if (!found) {
     // Print the tree state for debugging
-    const treeItems = await page.locator('[data-testid="tree-item"]').all();
+    const treeItems = await page.locator('[data-testid="tree-item-row"]').all();
     for (const item of treeItems) {
       const id = await item.getAttribute('data-node-id');
       const allowed = await item.getAttribute('data-allowed-children');
@@ -198,7 +165,7 @@ test('tree view displays node labels and status indicators', async ({ page }) =>
     await childTreeItem.click({ timeout: 5000 });
   } catch (e) {
     // Print the tree HTML for debugging
-    const treeHtml = await page.locator('.tree-item').first().evaluate(node => node.parentElement?.innerHTML || node.innerHTML);
+    const treeHtml = await page.locator('[data-testid="tree-item-row"]').first().evaluate(node => node.parentElement?.innerHTML || node.innerHTML);
     console.log('TREE HTML:', treeHtml);
     await logTreeIndicators();
     throw new Error('Child Node found but not clickable. See TREE HTML and indicator log above.');

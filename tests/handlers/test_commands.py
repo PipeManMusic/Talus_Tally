@@ -99,7 +99,7 @@ def test_create_node_default_status_initialized():
     loader = SchemaLoader()
     blueprint_path = os.path.join(
         os.path.dirname(__file__),
-        "../../data/templates/restomod.yaml"
+        "/home/dworth/Dropbox/Bronco II/Talus Tally/data/templates/restomod.yaml"
     )
     blueprint = loader.load(blueprint_path)
 

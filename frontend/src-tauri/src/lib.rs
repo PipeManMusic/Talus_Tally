@@ -56,23 +56,65 @@ pub fn run() {
   struct BackendState(Arc<Mutex<Option<Child>>>);
 
 fn start_backend(backend_process: Arc<Mutex<Option<Child>>>, _app_handle: tauri::AppHandle) {
-  // Wait a moment for any existing backend to stop
-  std::thread::sleep(std::time::Duration::from_millis(500));
-
-  // If backend is already running, reuse it
-  if TcpStream::connect("127.0.0.1:5000").is_ok() {
-    println!("✓ Python backend already running, reusing existing process");
-    return;
+  // Kill any existing backend process first to ensure clean state
+  println!("Checking for existing backend processes...");
+  #[cfg(target_os = "linux")]
+  {
+    let _ = Command::new("pkill")
+      .args(&["-f", "python.*backend.app"])
+      .output();
+    println!("✓ Killed any existing backend processes");
   }
 
-  // Try to start Python backend
-  let project_root = std::env::current_dir()
-    .unwrap()
-    .parent()
-    .unwrap()
-    .parent()
-    .unwrap()
-    .to_path_buf();
+  #[cfg(target_os = "macos")]
+  {
+    let _ = Command::new("pkill")
+      .args(&["-f", "python.*backend.app"])
+      .output();
+    println!("✓ Killed any existing backend processes");
+  }
+
+  #[cfg(target_os = "windows")]
+  {
+    let _ = Command::new("taskkill")
+      .args(&["/F", "/IM", "python.exe"])
+      .output();
+    println!("✓ Killed any existing backend processes");
+  }
+
+  // Wait for port to be released
+  std::thread::sleep(std::time::Duration::from_millis(1000));
+
+  // Determine project root - handle both development and installed locations
+  let project_root = if let Ok(exe_path) = std::env::current_exe() {
+    // If running from /usr/bin/talus-tally, backend is at /opt/talus-tally
+    if exe_path.to_string_lossy().contains("/usr/bin/talus-tally") {
+      std::path::PathBuf::from("/opt/talus-tally")
+    } else {
+      // Development: go up from binary location to find project root
+      exe_path
+        .parent()        // src-tauri/target/release
+        .unwrap()
+        .parent()        // src-tauri/target
+        .unwrap()
+        .parent()        // src-tauri
+        .unwrap()
+        .parent()        // frontend
+        .unwrap()
+        .parent()        // project root
+        .unwrap()
+        .to_path_buf()
+    }
+  } else {
+    // Fallback to current_dir
+    std::env::current_dir()
+      .unwrap()
+      .parent()
+      .unwrap()
+      .parent()
+      .unwrap()
+      .to_path_buf()
+  };
   
   let venv_python = project_root.join("venv/bin/python3");
   
@@ -88,6 +130,8 @@ fn start_backend(backend_process: Arc<Mutex<Option<Child>>>, _app_handle: tauri:
     }
     Err(e) => {
       eprintln!("✗ Failed to start Python backend: {}", e);
+      eprintln!("Project root: {:?}", project_root);
+      eprintln!("Venv python: {:?}", venv_python);
       eprintln!("Make sure you have Python installed and venv activated");
     }
   }

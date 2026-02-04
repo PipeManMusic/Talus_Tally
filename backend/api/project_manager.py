@@ -19,19 +19,16 @@ class ProjectManager:
     
     def create_new_project(self, template_id: str = None, project_name: str = None) -> ProjectGraph:
         """
-        Create a new empty project graph with a root node.
-        
+        Create a new empty project graph with a root node (UUID-based).
         Args:
             template_id: Optional template ID (e.g., 'restomod')
             project_name: Optional project name
-            
         Returns:
             A new ProjectGraph with a root node
         """
+        from uuid import uuid4
         self.graph = ProjectGraph()
         self.template_paths = []
-        
-        # Load blueprint if template_id provided
         blueprint = None
         if template_id:
             try:
@@ -39,21 +36,38 @@ class ProjectManager:
                 self.add_template(f'{template_id}.yaml')
             except Exception as e:
                 raise Exception(f"Failed to load template '{template_id}': {str(e)}")
-        
+
         # Create a root node with first node type from blueprint
         if blueprint and blueprint.node_types:
-            first_node_type = blueprint.node_types[0]
+            print("[DEBUG] blueprint.node_types just before use:")
+            for idx, nt in enumerate(blueprint.node_types):
+                print(f"  idx={idx} type={type(nt)} value={nt}")
+            # Defensive: ensure node_types is a list of NodeTypeDef, not UUIDs or other types
+            node_types = [nt for nt in blueprint.node_types if hasattr(nt, 'id') and hasattr(nt, 'name')]
+            if not node_types:
+                raise Exception("Blueprint node_types malformed: no valid node type definitions found.")
+            first_node_type = node_types[0]
             root_node = Node(
                 blueprint_type_id=first_node_type.id,
-                name=project_name or first_node_type.name
+                name=project_name or first_node_type.name,
+                id=uuid4()
             )
+            # Assign default status if available
+            properties = getattr(first_node_type, '_extra_props', {}).get('properties', [])
+            for prop in properties:
+                if prop.get('id') == 'status' and 'options' in prop and prop['options']:
+                    # Use the first option as default
+                    default_status_uuid = prop['options'][0].get('id')
+                    if default_status_uuid:
+                        root_node.properties['status'] = default_status_uuid
+                    break
         else:
             # Fallback: create generic root node
             root_node = Node(
                 blueprint_type_id='root',
-                name=project_name or 'Project'
+                name=project_name or 'Project',
+                id=uuid4()
             )
-        
         self.graph.add_node(root_node)
         return self.graph
     

@@ -1,0 +1,181 @@
+id: project_talus
+version: 0.1.1
+name: Project Talus Workflow
+description: Production workflow for Project Talus with Dropbox footage tracking.
+node_types:
+- id: project_root
+  name: Talus Project
+  icon: film
+  is_root: true
+  allowed_children:
+  - season
+  - inventory_root
+  - camera_gear
+  - car_part
+  properties:
+  - name: project_lead
+    type: text
+    label: Project Lead
+    default: Daniel Worth
+- id: season
+  name: Season
+  icon: calendar-days
+  allowed_children:
+  - episode
+  - task
+  properties:
+  - name: year
+    type: number
+    label: Broadcast Year
+    default: 2026
+- id: episode
+  name: Episode
+  icon: video-camera
+  allowed_children:
+  - task
+  - footage
+  - location_scout
+  properties:
+  - name: episode_number
+    type: number
+    label: 'Episode #'
+  - name: synopsis
+    type: text
+    label: Synopsis
+  - name: status
+    type: select
+    label: Edit Status
+    options:
+    - name: Planning
+      indicator_id: empty
+    - name: Shooting
+      indicator_id: partial
+    - name: Editing
+      indicator_id: partial
+    - name: Uploaded
+      indicator_id: filled
+    indicator_set: status
+- id: task
+  name: Task
+  icon: clipboard-document-check
+  allowed_children: [asset_reference]
+  properties:
+  - name: description
+    type: text
+    label: Task Description
+  - name: status
+    type: select
+    label: Edit Status
+    options:
+    - name: Planning
+      indicator_id: empty
+    - name: In Progress
+      indicator_id: in_progress
+    - name: On Hold
+      indicator_id: alert
+    - name: Completed
+      indicator_id: filled
+    indicator_set: status
+- id: footage
+  name: Footage Clip
+  icon: play-circle
+  allowed_children: []
+  properties:
+  - name: filename
+    type: text
+    label: File Name
+  - name: dropbox_link
+    type: text
+    label: Dropbox Share Link
+    description: Paste the 'Copy Link' URL from Dropbox here.
+  - name: camera
+    type: select
+    label: Camera Used
+    options:
+    - Canon EOS M50
+    - GoPro
+    - Drone
+    - Phone
+  - name: notes
+    type: text
+    label: Shoot Notes
+- id: location_scout
+  name: Location Scout
+  icon: map-pin
+  allowed_children: []
+  properties:
+  - name: location_name
+    type: text
+    label: Location Name
+  - name: address
+    type: text
+    label: Address
+  - name: notes
+    type: text
+    label: Scout Notes
+  - name: permits_needed
+    type: boolean
+    label: Permits Required?
+  - name: scouted_date
+    type: text
+    label: Scout Date
+- id: camera_gear
+  name: Camera Gear
+  icon: camera
+  allowed_children: []
+  properties:
+  - name: model
+    type: text
+    label: Model Name
+  - name: serial
+    type: text
+    label: Serial Number
+- id: car_part
+  name: Car Part
+  icon: cog
+  allowed_children: []
+  properties:
+  - name: part_name
+    type: text
+    label: Part Name
+  - name: part_number
+    type: text
+    label: OEM Number
+  - name: vendor
+    type: text
+    label: Vendor/Source
+  - name: status
+    type: select
+    label: Status
+  - name: estimated_cost
+    type: currency
+    label: Estimated Cost
+  - name: actual_cost
+    type: currency
+    label: Actual Cost
+    options:
+    - name: Wishlist
+      indicator_id: empty
+    - name: Ordered
+      indicator_id: partial
+    - name: In Stock
+      indicator_id: partial
+    - name: Installed
+      indicator_id: filled
+    indicator_set: status
+
+- id: asset_reference
+  name: Asset Reference
+  icon: link
+  allowed_children: []
+  properties:
+    - name: asset_id
+      label: Linked Asset
+      type: text
+      required: true
+    - name: role
+      label: Role/Purpose in Task
+      type: text
+    - name: quantity
+      label: Quantity Needed
+      type: number

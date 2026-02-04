@@ -30,7 +30,7 @@ def test_load_graph(tmp_path):
     with open(file_path, "w") as f:
         json.dump({
             "version": "1.0",
-            "templates": ["data/templates/restomod.yaml"],
+            "templates": ["/home/dworth/Dropbox/Bronco II/Talus Tally/data/templates/restomod.yaml"],
             "nodes": {
                 "uuid-1": {
                     "id": "uuid-1",
@@ -49,4 +49,4 @@ def test_load_graph(tmp_path):
     node = list(graph.nodes.values())[0]
     assert node.name == "Loaded Node"
     assert node.properties["cost"] == 10
-    assert "data/templates/restomod.yaml" in template_paths
+    assert "/home/dworth/Dropbox/Bronco II/Talus Tally/data/templates/restomod.yaml" in template_paths

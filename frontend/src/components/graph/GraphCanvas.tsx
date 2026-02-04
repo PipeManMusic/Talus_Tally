@@ -17,6 +17,8 @@ import { useGraphAPI } from '@/hooks';
 import { LoadingSpinner, Alert } from '@/components';
 import CustomNode from './CustomNode';
 import '@/styles/graph.css';
+import { apiClient } from '@/api/client';
+import { normalizeGraph } from '@/utils/graph';
 
 // Define nodeTypes outside component to prevent recreation warnings
 const nodeTypes = {
@@ -40,7 +42,7 @@ export default function GraphCanvas({
   graphId,
   onSave,
 }: GraphCanvasProps) {
-  const { currentGraph, nodes: storeNodes, selectedNodeId, selectNode } = useGraphStore();
+  const { currentGraph, nodes: storeNodes, selectedNodeId, selectNode, setCurrentGraph } = useGraphStore();
   const { loading, error, saving, loadGraph, saveGraph, clearError } = useGraphAPI();
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
@@ -77,7 +79,7 @@ export default function GraphCanvas({
       })
     ).then(setNodes);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nodeSignature, selectedNodeId, setNodes]);
+  }, [selectedNodeId, setNodes]); // nodeSignature is implicitly tracked via storeNodes changes
 
   // Sync store edges to React Flow edges
   useEffect(() => {
@@ -109,21 +111,35 @@ export default function GraphCanvas({
     [selectNode]
   );
 
+  const applyGraphUpdate = useCallback((result: any) => {
+    const graph = normalizeGraph(result.graph ?? result);
+    setCurrentGraph(graph);
+  }, [setCurrentGraph]);
+
+  const getSessionId = useCallback(() => localStorage.getItem('talus_tally_session_id'), []);
+
   // Handle node drag end
   const handleNodeDragStop = useCallback(
     (_event: React.MouseEvent, node: Node) => {
-      // Update position in store
       const graphNode = (storeNodes || {})[node.id] as any;
-      if (graphNode) {
-        const updatedNode = { 
-          ...graphNode, 
-          properties: { ...graphNode.properties, position: node.position }
-        };
-        const newNodes = { ...storeNodes, [node.id]: updatedNode };
-        useGraphStore.setState({ nodes: newNodes as any });
+      const sessionId = getSessionId();
+      if (!sessionId || !graphNode) {
+        return;
       }
+
+      apiClient
+        .executeCommand(sessionId, 'UpdateProperty', {
+          node_id: node.id,
+          property_id: 'position',
+          old_value: graphNode.properties?.position ?? null,
+          new_value: node.position,
+        })
+        .then((result) => applyGraphUpdate(result))
+        .catch((err) => {
+          console.error('Failed to persist node position:', err);
+        });
     },
-    [storeNodes]
+    [storeNodes, getSessionId, applyGraphUpdate]
   );
 
   // Note: Node selection is now handled in the main sync effect above
@@ -155,11 +171,21 @@ export default function GraphCanvas({
       // Delete key to remove selected nodes
       if (e.key === 'Delete') {
         e.preventDefault();
+        const sessionId = getSessionId();
+        if (!sessionId) {
+          console.warn('[GraphCanvas] No session, cannot delete nodes via API');
+          return;
+        }
         const selectedNodes = nodes.filter((n) => n.selected);
         selectedNodes.forEach((node) => {
-          const newNodes = { ...storeNodes };
-          delete (newNodes as Record<string, any>)[node.id];
-          useGraphStore.setState({ nodes: newNodes as any });
+          apiClient
+            .executeCommand(sessionId, 'DeleteNode', {
+              node_id: node.id,
+            })
+            .then((result) => applyGraphUpdate(result))
+            .catch((err) => {
+              console.error('Failed to delete node via API:', err);
+            });
         });
       }
     };

@@ -42,8 +42,8 @@ def create_app(config=None):
     # Initialize Socket.IO
     socketio = SocketIO(app, cors_allowed_origins="*")
     
-    # Enable CORS for development
-    CORS(app)
+    # Enable CORS for development with explicit configuration
+    CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
     
     # Configuration
     app.config.update({
@@ -100,30 +100,10 @@ def create_app(config=None):
     from backend.api.routes import register_routes
     register_routes(app)
     
-    # Register WebSocket event handlers
+    # Register WebSocket namespace for /graph
     from backend.api.socketio_handlers import GraphNamespace
-    graph_ns = GraphNamespace('/graph')
-    
-    @socketio.on('connect', namespace='/graph')
-    def on_connect():
-        graph_ns.on_connect()
-    
-    @socketio.on('disconnect', namespace='/graph')
-    def on_disconnect():
-        graph_ns.on_disconnect()
-    
-    @socketio.on('join_session', namespace='/graph')
-    def on_join_session(data):
-        graph_ns.on_join_session(data)
-    
-    @socketio.on('leave_session', namespace='/graph')
-    def on_leave_session(data):
-        graph_ns.on_leave_session(data)
-    
-    @socketio.on('ping', namespace='/graph')
-    def on_ping():
-        graph_ns.on_ping()
-    
+    socketio.on_namespace(GraphNamespace('/graph'))
+
     logger.info("Flask app created successfully with Socket.IO")
     return app
 

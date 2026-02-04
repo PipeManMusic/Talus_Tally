@@ -1,0 +1,61 @@
+id: album_v1
+version: "1.0"
+name: "Album Organizer"
+description: "A template for organizing and managing creation of a music album."
+
+node_types:
+  - id: "album_root"
+    label: "Album"
+    allowed_children: ["track", "task"]
+    properties:
+      - id: "title"
+        label: "Album Title"
+        type: "text"
+        required: true
+      - id: "artist"
+        label: "Artist Name"
+        type: "text"
+        required: true
+      - id: "release_date"
+        label: "Release Date"
+        type: "date"
+      - id: "genre"
+        label: "Genre"
+        type: "text"
+
+  - id: "track"
+    label: "Track"
+    allowed_children: []
+    properties:
+      - id: "title"
+        label: "Track Title"
+        type: "text"
+        required: true
+      - id: "duration"
+        label: "Duration (mm:ss)"
+        type: "text"
+      - id: "composer"
+        label: "Composer"
+        type: "text"
+
+  - id: "task"
+    label: "Task"
+    allowed_children: []
+    properties:
+      - id: "name"
+        label: "Task Name"
+        type: "text"
+        required: true
+      - id: "status"
+        label: "Status"
+        type: "select"
+        indicator_set: "status"
+        options:
+          - name: "Not Started"
+            indicator_id: "empty"
+          - name: "In Progress"
+            indicator_id: "partial"
+          - name: "Completed"
+            indicator_id: "filled"
+          - name: "On Hold"
+            indicator_id: "alert"

@@ -61,7 +61,21 @@ body {
 }
 
 .status-indicator-svg svg {
+  width: var(--indicator-size) !important;
+  height: var(--indicator-size) !important;
+  display: block;
+}
+
+.node-icon-svg svg {
+  width: var(--indicator-size) !important;
+  height: var(--indicator-size) !important;
+  display: block;
+}
+
+.node-icon-svg {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: var(--indicator-size);
   height: var(--indicator-size);
-  display: block;
 }

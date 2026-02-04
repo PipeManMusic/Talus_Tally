@@ -47,6 +47,14 @@ class CreateNodeCommand(Command):
             self._initialize_default_status()
         if self.graph:
             self.graph.add_node(self.node)
+
+            # Link to parent if specified
+            if self.parent_id:
+                parent = self.graph.get_node(self.parent_id)
+                if parent:
+                    if self.node.id not in parent.children:
+                        parent.children.append(self.node.id)
+                    self.node.parent_id = parent.id
         
         # Emit node-created event
         if self.session_id:
@@ -99,6 +107,11 @@ class CreateNodeCommand(Command):
     def undo(self) -> None:
         """Undo the command by removing the node."""
         if self.node and self.graph:
+            # Unlink from parent if present
+            if self.parent_id:
+                parent = self.graph.get_node(self.parent_id)
+                if parent and self.node.id in parent.children:
+                    parent.children.remove(self.node.id)
             self.graph.remove_node(self.node.id)
 
 

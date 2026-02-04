@@ -64,7 +64,7 @@ const recolorSvg = (svgString: string, color: string | undefined): string => {
   return recolored;
 };
 
-interface ExtendedNode extends Node {
+interface ExtendedNode extends Omit<Node, 'indicator_id' | 'indicator_set'> {
   indicator_id?: string | number;
   indicator_set?: string | number;
   statusIndicatorSvg?: string;

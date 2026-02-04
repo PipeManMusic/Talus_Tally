@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Talus Tally
+Comment=Project Management Application
+Exec=/usr/bin/talus-tally
+Icon=talus-tally
+Categories=Utility;
+Terminal=false

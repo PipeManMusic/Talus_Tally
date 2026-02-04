@@ -1,0 +1,29 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	cd frontend && npm run build
+
+override_dh_auto_install:
+	mkdir -p debian/talus-tally/usr/bin
+	mkdir -p debian/talus-tally/opt/talus-tally
+	mkdir -p debian/talus-tally/usr/share/applications
+	mkdir -p debian/talus-tally/usr/share/icons/hicolor/256x256/apps
+	
+	# Copy the binary (from the Tauri build output)
+	cp -r frontend/src-tauri/target/release/app debian/talus-tally/usr/bin/talus-tally || true
+	
+	# Copy backend and assets
+	cp -r backend debian/talus-tally/opt/talus-tally/
+	cp -r assets debian/talus-tally/opt/talus-tally/
+	cp -r data debian/talus-tally/opt/talus-tally/
+	cp -r venv debian/talus-tally/opt/talus-tally/ || true
+	cp requirements.txt debian/talus-tally/opt/talus-tally/
+	
+	# Copy desktop entry
+	cp debian/talus-tally.desktop debian/talus-tally/usr/share/applications/
+	
+	# Copy icon
+	cp assets/icons/icon.png debian/talus-tally/usr/share/icons/hicolor/256x256/apps/talus-tally.png || true

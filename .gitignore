@@ -20,3 +20,7 @@ backups/
 logs/
 *.bak
 *.log
+
+# Debian packages
+*.deb
+talus-tally_*/

@@ -2,7 +2,7 @@
 export { TitleBar } from './layout/TitleBar';
 export { MenuBar } from './layout/MenuBar';
 export { Toolbar } from './layout/Toolbar';
-export { Sidebar } from './layout/Sidebar';
+export { TreeView } from './layout/TreeView';
 export { Inspector } from './layout/Inspector';
 
 // UI Components - Basic
@@ -38,5 +38,5 @@ export { default as GraphCanvas } from './graph/GraphCanvas';
 export { default as CustomNode } from './graph/CustomNode';
 
 // Types
-export type { TreeNode } from './layout/Sidebar';
+export type { TreeNode } from './layout/TreeView';
 export type { NodeProperty } from './layout/Inspector';

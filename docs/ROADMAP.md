@@ -1,183 +1,184 @@
-# Talus Core: Implementation Roadmap
-See previous chat for full content.
-# Talus Core: Implementation Roadmap
-**The Backwards Plan: From Vision to Execution**
+# Talus Tally: Implementation Roadmap (Cleaned Up)
 
-This document outlines the step-by-step execution plan to build Talus Core. It is designed to be executed in order, ensuring that dependencies are built before the features that rely on them.
+**Current Status:** Phase 7 (Desktop App Setup) - IN PROGRESS
 
 ---
 
-## Phase 1: The Blueprint (The Source of Truth)
-**Goal:** Establish the data definitions (YAML) before writing Python code. We cannot write the `Node` class until we know what fields it must support.
+## Completed Phases ✅
 
-* [ ] **1.1 Define Meta-Schema**
-    * Create `data/definitions/meta_schema.yaml`.
-    * Define valid property types (text, number, currency, select).
-    * Define node capability flags (has_inventory, has_media).
+### Phase 1-5: Backend Foundation (COMPLETE)
+- ✅ Data definitions (YAML templates)
+- ✅ Core Python (Node, Graph, Commands)
+- ✅ Infrastructure (Schema loader, Persistence, Velocity, Reporting)
+- ✅ Business Logic (Command system, Undo/Redo)
+- ✅ REST API (Flask endpoints, SocketIO events)
 
-* [ ] **1.2 Author "Restomod Creator" Blueprint**
-    * Create `data/templates/restomod.yaml`.
-    * Define complex nodes: `Junkyard Part`, `Script Concept`, `Shoot Day`.
-    * Define logic: Velocity weights and Report templates.
+### Phase 6: React Frontend Core Components (IN PROGRESS)
+- ✅ API Client (connects to backend, endpoint routing fixed)
+- ✅ State Management (Zustand store)
+- Basic Tree View component (needs refinement)
+- Basic Inspector component (needs backend connection)
+- Menu/Toolbar (needs implementation)
 
-* [ ] **1.3 Author "Music Production" Blueprint**
-    * Create `data/templates/music_production.yaml`.
-    * Verify the schema handles completely different needs (Gear, Tracks, Sessions).
+### Phase 7: Quick Desktop App (IN PROGRESS - ~30 min to go)
+- ✅ 7.1: Rust installed
+- ✅ 7.2: Tauri CLI installed
+- ✅ 7.3: Tauri project initialized
+- ✅ 7.4: Backend Python subprocess launcher (Rust code written)
+- ✅ 7.5: Frontend Tauri integration (API client updated)
+- ✅ 7.6: Build configuration (tauri.conf.json fixed, npm scripts added)
+- 🚀 7.7: First build in progress (Rust compiling, ~2-5 min remaining)
 
----
-
-## Phase 2: The Core (The DNA)
-**Goal:** Build the pure Python data structures. No I/O allowed here.
-
-* [ ] **2.1 Implement Generic Node**
-    * File: `backend/core/node.py`
-    * Class `Node`: Support `properties` dict, `children` list, and `blueprint_type_id`.
-    * Test: `tests/core/test_node.py` (Verify property storage).
-
-* [ ] **2.2 Implement Project Graph**
-    * File: `backend/core/graph.py`
-    * Class `ProjectGraph`: Support O(1) lookup by ID and "Inverted Index" (find parents).
-    * Test: `tests/core/test_graph.py`.
+**Note:** Components work, but UI is untested in actual desktop environment.
 
 ---
 
-## Phase 3: The Infra (The Engine Room)
-**Goal:** Build the machinery that manipulates the Core.
+## Current Work Stream
 
-* [ ] **3.1 Build Schema Loader**
-    * File: `backend/infra/schema_loader.py`
-    * Logic: Read YAML -> Validate against Meta-Schema -> Return `Blueprint` object.
-    * Test: `tests/infra/test_schema_loader.py` (Load `restomod.yaml`).
+### Phase 7: Quick Desktop App (NEXT - ~2 hours)
+**Goal:** Get a working desktop app so you can test/refine UI in real environment.
 
-* [ ] **3.2 Build Persistence Manager**
-    * File: `backend/infra/persistence.py`
-    * Logic: Serialize `ProjectGraph` to JSON.
-    * Test: `tests/infra/test_persistence.py` (Save/Load cycle).
+**Flow:**
+1. Install Rust toolchain
+2. Add Tauri to frontend project
+3. Create Python subprocess launcher (Rust)
+4. Configure desktop window
+5. Test: `npm run desktop:dev` launches app with hot-reload
 
-* [ ] **3.3 Build Velocity Engine**
-    * File: `backend/infra/velocity.py`
-    * Logic: Traverse Graph -> Apply Blueprint Math -> Assign Scores.
-    * Test: `tests/infra/test_velocity.py` (Verify "Quick Win" sorting).
+**Result:** Native window that auto-starts backend, hot-reload when you save code
 
-* [ ] **3.4 Build Report Engine**
-    * File: `backend/infra/reporting.py`
-    * Logic: Jinja2 Context Injection -> Render String.
-    * Test: `tests/infra/test_reporting.py` (Generate a mock "Call Sheet").
+**Time estimate:** ~2 hours (first time includes Rust compilation)
 
 ---
 
-## Phase 4: The Handlers (The Business Logic)
-**Goal:** Build the Command System to safely modify the graph.
+### Phase 8: UI Refinement (PARALLEL with Phase 7)
+**Goal:** Iterate on UI using actual desktop app until workflow feels right
 
-* [ ] **4.1 Implement Command Dispatcher**
-    * File: `backend/handlers/dispatcher.py`
-    * Logic: Execute Command -> Stack for Undo -> Emit Log Event.
+**Activities:**
+- Tree node selection/navigation (arrow keys, click)
+- Property editing (click field, Tab to next, Escape to cancel)
+- Keyboard shortcuts (Ctrl+N new, Ctrl+Z undo, etc.)
+- Menu items (New, Open, Save)
+- Visual polish (colors, spacing, feedback)
 
-* [ ] **4.2 Implement Basic Commands**
-    * File: `backend/handlers/commands/node_commands.py`
-    * Commands: `CreateNode`, `DeleteNode`, `LinkNode`.
-    * Test: `tests/handlers/test_commands.py` (Verify Undo functionality).
+**Workflow:**
+- Keep `npm run desktop:dev` running
+- Edit code → See changes immediately (hot-reload)
+- Test in desktop window (not browser)
+- Iterate until satisfied
 
-* [ ] **4.3 Implement "Kit" Logic**
-    * File: `backend/handlers/commands/macro_commands.py`
-    * Command: `ApplyKit` (Finds a Kit Node -> Clones children to Target Node).
+**Time estimate:** Variable (your feedback loop)
 
----
-
-## Phase 5: The API (The Gateway)
-**Goal:** Expose the logic to the outside world (UI or CLI).
-
-* [x] **5.1 Build Graph Service**
-    * File: `backend/api/graph_service.py`
-    * Logic: High-level methods (`get_tree`, `search_nodes`).
-    * Status: COMPLETE ✅
-
-* [x] **5.2 Build Session Manager**
-    * File: `backend/api/session.py`
-    * Logic: Manage "Active Blueprint" and "Current Selection".
-    * Status: COMPLETE ✅
-
-* [x] **5.3 Build Project Manager**
-    * File: `backend/api/project_manager.py`
-    * Logic: Create/load/save projects, manage templates.
-    * Status: COMPLETE ✅
+**No formal tests during this phase** - Just you using it and saying "that's not right, make it do X instead"
 
 ---
 
-## Phase 5.5: The REST API (The Bridge)
-**Goal:** Expose Python backend as JSON/REST API for web-based UI.
+### Phase 9: Production Desktop Build (AFTER Phase 8)
+**Goal:** Package as distributable app (Windows/Mac/Linux installers)
 
-* [ ] **5.5.1 Create Flask Application**
-    * File: `backend/app.py`
-    * Logic: Initialize Flask, set up routes, error handlers, middleware.
-    * Test: `tests/api/test_flask_endpoints.py` (Verify endpoints work).
+**Activities:**
+- Freeze Python backend with PyInstaller
+- Create production Tauri build config
+- Set up GitHub Actions CI/CD (auto-build all platforms)
+- Create installers (.deb, .dmg, .exe)
+- Test installation on fresh OS (no dev dependencies)
 
-* [ ] **5.5.2 Implement Project Endpoints**
-    * Endpoints: `POST /api/projects/new`, `GET /api/projects/<id>`, etc.
-    * Logic: Wrap ProjectManager API, serialize to JSON.
-    * Test: TDD - write failing tests first.
-
-* [ ] **5.5.3 Implement Command Endpoints**
-    * Endpoints: `POST /api/commands/execute`, `GET /api/commands/undo`, etc.
-    * Logic: Wrap CommandDispatcher, serialize results.
-    * Test: TDD - write failing tests first.
-
-* [ ] **5.5.4 Implement Graph Query Endpoints**
-    * Endpoints: `GET /api/graph/nodes`, `GET /api/graph/tree`, etc.
-    * Logic: Wrap GraphService, serialize results.
-    * Test: TDD - write failing tests first.
-
-* [ ] **5.5.5 Implement WebSocket Layer**
-    * Logic: Real-time GraphService subscriptions via SocketIO.
-    * Events: `property-changed`, `node-created`, `command-executed`.
-    * Test: Test multi-client synchronization.
+**Time estimate:** ~3-4 hours (most spent on CI/CD)
 
 ---
 
-## Phase 6: The React Frontend (The Viewer)
-**Goal:** Modern, responsive web-based UI (separate repo).
+## The Simple Version
 
-* [ ] **6.1 Scaffold React App**
-    * Location: `frontend/` folder (separate from backend)
-    * Setup: TypeScript, Vite, testing libraries.
-    * Test: TDD - component tests use React Testing Library.
+```
+TODAY:
+  [ ] Phase 7: Setup Rust, add Tauri, test desktop app works
+  [ ] Phase 7: Documentation (quick start)
 
-* [ ] **6.2 Build API Client Library**
-    * File: `frontend/src/api/client.ts`
-    * Logic: Axios wrapper, request/response serialization, error handling.
-    * Test: Mock API responses, verify serialization.
+THEN (iteratively):
+  [ ] Phase 8: Use `npm run desktop:dev`, refine UI until happy
+      - You drive all decisions: "make this button bigger", "change this color", etc.
 
-* [ ] **6.3 Build Tree Component**
-    * Logic: Render node graph hierarchically.
-    * Features: Expand/collapse, drag-and-drop, context menu.
-    * Test: TDD - test without backend (mock API).
-
-* [ ] **6.4 Build Inspector Component**
-    * Logic: Display/edit node properties based on blueprint.
-    * Features: Dynamic forms, save/cancel, validation.
-    * Test: TDD - test without backend (mock API).
-
-* [ ] **6.5 Build Toolbar**
-    * Logic: Undo/redo buttons, file menu, view options.
-    * Features: Command routing through API.
-    * Test: TDD - verify button clicks trigger API calls.
-
-* [ ] **6.6 Implement GraphService Subscriptions**
-    * Logic: Hook into WebSocket, update tree/inspector in real-time.
-    * Features: Multi-tab synchronization, live collaboration prep.
-    * Test: Test real-time updates in multiple tabs.
+WHEN SATISFIED:
+  [ ] Phase 9: Build production packages (Windows/Mac/Linux)
+      - Automated once configured
+```
 
 ---
 
-## Phase 7: Desktop Packaging
-**Goal:** Distribute as desktop app (Windows/Mac/Linux).
+## What We WON'T Do (For Now)
 
-* [ ] **7.1 Choose Packaging Strategy**
-    * Option A: Tauri (lightweight, Rust backend)
-    * Option B: Electron (widely-used, larger footprint)
-    * Decision: TBD based on performance requirements.
+- Mobile app (Phase 9.5, much later, needs different approach)
+- Web version (no browser, desktop only)
+- Collaborative editing (future)
+- Complex animations (focus on functional)
 
-* [ ] **7.2 Package React App**
-    * Logic: Build React (`npm run build`), configure Tauri/Electron.
-    * Test: Test on Windows, Mac, Linux.
-    * Release: Publish installers.
+---
+
+## Success Criteria
+
+**Phase 7 Done:** 
+- Type `npm run desktop:dev` and get native app window
+- Window shows tree view and inspector
+- Backend API calls work
+- Ctrl+Shift+I opens dev tools
+- Close app → backend shuts down
+
+**Phase 8 Done:**
+- Tree navigation works with keyboard
+- Can create/edit/delete nodes
+- Inspector edits save properties
+- All menu items wired up
+- You say "this feels right"
+
+**Phase 9 Done:**
+- Single installer per platform
+- Double-click to install
+- Single-click to launch
+- App has no external dependencies
+
+---
+
+## Starting Now: Phase 7 Step-by-Step
+
+### 7.1: Verify Rust Installed
+```bash
+rustc --version
+cargo --version
+```
+If not installed: `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
+
+### 7.2: Install Tauri
+```bash
+cd frontend
+npm install @tauri-apps/cli @tauri-apps/api
+```
+
+### 7.3: Initialize Tauri
+```bash
+npm run tauri init
+# Answer prompts (defaults fine):
+# - Project name: talus-tally
+# - Package name: com.ttalus.talus-tally
+```
+
+### 7.4: Create Backend Launcher (Rust)
+Will provide sample `frontend/src-tauri/src/main.rs` that spawns Python backend
+
+### 7.5: Update Frontend Config
+Will provide updated `tauri.conf.json` and `package.json` scripts
+
+### 7.6: Test It
+```bash
+npm run desktop:dev
+```
+
+Expected: Native window opens with app, backend running, hot-reload works
+
+---
+
+## Next Actions (In Order)
+
+1. **Run Phase 7 step 7.1-7.3** (verify Rust, install Tauri, init)
+2. **I'll provide sample Rust code** (backend launcher)
+3. **You run 7.6** (test desktop:dev)
+4. **Immediately move to Phase 8** (user testing & refinement with actual app)

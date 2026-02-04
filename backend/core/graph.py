@@ -16,12 +16,7 @@ class ProjectGraph:
         return [node for node in self.nodes.values() if node.parent_id is None]
     
     def add_node(self, node: Node) -> None:
-        """
-        Add a node to the graph.
-        
-        Args:
-            node: The Node to add
-        """
+        print(f"[DEBUG][ProjectGraph.add_node] node.id={node.id} type(node)={type(node)} node.blueprint_type_id={getattr(node, 'blueprint_type_id', None)} type(blueprint_type_id)={type(getattr(node, 'blueprint_type_id', None))}")
         self.nodes[node.id] = node
     
     def get_node(self, node_id: UUID) -> Optional[Node]:

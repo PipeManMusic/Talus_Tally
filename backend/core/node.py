@@ -7,14 +7,7 @@ class Node:
     """Represents a single node in the ProjectGraph."""
     
     def __init__(self, blueprint_type_id: str, name: str, id: Optional[UUID] = None):
-        """
-        Initialize a Node.
-        
-        Args:
-            blueprint_type_id: The type ID of the blueprint this node follows
-            name: The human-readable name of the node
-            id: Optional UUID; generates one if not provided
-        """
+        print(f"[DEBUG][Node.__init__] blueprint_type_id={blueprint_type_id} (type={type(blueprint_type_id)}) name={name} id={id}")
         self.id: UUID = id or uuid4()
         self.blueprint_type_id: str = blueprint_type_id
         self.name: str = name

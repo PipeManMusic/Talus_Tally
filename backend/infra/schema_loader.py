@@ -3,6 +3,7 @@ import uuid
 import hashlib
 import os
 from typing import List, Dict, Any, Optional
+from backend.infra.icon_catalog import IconCatalog
 
 
 def _generate_stable_uuid(namespace: str, name: str) -> str:
@@ -190,16 +191,30 @@ class SchemaLoader:
     def __init__(self):
         """Initialize schema loader with optional indicator catalog."""
         self.indicator_catalog = None
+        self.icon_catalog = None
+        
+        # Get absolute path to project root
+        schema_loader_dir = os.path.dirname(os.path.abspath(__file__))  # backend/infra
+        project_root = os.path.dirname(os.path.dirname(schema_loader_dir))  # Go up 2 levels to project root
+        
         # Try to load indicator catalog if it exists
-        catalog_path = os.path.join(os.path.dirname(__file__), '../../assets/indicators/catalog.yaml')
+        catalog_path = os.path.join(project_root, 'assets/indicators/catalog.yaml')
         if os.path.exists(catalog_path):
             try:
                 self.indicator_catalog = IndicatorCatalog.load(catalog_path)
-            except Exception:
-                pass  # Catalog not available, continue without it
+            except Exception as e:
+                print(f"[WARN] Failed to load indicator catalog: {e}")
+        # Load icon catalog (maps logical icon ids to SVG files)
+        icon_catalog_path = os.path.join(project_root, 'assets/icons/catalog.yaml')
+        if os.path.exists(icon_catalog_path):
+            try:
+                self.icon_catalog = IconCatalog.load(icon_catalog_path)
+            except Exception as e:
+                print(f"[WARN] Failed to load icon catalog: {e}")
         
         # Store templates directory for discovery
-        self.templates_dir = os.path.join(os.path.dirname(__file__), '../../data/templates')
+        self.templates_dir = os.path.join(project_root, 'data/templates')
+        print(f"[SchemaLoader] Templates dir: {self.templates_dir}")
     
     def load(self, filepath: str) -> Blueprint:
         """
@@ -218,8 +233,17 @@ class SchemaLoader:
         if not os.path.isabs(filepath) and os.path.sep not in filepath:
             filepath = os.path.join(self.templates_dir, filepath)
         
-        with open(filepath, 'r') as f:
-            data = yaml.safe_load(f)
+        # Debug logging
+        print(f"[SchemaLoader.load] Attempting to load: {filepath}")
+        print(f"[SchemaLoader.load] File exists: {os.path.exists(filepath)}")
+        print(f"[SchemaLoader.load] Is readable: {os.access(filepath, os.R_OK)}")
+        
+        try:
+            with open(filepath, 'r') as f:
+                data = yaml.safe_load(f)
+        except Exception as e:
+            print(f"[SchemaLoader.load] ERROR opening/reading file: {type(e).__name__}: {e}")
+            raise
         
         blueprint_id = data.get('id')
         name = data.get('name')
@@ -227,9 +251,15 @@ class SchemaLoader:
         
         # Parse node types and generate UUIDs for options
         node_types_data = data.get('node_types', [])
+        # Debug: print node_types_data and their types
+        print("[DEBUG] node_types_data after YAML load:")
+        for idx, nt in enumerate(node_types_data):
+            print(f"  idx={idx} type={type(nt)} value={nt}")
         node_types = []
         for nt_data in node_types_data:
-            # Generate UUIDs for options in properties
+            if not isinstance(nt_data, dict):
+                print(f"[DEBUG] Skipping non-dict node_type: {nt_data} (type={type(nt_data)})")
+                continue
             self._generate_option_uuids(nt_data)
             node_type = NodeTypeDef(**nt_data)
             node_types.append(node_type)
@@ -241,35 +271,32 @@ class SchemaLoader:
     
     def _generate_option_uuids(self, node_type_data: Dict[str, Any]) -> None:
         """Generate UUIDs for select options in a node type.
-        
         Modifies node_type_data in place to add 'id' to each option.
         UUIDs are deterministic based on content, ensuring stability across reloads.
-        
         Args:
             node_type_data: The node type definition dict from YAML
         """
         node_type_id = node_type_data.get('id')
         properties = node_type_data.get('properties', [])
-        
         for prop in properties:
             if prop.get('type') == 'select' and 'options' in prop:
                 property_id = prop.get('id')
                 options = prop['options']
-                
+                print(f"[DEBUG] Before UUID normalization: node_type_id={node_type_id} property_id={property_id} options={options}")
                 # Handle both string and dict option formats
                 normalized_options = []
                 for option in options:
                     if isinstance(option, str):
-                        # String format: convert to dict and add UUID
                         normalized_options.append({
                             'name': option,
                             'id': _generate_stable_uuid(f"{node_type_id}.{property_id}", option)
                         })
                     elif isinstance(option, dict):
-                        # Dict format: add UUID if not present
                         if 'id' not in option and 'name' in option:
                             option['id'] = _generate_stable_uuid(f"{node_type_id}.{property_id}", option['name'])
                         normalized_options.append(option)
-                
+                    else:
+                        print(f"[DEBUG] Skipping non-str/non-dict option: {option} (type={type(option)})")
                 prop['options'] = normalized_options
+                print(f"[DEBUG] After UUID normalization: node_type_id={node_type_id} property_id={property_id} options={normalized_options}")
 

@@ -87,13 +87,14 @@ def emit_event(event_type: str, data: Dict[str, Any], room: str = None, skip_sid
     # Emit via Socket.IO if available
     if _socketio:
         try:
+            namespace = '/graph'
             if room:
-                # Emit to specific room
-                _socketio.emit(event_type, data, room=room, skip_sid=skip_sid)
+                # Emit to specific room in /graph namespace
+                _socketio.emit(event_type, data, room=room, skip_sid=skip_sid, namespace=namespace)
             else:
-                # Broadcast to all connected clients
-                _socketio.emit(event_type, data, skip_sid=skip_sid)
-            logger.debug(f"Event emitted: {event_type} to room: {room or 'broadcast'}")
+                # Broadcast to all connected clients in /graph namespace
+                _socketio.emit(event_type, data, skip_sid=skip_sid, namespace=namespace)
+            logger.debug(f"Event emitted: {event_type} to room: {room or 'broadcast'} in namespace: {namespace}")
         except Exception as e:
             logger.error(f"Error emitting Socket.IO event {event_type}: {e}")
 

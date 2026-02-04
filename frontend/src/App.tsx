@@ -1,12 +1,9 @@
 import { TitleBar } from './components/layout/TitleBar';
 import { MenuBar } from './components/layout/MenuBar';
-import { Toolbar } from './components/layout/Toolbar';
-import type { ToolbarButton } from './components/layout/Toolbar';
-import { Plus, Save, Undo2, Redo2 } from 'lucide-react';
-import { Sidebar } from './components/layout/Sidebar';
-import type { TreeNode } from './components/layout/Sidebar';
+import { TreeView } from './components/layout/TreeView';
+import type { TreeNode } from './components/layout/TreeView';
 import { Inspector } from './components/layout/Inspector';
-import type { NodeProperty, LinkedAssetMetadata } from './components/layout/Inspector';
+import type { NodeProperty } from './components/layout/Inspector';
 import { NewProjectDialog } from './components/dialogs/NewProjectDialog';
 import { AddChildDialog } from './components/dialogs/AddChildDialog';
 import { AssetSelectDialog } from './components/dialogs/AssetSelectDialog';
@@ -20,7 +17,8 @@ import { ErrorBoundary } from './components/dev/ErrorBoundary';
 const DEBUG_TREE = process.env.NODE_ENV !== 'production';
 import { useGraphStore } from './store';
 import { useGraphSync } from './hooks';
-import { apiClient, type Node, type Template, type Graph, type TemplateSchema } from './api/client';
+import { apiClient, type Node, type Template, type Graph, type TemplateSchema, API_BASE_URL } from './api/client';
+import { normalizeGraph } from './utils/graph';
 
 function App() {
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
@@ -45,12 +43,18 @@ function App() {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [templateSchema, setTemplateSchema] = useState<TemplateSchema | null>(null);
   const [lastFilePath, setLastFilePath] = useState<string | null>(null);
+  const [currentTemplateId, setCurrentTemplateId] = useState<string | null>(null);
   const [expandAllSignal, setExpandAllSignal] = useState(0);
   const [collapseAllSignal, setCollapseAllSignal] = useState(0);
   const [debugLogs, setDebugLogs] = useState<DebugLogEntry[]>([]);
   const debugLogCounterRef = useRef(0);
+  const [isAppInitialized, setIsAppInitialized] = useState(false);
   // Track which nodes are expanded (by id)
   const [expandedMap, setExpandedMap] = useState<Record<string, boolean>>({});
+  const [backendError, setBackendError] = useState<string | null>(null);
+  const [isInitialConnection, setIsInitialConnection] = useState(true);
+  const initialLoadStartRef = useRef<number>(Date.now());
+  const INITIAL_LOADING_MS = 15000;
   const { nodes: storeNodes, currentGraph, setCurrentGraph } = useGraphStore();
   
   // Enable real-time WebSocket synchronization
@@ -77,11 +81,48 @@ function App() {
   useEffect(() => {
     const initApp = async () => {
       try {
-        // Wait for backend to be ready (especially for Tauri)
-        const ready = await apiClient.waitForBackend();
-        if (!ready) {
-          console.warn('Backend not responding, will retry');
+        // TEMPORARY: Force clear corrupted state
+        const forceReset = false; // Set to false after testing
+        if (forceReset) {
+          console.warn('🔄 Force clearing all saved state...');
+          localStorage.clear();
+          setCurrentGraph({ id: 'default', nodes: [], edges: [] });
         }
+        
+        // Wait for backend to be ready with continuous polling during initial window
+        const startTime = initialLoadStartRef.current;
+        const maxWaitMs = INITIAL_LOADING_MS;
+        let ready = false;
+        
+        while (!ready && (Date.now() - startTime) < maxWaitMs) {
+          try {
+            const response = await fetch(`${API_BASE_URL}/api/v1/health`, {
+              method: 'GET',
+              signal: AbortSignal.timeout(1000),
+            });
+            if (response.ok) {
+              ready = true;
+              console.log('✓ Backend is ready');
+              break;
+            }
+          } catch {
+            // Backend not ready yet, continue polling
+          }
+          
+          // Wait 300ms before next attempt
+          await new Promise(resolve => setTimeout(resolve, 300));
+        }
+        
+        setIsInitialConnection(false);
+        
+        if (!ready) {
+          const errorMsg = 'Cannot connect to backend. Please ensure the server is running.';
+          console.error(errorMsg);
+          setBackendError(errorMsg);
+          setIsAppInitialized(true);
+          return;
+        }
+        setBackendError(null); // Clear any previous errors
         
         // Try to restore existing session from localStorage
         const savedSessionId = localStorage.getItem('talus_tally_session_id');
@@ -103,6 +144,7 @@ function App() {
                     try {
                       const schema = await apiClient.getTemplateSchema(restoredTemplateId);
                       setTemplateSchema(schema);
+                      setCurrentTemplateId(restoredTemplateId);
                       console.log('✓ Template schema restored:', restoredTemplateId);
                     } catch (err) {
                       console.warn('Failed to restore template schema:', err);
@@ -115,9 +157,12 @@ function App() {
                   setCurrentGraph(graph);
                   console.log('✓ Graph restored with', Object.keys(graph.nodes).length, 'nodes');
                 } catch (err) {
-                  console.warn('Failed to restore graph:', err);
+                  console.warn('Failed to restore graph, starting fresh:', err);
+                  // Clear corrupted state and start fresh
+                  setCurrentGraph({ id: 'default', nodes: [], edges: [] });
                 }
               }
+              setIsAppInitialized(true);
               return;
             }
           } catch (err) {
@@ -132,8 +177,14 @@ function App() {
         setSessionId(sid);
         localStorage.setItem('talus_tally_session_id', sid);
         console.log('✓ Session created:', sid);
+        setIsAppInitialized(true);
+        setIsInitialConnection(false);
       } catch (err) {
-        console.error('✗ Failed to initialize app:', err);
+        setIsInitialConnection(false);
+        const errorMsg = `Failed to initialize app: ${err instanceof Error ? err.message : String(err)}`;
+        console.error('✗', errorMsg);
+        setBackendError('Failed to initialize app. Please check the backend connection.');
+        setIsAppInitialized(true);
       }
     };
     initApp();
@@ -213,6 +264,13 @@ function App() {
     const nodeList = Object.values(nodes);
     if (nodeList.length === 0) return [];
 
+    const iconByType = templateSchema?.node_types?.reduce<Record<string, string>>((acc, nodeType) => {
+      if (nodeType.id && nodeType.icon) {
+        acc[nodeType.id] = nodeType.icon;
+      }
+      return acc;
+    }, {}) || {};
+
     // Helper to get allowed_children from templateSchema
     const getAllowedChildren = (type: string): string[] => {
       if (!templateSchema) return [];
@@ -221,12 +279,15 @@ function App() {
     };
 
     const buildTree = (node: Node, nodesMap: Record<string, Node>): TreeNode => {
+      const schemaIconId = iconByType[node.type];
+      const iconId = node.icon_id ?? schemaIconId ?? undefined;
       return {
         id: node.id,
         name: node.properties?.name || node.type,
         type: (node.type as any) || 'project',
         indicator_id: node.indicator_id ?? undefined,
         indicator_set: node.indicator_set ?? undefined,
+        icon_id: iconId,
         allowed_children: getAllowedChildren(node.type),
         children: node.children?.map(childId => {
           const childNode = nodesMap[childId];
@@ -295,14 +356,27 @@ function App() {
 
   // Convert node properties to inspector format
   const getNodeProperties = (): NodeProperty[] => {
-    if (!selectedNodeData || !templateSchema) return [];
+    if (!selectedNodeData || !templateSchema) {
+      return [];
+    }
 
     // Find the node type schema
     const nodeTypeSchema = templateSchema.node_types.find(nt => nt.id === selectedNodeData.type);
-    if (!nodeTypeSchema) return [];
+    if (!nodeTypeSchema) {
+      return [];
+    }
+
+    // Start with name as the first editable property
+    const nameProperty: NodeProperty = {
+      id: 'name',
+      name: 'Name',
+      type: 'text',
+      value: selectedNodeData.properties?.name || '',
+      required: true,
+    };
 
     // Build properties from schema
-    return nodeTypeSchema.properties.map((prop) => {
+    const schemaProperties = nodeTypeSchema.properties.map((prop) => {
       let value = selectedNodeData.properties?.[prop.id];
       if (value === undefined && prop.id === 'name') {
         value = selectedNodeData.properties?.name || '';
@@ -320,13 +394,15 @@ function App() {
       }
       return {
         id: prop.id,
-        name: prop.label || prop.name,
+        name: prop.name,
         type,
         value: value ?? '',
         options,
         required: prop.required,
       };
     });
+
+    return [nameProperty, ...schemaProperties];
   };
 
   // Get linked asset metadata if this node has an asset_id property
@@ -364,7 +440,7 @@ function App() {
       }
       return {
         id: prop.id,
-        name: prop.label || prop.name,
+        name: prop.name,
         type,
         value: value ?? '',
         options,
@@ -374,7 +450,7 @@ function App() {
 
     return {
       nodeId: assetNode.id,
-      nodeType: assetTypeSchema.label || assetNode.type,
+      nodeType: assetNode.type,
       name: assetNode.properties?.name || 'Asset',
       properties: assetProperties,
     };
@@ -437,69 +513,6 @@ function App() {
     }
   }, [templates.length]);
 
-  const normalizeGraph = useCallback((graphLike: any): Graph => {
-    if (!graphLike) {
-      return { id: 'default', nodes: [], edges: [] };
-    }
-
-    const source = graphLike.graph ?? graphLike;
-
-    if (source && Array.isArray(source.nodes)) {
-      return {
-        id: source.id || 'default',
-        nodes: source.nodes,
-        edges: source.edges || [],
-      };
-    }
-
-    if (source && Array.isArray(source.roots)) {
-      const nodes: Node[] = [];
-
-      const flattenNodes = (nestedNode: any): Node => {
-        console.log('[normalizeGraph] Processing nested node:', {
-          id: nestedNode.id,
-          type: nestedNode.blueprint_type_id,
-          indicator_id: nestedNode.indicator_id,
-          indicator_set: nestedNode.indicator_set,
-          properties: nestedNode.properties
-        });
-        
-        const node: Node = {
-          id: nestedNode.id || nestedNode.blueprint_type_id,
-          type: nestedNode.blueprint_type_id || 'unknown',
-          properties: {
-            name: nestedNode.name || 'Unnamed',
-            ...nestedNode.properties,
-          },
-          children: [],
-          indicator_id: nestedNode.indicator_id,
-          indicator_set: nestedNode.indicator_set,
-        };
-        
-        console.log('[normalizeGraph] Created node:', node);
-
-        nodes.push(node);
-
-        if (nestedNode.children && Array.isArray(nestedNode.children)) {
-          node.children = nestedNode.children.map((child: any) => {
-            const childNode = flattenNodes(child);
-            return childNode.id;
-          });
-        }
-
-        return node;
-      };
-
-      for (const rootNode of source.roots || []) {
-        flattenNodes(rootNode);
-      }
-
-      return { id: 'default', nodes, edges: [] };
-    }
-
-    return { id: 'default', nodes: [], edges: [] };
-  }, []);
-
   const handleCreateProject = useCallback(async (templateId: string, projectName: string) => {
     try {
       console.log('Creating project with template:', templateId, 'and name:', projectName);
@@ -508,8 +521,8 @@ function App() {
       console.log('✓ API Response keys:', Object.keys(result));
       
       // Check for API error response
-      if (result.error) {
-        const errorMsg = result.error.message || result.error.code || 'Unknown error';
+      if ('error' in result && result.error) {
+        const errorMsg = (result.error as any).message || (result.error as any).code || 'Unknown error';
         console.error('✗ API Error:', errorMsg);
         alert(`Failed to create project: ${errorMsg}`);
         return;
@@ -522,14 +535,20 @@ function App() {
       console.log('Final graph structure:', graph);
       
       // Load template schema for type information
-      const schema = await apiClient.getTemplateSchema(templateId);
-      setTemplateSchema(schema);
-      localStorage.setItem('talus_tally_template_id', templateId);
-      console.log('✓ Template schema loaded:', schema);
+      try {
+        const schema = await apiClient.getTemplateSchema(templateId);
+        setTemplateSchema(schema);
+        localStorage.setItem('talus_tally_template_id', templateId);
+        console.log('✓ Template schema loaded:', schema);
+      } catch (schemaErr) {
+        console.warn('⚠ Failed to load template schema, continuing without schema:', schemaErr);
+        setTemplateSchema(null);
+      }
       
       // Update session and load graph
-      const newSessionId = result.session_id || result.id || 'unknown';
+      const newSessionId = result.session_id || 'unknown';
       setSessionId(newSessionId);
+      setCurrentTemplateId(templateId);
       localStorage.setItem('talus_tally_session_id', newSessionId);
       setCurrentGraph(graph);
       setShowNewProjectDialog(false);
@@ -576,7 +595,7 @@ function App() {
       }
 
       const graph = currentGraph || { id: 'default', nodes: [], edges: [] };
-      const payload = JSON.stringify({ graph }, null, 2);
+      const payload = JSON.stringify({ graph, template_id: currentTemplateId }, null, 2);
 
       if (!lastFilePath) {
         const { save } = await import('@tauri-apps/plugin-dialog');
@@ -603,7 +622,7 @@ function App() {
       alert('Save failed.');
       return false;
     }
-  }, [currentGraph, lastFilePath, sessionId]);
+  }, [currentGraph, lastFilePath, sessionId, currentTemplateId]);
 
   const handleSaveAs = useCallback(async (): Promise<boolean> => {
     try {
@@ -613,7 +632,7 @@ function App() {
         return false;
       }
       const graph = currentGraph || { id: 'default', nodes: [], edges: [] };
-      const payload = JSON.stringify({ graph }, null, 2);
+      const payload = JSON.stringify({ graph, template_id: currentTemplateId }, null, 2);
       const { save } = await import('@tauri-apps/plugin-dialog');
       const filePath = await save({
         title: 'Save Project As',
@@ -636,7 +655,7 @@ function App() {
       alert('Save failed.');
       return false;
     }
-  }, [currentGraph, sessionId]);
+  }, [currentGraph, sessionId, currentTemplateId]);
 
   const handleOpen = useCallback(async () => {
     try {
@@ -652,18 +671,75 @@ function App() {
         filters: [{ name: 'Talus Project', extensions: ['json'] }],
       });
       if (!filePath || Array.isArray(filePath)) return;
-      const { readTextFile } = await import('@tauri-apps/plugin-fs');
-      const fileContents = await readTextFile(filePath);
-      const parsed = JSON.parse(fileContents);
-      const graph = normalizeGraph(parsed.graph ?? parsed);
-      setCurrentGraph(graph);
+      
+      console.log('📂 Opening file:', filePath);
+      
+      // Read and parse file
+      let fileContents: string;
+      let parsed: any;
+      try {
+        const { readTextFile } = await import('@tauri-apps/plugin-fs');
+        fileContents = await readTextFile(filePath);
+      } catch (readErr) {
+        const errMsg = readErr instanceof Error ? readErr.message : String(readErr);
+        console.error('✗ Failed to read file:', readErr);
+        alert(`Cannot read file: ${errMsg}`);
+        return;
+      }
+      
+      try {
+        parsed = JSON.parse(fileContents);
+      } catch (parseErr) {
+        console.error('✗ File is not valid JSON:', parseErr);
+        alert('File is not a valid Talus project (invalid JSON).');
+        return;
+      }
+      
+      let normalizedGraph;
+      try {
+        normalizedGraph = normalizeGraph(parsed.graph ?? parsed);
+      } catch (normErr) {
+        console.error('✗ Failed to normalize graph structure:', normErr);
+        alert('Project file has an invalid graph structure.');
+        return;
+      }
+
+      const templateId = parsed.template_id || null;
+      let finalGraph = normalizedGraph;
+
+      // Load graph into backend session
+      if (sessionId) {
+        try {
+          const loadResult = await apiClient.loadGraphIntoSession(sessionId, normalizedGraph, templateId);
+          console.log('✓ Graph loaded into backend session');
+          finalGraph = normalizeGraph(loadResult.graph ?? loadResult);
+          setCurrentTemplateId(templateId);
+          
+          if (templateId) {
+            try {
+              const schema = await apiClient.getTemplateSchema(templateId);
+              setTemplateSchema(schema);
+              console.log('✓ Template schema loaded for:', templateId);
+            } catch (schemaErr) {
+              console.warn('⚠ Could not load template schema, properties may be limited:', schemaErr);
+              setTemplateSchema(null);
+            }
+          }
+        } catch (sessionErr) {
+          console.error('⚠ Failed to load graph into backend session:', sessionErr);
+          console.log('Continuing with local graph only...');
+        }
+      }
+
+      setCurrentGraph(finalGraph);
       setLastFilePath(filePath);
-      console.log('✓ Project opened');
+      console.log('✓ Project opened:', filePath);
     } catch (err) {
+      const errMsg = err instanceof Error ? err.message : String(err);
       console.error('✗ Open failed:', err);
-      alert('Open failed.');
+      alert(`Failed to open project: ${errMsg}`);
     }
-  }, [normalizeGraph, setCurrentGraph]);
+  }, [normalizeGraph, setCurrentGraph, sessionId]);
 
   const handleUndo = useCallback(async () => {
     if (!sessionId) return;
@@ -1039,7 +1115,7 @@ function App() {
     }
 
     // Execute the pending close action if user didn't cancel
-    if (action !== 'cancel' && pendingCloseActionRef.current) {
+    if ((action === 'save-as' || action === 'dont-save' || action === 'save') && pendingCloseActionRef.current) {
       console.log('[SAVE DIALOG] Executing pending close action, pendingCloseActionRef.current exists:', !!pendingCloseActionRef.current);
       try {
         console.log('[SAVE DIALOG] About to call close action...');
@@ -1112,20 +1188,34 @@ function App() {
     ],
   };
 
-  const toolbarButtons: ToolbarButton[] = [
-    { id: 'new', label: 'New', icon: <Plus size={16} />, onClick: handleNew },
-    { id: 'save', label: 'Save', icon: <Save size={16} />, onClick: handleSave },
-    { id: 'separator1', label: '', icon: null, onClick: () => {} },
-    { id: 'undo', label: 'Undo', icon: <Undo2 size={16} />, onClick: handleUndo },
-    { id: 'redo', label: 'Redo', icon: <Redo2 size={16} />, onClick: handleRedo },
-  ];
-
   return (
     <ErrorBoundary>
+      {!isAppInitialized || isInitialConnection ? (
+        <div className="flex items-center justify-center h-screen bg-bg-dark text-fg-primary">
+          <div className="text-center">
+            <div className="text-2xl mb-4">Loading Talus Tally...</div>
+            <div className="text-sm text-fg-secondary">
+              {isInitialConnection ? 'Connecting to backend server...' : 'Initializing session...'}
+            </div>
+          </div>
+        </div>
+      ) : backendError ? (
+        <div className="flex items-center justify-center h-screen bg-bg-dark text-fg-primary">
+          <div className="text-center max-w-md">
+            <div className="text-2xl mb-4 text-red-500">Connection Error</div>
+            <div className="text-sm text-fg-secondary mb-6">{backendError}</div>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+            >
+              Retry Connection
+            </button>
+          </div>
+        </div>
+      ) : (
       <div className="flex flex-col h-screen bg-bg-dark text-fg-primary">
       <TitleBar title={isDirty ? "TALUS TALLY *" : "TALUS TALLY"} isDirty={isDirty} onClose={handleCloseApp} />
       <MenuBar menus={menus} />
-      <Toolbar buttons={toolbarButtons} />
 
       {/* Main Content - Tree View with Optional Inspector */}
       <div className="flex-1 flex overflow-hidden">
@@ -1137,7 +1227,7 @@ function App() {
               <div className="text-sm">Use File → New Project to get started</div>
             </div>
           ) : (
-            <Sidebar
+            <TreeView
               nodes={treeNodes}
               onSelectNode={setSelectedNode}
               onBackgroundMenu={(action) => {
@@ -1187,11 +1277,6 @@ function App() {
                     }
                   }
                   openAddChildDialog(nodeId, node.properties?.name, childTypeName, type);
-                } else if (action === 'rename') {
-                  // Select the node and open inspector (name field will be first property)
-                  setSelectedNode(nodeId);
-                  setInspectorOpen(true);
-                  console.log('✓ Node selected for renaming, open Inspector to edit name');
                 } else if (action === 'delete') {
                   if (confirm('Delete this node?')) {
                     if (!sessionId) {
@@ -1373,6 +1458,7 @@ function App() {
         }}
       />
     </div>
+      )}
   </ErrorBoundary>
   );
 }

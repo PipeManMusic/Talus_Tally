@@ -6,7 +6,7 @@ from backend.infra.schema_loader import IndicatorCatalog
 @pytest.fixture
 def indicator_catalog_path():
     """Path to the indicator catalog YAML."""
-    return os.path.abspath("assets/indicators/catalog.yaml")
+    return os.path.abspath("/home/dworth/Dropbox/Bronco II/Talus Tally/assets/indicators/catalog.yaml")
 
 
 def test_load_indicator_catalog(indicator_catalog_path):
@@ -18,7 +18,11 @@ def test_load_indicator_catalog(indicator_catalog_path):
     
     status_set = catalog.indicator_sets["status"]
     assert status_set is not None
-    assert len(status_set["indicators"]) == 4
+    assert len(status_set["indicators"]) >= 4
+    # Ensure expected indicator IDs exist (including the new priority states)
+    indicator_ids = {entry["id"] for entry in status_set["indicators"] if entry.get("id")}
+    for expected in ["empty", "partial", "alert", "filled", "low", "medium", "high"]:
+        assert expected in indicator_ids
 
 
 def test_get_indicator_svg_path(indicator_catalog_path):

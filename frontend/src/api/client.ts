@@ -28,6 +28,7 @@ export interface Node {
   indicator_set?: string;
   statusIndicatorSvg?: string;
   statusText?: string;
+  icon_id?: string;
 }
 
 export interface Graph {
@@ -46,6 +47,7 @@ export interface NodeTypeSchema {
   id: string;
   name: string;
   allowed_children: string[];
+  icon?: string;
   properties: Array<{
     id: string;
     name: string;
@@ -204,6 +206,18 @@ export class APIClient {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ template_id: templateId, project_name: projectName }),
     });
+    return response.json();
+  }
+
+  async loadGraphIntoSession(sessionId: string, graph: any, templateId: string | null): Promise<any> {
+    const response = await fetch(`${this.baseUrl}/api/v1/sessions/${sessionId}/load-graph`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ graph, template_id: templateId }),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to load graph into session');
+    }
     return response.json();
   }
 
