@@ -10,7 +10,8 @@ import { AssetSelectDialog } from './components/dialogs/AssetSelectDialog';
 import { AssetCategoryDialog } from './components/dialogs/AssetCategoryDialog';
 import { SettingsDialog } from './components/dialogs/SettingsDialog';
 import { SaveConfirmDialog, type SaveAction } from './components/dialogs/SaveConfirmDialog';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { TemplateEditor } from './views/TemplateEditor';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { DebugPanel, type DebugLogEntry } from './components/dev/DebugPanel';
 import { ErrorBoundary } from './components/dev/ErrorBoundary';
 // Toggleable debug logging for tree/expansion state
@@ -19,6 +20,7 @@ import { useGraphStore } from './store';
 import { useGraphSync } from './hooks';
 import { apiClient, type Node, type Template, type Graph, type TemplateSchema, API_BASE_URL } from './api/client';
 import { normalizeGraph } from './utils/graph';
+import { validateTemplateSchema, safeExtractOptions } from './utils/templateValidation';
 
 function App() {
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
@@ -26,6 +28,9 @@ function App() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isDirty, setIsDirty] = useState(false);  // Track dirty state
   const isDirtyRef = useRef(false);  // Ref to access current dirty state in callbacks
+  const sessionIdRef = useRef<string | null>(null);
+  const currentGraphRef = useRef<Graph | null>(null);
+  const templateIdRef = useRef<string | null>(null);
   const [treeNodes, setTreeNodes] = useState<TreeNode[]>([]);
   const [selectedNodeData, setSelectedNodeData] = useState<Node | null>(null);
   const [showNewProjectDialog, setShowNewProjectDialog] = useState(false);
@@ -34,6 +39,7 @@ function App() {
   const [showAssetSelectDialog, setShowAssetSelectDialog] = useState(false);
   const [showAssetCategoryDialog, setShowAssetCategoryDialog] = useState(false);
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
+  const [showTemplateEditor, setShowTemplateEditor] = useState(false);
   const [showSaveConfirmDialog, setShowSaveConfirmDialog] = useState(false);
   const pendingCloseActionRef = useRef<(() => Promise<void>) | null>(null);
   const [addChildParentId, setAddChildParentId] = useState<string | null>(null);
@@ -49,8 +55,18 @@ function App() {
   const [debugLogs, setDebugLogs] = useState<DebugLogEntry[]>([]);
   const debugLogCounterRef = useRef(0);
   const [isAppInitialized, setIsAppInitialized] = useState(false);
-  // Track which nodes are expanded (by id)
-  const [expandedMap, setExpandedMap] = useState<Record<string, boolean>>({});
+  // Track which nodes are expanded (by id) - restore from localStorage
+  const [expandedMap, setExpandedMap] = useState<Record<string, boolean>>(() => {
+    try {
+      const saved = localStorage.getItem('talus-tally:expandedMap');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (err) {
+      console.warn('Failed to restore expanded state:', err);
+    }
+    return {};
+  });
   const [backendError, setBackendError] = useState<string | null>(null);
   const [isInitialConnection, setIsInitialConnection] = useState(true);
   const initialLoadStartRef = useRef<number>(Date.now());
@@ -65,6 +81,18 @@ function App() {
     isDirtyRef.current = isDirty;
   }, [isDirty]);
 
+  useEffect(() => {
+    sessionIdRef.current = sessionId;
+  }, [sessionId]);
+
+  useEffect(() => {
+    currentGraphRef.current = currentGraph || null;
+  }, [currentGraph]);
+
+  useEffect(() => {
+    templateIdRef.current = currentTemplateId;
+  }, [currentTemplateId]);
+
   // Load saved indicator size on mount
   useEffect(() => {
     const savedSize = localStorage.getItem('indicator_size');
@@ -76,6 +104,15 @@ function App() {
       }
     }
   }, []);
+
+  // Persist expanded state to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('talus-tally:expandedMap', JSON.stringify(expandedMap));
+    } catch (err) {
+      console.warn('Failed to persist expanded state:', err);
+    }
+  }, [expandedMap]);
 
   // Wait for backend and create/restore session on mount
   useEffect(() => {
@@ -143,11 +180,20 @@ function App() {
                   if (restoredTemplateId) {
                     try {
                       const schema = await apiClient.getTemplateSchema(restoredTemplateId);
+                      
+                      // Validate template schema before using it
+                      const validation = validateTemplateSchema(schema);
+                      if (!validation.isValid) {
+                        console.error('Template validation failed:', validation.errors);
+                        throw new Error(`Template validation failed:\n${validation.errors.join('\n')}`);
+                      }
+                      
                       setTemplateSchema(schema);
                       setCurrentTemplateId(restoredTemplateId);
                       console.log('✓ Template schema restored:', restoredTemplateId);
                     } catch (err) {
                       console.warn('Failed to restore template schema:', err);
+                      alert(`Template Error: ${err instanceof Error ? err.message : String(err)}\n\nThe template may be corrupted. Please start a new project.`);
                     }
                   }
                   const graphData = await apiClient.getSessionGraph(savedSessionId);
@@ -271,16 +317,25 @@ function App() {
       return acc;
     }, {}) || {};
 
-    // Helper to get allowed_children from templateSchema
-    const getAllowedChildren = (type: string): string[] => {
-      if (!templateSchema) return [];
-      const typeSchema = templateSchema.node_types.find(nt => nt.id === type);
+    // Helper to get allowed_children - uses backend data if available, falls back to schema
+    const getAllowedChildren = (node: Node | undefined): string[] => {
+      if (!node) return [];
+      // First priority: use allowed_children from backend schema enrichment
+      if (node.allowed_children !== undefined && Array.isArray(node.allowed_children)) {
+        return node.allowed_children;
+      }
+      // Fallback: get from template schema
+      if (!templateSchema?.node_types) {
+        return [];
+      }
+      const typeSchema = templateSchema.node_types.find(nt => nt.id === node.type);
       return typeSchema?.allowed_children || [];
     };
 
     const buildTree = (node: Node, nodesMap: Record<string, Node>): TreeNode => {
       const schemaIconId = iconByType[node.type];
       const iconId = node.icon_id ?? schemaIconId ?? undefined;
+      const allowedChildren = getAllowedChildren(node);
       return {
         id: node.id,
         name: node.properties?.name || node.type,
@@ -288,7 +343,7 @@ function App() {
         indicator_id: node.indicator_id ?? undefined,
         indicator_set: node.indicator_set ?? undefined,
         icon_id: iconId,
-        allowed_children: getAllowedChildren(node.type),
+        allowed_children: allowedChildren,
         children: node.children?.map(childId => {
           const childNode = nodesMap[childId];
           return childNode ? buildTree(childNode, nodesMap) : { id: childId, name: 'Unknown', type: 'unknown', allowed_children: [], children: [] };
@@ -309,41 +364,14 @@ function App() {
   // Track previous child counts for root nodes (do not store in expandedMap)
   const rootChildCounts = useRef<Record<string, number>>({});
   useEffect(() => {
-    const nodeList = Object.values(storeNodes || {}) as any[];
-    const nodeSignature = JSON.stringify(
-      nodeList.map(n => ({
-        id: n.id,
-        indicator_id: n.indicator_id,
-        indicator_set: n.indicator_set,
-        status: n.properties?.status,
-        type: n.type,
-        name: n.properties?.name,
-      }))
-    );
+    // Build tree only if we have nodes
+    if (!storeNodes || Object.keys(storeNodes).length === 0) {
+      setTreeNodes([]);
+      return;
+    }
     const tree = convertNodesToTree(storeNodes);
     setTreeNodes(tree);
-    // Debug: log root node allowed_children and tree structure
-    if (DEBUG_TREE) {
-      tree.forEach(root => {
-        console.log('[App][DEBUG] Root node:', {
-          id: root.id,
-          name: root.name,
-          type: root.type,
-          allowed_children: root.allowed_children,
-          children: root.children?.map(c => c.id),
-        });
-      });
-      console.log('[App][DEBUG] Full tree:', tree);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [storeNodes, convertNodesToTree, JSON.stringify(Object.values(storeNodes || {}).map(n => ({
-    id: n.id,
-    indicator_id: n.indicator_id,
-    indicator_set: n.indicator_set,
-    status: n.properties?.status,
-    type: n.type,
-    name: n.properties?.name,
-  })))]);
+  }, [storeNodes, convertNodesToTree]);
 
   // Get selected node data
   useEffect(() => {
@@ -355,7 +383,7 @@ function App() {
   }, [selectedNode, storeNodes]);
 
   // Convert node properties to inspector format
-  const getNodeProperties = (): NodeProperty[] => {
+  const getNodeProperties = useCallback((): NodeProperty[] => {
     if (!selectedNodeData || !templateSchema) {
       return [];
     }
@@ -376,7 +404,7 @@ function App() {
     };
 
     // Build properties from schema
-    const schemaProperties = nodeTypeSchema.properties.map((prop) => {
+    const schemaProperties = nodeTypeSchema.properties.filter((prop) => prop.id !== 'name').map((prop) => {
       let value = selectedNodeData.properties?.[prop.id];
       if (value === undefined && prop.id === 'name') {
         value = selectedNodeData.properties?.name || '';
@@ -387,11 +415,20 @@ function App() {
       else if (prop.type === 'textarea') type = 'textarea';
       else if (prop.type === 'currency') type = 'currency';
       else if (prop.type === 'date') type = 'date';
-      // Build options for select
+      else if (prop.type === 'checkbox') type = 'checkbox';
+      else if (prop.type === 'editor') type = 'editor';
+      // Build options for select - use safe extraction to handle malformed data
       let options = undefined;
-      if (prop.type === 'select' && prop.options) {
-        options = prop.options.map(opt => ({ value: opt.id ?? opt, label: opt.name ?? opt }));
+      if (prop.type === 'select') {
+        options = safeExtractOptions(prop);
       }
+      
+      // Extract markup tokens if this is an editor field with markup_profile
+      let markupTokens = undefined;
+      if (prop.type === 'editor' && (prop as any).markup_tokens) {
+        markupTokens = (prop as any).markup_tokens;
+      }
+      
       return {
         id: prop.id,
         name: prop.name,
@@ -399,15 +436,19 @@ function App() {
         value: value ?? '',
         options,
         required: prop.required,
+        markupTokens,
       };
     });
 
     return [nameProperty, ...schemaProperties];
-  };
+  }, [selectedNodeData, templateSchema]);
 
   // Get linked asset metadata if this node has an asset_id property
-  const getLinkedAssetMetadata = (): any => {
-    if (!selectedNodeData || !templateSchema) return null;
+  const getLinkedAssetMetadata = useCallback((): any => {
+    if (!selectedNodeData) return null;
+    if (!templateSchema) {
+      return null;
+    }
 
     // Check if this node has an asset_id property (like asset_reference nodes)
     const assetId = selectedNodeData.properties?.asset_id;
@@ -418,11 +459,13 @@ function App() {
     if (!assetNode) return null;
 
     // Get the schema for the asset node type
-    const assetTypeSchema = templateSchema.node_types.find(nt => nt.id === assetNode.type);
-    if (!assetTypeSchema) return null;
+    const assetTypeSchema = templateSchema?.node_types?.find(nt => nt.id === assetNode.type);
+    if (!assetTypeSchema) {
+      return null;
+    }
 
     // Build asset properties
-    const assetProperties = assetTypeSchema.properties.map((prop) => {
+    const assetProperties = (assetTypeSchema.properties || []).map((prop) => {
       let value = assetNode.properties?.[prop.id];
       if (value === undefined && prop.id === 'name') {
         value = assetNode.properties?.name || '';
@@ -433,11 +476,20 @@ function App() {
       else if (prop.type === 'textarea') type = 'textarea';
       else if (prop.type === 'currency') type = 'currency';
       else if (prop.type === 'date') type = 'date';
-      // Build options for select
+      else if (prop.type === 'checkbox') type = 'checkbox';
+      else if (prop.type === 'editor') type = 'editor';
+      // Build options for select - use safe extraction to handle malformed data
       let options = undefined;
-      if (prop.type === 'select' && prop.options) {
-        options = prop.options.map(opt => ({ value: opt.id ?? opt, label: opt.name ?? opt }));
+      if (prop.type === 'select') {
+        options = safeExtractOptions(prop);
       }
+      
+      // Extract markup tokens if this is an editor field with markup_profile
+      let markupTokens = undefined;
+      if (prop.type === 'editor' && (prop as any).markup_tokens) {
+        markupTokens = (prop as any).markup_tokens;
+      }
+      
       return {
         id: prop.id,
         name: prop.name,
@@ -445,6 +497,7 @@ function App() {
         value: value ?? '',
         options,
         required: prop.required,
+        markupTokens,
       };
     });
 
@@ -454,7 +507,73 @@ function App() {
       name: assetNode.properties?.name || 'Asset',
       properties: assetProperties,
     };
-  };
+  }, [selectedNodeData, templateSchema, storeNodes]);
+
+  // Memoize computed values for inspector
+  const nodeProperties = useMemo(() => getNodeProperties(), [getNodeProperties]);
+  const linkedAsset = useMemo(() => getLinkedAssetMetadata(), [getLinkedAssetMetadata]);
+
+  const ensureSession = useCallback(async (): Promise<string> => {
+    if (sessionIdRef.current) {
+      console.log(`[Session] Using existing sessionId: ${sessionIdRef.current}`);
+      return sessionIdRef.current;
+    }
+    console.log('[Session] Creating new session...');
+    const session = await apiClient.createSession();
+    const sid = session.session_id || session.id || 'unknown';
+    console.log(`[Session] Created new session: ${sid}`);
+    setSessionId(sid);
+    localStorage.setItem('talus_tally_session_id', sid);
+    return sid;
+  }, []);
+
+  const restoreGraphToSession = useCallback(async (sid: string) => {
+    if (!currentGraphRef.current) {
+      console.warn('[Recovery] No graph to restore (currentGraphRef is null)');
+      return;
+    }
+    console.log(`[Recovery] Restoring graph to new session ${sid}...`);
+    try {
+      const result = await apiClient.loadGraphIntoSession(sid, currentGraphRef.current, templateIdRef.current);
+      console.log(`[Recovery] Graph restored successfully to session ${sid}`);
+      return result;
+    } catch (restoreErr) {
+      const msg = restoreErr instanceof Error ? restoreErr.message : String(restoreErr);
+      console.error(`[Recovery] Failed to restore graph to session ${sid}: ${msg}`);
+      throw restoreErr;  // Re-throw so caller knows recovery failed
+    }
+  }, []);
+
+  const safeExecuteCommand = useCallback(async (commandType: string, data: any) => {
+    const sid = await ensureSession();
+    try {
+      console.log(`[Command] Executing ${commandType} with session ${sid}...`);
+      return await apiClient.executeCommand(sid, commandType, data);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.log(`[Command] Got error: ${msg}`);
+      if (msg.includes('Session not found') || msg.includes('INVALID_SESSION')) {
+        console.log('[Recovery] Detected session lost, starting recovery...');
+        try {
+          const newSession = await apiClient.createSession();
+          const newSid = newSession.session_id || newSession.id || 'unknown';
+          console.log(`[Recovery] Created new session: ${newSid}`);
+          setSessionId(newSid);
+          localStorage.setItem('talus_tally_session_id', newSid);
+          
+          await restoreGraphToSession(newSid);
+          
+          console.log(`[Recovery] Retrying command ${commandType} with new session...`);
+          return await apiClient.executeCommand(newSid, commandType, data);
+        } catch (recoveryErr) {
+          const recoveryMsg = recoveryErr instanceof Error ? recoveryErr.message : String(recoveryErr);
+          console.error(`[Recovery] Recovery failed: ${recoveryMsg}`);
+          throw recoveryErr;  // Throw the recovery error, not the original error
+        }
+      }
+      throw err;
+    }
+  }, [ensureSession, restoreGraphToSession]);
 
   // Menu handlers
   const handleNew = useCallback(async () => {
@@ -537,18 +656,29 @@ function App() {
       // Load template schema for type information
       try {
         const schema = await apiClient.getTemplateSchema(templateId);
+        
+        // Validate template schema before using it
+        const validation = validateTemplateSchema(schema);
+        if (!validation.isValid) {
+          console.error('Template validation failed:', validation.errors);
+          throw new Error(`Template validation failed:\n${validation.errors.join('\n')}`);
+        }
+        
         setTemplateSchema(schema);
         localStorage.setItem('talus_tally_template_id', templateId);
         console.log('✓ Template schema loaded:', schema);
       } catch (schemaErr) {
-        console.warn('⚠ Failed to load template schema, continuing without schema:', schemaErr);
+        console.error('✗ Failed to load template schema:', schemaErr);
+        alert(`Template Error: ${schemaErr instanceof Error ? schemaErr.message : String(schemaErr)}\n\nThe template may be invalid. Please check the template file.`);
         setTemplateSchema(null);
+        throw schemaErr; // Prevent continuing with invalid template
       }
       
       // Update session and load graph
       const newSessionId = result.session_id || 'unknown';
       setSessionId(newSessionId);
       setCurrentTemplateId(templateId);
+      setLastFilePath(null);  // New project has no file path yet
       localStorage.setItem('talus_tally_session_id', newSessionId);
       setCurrentGraph(graph);
       setShowNewProjectDialog(false);
@@ -561,12 +691,8 @@ function App() {
   }, [normalizeGraph, setCurrentGraph]);
 
   const handleAddProjectRoot = useCallback(async (templateId: string, rootName: string) => {
-    if (!sessionId) {
-      alert('No active session');
-      return;
-    }
     try {
-      const result = await apiClient.executeCommand(sessionId, 'CreateNode', {
+      const result = await safeExecuteCommand('CreateNode', {
         blueprint_type_id: templateId,
         name: rootName,
         parent_id: null,
@@ -580,9 +706,10 @@ function App() {
       console.error('✗ Failed to add project root:', err);
       alert('Failed to add project root');
     }
-  }, [normalizeGraph, sessionId, setCurrentGraph]);
+  }, [normalizeGraph, safeExecuteCommand, setCurrentGraph]);
 
   const handleSave = useCallback(async (): Promise<boolean> => {
+    console.log('[DEBUG] handleSave called. lastFilePath:', lastFilePath);
     if (!sessionId) {
       alert('No active session');
       return false;
@@ -595,9 +722,14 @@ function App() {
       }
 
       const graph = currentGraph || { id: 'default', nodes: [], edges: [] };
-      const payload = JSON.stringify({ graph, template_id: currentTemplateId }, null, 2);
+      const payload = JSON.stringify({ 
+        graph, 
+        template_id: currentTemplateId,
+        expanded_map: expandedMap 
+      }, null, 2);
 
       if (!lastFilePath) {
+        console.log('[DEBUG] No lastFilePath, prompting for save location');
         const { save } = await import('@tauri-apps/plugin-dialog');
         const filePath = await save({
           title: 'Save Project',
@@ -605,10 +737,12 @@ function App() {
           filters: [{ name: 'Talus Project', extensions: ['json'] }],
         });
         if (!filePath) return false;
+        console.log('[DEBUG] User selected save path:', filePath);
         setLastFilePath(filePath);
         const { writeTextFile } = await import('@tauri-apps/plugin-fs');
         await writeTextFile(filePath, payload);
       } else {
+        console.log('[DEBUG] Saving to existing path:', lastFilePath);
         const { writeTextFile } = await import('@tauri-apps/plugin-fs');
         await writeTextFile(lastFilePath, payload);
       }
@@ -622,7 +756,7 @@ function App() {
       alert('Save failed.');
       return false;
     }
-  }, [currentGraph, lastFilePath, sessionId, currentTemplateId]);
+  }, [currentGraph, lastFilePath, sessionId, currentTemplateId, expandedMap]);
 
   const handleSaveAs = useCallback(async (): Promise<boolean> => {
     try {
@@ -632,7 +766,11 @@ function App() {
         return false;
       }
       const graph = currentGraph || { id: 'default', nodes: [], edges: [] };
-      const payload = JSON.stringify({ graph, template_id: currentTemplateId }, null, 2);
+      const payload = JSON.stringify({ 
+        graph, 
+        template_id: currentTemplateId,
+        expanded_map: expandedMap 
+      }, null, 2);
       const { save } = await import('@tauri-apps/plugin-dialog');
       const filePath = await save({
         title: 'Save Project As',
@@ -655,7 +793,7 @@ function App() {
       alert('Save failed.');
       return false;
     }
-  }, [currentGraph, sessionId, currentTemplateId]);
+  }, [currentGraph, sessionId, currentTemplateId, expandedMap]);
 
   const handleOpen = useCallback(async () => {
     try {
@@ -707,39 +845,74 @@ function App() {
       const templateId = parsed.template_id || null;
       let finalGraph = normalizedGraph;
 
-      // Load graph into backend session
+      // Ensure we have a session for this file
+      let sid: string;
       if (sessionId) {
-        try {
-          const loadResult = await apiClient.loadGraphIntoSession(sessionId, normalizedGraph, templateId);
-          console.log('✓ Graph loaded into backend session');
-          finalGraph = normalizeGraph(loadResult.graph ?? loadResult);
-          setCurrentTemplateId(templateId);
-          
-          if (templateId) {
-            try {
-              const schema = await apiClient.getTemplateSchema(templateId);
-              setTemplateSchema(schema);
-              console.log('✓ Template schema loaded for:', templateId);
-            } catch (schemaErr) {
-              console.warn('⚠ Could not load template schema, properties may be limited:', schemaErr);
-              setTemplateSchema(null);
+        sid = sessionId;
+      } else {
+        const newSession = await apiClient.createSession();
+        sid = newSession.session_id || newSession.id || 'unknown';
+        console.log(`[File Open] Created new session for file: ${sid}`);
+        setSessionId(sid);
+        localStorage.setItem('talus_tally_session_id', sid);
+      }
+
+      // Load graph into backend session (always - we just ensured a session exists)
+      try {
+        console.log(`[File Open] Loading graph into session ${sid}...`);
+        const loadResult = await apiClient.loadGraphIntoSession(sid, normalizedGraph, templateId);
+        console.log('✓ Graph loaded into backend session');
+        finalGraph = normalizeGraph(loadResult.graph ?? loadResult);
+        setCurrentTemplateId(templateId);
+        
+        if (templateId) {
+          try {
+            const schema = await apiClient.getTemplateSchema(templateId);
+            
+            // Validate template schema before using it
+            const validation = validateTemplateSchema(schema);
+            if (!validation.isValid) {
+              console.error('Template validation failed:', validation.errors);
+              throw new Error(`Template validation failed:\n${validation.errors.join('\n')}`);
             }
+            
+            setTemplateSchema(schema);
+            console.log('✓ Template schema loaded for:', templateId);
+          } catch (schemaErr) {
+            console.error('✗ Template schema error:', schemaErr);
+            alert(`Template Error: ${schemaErr instanceof Error ? schemaErr.message : String(schemaErr)}\n\nThe template may be invalid or corrupted.\nThe project will load but some features may not work correctly.`);
+            // Keep templateSchema as null but don't crash - we'll use backend-provided allowed_children
+            setTemplateSchema(null);
           }
-        } catch (sessionErr) {
-          console.error('⚠ Failed to load graph into backend session:', sessionErr);
-          console.log('Continuing with local graph only...');
+        } else {
+          console.info('ℹ No template ID in project file, working with schema-less data');
+          setTemplateSchema(null);
         }
+      } catch (sessionErr) {
+        const errMsg = sessionErr instanceof Error ? sessionErr.message : String(sessionErr);
+        console.error('⚠ Failed to load graph into backend session:', sessionErr);
+        console.log('Continuing with local graph only - operations may fail later...');
+        // Don't break the flow, but warn user that backend operations may fail
+        alert('Warning: Could not sync project to backend. Edit operations may not work properly.');
       }
 
       setCurrentGraph(finalGraph);
       setLastFilePath(filePath);
+      console.log('[DEBUG] File opened and lastFilePath set to:', filePath);
+      
+      // Restore expanded state if saved in file
+      if (parsed.expanded_map && typeof parsed.expanded_map === 'object') {
+        setExpandedMap(parsed.expanded_map);
+        console.log('✓ Restored tree expansion state');
+      }
+      
       console.log('✓ Project opened:', filePath);
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : String(err);
       console.error('✗ Open failed:', err);
       alert(`Failed to open project: ${errMsg}`);
     }
-  }, [normalizeGraph, setCurrentGraph, sessionId]);
+  }, [normalizeGraph, setCurrentGraph, sessionId, setSessionId, setExpandedMap, setTemplateSchema, setCurrentTemplateId]);
 
   const handleUndo = useCallback(async () => {
     if (!sessionId) return;
@@ -866,8 +1039,15 @@ function App() {
       { id: 'vehicles', label: 'Vehicles' },
     ];
     if (!templateSchema) return fallback;
+    
+    // Check both project_root and inventory_root for inventory types
     const root = templateSchema.node_types.find(nt => nt.id === 'project_root');
-    const allowed = root?.allowed_children || [];
+    const assetRoot = templateSchema.node_types.find(nt => nt.id === 'inventory_root');
+    const allowed = [
+      ...(root?.allowed_children || []),
+      ...(assetRoot?.allowed_children || [])
+    ];
+    
     const isAssetCategory = (id: string) => id.endsWith('_inventory') || id === 'vehicles';
     const options = allowed
       .filter(isAssetCategory)
@@ -878,9 +1058,29 @@ function App() {
     return options.length > 0 ? options : fallback;
   }, [templateSchema]);
 
+  // Helper to check if adding a child would create a cycle
+  const wouldCreateCycle = (parentId: string, childType: string): boolean => {
+    // Find all descendants of the parent node
+    const visited = new Set<string>();
+    function dfs(nodeId: string) {
+      if (visited.has(nodeId)) return;
+      visited.add(nodeId);
+      const node = storeNodes[nodeId];
+      if (node && Array.isArray(node.children)) {
+        node.children.forEach(dfs);
+      }
+    }
+    dfs(parentId);
+    // If the new child would have the same id as any ancestor, that's a cycle
+    // But since new child gets a new id, we only need to check if the parent is a descendant of itself (should never happen)
+    // However, if the UI ever allows selecting an existing node as a child, check here
+    // For now, always return false (no cycle) for new nodes, but keep this for future extension
+    return false;
+  };
+
   const handleAddChildConfirm = useCallback((childName: string) => {
-    if (!addChildParentId || !sessionId) {
-      alert('No active session or parent selected');
+    if (!addChildParentId) {
+      alert('No parent selected');
       return;
     }
     const parentNode = storeNodes[addChildParentId];
@@ -890,9 +1090,13 @@ function App() {
     }
     // Use the child type selected from the flyout
     let childType = addChildType || 'task';
+    // Frontend cycle detection: prevent adding a child if it would create a cycle (future-proof)
+    if (wouldCreateCycle(addChildParentId, childType)) {
+      alert('Cannot add child: this would create a cycle in the project tree.');
+      return;
+    }
     console.log(`Creating child node: type="${childType}", parent type="${parentNode.type}"`);
-    apiClient
-      .executeCommand(sessionId, 'CreateNode', {
+    safeExecuteCommand('CreateNode', {
         blueprint_type_id: childType,
         name: childName,
         parent_id: addChildParentId,
@@ -911,11 +1115,11 @@ function App() {
         console.error('Failed to add child:', err);
         alert('Failed to add child node');
       });
-  }, [addChildParentId, addChildType, normalizeGraph, sessionId, setCurrentGraph, storeNodes]);
+  }, [addChildParentId, addChildType, normalizeGraph, safeExecuteCommand, setCurrentGraph, storeNodes]);
 
   const handleAssetSelectConfirm = useCallback(async (assetId: string) => {
-    if (!assetSelectParentId || !sessionId) {
-      alert('No active session or parent selected');
+    if (!assetSelectParentId) {
+      alert('No parent selected');
       return;
     }
     const assetNode = storeNodes[assetId];
@@ -924,7 +1128,8 @@ function App() {
       return;
     }
     try {
-      const createResult = await apiClient.executeCommand(sessionId, 'CreateNode', {
+      const sid = await ensureSession();
+      const createResult = await safeExecuteCommand('CreateNode', {
         blueprint_type_id: 'asset_reference',
         name: assetNode.properties?.name || 'Asset Reference',
         parent_id: assetSelectParentId,
@@ -936,7 +1141,7 @@ function App() {
       )?.id;
 
       if (createdNodeId) {
-        await apiClient.executeCommand(sessionId, 'UpdateProperty', {
+        await safeExecuteCommand('UpdateProperty', {
           node_id: createdNodeId,
           property_id: 'asset_id',
           old_value: null,
@@ -945,7 +1150,7 @@ function App() {
       }
 
       const refreshedGraph = createdNodeId
-        ? normalizeGraph((await apiClient.getSessionGraph(sessionId)).graph)
+        ? normalizeGraph((await apiClient.getSessionGraph(sid)).graph)
         : createdGraph;
 
       setCurrentGraph(refreshedGraph);
@@ -957,15 +1162,15 @@ function App() {
       console.error('Failed to add asset reference:', err);
       alert('Failed to add asset reference');
     }
-  }, [assetSelectParentId, normalizeGraph, sessionId, setCurrentGraph, storeNodes]);
+  }, [assetSelectParentId, ensureSession, normalizeGraph, safeExecuteCommand, setCurrentGraph, storeNodes]);
 
   const handleAssetCategoryConfirm = useCallback(async (categoryId: string, name: string) => {
-    if (!assetCategoryParentId || !sessionId) {
-      alert('No active session or parent selected');
+    if (!assetCategoryParentId) {
+      alert('No parent selected');
       return;
     }
     try {
-      const result = await apiClient.executeCommand(sessionId, 'CreateNode', {
+      const result = await safeExecuteCommand('CreateNode', {
         blueprint_type_id: categoryId,
         name,
         parent_id: assetCategoryParentId,
@@ -980,7 +1185,7 @@ function App() {
       console.error('Failed to add asset category:', err);
       alert('Failed to add asset category');
     }
-  }, [assetCategoryParentId, normalizeGraph, sessionId, setCurrentGraph]);
+  }, [assetCategoryParentId, normalizeGraph, safeExecuteCommand, setCurrentGraph]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -1161,6 +1366,16 @@ function App() {
       { label: 'Save', onClick: handleSave },
       { label: 'Save As...', onClick: handleSaveAs },
       { label: '---', onClick: () => {} },
+      { label: 'Refresh Blueprint', onClick: async () => {
+        try {
+          // Reload the blueprint/template from the backend
+          // This will re-fetch the template definitions
+          window.location.reload();
+        } catch (error) {
+          console.error('Failed to refresh blueprint:', error);
+        }
+      } },
+      { label: '---', onClick: () => {} },
       { label: 'Exit', onClick: async () => {
         try {
           const { invoke } = await import('@tauri-apps/api/core');
@@ -1180,6 +1395,7 @@ function App() {
       { label: 'Collapse All', onClick: handleCollapseAll },
     ],
     Tools: [
+      { label: 'Template Editor', onClick: () => setShowTemplateEditor(true) },
       { label: 'Settings', onClick: () => setShowSettingsDialog(true) },
     ],
     Help: [
@@ -1213,7 +1429,7 @@ function App() {
           </div>
         </div>
       ) : (
-      <div className="flex flex-col h-screen bg-bg-dark text-fg-primary">
+      <div className="flex flex-col h-screen bg-bg-dark text-fg-primary relative">
       <TitleBar title={isDirty ? "TALUS TALLY *" : "TALUS TALLY"} isDirty={isDirty} onClose={handleCloseApp} />
       <MenuBar menus={menus} />
 
@@ -1279,12 +1495,7 @@ function App() {
                   openAddChildDialog(nodeId, node.properties?.name, childTypeName, type);
                 } else if (action === 'delete') {
                   if (confirm('Delete this node?')) {
-                    if (!sessionId) {
-                      alert('No active session');
-                      return;
-                    }
-                    apiClient
-                      .executeCommand(sessionId, 'DeleteNode', {
+                    safeExecuteCommand('DeleteNode', {
                         node_id: nodeId,
                       })
                       .then((result) => {
@@ -1311,25 +1522,75 @@ function App() {
               nodeId={selectedNode || undefined}
               nodeName={selectedNodeData?.properties?.name || selectedNode || undefined}
               nodeType={selectedNodeData?.type || undefined}
-              properties={getNodeProperties()}
-              linkedAsset={getLinkedAssetMetadata()}
+              properties={nodeProperties}
+              linkedAsset={linkedAsset}
+              orphanedProperties={selectedNodeData?.metadata?.orphaned_properties as Record<string, string | number> | undefined}
+              onOrphanedPropertyDelete={(propKey) => {
+                if (!selectedNodeData || !currentGraph) return;
+                
+                // Remove the orphaned property from metadata
+                const updatedMetadata = { ...selectedNodeData.metadata };
+                if (updatedMetadata.orphaned_properties) {
+                  delete updatedMetadata.orphaned_properties[propKey];
+                  
+                  // If no more orphaned properties, remove the object
+                  if (Object.keys(updatedMetadata.orphaned_properties).length === 0) {
+                    delete updatedMetadata.orphaned_properties;
+                  }
+                }
+                
+                // Update the node's metadata
+                const updatedNode: Node = {
+                  ...selectedNodeData,
+                  metadata: updatedMetadata
+                };
+                
+                // Update the graph
+                const updatedGraph: Graph = {
+                  id: currentGraph.id,
+                  nodes: currentGraph.nodes.map(n => 
+                    n.id === selectedNodeData.id ? updatedNode : n
+                  ),
+                  edges: currentGraph.edges
+                };
+                
+                setCurrentGraph(updatedGraph);
+                setIsDirty(true);
+                console.log(`✓ Deleted orphaned property: ${propKey}`);
+              }}
               onPropertyChange={(propId, value) => {
-                if (!selectedNodeData || !sessionId) {
-                  alert('No active session or node selected');
+                if (!selectedNodeData) {
+                  alert('No node selected');
                   return;
                 }
-                apiClient
-                  .executeCommand(sessionId, 'UpdateProperty', {
+                console.log('[onPropertyChange] Starting property update:', {
+                  nodeId: selectedNodeData.id,
+                  propId,
+                  oldValue: selectedNodeData.properties?.[propId],
+                  newValue: value
+                });
+                safeExecuteCommand('UpdateProperty', {
                     node_id: selectedNodeData.id,
                     property_id: propId,
                     old_value: selectedNodeData.properties?.[propId],
                     new_value: value,
                   })
                   .then((result) => {
-                    const graph = normalizeGraph(result.graph ?? result);
-                    setCurrentGraph(graph);
-                    setIsDirty(result.is_dirty ?? true);  // Update dirty state from API
-                    console.log('✓ Property updated');
+                    console.log('[onPropertyChange] Got result from API');
+                    console.log('[onPropertyChange] Result keys:', Object.keys(result));
+                    console.log('[onPropertyChange] Result.graph:', result.graph);
+                    console.log('[onPropertyChange] Result.graph.roots count:', result.graph?.roots?.length);
+                    console.log('[onPropertyChange] Starting normalizeGraph...');
+                    try {
+                      const graph = normalizeGraph(result.graph ?? result);
+                      console.log('[onPropertyChange] Graph normalized successfully, nodes:', graph.nodes.length);
+                      setCurrentGraph(graph);
+                      setIsDirty(result.is_dirty ?? true);  // Update dirty state from API
+                      console.log('✓ Property updated');
+                    } catch (error) {
+                      console.error('[onPropertyChange] Error normalizing graph:', error);
+                      alert('Error updating UI after property change: ' + (error as Error).message);
+                    }
                   })
                   .catch((err) => {
                     console.error('Failed to update property:', err);
@@ -1338,13 +1599,12 @@ function App() {
               }}
               onLinkedAssetPropertyChange={(propId, value) => {
                 const linkedAssetMetadata = getLinkedAssetMetadata();
-                if (!linkedAssetMetadata || !sessionId) {
-                  alert('No linked asset or active session');
+                if (!linkedAssetMetadata) {
+                  alert('No linked asset');
                   return;
                 }
                 // Update the linked asset node, not the reference node
-                apiClient
-                  .executeCommand(sessionId, 'UpdateProperty', {
+                safeExecuteCommand('UpdateProperty', {
                     node_id: linkedAssetMetadata.nodeId,
                     property_id: propId,
                     old_value: storeNodes[linkedAssetMetadata.nodeId]?.properties?.[propId],
@@ -1445,6 +1705,13 @@ function App() {
           isOpen={showSettingsDialog}
           onClose={() => setShowSettingsDialog(false)}
         />
+      )}
+
+      {/* Template Editor View */}
+      {showTemplateEditor && (
+        <div className="absolute inset-0 bg-bg-dark z-50">
+          <TemplateEditor onClose={() => setShowTemplateEditor(false)} />
+        </div>
       )}
 
       {/* Save Confirm Dialog */}

@@ -111,6 +111,7 @@ function TreeItem({
   expandedMap,
   setExpandedMap,
   getTypeLabel,
+  scrollContainerRef,
 }: {
   node: TreeNode;
   level?: number;
@@ -120,6 +121,7 @@ function TreeItem({
   expandedMap: Record<string, boolean>;
   setExpandedMap: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
   getTypeLabel?: (typeId: string) => string;
+  scrollContainerRef?: React.RefObject<HTMLDivElement | null>;
 }) {
   const [indicatorSvg, setIndicatorSvg] = useState<string | undefined>(undefined);
   const [indicatorText, setIndicatorText] = useState<string | undefined>(undefined);
@@ -214,6 +216,8 @@ function TreeItem({
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [showFlyout, setShowFlyout] = useState(false);
   const flyoutRef = useRef<HTMLDivElement>(null);
+  const addButtonRef = useRef<HTMLButtonElement>(null);
+  const [flyoutPos, setFlyoutPos] = useState<{ x: number; y: number } | null>(null);
     // Close flyout on outside click
     useEffect(() => {
       if (!showFlyout) return;
@@ -225,13 +229,65 @@ function TreeItem({
       document.addEventListener('mousedown', handleClick);
       return () => document.removeEventListener('mousedown', handleClick);
     }, [showFlyout]);
+
+    useEffect(() => {
+      if (!showFlyout) return;
+      
+      let animationFrameId: number;
+      
+      const updatePosition = () => {
+        const button = addButtonRef.current;
+        if (!button) return;
+
+        const rect = button.getBoundingClientRect();
+        const flyout = flyoutRef.current;
+        const flyoutRect = flyout?.getBoundingClientRect();
+        const padding = 8;
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+
+        let x = rect.left;
+        let y = rect.bottom + 6;
+
+        if (flyoutRect) {
+          if (x + flyoutRect.width + padding > viewportWidth) {
+            x = rect.right - flyoutRect.width;
+          }
+          if (x < padding) {
+            x = padding;
+          }
+
+          if (y + flyoutRect.height + padding > viewportHeight) {
+            y = rect.top - flyoutRect.height - 6;
+          }
+          if (y < padding) {
+            y = padding;
+          }
+        }
+
+        setFlyoutPos({ x, y });
+        
+        // Continue updating position on every frame while flyout is open
+        animationFrameId = requestAnimationFrame(updatePosition);
+      };
+
+      // Start the animation frame loop
+      animationFrameId = requestAnimationFrame(updatePosition);
+
+      return () => {
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+        }
+      };
+    }, [showFlyout]);
   const hasChildren = node.children && node.children.length > 0;
   const allowedChildren = node.allowed_children;
-  const assetActionTypes = new Set(['assets', 'asset_category']);
+  // Recognize inventory types by suffix pattern
+  const isInventoryType = (type: string) => type.endsWith('_inventory') || type === 'assets' || type === 'asset_category';
   const allowedChildrenList = allowedChildren || [];
   const hasAllowedChildren = allowedChildrenList.length > 0;
-  const showAssetCategoryAction = allowedChildrenList.some((child) => assetActionTypes.has(child));
-  const standardTypes = allowedChildrenList.filter((child) => !assetActionTypes.has(child));
+  const showAssetCategoryAction = allowedChildrenList.some((child) => isInventoryType(child));
+  const standardTypes = allowedChildrenList.filter((child) => !isInventoryType(child));
   const handleMenuAction = (action: string) => {
     onContextMenu?.(node.id, action);
     setContextMenu(null);
@@ -326,6 +382,7 @@ function TreeItem({
         {/* Add Node (+) Button on the left */}
         {hasAllowedChildren && (
           <button
+            ref={addButtonRef}
             className="mr-1 px-1 py-0.5 rounded bg-bg-light border border-border hover:bg-accent-primary hover:text-fg-primary"
             title="Add child node"
             onClick={e => {
@@ -393,8 +450,12 @@ function TreeItem({
       </div>
 
       {/* Flyout for child type selection */}
-      {showFlyout && hasAllowedChildren && (
-        <div ref={flyoutRef} className="absolute z-50 bg-bg-light border border-border rounded shadow-lg mt-2 p-2">
+      {showFlyout && hasAllowedChildren && flyoutPos && (
+        <div
+          ref={flyoutRef}
+          className="fixed z-50 bg-bg-light border border-border rounded shadow-lg p-2"
+          style={{ top: `${flyoutPos.y}px`, left: `${flyoutPos.x}px` }}
+        >
           {showAssetCategoryAction && (
             <button
               className="block w-full text-left px-2 py-1 hover:bg-accent-primary hover:text-fg-primary rounded"
@@ -476,6 +537,7 @@ function TreeItem({
                     expandedMap={expandedMap}
                     setExpandedMap={setExpandedMap}
                     getTypeLabel={getTypeLabel}
+                    scrollContainerRef={scrollContainerRef}
                   />
                 ))}
               </div>
@@ -501,6 +563,7 @@ export function TreeView({
 }: TreeViewProps) {
   const [backgroundMenu, setBackgroundMenu] = useState<{ x: number; y: number } | null>(null);
   const [internalExpandedMap, setInternalExpandedMap] = useState<Record<string, boolean>>({});
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   // Track previous signal values
   const prevExpandSignalRef = useRef<number | undefined>(undefined);
@@ -559,20 +622,13 @@ export function TreeView({
     setBackgroundMenu({ x: e.clientX, y: e.clientY });
   };
 
-  // Debug: log treeNodes and expandedMap on every render
-  useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log('[TreeView] treeNodes', nodes);
-    // eslint-disable-next-line no-console
-    console.log('[TreeView] expandedMap', expandedMap);
-  }, [nodes, expandedMap]);
-
   // Separate project_root nodes from others
   const projectRoots = nodes.filter(node => node.type === 'project_root');
   const hasMultipleProjects = projectRoots.length > 1;
 
   return (
     <aside
+      ref={scrollContainerRef}
       className="bg-bg-light border-r border-border p-3 overflow-y-auto"
       data-expanded-map={JSON.stringify(expandedMap)}
     >
@@ -597,6 +653,7 @@ export function TreeView({
               expandedMap={expandedMap}
               setExpandedMap={setExpandedMap}
               getTypeLabel={getTypeLabel}
+              scrollContainerRef={scrollContainerRef}
               data-expanded={expandedMap[node.id] ? 'true' : 'false'}
             />
           </div>

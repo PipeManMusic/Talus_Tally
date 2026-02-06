@@ -29,6 +29,12 @@ export interface Node {
   statusIndicatorSvg?: string;
   statusText?: string;
   icon_id?: string;
+  allowed_children?: string[]; // From backend schema enrichment
+  metadata?: {
+    orphaned?: boolean;
+    orphaned_properties?: Record<string, any>;
+    [key: string]: any;
+  };
 }
 
 export interface Graph {
@@ -39,6 +45,7 @@ export interface Graph {
 
 export interface Template {
   id: string;
+  uuid?: string;
   name: string;
   description: string;
 }
@@ -63,6 +70,7 @@ export interface NodeTypeSchema {
 
 export interface TemplateSchema {
   id: string;
+  uuid?: string;
   name: string;
   description: string;
   node_types: NodeTypeSchema[];
@@ -72,6 +80,41 @@ export interface ProjectResponse {
   project_id: string;
   session_id: string;
   graph: Graph;
+}
+
+export interface IconCatalog {
+  id: string;
+  file: string;
+  description: string;
+  url?: string;
+}
+
+export interface IndicatorDef {
+  id: string;
+  file: string;
+  description: string;
+  url?: string;
+}
+
+export interface IndicatorTheme {
+  indicator_color: string;
+  text_color: string;
+  text_style?: string;
+}
+
+export interface IndicatorSet {
+  description: string;
+  style_guide?: string;
+  indicators: IndicatorDef[];
+  default_theme?: Record<string, IndicatorTheme>;
+}
+
+export interface IconsConfig {
+  icons: IconCatalog[];
+}
+
+export interface IndicatorsConfig {
+  indicator_sets: Record<string, IndicatorSet>;
 }
 
 export class APIClient {
@@ -142,6 +185,15 @@ export class APIClient {
     return response.json();
   }
 
+  async getOrphanedNodes(sessionId: string): Promise<any> {
+    const response = await fetch(`${this.baseUrl}/api/v1/sessions/${sessionId}/orphaned-nodes`);
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error?.error?.message || 'Failed to get orphaned nodes');
+    }
+    return response.json();
+  }
+
   // Node Management
   async createNode(nodeData: Partial<Node>): Promise<Node> {
     const response = await fetch(`${this.baseUrl}/api/v1/nodes`, {
@@ -196,6 +248,26 @@ export class APIClient {
 
   async getTemplateSchema(templateId: string): Promise<TemplateSchema> {
     const response = await fetch(`${this.baseUrl}/api/v1/templates/${templateId}/schema`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch template schema: ${response.status} ${response.statusText}`);
+    }
+    return response.json();
+  }
+
+  // Config Management
+  async getIconsConfig(): Promise<IconsConfig> {
+    const response = await fetch(`${this.baseUrl}/api/v1/config/icons`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch icons config: ${response.status} ${response.statusText}`);
+    }
+    return response.json();
+  }
+
+  async getIndicatorsConfig(): Promise<IndicatorsConfig> {
+    const response = await fetch(`${this.baseUrl}/api/v1/config/indicators`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch indicators config: ${response.status} ${response.statusText}`);
+    }
     return response.json();
   }
 
@@ -259,7 +331,12 @@ export class APIClient {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ session_id: sessionId, command_type: commandType, data }),
     });
-    return response.json();
+    const payload = await response.json().catch(() => null);
+    if (!response.ok) {
+      const message = payload?.error?.message || 'Command failed';
+      throw new Error(message);
+    }
+    return payload;
   }
 
   async undo(sessionId: string): Promise<any> {
@@ -275,6 +352,93 @@ export class APIClient {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
     });
+    return response.json();
+  }
+
+  // Migration Management
+  async getMigrationStatus(sessionId: string): Promise<any> {
+    const response = await fetch(`${this.baseUrl}/api/v1/session/${sessionId}/migrations/status`);
+    if (!response.ok) {
+      throw new Error('Failed to get migration status');
+    }
+    return response.json();
+  }
+
+  async applyMigrations(sessionId: string): Promise<any> {
+    const response = await fetch(`${this.baseUrl}/api/v1/session/${sessionId}/migrations/apply`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!response.ok) {
+      throw new Error('Failed to apply migrations');
+    }
+    return response.json();
+  }
+
+  // Template Editor - CRUD Operations
+  async listTemplatesForEditor(): Promise<any> {
+    const response = await fetch(`${this.baseUrl}/api/v1/templates/editor/list`);
+    if (!response.ok) {
+      throw new Error('Failed to list templates');
+    }
+    return response.json();
+  }
+
+  async getTemplateForEditor(templateId: string): Promise<any> {
+    const response = await fetch(`${this.baseUrl}/api/v1/templates/editor/${templateId}`);
+    if (!response.ok) {
+      throw new Error('Failed to load template');
+    }
+    return response.json();
+  }
+
+  async createTemplate(templateData: any): Promise<any> {
+    const response = await fetch(`${this.baseUrl}/api/v1/templates/editor`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(templateData),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || 'Failed to create template');
+    }
+    return response.json();
+  }
+
+  async updateTemplate(templateId: string, templateData: any): Promise<any> {
+    const response = await fetch(`${this.baseUrl}/api/v1/templates/editor/${templateId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(templateData),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || 'Failed to update template');
+    }
+    return response.json();
+  }
+
+  async deleteTemplate(templateId: string): Promise<any> {
+    const response = await fetch(`${this.baseUrl}/api/v1/templates/editor/${templateId}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || 'Failed to delete template');
+    }
+    return response.json();
+  }
+
+  async validateTemplate(templateData: any): Promise<any> {
+    const response = await fetch(`${this.baseUrl}/api/v1/templates/editor/${templateData.id}/validate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(templateData),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || 'Failed to validate template');
+    }
     return response.json();
   }
 

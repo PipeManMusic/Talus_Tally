@@ -116,7 +116,7 @@ fn start_backend(backend_process: Arc<Mutex<Option<Child>>>, _app_handle: tauri:
       .to_path_buf()
   };
   
-  let venv_python = project_root.join("venv/bin/python3");
+  let venv_python = project_root.join(".venv/bin/python3");
   
   match Command::new(&venv_python)
     .args(&["-m", "backend.app"])
@@ -132,7 +132,7 @@ fn start_backend(backend_process: Arc<Mutex<Option<Child>>>, _app_handle: tauri:
       eprintln!("✗ Failed to start Python backend: {}", e);
       eprintln!("Project root: {:?}", project_root);
       eprintln!("Venv python: {:?}", venv_python);
-      eprintln!("Make sure you have Python installed and venv activated");
+      eprintln!("Make sure you have Python installed and .venv activated");
     }
   }
 }

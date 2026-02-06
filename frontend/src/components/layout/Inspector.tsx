@@ -1,14 +1,17 @@
+import { useState } from 'react';
 import { Input } from '../ui/Input';
 import { Select } from '../ui/Select';
 import { CurrencyInput } from '../ui/CurrencyInput';
+import { TextEditorModal, type MarkupToken } from '../ui/TextEditorModal';
 
 export interface NodeProperty {
   id: string;
   name: string;
-  type: 'text' | 'number' | 'select' | 'textarea' | 'currency' | 'date';
+  type: 'text' | 'number' | 'select' | 'textarea' | 'currency' | 'date' | 'checkbox' | 'editor';
   value: string | number;
   options?: Array<{ value: string; label: string }>;
   required?: boolean;
+  markupTokens?: MarkupToken[];
 }
 
 export interface LinkedAssetMetadata {
@@ -26,6 +29,8 @@ interface InspectorProps {
   onPropertyChange?: (propId: string, value: string | number) => void;
   linkedAsset?: LinkedAssetMetadata;
   onLinkedAssetPropertyChange?: (propId: string, value: string | number) => void;
+  orphanedProperties?: Record<string, string | number>;
+  onOrphanedPropertyDelete?: (propKey: string) => void;
 }
 
 export function Inspector({
@@ -36,7 +41,48 @@ export function Inspector({
   onPropertyChange,
   linkedAsset,
   onLinkedAssetPropertyChange,
+  orphanedProperties,
+  onOrphanedPropertyDelete,
 }: InspectorProps) {
+  const [editorState, setEditorState] = useState<{
+    isOpen: boolean;
+    propId: string;
+    propName: string;
+    value: string;
+    isLinkedAsset: boolean;
+    markupTokens?: MarkupToken[];
+  }>({ isOpen: false, propId: '', propName: '', value: '', isLinkedAsset: false, markupTokens: [] });
+
+  const openEditor = (
+    propId: string, 
+    propName: string, 
+    value: string | number, 
+    isLinkedAsset = false,
+    markupTokens: MarkupToken[] = []
+  ) => {
+    setEditorState({
+      isOpen: true,
+      propId,
+      propName,
+      value: String(value),
+      isLinkedAsset,
+      markupTokens,
+    });
+  };
+
+  const closeEditor = () => {
+    setEditorState({ isOpen: false, propId: '', propName: '', value: '', isLinkedAsset: false, markupTokens: [] });
+  };
+
+  const saveEditorContent = (newValue: string) => {
+    if (editorState.isLinkedAsset) {
+      onLinkedAssetPropertyChange?.(editorState.propId, newValue);
+    } else {
+      onPropertyChange?.(editorState.propId, newValue);
+    }
+    closeEditor();
+  };
+
   if (!nodeId) {
     return (
       <aside className="bg-bg-light border-l border-border p-3 flex items-center justify-center">
@@ -133,9 +179,80 @@ export function Inspector({
                 />
               </div>
             )}
+            {prop.type === 'checkbox' && (
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id={`checkbox-${prop.id}`}
+                  checked={prop.value === 'true' || prop.value === 1 || prop.value === '1'}
+                  onChange={(e) =>
+                    onPropertyChange?.(prop.id, e.target.checked ? 'true' : 'false')
+                  }
+                  className="w-4 h-4 cursor-pointer accent-accent-primary"
+                />
+                <label
+                  htmlFor={`checkbox-${prop.id}`}
+                  className="text-sm text-fg-secondary cursor-pointer"
+                >
+                  {prop.name}
+                </label>
+              </div>
+            )}
+            {prop.type === 'editor' && (
+              <div>
+                <label className="block text-sm text-fg-secondary mb-1">
+                  {prop.name}
+                </label>
+                <div className="flex gap-2 items-center">
+                  <div className="flex-1 bg-bg-dark text-fg-primary border border-border rounded-sm px-2 py-1 text-sm truncate">
+                    {String(prop.value).substring(0, 50)}{String(prop.value).length > 50 ? '...' : ''}
+                  </div>
+                  <button
+                    onClick={() => openEditor(prop.id, prop.name, prop.value, false, prop.markupTokens || [])}
+                    className="px-3 py-1 bg-accent-primary text-fg-primary rounded hover:bg-accent-hover transition-colors text-sm font-semibold"
+                  >
+                    Edit
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         ))}
         </div>
+
+        {/* Orphaned Properties Section */}
+        {orphanedProperties && Object.keys(orphanedProperties).length > 0 && (
+          <div className="mt-6 pt-6 border-t border-border">
+            <div className="font-display text-sm border-b border-orange-500/50 pb-2 mb-3 text-orange-400 flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              Orphaned Properties
+            </div>
+            <div className="mb-3 text-xs text-orange-300/80 bg-orange-500/10 border border-orange-500/30 rounded px-2 py-2">
+              These properties were removed from the template but their values are preserved. They are read-only and can be deleted.
+            </div>
+            <div className="space-y-3">
+              {Object.entries(orphanedProperties).map(([key, value]) => (
+                <div key={key} className="relative">
+                  <label className="block text-sm text-fg-secondary mb-1">{key}</label>
+                  <div className="flex gap-2 items-center">
+                    <div className="flex-1 bg-bg-dark/50 text-fg-primary/70 border border-orange-500/30 rounded-sm px-2 py-1 text-sm">
+                      {String(value)}
+                    </div>
+                    <button
+                      onClick={() => onOrphanedPropertyDelete?.(key)}
+                      className="px-3 py-1 bg-status-danger/20 text-status-danger rounded hover:bg-status-danger/30 transition-colors text-sm font-semibold"
+                      title="Delete orphaned property"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Linked Asset Metadata Section */}
         {linkedAsset && (
@@ -219,11 +336,61 @@ export function Inspector({
                       />
                     </div>
                   )}
+                  {prop.type === 'checkbox' && (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id={`checkbox-asset-${prop.id}`}
+                        checked={prop.value === 'true' || prop.value === 1 || prop.value === '1'}
+                        onChange={(e) =>
+                          onLinkedAssetPropertyChange?.(prop.id, e.target.checked ? 'true' : 'false')
+                        }
+                        className="w-4 h-4 cursor-pointer accent-accent-primary"
+                      />
+                      <label
+                        htmlFor={`checkbox-asset-${prop.id}`}
+                        className="text-sm text-fg-secondary cursor-pointer"
+                      >
+                        {prop.name}
+                      </label>
+                    </div>
+                  )}
+                  {prop.type === 'editor' && (
+                    <div>
+                      <label className="block text-sm text-fg-secondary mb-1">
+                        {prop.name}
+                      </label>
+                      <div className="flex gap-2 items-center">
+                        <div className="flex-1 bg-bg-dark text-fg-primary border border-border rounded-sm px-2 py-1 text-sm truncate">
+                          {String(prop.value).substring(0, 50)}{String(prop.value).length > 50 ? '...' : ''}
+                        </div>
+                        <button
+                          onClick={() => openEditor(prop.id, prop.name, prop.value, true, prop.markupTokens || [])}
+                          className="px-3 py-1 bg-accent-primary text-fg-primary rounded hover:bg-accent-hover transition-colors text-sm font-semibold"
+                        >
+                          Edit
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
           </div>
         )}
+        
+        {/* Text Editor Modal */}
+        <TextEditorModal
+          isOpen={editorState.isOpen}
+          title={editorState.propName}
+          value={editorState.value}
+          onChange={(newValue) => {
+            setEditorState({ ...editorState, value: newValue });
+          }}
+          onClose={closeEditor}
+          onSave={saveEditorContent}
+          markupTokens={editorState.markupTokens}
+        />
       </div>
     </aside>
   );
