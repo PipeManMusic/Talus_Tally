@@ -9,12 +9,15 @@ block_cipher = None
 # Collect all backend modules
 backend_modules = collect_submodules('backend')
 
-# Collect data files (templates, assets, etc)
+# Collect data files (templates, assets, frontend dist, etc)
 datas = []
 datas += collect_data_files('flask_socketio')
 datas += collect_data_files('socketio')
 datas += collect_data_files('engineio')
 datas += [('data', 'data'), ('assets', 'assets')]
+# Include frontend static files if built
+if os.path.exists('frontend/dist'):
+    datas += [('frontend/dist', 'frontend/dist')]
 
 a = Analysis(
     ['backend/__main__.py'],

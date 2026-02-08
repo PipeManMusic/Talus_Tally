@@ -1,0 +1,2602 @@
+{
+  "graph": {
+    "id": "default",
+    "nodes": [
+      {
+        "id": "8f0b11a8-aea2-415b-938c-3633e816eff7",
+        "type": "project_root",
+        "properties": {
+          "name": "Project Talus",
+          "actual_cost": "3500",
+          "budget": "3500",
+          "project_lead": "Danel Worth",
+          "vehicle": "Talus"
+        },
+        "children": [
+          "063e0759-c0d2-4caf-b411-ed87e2f16637",
+          "fb04ceae-e213-462b-805e-a94fead8b824",
+          "80050417-1151-4cae-8431-ac5e047f58e9"
+        ],
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": "film",
+        "allowed_children": [
+          "inventory_root",
+          "season",
+          "task"
+        ]
+      },
+      {
+        "id": "063e0759-c0d2-4caf-b411-ed87e2f16637",
+        "type": "season",
+        "properties": {
+          "name": "Daily Driver",
+          "status": "5fbab80b-88a5-f00c-5f7e-1f5716193531"
+        },
+        "children": [
+          "58e9689c-0b7f-4325-8ebe-ca53944cf667",
+          "89941716-6549-4335-9b87-7a9a5b544233",
+          "1c00929d-a96f-42e3-9759-a66e91ae24bc",
+          "c80dab8c-ab7d-4685-b260-fcbdcef5536b",
+          "154d79df-57be-4bc1-85b6-86d773974066",
+          "6291ddc4-a5cc-42ed-8008-4c7c0a0d6b4c",
+          "99ad04e7-9c4d-4168-8cc8-a001eab7783e",
+          "5295e53d-c829-4469-8abf-3def09bd19f8",
+          "12c924fd-d375-49a4-ae43-7828f9cb73bd"
+        ],
+        "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "allowed_children": [
+          "episode",
+          "task"
+        ]
+      },
+      {
+        "id": "58e9689c-0b7f-4325-8ebe-ca53944cf667",
+        "type": "episode",
+        "properties": {
+          "name": "Intro",
+          "episode_number": 1,
+          "status": "3094f28b-3fc3-2667-5ae1-933b041d78ed",
+          "synopsis": "The who what where and why of Project Talus"
+        },
+        "children": [
+          "5e26aa30-e22f-40fb-beed-ff9d5ae9d611",
+          "820342f7-a2d4-4ba8-a069-71464831e660",
+          "1fd92134-4784-464c-9962-da6806ec1c76"
+        ],
+        "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": "video-camera",
+        "allowed_children": [
+          "task",
+          "footage",
+          "location_scout",
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
+        ]
+      },
+      {
+        "id": "5e26aa30-e22f-40fb-beed-ff9d5ae9d611",
+        "type": "task",
+        "properties": {
+          "name": "Write Script",
+          "status": "c96378bf-66e5-8e04-2cf3-d1f65cab2f9f"
+        },
+        "children": [],
+        "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": "clipboard-document-check",
+        "allowed_children": [
+          "asset_reference",
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
+        ]
+      },
+      {
+        "id": "820342f7-a2d4-4ba8-a069-71464831e660",
+        "type": "footage",
+        "properties": {
+          "name": "Emisions",
+          "prop_1770559115384": "c5707e0e-c9d6-3397-0b55-578878e04e81"
+        },
+        "children": [],
+        "indicator_id": "filled",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "allowed_children": [
+          "uses_camera_gear"
+        ]
+      },
+      {
+        "id": "1fd92134-4784-464c-9962-da6806ec1c76",
+        "type": "footage",
+        "properties": {
+          "name": "Walk  Around",
+          "prop_1770559115384": "c5707e0e-c9d6-3397-0b55-578878e04e81"
+        },
+        "children": [
+          "ddceaea8-34fd-4b9c-8bbb-e2aa687eb029"
+        ],
+        "indicator_id": "filled",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "allowed_children": [
+          "uses_camera_gear"
+        ]
+      },
+      {
+        "id": "ddceaea8-34fd-4b9c-8bbb-e2aa687eb029",
+        "type": "asset_reference",
+        "properties": {
+          "name": "Canon M50",
+          "asset_id": "73915ba5-984d-409a-8405-fb30c07c8260",
+          "quantity": 1,
+          "role": "Main Camera"
+        },
+        "children": [],
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": "clipboard-document-list",
+        "allowed_children": []
+      },
+      {
+        "id": "89941716-6549-4335-9b87-7a9a5b544233",
+        "type": "episode",
+        "properties": {
+          "name": "Diagnostics",
+          "episode_number": 2,
+          "status": "3094f28b-3fc3-2667-5ae1-933b041d78ed"
+        },
+        "children": [],
+        "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": "video-camera",
+        "allowed_children": [
+          "task",
+          "footage",
+          "location_scout",
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
+        ]
+      },
+      {
+        "id": "1c00929d-a96f-42e3-9759-a66e91ae24bc",
+        "type": "episode",
+        "properties": {
+          "name": "Tune Up",
+          "episode_number": 3,
+          "status": "3094f28b-3fc3-2667-5ae1-933b041d78ed"
+        },
+        "children": [],
+        "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": "video-camera",
+        "allowed_children": [
+          "task",
+          "footage",
+          "location_scout",
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
+        ]
+      },
+      {
+        "id": "c80dab8c-ab7d-4685-b260-fcbdcef5536b",
+        "type": "episode",
+        "properties": {
+          "name": "Rear Axel",
+          "episode_number": 4,
+          "status": "3094f28b-3fc3-2667-5ae1-933b041d78ed"
+        },
+        "children": [],
+        "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": "video-camera",
+        "allowed_children": [
+          "task",
+          "footage",
+          "location_scout",
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
+        ]
+      },
+      {
+        "id": "154d79df-57be-4bc1-85b6-86d773974066",
+        "type": "episode",
+        "properties": {
+          "name": "Front Axel",
+          "episode_number": 5,
+          "status": "3094f28b-3fc3-2667-5ae1-933b041d78ed"
+        },
+        "children": [],
+        "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": "video-camera",
+        "allowed_children": [
+          "task",
+          "footage",
+          "location_scout",
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
+        ]
+      },
+      {
+        "id": "6291ddc4-a5cc-42ed-8008-4c7c0a0d6b4c",
+        "type": "episode",
+        "properties": {
+          "name": "Steering & Alignment",
+          "episode_number": 6,
+          "status": "3094f28b-3fc3-2667-5ae1-933b041d78ed"
+        },
+        "children": [],
+        "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": "video-camera",
+        "allowed_children": [
+          "task",
+          "footage",
+          "location_scout",
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
+        ]
+      },
+      {
+        "id": "99ad04e7-9c4d-4168-8cc8-a001eab7783e",
+        "type": "episode",
+        "properties": {
+          "name": "Engine Reseal",
+          "episode_number": 7,
+          "status": "3094f28b-3fc3-2667-5ae1-933b041d78ed"
+        },
+        "children": [],
+        "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": "video-camera",
+        "allowed_children": [
+          "task",
+          "footage",
+          "location_scout",
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
+        ]
+      },
+      {
+        "id": "5295e53d-c829-4469-8abf-3def09bd19f8",
+        "type": "episode",
+        "properties": {
+          "name": "Interior",
+          "episode_number": 8,
+          "status": "3094f28b-3fc3-2667-5ae1-933b041d78ed"
+        },
+        "children": [],
+        "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": "video-camera",
+        "allowed_children": [
+          "task",
+          "footage",
+          "location_scout",
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
+        ]
+      },
+      {
+        "id": "12c924fd-d375-49a4-ae43-7828f9cb73bd",
+        "type": "episode",
+        "properties": {
+          "name": "Adventure",
+          "episode_number": 9,
+          "status": "3094f28b-3fc3-2667-5ae1-933b041d78ed"
+        },
+        "children": [],
+        "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": "video-camera",
+        "allowed_children": [
+          "task",
+          "footage",
+          "location_scout",
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
+        ]
+      },
+      {
+        "id": "fb04ceae-e213-462b-805e-a94fead8b824",
+        "type": "inventory_root",
+        "properties": {
+          "name": "Inventory"
+        },
+        "children": [
+          "0f71cdf1-f7b1-4ce9-bf97-dc55b20eb208",
+          "82584abf-2b5c-45f1-80c7-34e9d508f69c"
+        ],
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": "archive-box",
+        "allowed_children": [
+          "camera_gear_inventory",
+          "car_parts_inventory",
+          "tools_inventory"
+        ]
+      },
+      {
+        "id": "0f71cdf1-f7b1-4ce9-bf97-dc55b20eb208",
+        "type": "camera_gear_inventory",
+        "properties": {
+          "name": "Camera Gear Inventory"
+        },
+        "children": [
+          "be07bc50-f298-4e9b-a7b0-9c5b5e7db4c8",
+          "eec8276a-0913-44e9-af8b-d2862066c331",
+          "cf708f0f-91c4-40ff-822f-034cf5c2b2c8"
+        ],
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": "camera",
+        "allowed_children": [
+          "camera_gear_category"
+        ]
+      },
+      {
+        "id": "be07bc50-f298-4e9b-a7b0-9c5b5e7db4c8",
+        "type": "camera_gear_category",
+        "properties": {
+          "name": "Cameras"
+        },
+        "children": [
+          "73915ba5-984d-409a-8405-fb30c07c8260",
+          "9a789eb9-bd48-49f0-a8a9-95a47472dc39",
+          "6ec434e2-ce7f-4ade-9d9e-7cbc8d5af636",
+          "b1adc95d-e032-4b50-92be-a2491c7378e2",
+          "f0041e5f-6d84-419b-a831-8f878353250d"
+        ],
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": "camera",
+        "allowed_children": [
+          "camera_gear_asset"
+        ]
+      },
+      {
+        "id": "73915ba5-984d-409a-8405-fb30c07c8260",
+        "type": "camera_gear_asset",
+        "properties": {
+          "name": "Canon",
+          "model": "M50",
+          "status": "c94096f7-4637-2728-1c2d-c3bf7e3ccb2d"
+        },
+        "children": [],
+        "indicator_id": "filled",
+        "indicator_set": "status",
+        "icon_id": "camera",
+        "allowed_children": []
+      },
+      {
+        "id": "9a789eb9-bd48-49f0-a8a9-95a47472dc39",
+        "type": "camera_gear_asset",
+        "properties": {
+          "name": "Black Magic",
+          "model": "Production 4K",
+          "status": "c94096f7-4637-2728-1c2d-c3bf7e3ccb2d"
+        },
+        "children": [],
+        "indicator_id": "filled",
+        "indicator_set": "status",
+        "icon_id": "camera",
+        "allowed_children": []
+      },
+      {
+        "id": "6ec434e2-ce7f-4ade-9d9e-7cbc8d5af636",
+        "type": "camera_gear_asset",
+        "properties": {
+          "name": "Canon",
+          "model": "5D Mk II",
+          "status": "c94096f7-4637-2728-1c2d-c3bf7e3ccb2d"
+        },
+        "children": [],
+        "indicator_id": "filled",
+        "indicator_set": "status",
+        "icon_id": "camera",
+        "allowed_children": []
+      },
+      {
+        "id": "b1adc95d-e032-4b50-92be-a2491c7378e2",
+        "type": "camera_gear_asset",
+        "properties": {
+          "name": "Akaso V50 Elite",
+          "status": "c94096f7-4637-2728-1c2d-c3bf7e3ccb2d"
+        },
+        "children": [],
+        "indicator_id": "filled",
+        "indicator_set": "status",
+        "icon_id": "camera",
+        "allowed_children": []
+      },
+      {
+        "id": "f0041e5f-6d84-419b-a831-8f878353250d",
+        "type": "camera_gear_asset",
+        "properties": {
+          "name": "Akaso V50 Elite",
+          "status": "c94096f7-4637-2728-1c2d-c3bf7e3ccb2d"
+        },
+        "children": [],
+        "indicator_id": "filled",
+        "indicator_set": "status",
+        "icon_id": "camera",
+        "allowed_children": []
+      },
+      {
+        "id": "eec8276a-0913-44e9-af8b-d2862066c331",
+        "type": "camera_gear_category",
+        "properties": {
+          "name": "Lights"
+        },
+        "children": [],
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": "camera",
+        "allowed_children": [
+          "camera_gear_asset"
+        ]
+      },
+      {
+        "id": "cf708f0f-91c4-40ff-822f-034cf5c2b2c8",
+        "type": "camera_gear_category",
+        "properties": {
+          "name": "Audio Equipment"
+        },
+        "children": [],
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": "camera",
+        "allowed_children": [
+          "camera_gear_asset"
+        ]
+      },
+      {
+        "id": "82584abf-2b5c-45f1-80c7-34e9d508f69c",
+        "type": "car_parts_inventory",
+        "properties": {
+          "name": "Car Parts Inventory"
+        },
+        "children": [
+          "05943ed2-50fa-4169-aade-ba55965950fb",
+          "318d9929-d908-4319-b908-fbeba4a8e7ff"
+        ],
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": "cog",
+        "allowed_children": [
+          "part_category"
+        ]
+      },
+      {
+        "id": "05943ed2-50fa-4169-aade-ba55965950fb",
+        "type": "part_category",
+        "properties": {
+          "name": "Junk Yard"
+        },
+        "children": [],
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": "cog",
+        "allowed_children": [
+          "part_asset"
+        ]
+      },
+      {
+        "id": "318d9929-d908-4319-b908-fbeba4a8e7ff",
+        "type": "part_category",
+        "properties": {
+          "name": "New"
+        },
+        "children": [
+          "1962d6d9-cbcb-41c6-b9a7-4e83519fa6a8",
+          "d584bbeb-1061-49a6-81f1-1157d7537f9b",
+          "3ad9c900-dd50-4874-87e6-7fdd1c9de657",
+          "940626a4-742b-4f90-b13a-c1f4d17864f7",
+          "167c41ed-fb16-42cd-8c7f-23457b009eb9",
+          "5978040d-0b88-4f06-a026-93d7d79e99b0",
+          "5e1a6113-1d08-415b-a91f-9cba13843956",
+          "3c7410e4-4024-4cd2-a9ae-8562a0429a71",
+          "fa5291dc-75e7-4d61-ae7a-b8427fd99eab",
+          "180299eb-ef94-40ee-9f74-5faca75362e7",
+          "db12e5c2-429e-42c0-a2b9-7e3f27b701f5",
+          "e2575adb-dff0-4e68-adbd-e9d9529abbec",
+          "fcf26c6e-7815-4e4a-a566-65edd18ad7d0",
+          "b7422c4a-d3a1-4960-8d31-b64455e38749",
+          "91c22f42-2c06-4cbb-b325-02ec77d174c3",
+          "0dea750a-e836-42a6-89b8-bd40ff9e3801",
+          "4e113aa6-5b7c-4fb5-ad3a-344249cf0542",
+          "04b539a7-808d-40af-9d0b-9fefde93682d",
+          "5e66a573-7e72-4a46-86cd-88c85aec8fe6",
+          "e0ce1b66-502e-4cfb-bc69-54bbbc18e4b7",
+          "cf083b12-7441-4236-a973-ef875393f555",
+          "b12bbe00-ce28-45a8-9b82-5a1fce27b54e",
+          "ca6f4e06-43a4-4b75-863c-9d53c45e9ac1",
+          "fff14e1b-0f97-4013-adb6-3fb9977f27a7",
+          "f8e94e9a-c53d-47c0-ba69-c418dfdf7dc2",
+          "07d0375e-9b1c-41bd-bdbb-49275b363985",
+          "9afb9909-a086-4135-bcb0-f637a90cdc32",
+          "faa8b534-b326-4c32-a366-f691902894c1",
+          "3a8eeaa6-615e-46ec-b9cf-5149377c8bca",
+          "503b3ba9-a725-4e25-b265-9c6d37cc936c",
+          "58014237-9e9c-4fb4-b545-e1f80118577f",
+          "e1727d65-3dd9-4335-8a5f-5b07eb87a98d",
+          "b7b7bcb2-ca37-42ad-ac8c-3968ad0153b5",
+          "6ff13947-eb04-4de0-b11a-26c32a53ae18",
+          "143f2a09-6fd8-4901-97b0-768a12aafe14",
+          "91c66873-6260-4f38-ad86-44ac2ba8b0de",
+          "a11c211d-633f-4790-8750-16b9342e9335",
+          "32155103-0125-4a06-b227-9fdfe05e1be6",
+          "60473e42-8873-42d6-a769-a115766074e0",
+          "c2519ca1-e795-4351-9608-4eda3c11bc8e",
+          "89022244-7312-4e7e-b50f-61a76356d15e",
+          "8f27ae66-fc84-44bf-a62f-adfe09c4d6b3",
+          "2a8fdbb2-94f9-411b-86d2-4525444e199b",
+          "fd6f9284-67a9-4788-a6f2-32ddcc37daeb",
+          "66e4c108-796a-4021-8611-d3a05b3477e0",
+          "7c94ca42-332f-4783-8ac3-f6ee9f3e5755",
+          "f1c66f12-ae9e-4fb7-a883-3d964da257c1",
+          "ef4ed987-b0ed-4679-8bf4-fb46d7f8b129",
+          "7023e037-8d4f-4156-94d9-3b071cd5aba9",
+          "24a5babb-e205-4147-8572-c3ec5b6b959d",
+          "2ded71ea-3e89-4cea-b541-5693e8cfb543",
+          "bbd44c56-f037-40e4-a458-ae5bd617c4fb",
+          "313501c9-ad34-4466-a16d-d4eb0e71cda8",
+          "fd034f30-1fac-4577-93ac-0875376150e7",
+          "8e4b4cac-2bff-478c-a469-6a693bfd2095",
+          "a5070c01-ba93-4292-8159-bb7ff1c16bc8",
+          "f27f025c-edee-4e13-804e-f4b4532a369a",
+          "9492c724-7906-4e40-9457-44a786cc7087",
+          "246693fa-7e86-4d2b-804a-a3dcbc3146f2",
+          "4598ddb0-24b9-4016-a076-93c357944595",
+          "981a6cb8-3d8e-4c6c-be25-b572ae2a5fac",
+          "424a6ed0-240a-4315-bfff-d97dabc5474c",
+          "9c9743bc-6dfd-4e44-b17a-fd4cf3ad83d0",
+          "96b966ab-b38c-419c-aae9-49a4e9dc743b",
+          "5969b939-8380-4550-9269-99b7b540dc8b",
+          "acbcab2e-8055-4f71-a18a-7c9e08890522",
+          "e6f349cb-6b4e-4103-b5fe-fe7e52872d17",
+          "f1ee2a64-d2cc-4fa3-9587-d0f7dbb84677",
+          "bc584172-9b42-444b-b2fd-8d8ceac74fa7",
+          "ec6521e1-979d-493c-aa8f-0c304b70811a",
+          "06ec7615-80d2-47c6-b1c2-536c0db8dc5d",
+          "a570811e-fb99-4ab9-b749-6cd178107bd4",
+          "a6a6c972-0c4b-444d-9013-f33f729a701e",
+          "99d7d090-4fb9-4500-b3ac-f4fecb4aa770",
+          "9353f5d4-c3fe-46c3-b6fd-21192ac1e293",
+          "33c71c1b-2588-4152-8d68-1f99e1ad5ac8",
+          "deafa784-be69-47bc-9b2a-f73cf842bb53",
+          "a67ba846-9f7a-446a-87c5-a612dcbd3a94",
+          "7592fc53-54ce-45e3-87e3-23322a98b330",
+          "3c7d325d-1c5c-453a-80a1-e82c3c5a4bd1",
+          "81ee4340-bb4a-47a5-a9b2-70e11908d8cf",
+          "b26cdc31-e759-4553-b85f-b5712e1c6d1a",
+          "7c42e3a9-b772-4581-a144-36184f8257d5",
+          "5437928f-2871-4bf7-a4a0-3e373581b091",
+          "56435d32-aca9-4190-864e-39fbd3dea4ec",
+          "ed50fc70-e8c6-43ec-b14b-01b77b15bc03",
+          "0e61ebbc-175d-42fd-9cb7-ec6969979329",
+          "592dd22d-761d-4ac8-b956-70c9fa1464b3",
+          "55aa78e7-1459-44b9-801e-b6e5fd550079",
+          "b00b8486-2025-430d-a153-0d35887676d4",
+          "46ac75b4-057d-4bdc-a94a-c8f1c5154ec8",
+          "1929617c-1720-4b9e-8041-fcde48f1cf04",
+          "ddf7a11a-1c67-4b2d-9d50-c8f58d54c973",
+          "e24511bb-a348-4b2c-89ac-6df4795727c6",
+          "5da7a3b3-d4bd-4edf-aee9-a3e1777e4774",
+          "dc2d6516-8fea-4262-b577-a544c8454a28",
+          "55fba9e4-9e82-4b11-8a61-a606775169f2",
+          "fa24be71-e911-4627-9f99-a8b48d84f21f",
+          "72647d06-bdc5-4159-ac65-cdb68d6ac652",
+          "7d289fe2-6503-47b1-a7c7-5497397ee4ff",
+          "768cd6d0-05d2-4184-8f90-9270d4a7e61c",
+          "778fa48b-30cc-44d6-a99a-be92d05dcb3e"
+        ],
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": "cog",
+        "allowed_children": [
+          "part_asset"
+        ]
+      },
+      {
+        "id": "1962d6d9-cbcb-41c6-b9a7-4e83519fa6a8",
+        "type": "part_asset",
+        "properties": {
+          "name": "Brake Pedal Pad (Automatic)",
+          "notes": "Order 81365682",
+          "part_number": "96050",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Bronco Graveyard",
+          "unit_cost": "5.00"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "d584bbeb-1061-49a6-81f1-1157d7537f9b",
+        "type": "part_asset",
+        "properties": {
+          "name": "Window Weatherstrip Kit (Both Doors)",
+          "notes": "Order 81365682",
+          "part_number": "96020",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Bronco Graveyard",
+          "unit_cost": "85.00"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "3ad9c900-dd50-4874-87e6-7fdd1c9de657",
+        "type": "part_asset",
+        "properties": {
+          "name": "Headlight Switch Knob (Black Billet)",
+          "notes": "Order 13280",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "JC Customs CNC",
+          "unit_cost": "25.00"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "940626a4-742b-4f90-b13a-c1f4d17864f7",
+        "type": "part_asset",
+        "properties": {
+          "name": "Vent Window Handle (Driver Side)",
+          "notes": "Order 121936",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "eClassics.com",
+          "unit_cost": "9.10"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "167c41ed-fb16-42cd-8c7f-23457b009eb9",
+        "type": "part_asset",
+        "properties": {
+          "name": "Mustang Automatic T-Handle Shifter",
+          "notes": "Order VH19521",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "LMR",
+          "unit_cost": "24.99"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "5978040d-0b88-4f06-a026-93d7d79e99b0",
+        "type": "part_asset",
+        "properties": {
+          "name": "Ignition Door & Tailgate Lock Cylinder Set",
+          "notes": "Order 51810",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Pro Steering Columns",
+          "unit_cost": "146.21"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "5e1a6113-1d08-415b-a91f-9cba13843956",
+        "type": "part_asset",
+        "properties": {
+          "name": "Acerkyt Single Din Touchscreen Stereo",
+          "notes": "Order 113-5755298-4531422",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "55.99"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "3c7410e4-4024-4cd2-a9ae-8562a0429a71",
+        "type": "part_asset",
+        "properties": {
+          "name": "PurolatorONE Engine Air Filter",
+          "notes": "Order 113-5772056-1777033",
+          "part_number": "A23592",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "9.92"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "fa5291dc-75e7-4d61-ae7a-b8427fd99eab",
+        "type": "part_asset",
+        "properties": {
+          "name": "AUXITO 1156 LED Bulb (Pack of 2)",
+          "notes": "Order 113-7405377-0513052",
+          "part_number": "1156",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "13.99"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "180299eb-ef94-40ee-9f74-5faca75362e7",
+        "type": "part_asset",
+        "properties": {
+          "name": "AUXITO 1157 LED Bulb (Pack of 2)",
+          "notes": "Order 113-7405377-0513052",
+          "part_number": "1157",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "16.14"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "db12e5c2-429e-42c0-a2b9-7e3f27b701f5",
+        "type": "part_asset",
+        "properties": {
+          "name": "AUXITO 3157 LED Bulb (Pack of 2)",
+          "notes": "Order 113-6837171-9368256",
+          "part_number": "3157",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "13.99"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "e2575adb-dff0-4e68-adbd-e9d9529abbec",
+        "type": "part_asset",
+        "properties": {
+          "name": "YOGEIER 24-Piece LED Interior Bulb Set",
+          "notes": "Order 113-6837171-9368256",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "7.99"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "fcf26c6e-7815-4e4a-a566-65edd18ad7d0",
+        "type": "part_asset",
+        "properties": {
+          "name": "PurolatorBOSS Oil Filter",
+          "notes": "Order 113-9797078-2910603",
+          "part_number": "PBL30001",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "15.99"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "b7422c4a-d3a1-4960-8d31-b64455e38749",
+        "type": "part_asset",
+        "properties": {
+          "name": "Dorman Dome Light Lens",
+          "notes": "Order 209266272083",
+          "part_number": "74973",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "AutoZone",
+          "unit_cost": "7.99"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "91c22f42-2c06-4cbb-b325-02ec77d174c3",
+        "type": "part_asset",
+        "properties": {
+          "name": "Phoenix Systems Brake/Coolant Test Strips",
+          "notes": "Order 113-2773185-0817049",
+          "part_number": "8006-B",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "14.97"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "0dea750a-e836-42a6-89b8-bd40ff9e3801",
+        "type": "part_asset",
+        "properties": {
+          "name": "TCP Global Paint Strainers (50 Pack)",
+          "notes": "Order 113-2773185-0817049",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "8.99"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "4e113aa6-5b7c-4fb5-ad3a-344249cf0542",
+        "type": "part_asset",
+        "properties": {
+          "name": "Prestone Cooling System Cleaner",
+          "notes": "Order 113-3591847-7097832",
+          "part_number": "AS105",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "14.49"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "04b539a7-808d-40af-9d0b-9fefde93682d",
+        "type": "part_asset",
+        "properties": {
+          "name": "AITRIP ESP32 Development Board (3 Pcs)",
+          "notes": "Order 113-7549109-5968215",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "15.99"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "5e66a573-7e72-4a46-86cd-88c85aec8fe6",
+        "type": "part_asset",
+        "properties": {
+          "name": "hiBCTR CAN Transceiver Module (3 Pcs)",
+          "notes": "Order 113-7549109-5968215",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "7.97"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "e0ce1b66-502e-4cfb-bc69-54bbbc18e4b7",
+        "type": "part_asset",
+        "properties": {
+          "name": "RS485 CAN HAT for Raspberry Pi",
+          "notes": "Order 113-7549109-5968215",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "16.31"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "cf083b12-7441-4236-a973-ef875393f555",
+        "type": "part_asset",
+        "properties": {
+          "name": "Logitech Wireless Mouse",
+          "notes": "Order 113-7549109-5968215",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "14.79"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "b12bbe00-ce28-45a8-9b82-5a1fce27b54e",
+        "type": "part_asset",
+        "properties": {
+          "name": "IDIK Heat Shrink Label Tape",
+          "notes": "Order 113-7549109-5968215",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "9.69"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "ca6f4e06-43a4-4b75-863c-9d53c45e9ac1",
+        "type": "part_asset",
+        "properties": {
+          "name": "ACEIRMC 8CH Optocoupler",
+          "notes": "Order 113-9492001-6861849",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "15.69"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "fff14e1b-0f97-4013-adb6-3fb9977f27a7",
+        "type": "part_asset",
+        "properties": {
+          "name": "CarlinKit Wireless CarPlay Adapter",
+          "notes": "Order 113-9492001-6861849",
+          "part_number": "CPC200-CCPA",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "55.99"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "f8e94e9a-c53d-47c0-ba69-c418dfdf7dc2",
+        "type": "part_asset",
+        "properties": {
+          "name": "Coolwell HDMI to USB Capture Card",
+          "notes": "Order 113-4459009-2675434",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "20.90"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "07d0375e-9b1c-41bd-bdbb-49275b363985",
+        "type": "part_asset",
+        "properties": {
+          "name": "RTL-SDR Blog V4 Radio Dongle",
+          "notes": "Order 113-0896419-0819443",
+          "part_number": "V4 R828D",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "39.95"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "9afb9909-a086-4135-bcb0-f637a90cdc32",
+        "type": "part_asset",
+        "properties": {
+          "name": "A-Premium Rear Tailgate Lift Supports",
+          "notes": "Order 113-3598232-5019468",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "25.09"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "faa8b534-b326-4c32-a366-f691902894c1",
+        "type": "part_asset",
+        "properties": {
+          "name": "TOMALL T10 Bulb Sockets (Pack of 4)",
+          "notes": "Order 113-9978039-2329857",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "5.99"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "3a8eeaa6-615e-46ec-b9cf-5149377c8bca",
+        "type": "part_asset",
+        "properties": {
+          "name": "Mobil 1 High Mileage 10W-30 Oil (5 Qt)",
+          "notes": "Order 113-9978039-2329857",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "27.97"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "503b3ba9-a725-4e25-b265-9c6d37cc936c",
+        "type": "part_asset",
+        "properties": {
+          "name": "CEC Industries 12V Flasher Relay",
+          "notes": "Order 113-9978039-2329857",
+          "part_number": "EF32",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "11.19"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "58014237-9e9c-4fb4-b545-e1f80118577f",
+        "type": "part_asset",
+        "properties": {
+          "name": "Dorman Cooling Fan Blade",
+          "notes": "Order 113-8170202-8044248",
+          "part_number": "620-112",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "38.78"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "e1727d65-3dd9-4335-8a5f-5b07eb87a98d",
+        "type": "part_asset",
+        "properties": {
+          "name": "National Wheel Seal (Front)",
+          "notes": "Order 113-0185488-1976276",
+          "part_number": "8312",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "6.99"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "b7b7bcb2-ca37-42ad-ac8c-3968ad0153b5",
+        "type": "part_asset",
+        "properties": {
+          "name": "Ultimate No Spill Coolant Funnel Kit",
+          "notes": "Order 113-8203985-7070602",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "16.99"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "6ff13947-eb04-4de0-b11a-26c32a53ae18",
+        "type": "part_asset",
+        "properties": {
+          "name": "MOOG Camber Bushing",
+          "notes": "Order 113-3193159-3144240",
+          "part_number": "K8736",
+          "quantity_on_hand": "2",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "35.49"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "143f2a09-6fd8-4901-97b0-768a12aafe14",
+        "type": "part_asset",
+        "properties": {
+          "name": "Toolwiz Magnetic Camber Gauge",
+          "notes": "Order 113-3193159-3144240",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "13.49"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "91c66873-6260-4f38-ad86-44ac2ba8b0de",
+        "type": "part_asset",
+        "properties": {
+          "name": "ATP AT-205 Re-Seal",
+          "notes": "Order 113-3193159-3144240",
+          "part_number": "AT-205",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "18.00"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "a11c211d-633f-4790-8750-16b9342e9335",
+        "type": "part_asset",
+        "properties": {
+          "name": "Bosch Clear Advantage Wiper Blade 18in",
+          "notes": "Order 113-3193159-3144240",
+          "part_number": "18CA",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "10.00"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "32155103-0125-4a06-b227-9fdfe05e1be6",
+        "type": "part_asset",
+        "properties": {
+          "name": "Rostra Transmission Vacuum Modulator",
+          "notes": "Order 113-4842826-4464226",
+          "part_number": "51-0056-02-00",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "49.99"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "60473e42-8873-42d6-a769-a115766074e0",
+        "type": "part_asset",
+        "properties": {
+          "name": "KYB Excel-G Gas Shock (Rear)",
+          "notes": "Order 113-0565454-4792220",
+          "part_number": "344050",
+          "quantity_on_hand": "2",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "31.52"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "c2519ca1-e795-4351-9608-4eda3c11bc8e",
+        "type": "part_asset",
+        "properties": {
+          "name": "FEL-PRO Differential Gasket",
+          "notes": "Order 113-2820310-8076257",
+          "part_number": "RDS 55393",
+          "quantity_on_hand": "2",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "7.49"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "89022244-7312-4e7e-b50f-61a76356d15e",
+        "type": "part_asset",
+        "properties": {
+          "name": "Hayden Premium Fan Clutch",
+          "notes": "Order 113-9595477-0381812",
+          "part_number": "2614",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "46.05"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "8f27ae66-fc84-44bf-a62f-adfe09c4d6b3",
+        "type": "part_asset",
+        "properties": {
+          "name": "Raybestos Disc Brake Rotor",
+          "notes": "Order 113-1210497-9601038",
+          "part_number": "6005R",
+          "quantity_on_hand": "2",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "58.04"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "2a8fdbb2-94f9-411b-86d2-4525444e199b",
+        "type": "part_asset",
+        "properties": {
+          "name": "Raybestos Brake Drum",
+          "notes": "Order 113-8321077-1869806",
+          "part_number": "2604R",
+          "quantity_on_hand": "2",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "36.78"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "fd6f9284-67a9-4788-a6f2-32ddcc37daeb",
+        "type": "part_asset",
+        "properties": {
+          "name": "MOOG Tie Rod End (Left)",
+          "notes": "Order 113-8321077-1869806",
+          "part_number": "ES2215L",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "27.34"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "66e4c108-796a-4021-8611-d3a05b3477e0",
+        "type": "part_asset",
+        "properties": {
+          "name": "MOOG Steering Drag Link",
+          "notes": "Order 113-8321077-1869806",
+          "part_number": "DS1041",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "52.78"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "7c94ca42-332f-4783-8ac3-f6ee9f3e5755",
+        "type": "part_asset",
+        "properties": {
+          "name": "Raybestos Drum Adjuster Kit (Left)",
+          "notes": "Order 113-8321077-1869806",
+          "part_number": "H2592",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "10.26"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "f1c66f12-ae9e-4fb7-a883-3d964da257c1",
+        "type": "part_asset",
+        "properties": {
+          "name": "Dorman Wheel Cylinder (Rear)",
+          "notes": "Order 113-8321077-1869806",
+          "part_number": "W37862",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "7.25"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "ef4ed987-b0ed-4679-8bf4-fb46d7f8b129",
+        "type": "part_asset",
+        "properties": {
+          "name": "Motorcraft MERCON V Fluid (5qt)",
+          "notes": "Order 113-8321077-1869806",
+          "part_number": "XT-5-5QM",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "40.31"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "7023e037-8d4f-4156-94d9-3b071cd5aba9",
+        "type": "part_asset",
+        "properties": {
+          "name": "FEL-PRO O-Ring",
+          "notes": "Order 113-8321077-1869806",
+          "part_number": "35404",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "4.41"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "24a5babb-e205-4147-8572-c3ec5b6b959d",
+        "type": "part_asset",
+        "properties": {
+          "name": "National Redi-sleeve",
+          "notes": "Order 113-8321077-1869806",
+          "part_number": "99166",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "31.24"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "2ded71ea-3e89-4cea-b541-5693e8cfb543",
+        "type": "part_asset",
+        "properties": {
+          "name": "Zerex Original Green Coolant (1 Gal)",
+          "notes": "Order 113-8321077-1869806",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "20.49"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "bbd44c56-f037-40e4-a458-ae5bd617c4fb",
+        "type": "part_asset",
+        "properties": {
+          "name": "Timken Wheel Bearing Set",
+          "notes": "Order 113-8321077-1869806",
+          "part_number": "SET45",
+          "quantity_on_hand": "4",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "17.85"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "313501c9-ad34-4466-a16d-d4eb0e71cda8",
+        "type": "part_asset",
+        "properties": {
+          "name": "Raybestos Brake Shoes",
+          "notes": "Order 113-8321077-1869806",
+          "part_number": "559PG",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "15.68"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "fd034f30-1fac-4577-93ac-0875376150e7",
+        "type": "part_asset",
+        "properties": {
+          "name": "Permatex The Right Stuff Gasket Maker",
+          "notes": "Order 113-8321077-1869806",
+          "part_number": "34328",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "14.38"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "8e4b4cac-2bff-478c-a469-6a693bfd2095",
+        "type": "part_asset",
+        "properties": {
+          "name": "Gates Water Pump",
+          "notes": "Order 113-8321077-1869806",
+          "part_number": "43054",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "53.78"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "a5070c01-ba93-4292-8159-bb7ff1c16bc8",
+        "type": "part_asset",
+        "properties": {
+          "name": "Motorcraft Ignition Wire Set",
+          "notes": "Order 113-8321077-1869806",
+          "part_number": "WR4010C",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "43.78"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "f27f025c-edee-4e13-804e-f4b4532a369a",
+        "type": "part_asset",
+        "properties": {
+          "name": "Raybestos Ceramic Brake Pads",
+          "notes": "Order 113-8321077-1869806",
+          "part_number": "PGD249M",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "22.53"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "9492c724-7906-4e40-9457-44a786cc7087",
+        "type": "part_asset",
+        "properties": {
+          "name": "KYB Excel-G Gas Shock (Front)",
+          "notes": "Order 113-8321077-1869806",
+          "part_number": "344049",
+          "quantity_on_hand": "2",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "30.69"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "246693fa-7e86-4d2b-804a-a3dcbc3146f2",
+        "type": "part_asset",
+        "properties": {
+          "name": "Motorcraft Copper Spark Plug",
+          "notes": "Order 113-8321077-1869806",
+          "part_number": "SP409AX",
+          "quantity_on_hand": "6",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "4.89"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "4598ddb0-24b9-4016-a076-93c357944595",
+        "type": "part_asset",
+        "properties": {
+          "name": "Power Stop Front Caliper (Left)",
+          "notes": "Order 113-8321077-1869806",
+          "part_number": "L4197",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "62.65"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "981a6cb8-3d8e-4c6c-be25-b572ae2a5fac",
+        "type": "part_asset",
+        "properties": {
+          "name": "Power Stop Front Caliper (Right)",
+          "notes": "Order 113-8321077-1869806",
+          "part_number": "L4196",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "44.85"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "424a6ed0-240a-4315-bfff-d97dabc5474c",
+        "type": "part_asset",
+        "properties": {
+          "name": "Carlson Drum Brake Hardware Kit",
+          "notes": "Order 113-8321077-1869806",
+          "part_number": "H2312",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "15.89"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "9c9743bc-6dfd-4e44-b17a-fd4cf3ad83d0",
+        "type": "part_asset",
+        "properties": {
+          "name": "Performance Tool Lock Nut Socket",
+          "notes": "Order 113-8321077-1869806",
+          "part_number": "W1269",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "13.84"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "96b966ab-b38c-419c-aae9-49a4e9dc743b",
+        "type": "part_asset",
+        "properties": {
+          "name": "FEL-PRO Timing Cover Gasket Set",
+          "notes": "Order 113-8321077-1869806",
+          "part_number": "TCS 45791",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "22.71"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "5969b939-8380-4550-9269-99b7b540dc8b",
+        "type": "part_asset",
+        "properties": {
+          "name": "HDPE Plastic Welding Rods",
+          "notes": "Order 113-8518811-4433833",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "14.35"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "acbcab2e-8055-4f71-a18a-7c9e08890522",
+        "type": "part_asset",
+        "properties": {
+          "name": "Motorcraft Ignition Module",
+          "notes": "Order 113-8518811-4433833",
+          "part_number": "DY1284",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "65.28"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "e6f349cb-6b4e-4103-b5fe-fe7e52872d17",
+        "type": "part_asset",
+        "properties": {
+          "name": "NY Threads Coverall (Grey XX-Large)",
+          "notes": "Order 113-8921857-3726624",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "28.49"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "f1ee2a64-d2cc-4fa3-9587-d0f7dbb84677",
+        "type": "part_asset",
+        "properties": {
+          "name": "Decibel Meter",
+          "notes": "Order 113-8921857-3726624",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "RISEPRO",
+          "unit_cost": "30.00"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "bc584172-9b42-444b-b2fd-8d8ceac74fa7",
+        "type": "part_asset",
+        "properties": {
+          "name": "Espusta Brake Pad Gauge",
+          "notes": "Order 113-6163034-9629866",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "9.99"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "ec6521e1-979d-493c-aa8f-0c304b70811a",
+        "type": "part_asset",
+        "properties": {
+          "name": "Brake Fluid Tester",
+          "notes": "Order 113-6163034-9629866",
+          "part_number": "BF200",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "21.37"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "06ec7615-80d2-47c6-b1c2-536c0db8dc5d",
+        "type": "part_asset",
+        "properties": {
+          "name": "Bosch Clear Advantage Wiper 13in",
+          "notes": "Order 113-4257500-9827458",
+          "part_number": "40513",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "12.69"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "a570811e-fb99-4ab9-b749-6cd178107bd4",
+        "type": "part_asset",
+        "properties": {
+          "name": "Metra Radio Installation Kit",
+          "notes": "Order 113-7989869-5202600",
+          "part_number": "99-5700",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "14.99"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "a6a6c972-0c4b-444d-9013-f33f729a701e",
+        "type": "part_asset",
+        "properties": {
+          "name": "Metra Wiring Harness",
+          "notes": "Order 113-7989869-5202600",
+          "part_number": "70-1770",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "8.60"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "99d7d090-4fb9-4500-b3ac-f4fecb4aa770",
+        "type": "part_asset",
+        "properties": {
+          "name": "Standard Motor Distributor Rotor",
+          "notes": "Order 113-7989869-5202600",
+          "part_number": "FD-308",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "11.97"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "9353f5d4-c3fe-46c3-b6fd-21192ac1e293",
+        "type": "part_asset",
+        "properties": {
+          "name": "Metra Reverse Wiring Harness",
+          "notes": "Order 113-7989869-5202600",
+          "part_number": "71-1770",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "21.95"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "33c71c1b-2588-4152-8d68-1f99e1ad5ac8",
+        "type": "part_asset",
+        "properties": {
+          "name": "MOOG Radius Arm Bushing Kit",
+          "notes": "Order 113-4787138-6269046",
+          "part_number": "K8361",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "30.49"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "deafa784-be69-47bc-9b2a-f73cf842bb53",
+        "type": "part_asset",
+        "properties": {
+          "name": "MOOG Tie Rod End (Right)",
+          "notes": "Order 113-4787138-6269046",
+          "part_number": "ES2214R",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "23.97"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "a67ba846-9f7a-446a-87c5-a612dcbd3a94",
+        "type": "part_asset",
+        "properties": {
+          "name": "AUTOOL Smoke Machine",
+          "notes": "Order 113-4787138-6269046",
+          "part_number": "SDT106",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "43.20"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "7592fc53-54ce-45e3-87e3-23322a98b330",
+        "type": "part_asset",
+        "properties": {
+          "name": "Timken Axle Shaft Bearing",
+          "notes": "Order 113-4787138-6269046",
+          "part_number": "TRP1563TAV",
+          "quantity_on_hand": "2",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "36.78"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "3c7d325d-1c5c-453a-80a1-e82c3c5a4bd1",
+        "type": "part_asset",
+        "properties": {
+          "name": "MOOG Adjusting Sleeve",
+          "notes": "Order 113-4787138-6269046",
+          "part_number": "ES2079S",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "16.87"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "81ee4340-bb4a-47a5-a9b2-70e11908d8cf",
+        "type": "part_asset",
+        "properties": {
+          "name": "Gates Radiator Cap",
+          "notes": "Order 113-4787138-6269046",
+          "part_number": "31527",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "9.09"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "b26cdc31-e759-4553-b85f-b5712e1c6d1a",
+        "type": "part_asset",
+        "properties": {
+          "name": "MOOG Adjusting Sleeve",
+          "notes": "Order 113-4787138-6269046",
+          "part_number": "ES2080S",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "16.99"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "7c42e3a9-b772-4581-a144-36184f8257d5",
+        "type": "part_asset",
+        "properties": {
+          "name": "Lisle Ignition Module Wrench",
+          "notes": "Order 113-4787138-6269046",
+          "part_number": "64650",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "8.49"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "5437928f-2871-4bf7-a4a0-3e373581b091",
+        "type": "part_asset",
+        "properties": {
+          "name": "Hose Pinch Off Pliers Set",
+          "notes": "Order 113-4787138-6269046",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "DPTOOL",
+          "unit_cost": "24.99"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "56435d32-aca9-4190-864e-39fbd3dea4ec",
+        "type": "part_asset",
+        "properties": {
+          "name": "RX WELD Plastic Welder Kit",
+          "notes": "Order 113-4787138-6269046",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "39.99"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "ed50fc70-e8c6-43ec-b14b-01b77b15bc03",
+        "type": "part_asset",
+        "properties": {
+          "name": "INNOVA Ford OBD1 Code Reader",
+          "notes": "Order 113-4787138-6269046",
+          "part_number": "3145",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "36.79"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "0e61ebbc-175d-42fd-9cb7-ec6969979329",
+        "type": "part_asset",
+        "properties": {
+          "name": "Cloyes Timing Chain Kit",
+          "notes": "Order 113-1413231-0669819",
+          "part_number": "9-4151S",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "96.81"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "592dd22d-761d-4ac8-b956-70c9fa1464b3",
+        "type": "part_asset",
+        "properties": {
+          "name": "StonyLab Filter Paper (100 Pack)",
+          "notes": "Order 113-5089179-4637061",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "15.99"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "55aa78e7-1459-44b9-801e-b6e5fd550079",
+        "type": "part_asset",
+        "properties": {
+          "name": "VEVOR Toe Alignment Plates",
+          "notes": "Order 113-4340895-1946666",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "35.90"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "b00b8486-2025-430d-a153-0d35887676d4",
+        "type": "part_asset",
+        "properties": {
+          "name": "CTA Tools One-Man Brake Bleeder",
+          "notes": "Order 113-4340895-1946666",
+          "part_number": "1250",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "9.30"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "46ac75b4-057d-4bdc-a94a-c8f1c5154ec8",
+        "type": "part_asset",
+        "properties": {
+          "name": "Valvoline Gear Oil 80W-90 (1 Qt)",
+          "notes": "Order 113-4340895-1946666",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "12.49"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "1929617c-1720-4b9e-8041-fcde48f1cf04",
+        "type": "part_asset",
+        "properties": {
+          "name": "Valvoline DOT 3 & 4 Brake Fluid",
+          "notes": "Order 113-4340895-1946666",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "9.88"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "ddf7a11a-1c67-4b2d-9d50-c8f58d54c973",
+        "type": "part_asset",
+        "properties": {
+          "name": "National Wheel Seal",
+          "notes": "Order 113-7006402-8249017",
+          "part_number": "8312",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "6.99"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "e24511bb-a348-4b2c-89ac-6df4795727c6",
+        "type": "part_asset",
+        "properties": {
+          "name": "Motorcraft Thermostat",
+          "notes": "Order 113-9966641-7922652",
+          "part_number": "RT1161",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "41.00"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "5da7a3b3-d4bd-4edf-aee9-a3e1777e4774",
+        "type": "part_asset",
+        "properties": {
+          "name": "Standard Motor PCV Grommet",
+          "notes": "Order 113-9966641-7922652",
+          "part_number": "GV22",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "7.14"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "dc2d6516-8fea-4262-b577-a544c8454a28",
+        "type": "part_asset",
+        "properties": {
+          "name": "Standard Motor PCV Valve",
+          "notes": "Order 113-9966641-7922652",
+          "part_number": "V288",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "10.17"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "55fba9e4-9e82-4b11-8a61-a606775169f2",
+        "type": "part_asset",
+        "properties": {
+          "name": "Raybestos Drum Adjuster Kit (Right)",
+          "notes": "Order 113-9966641-7922652",
+          "part_number": "H2593",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "14.46"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "fa24be71-e911-4627-9f99-a8b48d84f21f",
+        "type": "part_asset",
+        "properties": {
+          "name": "Dorman Wheel Cylinder (Rear)",
+          "notes": "Order 113-9364954-5874637",
+          "part_number": "W37862",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "7.25"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "72647d06-bdc5-4159-ac65-cdb68d6ac652",
+        "type": "part_asset",
+        "properties": {
+          "name": "Mevotech Inner Tie Rod",
+          "notes": "Order 113-9966641-7922652",
+          "part_number": "MDS1042",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "32.05"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "7d289fe2-6503-47b1-a7c7-5497397ee4ff",
+        "type": "part_asset",
+        "properties": {
+          "name": "Zerex Original Green Coolant (1 Gal)",
+          "notes": "Order 113-9364954-5874637",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "20.49"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "768cd6d0-05d2-4184-8f90-9270d4a7e61c",
+        "type": "part_asset",
+        "properties": {
+          "name": "Standard Motor Distributor Cap",
+          "notes": "Order 113-3562115-2735432",
+          "part_number": "FD169X",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "19.95"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "778fa48b-30cc-44d6-a99a-be92d05dcb3e",
+        "type": "part_asset",
+        "properties": {
+          "name": "Purolator Fuel Filter",
+          "notes": "Order 113-8618213-6130662",
+          "part_number": "F50126",
+          "quantity_on_hand": "1",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": "18.25"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "allowed_children": []
+      },
+      {
+        "id": "80050417-1151-4cae-8431-ac5e047f58e9",
+        "type": "season",
+        "properties": {
+          "name": "Talus Software",
+          "status": "34423cc2-d2c5-c699-fa1c-605ca72ee331"
+        },
+        "children": [
+          "12054bd3-0528-42c7-b0da-282ebc1665e0",
+          "79b90636-06fa-4d2c-a450-020d6ee6e3d1",
+          "98892dce-57c4-4799-b3f7-81009b2b8ddf",
+          "78b25908-5925-44a4-8312-d07314e6c0d9",
+          "25b3658e-e54a-433a-aaa4-ab3d734227b0",
+          "c3b68e0f-aaaf-4d37-9a8c-469eef9e4149",
+          "947eaf8e-2b46-4fa3-90b0-4d3b929de5c4"
+        ],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "allowed_children": [
+          "episode",
+          "task"
+        ]
+      },
+      {
+        "id": "12054bd3-0528-42c7-b0da-282ebc1665e0",
+        "type": "episode",
+        "properties": {
+          "name": "Talus Tally",
+          "description": "",
+          "status": "5acffa6e-c572-103b-853b-5e944af46cea"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "video-camera",
+        "allowed_children": [
+          "task",
+          "footage",
+          "location_scout",
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
+        ]
+      },
+      {
+        "id": "79b90636-06fa-4d2c-a450-020d6ee6e3d1",
+        "type": "episode",
+        "properties": {
+          "name": "Talus Trace",
+          "status": "5acffa6e-c572-103b-853b-5e944af46cea"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "video-camera",
+        "allowed_children": [
+          "task",
+          "footage",
+          "location_scout",
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
+        ]
+      },
+      {
+        "id": "98892dce-57c4-4799-b3f7-81009b2b8ddf",
+        "type": "episode",
+        "properties": {
+          "name": "Digital Dash",
+          "status": "5acffa6e-c572-103b-853b-5e944af46cea"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "video-camera",
+        "allowed_children": [
+          "task",
+          "footage",
+          "location_scout",
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
+        ]
+      },
+      {
+        "id": "78b25908-5925-44a4-8312-d07314e6c0d9",
+        "type": "episode",
+        "properties": {
+          "name": "Infotainment",
+          "status": "5acffa6e-c572-103b-853b-5e944af46cea"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "video-camera",
+        "allowed_children": [
+          "task",
+          "footage",
+          "location_scout",
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
+        ]
+      },
+      {
+        "id": "25b3658e-e54a-433a-aaa4-ab3d734227b0",
+        "type": "episode",
+        "properties": {
+          "name": "Can Bus Design",
+          "status": "5acffa6e-c572-103b-853b-5e944af46cea"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "video-camera",
+        "allowed_children": [
+          "task",
+          "footage",
+          "location_scout",
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
+        ]
+      },
+      {
+        "id": "c3b68e0f-aaaf-4d37-9a8c-469eef9e4149",
+        "type": "episode",
+        "properties": {
+          "name": "ABS Design",
+          "status": "5acffa6e-c572-103b-853b-5e944af46cea"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "video-camera",
+        "allowed_children": [
+          "task",
+          "footage",
+          "location_scout",
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
+        ]
+      },
+      {
+        "id": "947eaf8e-2b46-4fa3-90b0-4d3b929de5c4",
+        "type": "episode",
+        "properties": {
+          "name": "Electronic Transmission Control",
+          "status": "5acffa6e-c572-103b-853b-5e944af46cea"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "video-camera",
+        "allowed_children": [
+          "task",
+          "footage",
+          "location_scout",
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
+        ]
+      }
+    ],
+    "edges": []
+  },
+  "template_id": "project_talus",
+  "expanded_map": {
+    "8f0b11a8-aea2-415b-938c-3633e816eff7": true,
+    "063e0759-c0d2-4caf-b411-ed87e2f16637": true,
+    "58e9689c-0b7f-4325-8ebe-ca53944cf667": true,
+    "fb04ceae-e213-462b-805e-a94fead8b824": true,
+    "0f71cdf1-f7b1-4ce9-bf97-dc55b20eb208": true,
+    "be07bc50-f298-4e9b-a7b0-9c5b5e7db4c8": true,
+    "80050417-1151-4cae-8431-ac5e047f58e9": false,
+    "89941716-6549-4335-9b87-7a9a5b544233": true,
+    "82584abf-2b5c-45f1-80c7-34e9d508f69c": true,
+    "318d9929-d908-4319-b908-fbeba4a8e7ff": true,
+    "1fd92134-4784-464c-9962-da6806ec1c76": true
+  }
+}

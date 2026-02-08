@@ -8,6 +8,12 @@ export interface TreeNode {
   type: string;
   allowed_children: string[];
   children: TreeNode[];
+  indicator_id?: string;
+  indicator_set?: string;
+  parent_id?: string;
+  icon_id?: string;
+  statusIndicatorSvg?: string;
+  statusText?: string;
 }
 
 /**
@@ -26,22 +32,28 @@ export function convertNodesToTree(
     return typeSchema?.allowed_children || [];
   };
 
-  const buildTree = (node: Node, nodesMap: Record<string, Node>): TreeNode => {
+  const buildTree = (node: Node, nodesMap: Record<string, Node>, parentId: string | null): TreeNode => {
     return {
       id: node.id,
       name: node.properties?.name || node.type,
       type: node.type || 'project',
+      indicator_id: node.indicator_id ?? undefined,
+      indicator_set: node.indicator_set ?? undefined,
+      icon_id: node.icon_id ?? undefined,
+      statusIndicatorSvg: node.statusIndicatorSvg ?? undefined,
+      statusText: node.statusText ?? undefined,
+      parent_id: parentId ?? undefined,
       allowed_children: getAllowedChildren(node.type),
       children: node.children?.map(childId => {
         const childNode = nodesMap[childId];
-        return childNode ? buildTree(childNode, nodesMap) : { id: childId, name: 'Unknown', type: 'unknown', allowed_children: [], children: [] };
+        return childNode ? buildTree(childNode, nodesMap, node.id) : { id: childId, name: 'Unknown', type: 'unknown', allowed_children: [], children: [], parent_id: node.id };
       }) || []
     };
   };
 
   // Find root nodes (nodes without parents)
   const roots = nodeList.filter(n => !nodeList.some(p => p.children?.includes(n.id)));
-  return roots.map(root => buildTree(root, nodes));
+  return roots.map(root => buildTree(root, nodes, null));
 }
 
 /**

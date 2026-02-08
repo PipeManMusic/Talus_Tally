@@ -6,9 +6,16 @@ from backend.core.node import Node
 class ProjectGraph:
     """Global registry of all nodes in a project."""
     
-    def __init__(self):
-        """Initialize an empty graph."""
+    def __init__(self, template_id: Optional[str] = None, template_version: Optional[str] = None):
+        """Initialize an empty graph.
+        
+        Args:
+            template_id: The ID of the template this graph uses (e.g. 'project_talus')
+            template_version: The version of the template (e.g. '0.2.0')
+        """
         self.nodes: Dict[UUID, Node] = {}
+        self.template_id = template_id
+        self.template_version = template_version
     
     @property
     def roots(self) -> List[Node]:
@@ -33,13 +40,29 @@ class ProjectGraph:
     
     def remove_node(self, node_id: UUID) -> None:
         """
-        Remove a node from the graph.
+        Remove a node from the graph and clean up all references.
         
         Args:
             node_id: The UUID of the node to remove
         """
         if node_id in self.nodes:
+            node = self.nodes[node_id]
+            
+            # Remove from parent's children list
+            if node.parent_id and node.parent_id in self.nodes:
+                parent = self.nodes[node.parent_id]
+                if hasattr(parent, 'children') and node_id in parent.children:
+                    parent.children.remove(node_id)
+                    print(f"[remove_node] Removed {node_id} from parent {parent.id}.children")
+            
+            # Remove from roots if it's a root node
+            if node in self.roots:
+                self.roots.remove(node)
+                print(f"[remove_node] Removed {node_id} from roots")
+            
+            # Delete the node
             del self.nodes[node_id]
+            print(f"[remove_node] Deleted node {node_id}")
     
     def get_orphans(self) -> List[Node]:
         """

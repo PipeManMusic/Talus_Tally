@@ -1,386 +1,371 @@
 id: restomod_v1
-version: "1.0"
-name: "Restomod Creator"
-description: "A template for vehicle restoration and modification projects."
-
+version: '1.0'
+name: Restomod Creator
+description: A template for vehicle restoration and modification projects.
 node_types:
-  - id: "project_root"
-    label: "Project"
-    allowed_children: ["parts_inventory", "tools_inventory", "vehicles", "phase", "task"]
-    properties:
-      - id: "name"
-        label: "Project Name"
-        type: "text"
-        required: true
-      - id: "vehicle"
-        label: "Vehicle Name"
-        type: "text"
-        required: true
-      - id: "vin"
-        label: "VIN"
-        type: "text"
-      - id: "puchase_date"
-        label: "Purchase Date"
-        type: "date"
-      - id: "budget"
-        label: "Estimated Budget"
-        type: "currency"
-      - id: "actual_cost"
-        label: "Actual Cost"
-        type: "currency"
-
-  # ============================================================================
-  # Asset System - Domain-specific reusable resources for restoration projects
-  # ============================================================================
-
-  # ============================================================================
-  # Parts Inventory Branch
-  # ============================================================================
-
-  - id: "parts_inventory"
-    label: "Parts Inventory"
-    allowed_children: ["part_category"]
-    properties:
-      - id: "name"
-        label: "Parts Inventory"
-        type: "text"
-        required: true
-
-  - id: "part_category"
-    label: "Part Category"
-    allowed_children: ["part_asset"]
-    properties:
-      - id: "name"
-        label: "Category Name"
-        type: "text"
-        required: true
-        description: "e.g., Engine Components, Suspension, Exterior, Interior"
-
-  - id: "part_asset"
-    label: "Part"
-    allowed_children: []
-    properties:
-      - id: "name"
-        label: "Part Name"
-        type: "text"
-        required: true
-      - id: "part_number"
-        label: "Part Number / SKU"
-        type: "text"
-      - id: "supplier"
-        label: "Supplier"
-        type: "text"
-      - id: "unit_cost"
-        label: "Unit Cost"
-        type: "currency"
-      - id: "quantity_on_hand"
-        label: "Quantity In Stock"
-        type: "number"
-      - id: "reorder_point"
-        label: "Reorder Point"
-        type: "number"
-      - id: "status"
-        label: "Status"
-        type: "select"
-        indicator_set: "status"
-        options:
-          - name: "In Stock"
-            indicator_id: "filled"
-          - name: "On Order"
-            indicator_id: "partial"
-          - name: "Out of Stock"
-            indicator_id: "empty"
-          - name: "Discontinued"
-            indicator_id: "alert"
-      - id: "notes"
-        label: "Notes"
-        type: "text"
-
-  # ============================================================================
-  # Tools Inventory Branch
-  # ============================================================================
-
-  - id: "tools_inventory"
-    label: "Tools Inventory"
-    allowed_children: ["tool_category"]
-    properties:
-      - id: "name"
-        label: "Tools Inventory"
-        type: "text"
-        required: true
-
-  - id: "tool_category"
-    label: "Tool Category"
-    allowed_children: ["tool_asset"]
-    properties:
-      - id: "name"
-        label: "Category Name"
-        type: "text"
-        required: true
-        description: "e.g., Power Tools, Hand Tools, Diagnostic Equipment, Safety"
-
-  - id: "tool_asset"
-    label: "Tool"
-    allowed_children: []
-    properties:
-      - id: "name"
-        label: "Tool Name"
-        type: "text"
-        required: true
-      - id: "make_model"
-        label: "Make / Model"
-        type: "text"
-      - id: "serial_number"
-        label: "Serial Number"
-        type: "text"
-      - id: "purchase_date"
-        label: "Purchase Date"
-        type: "date"
-      - id: "acquisition_cost"
-        label: "Acquisition Cost"
-        type: "currency"
-      - id: "status"
-        label: "Status"
-        type: "select"
-        indicator_set: "status"
-        options:
-          - name: "Available"
-            indicator_id: "filled"
-          - name: "In Use"
-            indicator_id: "partial"
-          - name: "Maintenance"
-            indicator_id: "alert"
-          - name: "Retired"
-            indicator_id: "empty"
-      - id: "last_service_date"
-        label: "Last Service Date"
-        type: "date"
-      - id: "notes"
-        label: "Notes"
-        type: "text"
-
-  # ============================================================================
-  # Vehicles Branch (for source vehicles, reference vehicles, etc.)
-  # ============================================================================
-
-  - id: "vehicles"
-    label: "Vehicles"
-    allowed_children: ["vehicle_asset"]
-    properties:
-      - id: "name"
-        label: "Vehicles"
-        type: "text"
-        required: true
-
-  - id: "vehicle_asset"
-    label: "Vehicle"
-    allowed_children: []
-    properties:
-      - id: "name"
-        label: "Vehicle Name"
-        type: "text"
-        required: true
-      - id: "year"
-        label: "Year"
-        type: "number"
-      - id: "make"
-        label: "Make"
-        type: "text"
-      - id: "model"
-        label: "Model"
-        type: "text"
-      - id: "vin"
-        label: "VIN"
-        type: "text"
-      - id: "role"
-        label: "Role"
-        type: "select"
-        options:
-          - name: "Source Vehicle"
-            indicator_id: "filled"
-          - name: "Reference Vehicle"
-            indicator_id: "partial"
-          - name: "Donor Vehicle"
-            indicator_id: "alert"
-          - name: "Parts Vehicle"
-            indicator_id: "empty"
-      - id: "status"
-        label: "Status"
-        type: "select"
-        indicator_set: "status"
-        options:
-          - name: "Acquired"
-            indicator_id: "filled"
-          - name: "In Restoration"
-            indicator_id: "partial"
-          - name: "Complete"
-            indicator_id: "filled"
-          - name: "Sold/Disposed"
-            indicator_id: "empty"
-      - id: "notes"
-        label: "Notes"
-        type: "text"
-
-  # ============================================================================
-  # Asset Reference (used in tasks to link to assets)
-  # ============================================================================
-
-  - id: "asset_reference"
-    label: "Uses Asset"
-    allowed_children: []
-    properties:
-      - id: "name"
-        label: "Asset Reference"
-        type: "text"
-        required: true
-      - id: "asset_id"
-        label: "Linked Asset"
-        type: "string"
-        required: true
-      - id: "role"
-        label: "Role/Purpose in Task"
-        type: "text"
-      - id: "quantity"
-        label: "Quantity Needed"
-        type: "number"
-
-  # ============================================================================
-  # Work Breakdown Structure
-  # ============================================================================
-
-  - id: "phase"
-    label: "Phase"
-    allowed_children: ["job"]
-    properties:
-      - id: "name"
-        label: "Phase Name"
-        type: "text"
-        required: true
-      - id: "status"
-        label: "Status"
-        type: "select"
-        indicator_set: "status"
-        options:
-          - name: "Planned"
-            indicator_id: "empty"
-          - name: "In Progress"
-            indicator_id: "partial"
-          - name: "Completed"
-            indicator_id: "filled"
-      - id: "start_date"
-        label: "Start Date"
-        type: "date"
-
-  - id: "job"
-    label: "Job"
-    allowed_children: ["task"]
-    properties:
-      - id: "name"
-        label: "Job Name"
-        type: "text"
-        required: true
-      - id: "priority"
-        label: "Priority"
-        type: "select"
-        indicator_set: "status"
-        options:
-          - name: "Low"
-            indicator_id: "low"
-          - name: "Medium"
-            indicator_id: "medium"
-          - name: "High" 
-            indicator_id: "high"
-      - id: "description"
-        label: "Description"
-        type: "text"
-
-  - id: "task"
-    label: "Task"
-    has_time_log: true
-    allowed_children: ["part", "asset_reference"]
-    properties:
-      - id: "name"
-        label: "Task Name"
-        type: "text"
-        required: true
-      - id: "status"
-        label: "Status"
-        type: "select"
-        indicator_set: "status"
-        options:
-          - name: "Not Started"
-            indicator_id: "empty"
-          - name: "In Progress"
-            indicator_id: "partial"
-          - name: "Blocked"
-            indicator_id: "alert"
-          - name: "Done"
-            indicator_id: "filled"
-      - id: "cost"
-        label: "Cost"
-        type: "currency"
-      - id: "impact"
-        label: "Impact"
-        type: "number"
-      - id: "effort"
-        label: "Effort"
-        type: "number"
-      - id: "estimated_hours"
-        label: "Est. Hours"
-        type: "number"
-      - id: "notes"
-        label: "Notes"
-        type: "text"
-
-  - id: "part"  # <--- NEW NODE TYPE
-    label: "Part"
-    allowed_children: []
-    properties:
-      - id: "name"
-        label: "Part Name"
-        type: "text"
-        required: true
-      - id: "sku"
-        label: "SKU / Part #"
-        type: "text"
-      - id: "supplier"
-        label: "Supplier"
-        type: "text"
-      - id: "status"
-        label: "Status"
-        type: "select"
-        indicator_set: "status"
-        options:
-          - name: "Need to Order"
-            indicator_id: "empty"
-          - name: "Ordered"
-            indicator_id: "partial"
-          - name: "Shipped"
-            indicator_id: "partial"
-          - name: "Received"
-            indicator_id: "alert"
-          - name: "Installed"
-            indicator_id: "filled"
-      - id: "cost"
-        label: "Unit Cost"
-        type: "currency"
-      - id: "quantity"
-        label: "Qty"
-        type: "number"
-        value: 1
-      - id: "link"
-        label: "URL"
-        type: "text"
-
-  - id: "gear"
-    label: "Gear"
-    allowed_children: []
-    properties:
-      - id: "make"
-        label: "Make"
-        type: "text"
-      - id: "model"
-        label: "Model"
-        type: "text"
-      - id: "serial_number"
-        label: "Serial Number"
+- id: project_root
+  label: Project
+  allowed_children:
+  - parts_inventory
+  - tools_inventory
+  - vehicles
+  - phase
+  - task
+  properties:
+  - id: name
+    label: Project Name
+    type: text
+    required: true
+  - id: vehicle
+    label: Vehicle Name
+    type: text
+    required: true
+  - id: vin
+    label: VIN
+    type: text
+  - id: puchase_date
+    label: Purchase Date
+    type: date
+  - id: budget
+    label: Estimated Budget
+    type: currency
+  - id: actual_cost
+    label: Actual Cost
+    type: currency
+- id: parts_inventory
+  label: Parts Inventory
+  allowed_children:
+  - part_category
+  icon: cog
+  properties:
+  - id: name
+    label: Parts Inventory
+    type: text
+    required: true
+- id: part_category
+  label: Part Category
+  allowed_children:
+  - part_asset
+  icon: cog
+  properties:
+  - id: name
+    label: Category Name
+    type: text
+    required: true
+    description: e.g., Engine Components, Suspension, Exterior, Interior
+- id: part_asset
+  label: Part
+  allowed_children: []
+  icon: cog
+  properties:
+  - id: name
+    label: Part Name
+    type: text
+    required: true
+  - id: part_number
+    label: Part Number / SKU
+    type: text
+  - id: supplier
+    label: Supplier
+    type: text
+  - id: unit_cost
+    label: Unit Cost
+    type: currency
+  - id: quantity_on_hand
+    label: Quantity In Stock
+    type: number
+  - id: reorder_point
+    label: Reorder Point
+    type: number
+  - id: status
+    label: Status
+    type: select
+    indicator_set: status
+    options:
+    - name: In Stock
+      indicator_id: filled
+    - name: On Order
+      indicator_id: partial
+    - name: Out of Stock
+      indicator_id: empty
+    - name: Discontinued
+      indicator_id: alert
+  - id: notes
+    label: Notes
+    type: text
+- id: tools_inventory
+  label: Tools Inventory
+  allowed_children:
+  - tool_category
+  icon: cog
+  properties:
+  - id: name
+    label: Tools Inventory
+    type: text
+    required: true
+- id: tool_category
+  label: Tool Category
+  allowed_children:
+  - tool_asset
+  icon: cog
+  properties:
+  - id: name
+    label: Category Name
+    type: text
+    required: true
+    description: e.g., Power Tools, Hand Tools, Diagnostic Equipment, Safety
+- id: tool_asset
+  label: Tool
+  allowed_children: []
+  icon: cog
+  properties:
+  - id: name
+    label: Tool Name
+    type: text
+    required: true
+  - id: make_model
+    label: Make / Model
+    type: text
+  - id: serial_number
+    label: Serial Number
+    type: text
+  - id: purchase_date
+    label: Purchase Date
+    type: date
+  - id: acquisition_cost
+    label: Acquisition Cost
+    type: currency
+  - id: status
+    label: Status
+    type: select
+    indicator_set: status
+    options:
+    - name: Available
+      indicator_id: filled
+    - name: In Use
+      indicator_id: partial
+    - name: Maintenance
+      indicator_id: alert
+    - name: Retired
+      indicator_id: empty
+  - id: last_service_date
+    label: Last Service Date
+    type: date
+  - id: notes
+    label: Notes
+    type: text
+- id: vehicles
+  label: Vehicles
+  allowed_children:
+  - vehicle_asset
+  icon: truck
+  properties:
+  - id: name
+    label: Vehicles
+    type: text
+    required: true
+- id: vehicle_asset
+  label: Vehicle
+  allowed_children: []
+  icon: truck
+  properties:
+  - id: name
+    label: Vehicle Name
+    type: text
+    required: true
+  - id: year
+    label: Year
+    type: number
+  - id: make
+    label: Make
+    type: text
+  - id: model
+    label: Model
+    type: text
+  - id: vin
+    label: VIN
+    type: text
+  - id: role
+    label: Role
+    type: select
+    options:
+    - name: Source Vehicle
+      indicator_id: filled
+    - name: Reference Vehicle
+      indicator_id: partial
+    - name: Donor Vehicle
+      indicator_id: alert
+    - name: Parts Vehicle
+      indicator_id: empty
+  - id: status
+    label: Status
+    type: select
+    indicator_set: status
+    options:
+    - name: Acquired
+      indicator_id: filled
+    - name: In Restoration
+      indicator_id: partial
+    - name: Complete
+      indicator_id: filled
+    - name: Sold/Disposed
+      indicator_id: empty
+  - id: notes
+    label: Notes
+    type: text
+- id: asset_reference
+  label: Uses Asset
+  allowed_children: []
+  properties:
+  - id: name
+    label: Asset Reference
+    type: text
+    required: true
+  - id: asset_id
+    label: Linked Asset
+    type: string
+    required: true
+  - id: role
+    label: Role/Purpose in Task
+    type: text
+  - id: quantity
+    label: Quantity Needed
+    type: number
+- id: phase
+  label: Phase
+  allowed_children:
+  - job
+  properties:
+  - id: name
+    label: Phase Name
+    type: text
+    required: true
+  - id: status
+    label: Status
+    type: select
+    indicator_set: status
+    options:
+    - name: Planned
+      indicator_id: empty
+    - name: In Progress
+      indicator_id: partial
+    - name: Completed
+      indicator_id: filled
+  - id: start_date
+    label: Start Date
+    type: date
+- id: job
+  label: Job
+  allowed_children:
+  - task
+  properties:
+  - id: name
+    label: Job Name
+    type: text
+    required: true
+  - id: priority
+    label: Priority
+    type: select
+    indicator_set: status
+    options:
+    - name: Low
+      indicator_id: low
+    - name: Medium
+      indicator_id: medium
+    - name: High
+      indicator_id: high
+  - id: description
+    label: Description
+    type: text
+- id: task
+  label: Task
+  has_time_log: true
+  allowed_children:
+  - part
+  - asset_reference
+  properties:
+  - id: name
+    label: Task Name
+    type: text
+    required: true
+  - id: status
+    label: Status
+    type: select
+    indicator_set: status
+    options:
+    - name: Not Started
+      indicator_id: empty
+    - name: In Progress
+      indicator_id: partial
+    - name: Blocked
+      indicator_id: alert
+    - name: Done
+      indicator_id: filled
+  - id: cost
+    label: Cost
+    type: currency
+  - id: impact
+    label: Impact
+    type: number
+  - id: effort
+    label: Effort
+    type: number
+  - id: estimated_hours
+    label: Est. Hours
+    type: number
+  - id: notes
+    label: Notes
+    type: text
+- id: part
+  label: Part
+  allowed_children: []
+  properties:
+  - id: name
+    label: Part Name
+    type: text
+    required: true
+  - id: sku
+    label: 'SKU / Part #'
+    type: text
+  - id: supplier
+    label: Supplier
+    type: text
+  - id: status
+    label: Status
+    type: select
+    indicator_set: status
+    options:
+    - name: Need to Order
+      indicator_id: empty
+    - name: Ordered
+      indicator_id: partial
+    - name: Shipped
+      indicator_id: partial
+    - name: Received
+      indicator_id: alert
+    - name: Installed
+      indicator_id: filled
+  - id: cost
+    label: Unit Cost
+    type: currency
+  - id: quantity
+    label: Qty
+    type: number
+    value: 1
+  - id: link
+    label: URL
+    type: text
+- id: gear
+  label: Gear
+  allowed_children: []
+  properties:
+  - id: make
+    label: Make
+    type: text
+  - id: model
+    label: Model
+    type: text
+  - id: serial_number
+    label: Serial Number
+    type: text
+uuid: 822ba3f7-4e75-4bd9-8303-8b2262303b5d

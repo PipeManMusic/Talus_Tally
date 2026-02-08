@@ -1,3 +1,15 @@
+export interface Template {
+  id: string;
+  uuid?: string;
+  name: string;
+  description: string;
+}
+
+export interface Graph {
+  id: string;
+  nodes: Node[];
+  edges: Array<{ source: string; target: string }>;
+}
 import { io, Socket } from 'socket.io-client';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -19,6 +31,7 @@ export interface Session {
   lastActivity?: number;
 }
 
+
 export interface Node {
   id: string;
   type: string;
@@ -30,6 +43,7 @@ export interface Node {
   statusText?: string;
   icon_id?: string;
   allowed_children?: string[]; // From backend schema enrichment
+  parent_id?: string;
   metadata?: {
     orphaned?: boolean;
     orphaned_properties?: Record<string, any>;
@@ -37,23 +51,36 @@ export interface Node {
   };
 }
 
-export interface Graph {
-  id: string;
-  nodes: Node[];
-  edges: Array<{ source: string; target: string }>;
+export interface CsvColumnMapping {
+  header: string;
+  property_id: string;
 }
 
-export interface Template {
-  id: string;
-  uuid?: string;
-  name: string;
-  description: string;
+export interface CsvImportRowError {
+  row_number: number;
+  messages: string[];
+}
+
+export interface CsvImportResult {
+  success: boolean;
+  created_count: number;
+  created_node_ids: string[];
+  graph: Graph;
+  undo_available: boolean;
+  redo_available: boolean;
+}
+
+export interface CsvImportError extends Error {
+  code?: string;
+  rowErrors?: CsvImportRowError[];
+  status?: number;
 }
 
 export interface NodeTypeSchema {
   id: string;
   name: string;
   allowed_children: string[];
+  allowed_asset_types?: string[];
   icon?: string;
   properties: Array<{
     id: string;
@@ -324,6 +351,17 @@ export class APIClient {
     return response.json();
   }
 
+  async reloadBlueprint(sessionId: string): Promise<any> {
+    const response = await fetch(`${this.baseUrl}/api/v1/sessions/${sessionId}/reload-blueprint`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!response.ok) {
+      throw new Error('Failed to reload blueprint');
+    }
+    return response.json();
+  }
+
   // Command Execution
   async executeCommand(sessionId: string, commandType: string, data: any): Promise<any> {
     const response = await fetch(`${this.baseUrl}/api/v1/commands/execute`, {
@@ -353,6 +391,40 @@ export class APIClient {
       headers: { 'Content-Type': 'application/json' },
     });
     return response.json();
+  }
+
+  async importNodesFromCsv(params: {
+    sessionId: string;
+    parentId: string;
+    blueprintTypeId: string;
+    columnMap: CsvColumnMapping[];
+    file: File;
+  }): Promise<CsvImportResult> {
+    const formData = new FormData();
+    formData.append('session_id', params.sessionId);
+    formData.append('parent_id', params.parentId);
+    formData.append('blueprint_type_id', params.blueprintTypeId);
+    formData.append('column_map', JSON.stringify(params.columnMap));
+    formData.append('file', params.file);
+
+    const response = await fetch(`${this.baseUrl}/api/v1/imports/csv`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    const payload = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      const message = payload?.error?.message || 'CSV import failed';
+      const error: CsvImportError = Object.assign(new Error(message), {
+        code: payload?.error?.code,
+        rowErrors: payload?.error?.rows,
+        status: response.status,
+      });
+      throw error;
+    }
+
+    return payload as CsvImportResult;
   }
 
   // Migration Management

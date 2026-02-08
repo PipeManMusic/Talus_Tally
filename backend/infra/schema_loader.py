@@ -4,6 +4,8 @@ import hashlib
 import os
 from typing import List, Dict, Any, Optional
 from backend.infra.icon_catalog import IconCatalog
+from backend.infra.template_validator import TemplateValidator, TemplateValidationError
+from backend.infra.template_persistence import get_templates_directory
 
 
 def _generate_stable_uuid(namespace: str, name: str) -> str:
@@ -103,11 +105,12 @@ class IndicatorCatalog:
 class NodeTypeDef:
     """Definition of a node type from a blueprint."""
     
-    def __init__(self, id: str, label: str = None, name: str = None, allowed_children: List[str] = None, **kwargs):
+    def __init__(self, id: str, label: str = None, name: str = None, allowed_children: List[str] = None, allowed_asset_types: List[str] = None, **kwargs):
         self.id = id
         # Accept either 'label' or 'name', prefer 'label'
         self.name = label or name or id
         self.allowed_children = allowed_children or []
+        self.allowed_asset_types = allowed_asset_types or []
         self.has_time_log = kwargs.get('has_time_log', False)
         self._extra_props = kwargs
 
@@ -213,7 +216,7 @@ class SchemaLoader:
                 print(f"[WARN] Failed to load icon catalog: {e}")
         
         # Store templates directory for discovery
-        self.templates_dir = os.path.join(project_root, 'data/templates')
+        self.templates_dir = get_templates_directory()
         print(f"[SchemaLoader] Templates dir: {self.templates_dir}")
     
     def load(self, filepath: str) -> Blueprint:
@@ -243,6 +246,13 @@ class SchemaLoader:
                 data = yaml.safe_load(f)
         except Exception as e:
             print(f"[SchemaLoader.load] ERROR opening/reading file: {type(e).__name__}: {e}")
+            raise
+        
+        # Validate template structure before processing
+        try:
+            TemplateValidator.validate_and_raise(data, filepath)
+        except TemplateValidationError as e:
+            print(f"[SchemaLoader.load] VALIDATION ERROR: {e}")
             raise
         
         blueprint_id = data.get('id')

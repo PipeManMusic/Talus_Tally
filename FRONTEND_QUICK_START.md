@@ -171,6 +171,7 @@ npm run preview      # Preview production build
 # Quality
 npm run lint         # Run ESLint
 npm run lint:fix     # Fix ESLint issues
+npm run test -- csvPreview   # Run CSV import utility tests
 
 # Type checking
 npx tsc --noEmit     # Check TypeScript
@@ -253,6 +254,17 @@ border-border       // #3a3a3a
   Click me
 </Button>
 ```
+
+### Import Nodes via CSV
+
+1. Ensure a session and template are loaded (open or create a project).
+2. In the app, choose **Tools → Import from CSV...** to open the wizard.
+3. Pick the parent node where new children should be created; the allowed node types list filters automatically.
+4. Choose the child node type to create. Use **Download template CSV** to export a file with property IDs as headers (plus sample values) tailored to that blueprint—ideal for building spreadsheets before import. On desktop (Tauri) you will be prompted for a save location; in the browser it downloads directly.
+5. Upload a UTF-8 CSV (BOM supported), review the preview grid, and map headers to blueprint properties. Required fields (including `name`) must be mapped.
+6. Submit the import; successful rows create nodes immediately, and any validation issues surface in the dialog for correction.
+
+The wizard calls the `/api/v1/imports/csv` endpoint, which validates bindings and reports row-level errors. Successful imports refresh the graph, expand the parent node, and focus the first created child.
 
 ### Input
 ```tsx

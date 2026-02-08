@@ -1,4 +1,4 @@
-import { useState, memo, useEffect } from 'react';
+import { useState, memo, useEffect, useRef } from 'react';
 import { Plus, Trash2, ChevronDown, ChevronUp, AlertCircle, Info } from 'lucide-react';
 import { apiClient, API_BASE_URL } from '../api/client';
 import type { IconCatalog, IndicatorsConfig, IndicatorTheme } from '../api/client';
@@ -7,6 +7,7 @@ export interface NodeType {
   id: string;
   label: string;
   allowed_children: string[];
+  allowed_asset_types?: string[];
   properties: Property[];
   icon?: string;
 }
@@ -23,7 +24,7 @@ export interface Property {
 
 interface NodeTypeEditorProps {
   nodeTypes: NodeType[];
-  onChange: (nodeTypes: NodeType[]) => void;
+  onChange: (nodeTypes: NodeType[]) => Promise<void>;
 }
 
 // Helper to recolor SVG for preview
@@ -88,10 +89,19 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
   const [expandedNodeType, setExpandedNodeType] = useState<string | null>(null);
   const [editingProperty, setEditingProperty] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
+  const [pendingUpdates, setPendingUpdates] = useState<Record<string, Partial<NodeType>>>({});
   const [icons, setIcons] = useState<IconCatalog[]>([]);
   const [indicatorsConfig, setIndicatorsConfig] = useState<IndicatorsConfig | null>(null);
   const [iconSvgCache, setIconSvgCache] = useState<Record<string, string>>({});
   const [indicatorSvgCache, setIndicatorSvgCache] = useState<Record<string, string>>({});
+  const deletingRef = useRef<boolean>(false);
+
+  // Merge props with pending optimistic updates for display
+  const displayNodeTypes = nodeTypes.map(nt => ({
+    ...nt,
+    ...(pendingUpdates[nt.id] || {}),
+  }));
 
   // Load icons and indicators configs on mount
   useEffect(() => {
@@ -186,6 +196,11 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
     Array.from(new Set(children.filter(Boolean)));
 
   const addNodeType = () => {
+    if (loading) {
+      console.warn('Add operation already in progress');
+      return;
+    }
+
     const newNodeType: NodeType = {
       id: `node_type_${Date.now()}`,
       label: 'New Node Type',
@@ -199,11 +214,33 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
       ],
       icon: undefined,
     };
-    onChange([...nodeTypes, newNodeType]);
-    setExpandedNodeType(newNodeType.id);
+
+    setLoading(true);
+    onChange([...nodeTypes, newNodeType])
+      .then(() => {
+        console.log('✓ Node type added successfully');
+        setExpandedNodeType(newNodeType.id);
+      })
+      .catch((err) => {
+        console.error(`✗ Failed to add node type: ${err instanceof Error ? err.message : String(err)}`);
+        setErrors(prev => ({
+          ...prev,
+          [newNodeType.id]: `Failed to add: ${err instanceof Error ? err.message : 'Unknown error'}`,
+        }));
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   const removeNodeType = (id: string) => {
+    // Prevent concurrent deletions
+    if (deletingRef.current || loading) {
+      console.warn('Delete operation already in progress, ignoring duplicate call');
+      return;
+    }
+    
+    // Prevent deletion if only one node type remains
     if (nodeTypes.length <= 1) {
       setErrors(prev => ({
         ...prev,
@@ -213,9 +250,17 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
     }
     
     const nodeType = nodeTypes.find(nt => nt.id === id);
-    const nodeTypeLabel = nodeType?.label || id;
+    if (!nodeType) {
+      console.error(`Node type ${id} not found`);
+      return;
+    }
     
-    // Show confirmation with orphaning explanation
+    const nodeTypeLabel = nodeType.label || id;
+    
+    // Set flag to prevent double-clicks
+    deletingRef.current = true;
+    
+    // Show confirmation BEFORE any state changes
     const confirmed = window.confirm(
       `Delete "${nodeTypeLabel}" node type?\n\n` +
       `⚠️ IMPORTANT: If any nodes of this type exist in active projects:\n\n` +
@@ -229,28 +274,79 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
       `Continue with deletion?`
     );
     
-    if (!confirmed) {
+    // CRITICAL: Only proceed if user explicitly confirmed
+    if (confirmed !== true) {
+      console.log(`Deletion of ${nodeTypeLabel} cancelled by user`);
+      deletingRef.current = false;
       return;
     }
     
-    onChange(nodeTypes.filter(nt => nt.id !== id));
-    const newErrors = { ...errors };
-    delete newErrors[id];
-    setErrors(newErrors);
+    // User confirmed - proceed with deletion
+    console.log(`Deleting node type: ${nodeTypeLabel}`);
+    const filtered = nodeTypes.filter(nt => nt.id !== id);
+    setLoading(true);
+    
+    onChange(filtered)
+      .then(() => {
+        console.log(`✓ Node type ${nodeTypeLabel} deleted successfully`);
+        const newErrors = { ...errors };
+        delete newErrors[id];
+        setErrors(newErrors);
+      })
+      .catch((err) => {
+        console.error(`✗ Failed to delete node type: ${err instanceof Error ? err.message : String(err)}`);
+        setErrors(prev => ({
+          ...prev,
+          [id]: `Failed to delete: ${err instanceof Error ? err.message : 'Unknown error'}`,
+        }));
+      })
+      .finally(() => {
+        setLoading(false);
+        deletingRef.current = false;
+      });
   };
 
   const updateNodeType = (id: string, updates: Partial<NodeType>) => {
     if (updates.id && expandedNodeType === id) {
       setExpandedNodeType(updates.id);
     }
-    onChange(
-      nodeTypes.map(nt =>
-        nt.id === id ? { ...nt, ...updates } : nt
-      )
+    
+    const newNodeTypes = displayNodeTypes.map(nt =>
+      nt.id === id ? { ...nt, ...updates } : nt
     );
-    const newErrors = { ...errors };
-    delete newErrors[id];
-    setErrors(newErrors);
+    
+    // Optimistically update UI immediately
+    setPendingUpdates(prev => ({
+      ...prev,
+      [id]: { ...prev[id], ...updates },
+    }));
+    
+    // Persist to backend
+    onChange(newNodeTypes)
+      .then(() => {
+        // Clear pending update on success (prop will have updated)
+        setPendingUpdates(prev => {
+          const next = { ...prev };
+          delete next[id];
+          return next;
+        });
+        const newErrors = { ...errors };
+        delete newErrors[id];
+        setErrors(newErrors);
+      })
+      .catch((err) => {
+        console.error(`✗ Failed to update node type: ${err instanceof Error ? err.message : String(err)}`);
+        // Clear pending update on error so we don't show stale data
+        setPendingUpdates(prev => {
+          const next = { ...prev };
+          delete next[id];
+          return next;
+        });
+        setErrors(prev => ({
+          ...prev,
+          [id]: `Failed to update: ${err instanceof Error ? err.message : 'Unknown error'}`,
+        }));
+      });
   };
 
   const addProperty = (nodeTypeId: string) => {
@@ -260,13 +356,34 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
       type: 'text',
       indicator_set: 'status',
     };
-    onChange(
-      nodeTypes.map(nt =>
-        nt.id === nodeTypeId
-          ? { ...nt, properties: [...nt.properties, newProperty] }
-          : nt
-      )
+    
+    const newNodeTypes = displayNodeTypes.map(nt =>
+      nt.id === nodeTypeId
+        ? { ...nt, properties: [...nt.properties, newProperty] }
+        : nt
     );
+    
+    // Optimistic update
+    setPendingUpdates(prev => ({
+      ...prev,
+      [nodeTypeId]: {
+        ...prev[nodeTypeId],
+        properties: newNodeTypes.find(nt => nt.id === nodeTypeId)?.properties || [],
+      },
+    }));
+    
+    onChange(newNodeTypes).catch((err) => {
+      console.error(`✗ Failed to add property: ${err instanceof Error ? err.message : String(err)}`);
+      setPendingUpdates(prev => {
+        const next = { ...prev };
+        delete next[nodeTypeId];
+        return next;
+      });
+      setErrors(prev => ({
+        ...prev,
+        [nodeTypeId]: `Failed to add property: ${err instanceof Error ? err.message : 'Unknown error'}`,
+      }));
+    });
   };
 
   const removeProperty = (nodeTypeId: string, propertyId: string) => {
@@ -291,31 +408,72 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
       return;
     }
     
-    onChange(
-      nodeTypes.map(nt =>
-        nt.id === nodeTypeId
-          ? { ...nt, properties: nt.properties.filter(p => p.id !== propertyId) }
-          : nt
-      )
+    const newNodeTypes = displayNodeTypes.map(nt =>
+      nt.id === nodeTypeId
+        ? { ...nt, properties: nt.properties.filter(p => p.id !== propertyId) }
+        : nt
     );
+    
+    // Optimistic update
+    setPendingUpdates(prev => ({
+      ...prev,
+      [nodeTypeId]: {
+        ...prev[nodeTypeId],
+        properties: newNodeTypes.find(nt => nt.id === nodeTypeId)?.properties || [],
+      },
+    }));
+    
+    onChange(newNodeTypes).catch((err) => {
+      console.error(`✗ Failed to remove property: ${err instanceof Error ? err.message : String(err)}`);
+      setPendingUpdates(prev => {
+        const next = { ...prev };
+        delete next[nodeTypeId];
+        return next;
+      });
+      setErrors(prev => ({
+        ...prev,
+        [nodeTypeId]: `Failed to remove property: ${err instanceof Error ? err.message : 'Unknown error'}`,
+      }));
+    });
   };
 
   const updateProperty = (nodeTypeId: string, propertyId: string, updates: Partial<Property>) => {
     if ((updates as { id?: string }).id && editingProperty === propertyId) {
       setEditingProperty((updates as { id?: string }).id || null);
     }
-    onChange(
-      nodeTypes.map(nt =>
-        nt.id === nodeTypeId
-          ? {
-              ...nt,
-              properties: nt.properties.map(p =>
-                p.id === propertyId ? { ...p, ...updates } : p
-              ),
-            }
-          : nt
-      )
+    
+    const newNodeTypes = displayNodeTypes.map(nt =>
+      nt.id === nodeTypeId
+        ? {
+            ...nt,
+            properties: nt.properties.map(p =>
+              p.id === propertyId ? { ...p, ...updates } : p
+            ),
+          }
+        : nt
     );
+    
+    // Optimistic update
+    setPendingUpdates(prev => ({
+      ...prev,
+      [nodeTypeId]: {
+        ...prev[nodeTypeId],
+        properties: newNodeTypes.find(nt => nt.id === nodeTypeId)?.properties || [],
+      },
+    }));
+    
+    onChange(newNodeTypes).catch((err) => {
+      console.error(`✗ Failed to update property: ${err instanceof Error ? err.message : String(err)}`);
+      setPendingUpdates(prev => {
+        const next = { ...prev };
+        delete next[nodeTypeId];
+        return next;
+      });
+      setErrors(prev => ({
+        ...prev,
+        [nodeTypeId]: `Failed to update property: ${err instanceof Error ? err.message : 'Unknown error'}`,
+      }));
+    });
   };
 
   return (
@@ -353,7 +511,7 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
 
       {/* Node Types List */}
       <div className="space-y-2">
-        {nodeTypes.map((nodeType, nodeTypeIndex) => (
+        {displayNodeTypes.map((nodeType, nodeTypeIndex) => (
           <div key={String(nodeTypeIndex)} className="bg-bg-light border border-border rounded overflow-hidden">
             {/* Node Type Header */}
             <div className="flex items-center justify-between p-4 hover:bg-bg-dark/50 transition-colors cursor-pointer"
@@ -508,6 +666,72 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
                       className="text-sm px-3 py-1 bg-accent-primary/20 text-accent-primary rounded hover:bg-accent-primary/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       + Add Child Type
+                    </button>
+                  </div>
+                </div>
+
+                {/* Allowed Asset Types (for asset reference nodes) */}
+                <div>
+                  <label className="block text-sm text-fg-secondary mb-2">
+                    Allowed Asset Types
+                    <span className="text-xs ml-2 text-fg-muted">(optional - filters asset picker)</span>
+                  </label>
+                  <div className="space-y-2">
+                    {(nodeType.allowed_asset_types || []).map((assetType, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        <select
+                          value={assetType}
+                          onChange={(e) => {
+                            const newAssetTypes = [...(nodeType.allowed_asset_types || [])];
+                            newAssetTypes[idx] = e.target.value;
+                            updateNodeType(nodeType.id, {
+                              allowed_asset_types: newAssetTypes,
+                            });
+                          }}
+                          className="flex-1 px-3 py-2 bg-bg-light border border-border rounded text-fg-primary text-sm"
+                        >
+                          {!nodeTypes.some(nt => nt.id === assetType) && (
+                            <option value={assetType}>Missing: {assetType}</option>
+                          )}
+                          {nodeTypes
+                            .filter(nt => nt.id.endsWith('_asset'))
+                            .map(nt => (
+                              <option key={nt.id} value={nt.id}>
+                                {nt.label} ({nt.id})
+                              </option>
+                            ))}
+                        </select>
+                        <button
+                          onClick={() => {
+                            const newAssetTypes = (nodeType.allowed_asset_types || []).filter((_, i) => i !== idx);
+                            updateNodeType(nodeType.id, { allowed_asset_types: newAssetTypes });
+                          }}
+                          className="px-2 py-1 text-status-danger hover:bg-status-danger/20 rounded transition-colors"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      onClick={() => {
+                        const availableAssetTypes = nodeTypes.filter(
+                          nt => nt.id.endsWith('_asset') && !(nodeType.allowed_asset_types || []).includes(nt.id)
+                        );
+                        if (availableAssetTypes.length === 0) {
+                          return;
+                        }
+                        updateNodeType(nodeType.id, {
+                          allowed_asset_types: [...(nodeType.allowed_asset_types || []), availableAssetTypes[0].id],
+                        });
+                      }}
+                      disabled={
+                        nodeTypes.filter(
+                          nt => nt.id.endsWith('_asset') && !(nodeType.allowed_asset_types || []).includes(nt.id)
+                        ).length === 0
+                      }
+                      className="text-sm px-3 py-1 bg-accent-primary/20 text-accent-primary rounded hover:bg-accent-primary/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      + Add Asset Type Filter
                     </button>
                   </div>
                 </div>

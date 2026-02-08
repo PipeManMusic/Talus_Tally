@@ -38,5 +38,5 @@ export { default as GraphCanvas } from './graph/GraphCanvas';
 export { default as CustomNode } from './graph/CustomNode';
 
 // Types
-export type { TreeNode } from './layout/TreeView';
+export type { TreeNode } from '../utils/treeUtils';
 export type { NodeProperty } from './layout/Inspector';

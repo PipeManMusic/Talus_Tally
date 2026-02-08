@@ -1,7 +1,8 @@
 import { TitleBar } from './components/layout/TitleBar';
 import { MenuBar } from './components/layout/MenuBar';
 import { TreeView } from './components/layout/TreeView';
-import type { TreeNode } from './components/layout/TreeView';
+import { clearIconCache } from './components/graph/mapNodeIcon';
+import type { TreeNode } from './utils/treeUtils';
 import { Inspector } from './components/layout/Inspector';
 import type { NodeProperty } from './components/layout/Inspector';
 import { NewProjectDialog } from './components/dialogs/NewProjectDialog';
@@ -10,6 +11,7 @@ import { AssetSelectDialog } from './components/dialogs/AssetSelectDialog';
 import { AssetCategoryDialog } from './components/dialogs/AssetCategoryDialog';
 import { SettingsDialog } from './components/dialogs/SettingsDialog';
 import { SaveConfirmDialog, type SaveAction } from './components/dialogs/SaveConfirmDialog';
+import { ImportCsvDialog } from './components/dialogs/ImportCsvDialog';
 import { TemplateEditor } from './views/TemplateEditor';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { DebugPanel, type DebugLogEntry } from './components/dev/DebugPanel';
@@ -41,10 +43,12 @@ function App() {
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [showTemplateEditor, setShowTemplateEditor] = useState(false);
   const [showSaveConfirmDialog, setShowSaveConfirmDialog] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
   const pendingCloseActionRef = useRef<(() => Promise<void>) | null>(null);
   const [addChildParentId, setAddChildParentId] = useState<string | null>(null);
   const [addChildTitle, setAddChildTitle] = useState<string | undefined>(undefined);
   const [assetSelectParentId, setAssetSelectParentId] = useState<string | null>(null);
+  const [assetSelectNodeType, setAssetSelectNodeType] = useState<string>('asset_reference');
   const [assetCategoryParentId, setAssetCategoryParentId] = useState<string | null>(null);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [templateSchema, setTemplateSchema] = useState<TemplateSchema | null>(null);
@@ -332,7 +336,7 @@ function App() {
       return typeSchema?.allowed_children || [];
     };
 
-    const buildTree = (node: Node, nodesMap: Record<string, Node>): TreeNode => {
+    const buildTree = (node: Node, nodesMap: Record<string, Node>, parentId: string | null): TreeNode => {
       const schemaIconId = iconByType[node.type];
       const iconId = node.icon_id ?? schemaIconId ?? undefined;
       const allowedChildren = getAllowedChildren(node);
@@ -343,10 +347,22 @@ function App() {
         indicator_id: node.indicator_id ?? undefined,
         indicator_set: node.indicator_set ?? undefined,
         icon_id: iconId,
+        statusIndicatorSvg: node.statusIndicatorSvg ?? undefined,
+        statusText: node.statusText ?? undefined,
+        parent_id: parentId ?? undefined,
         allowed_children: allowedChildren,
         children: node.children?.map(childId => {
           const childNode = nodesMap[childId];
-          return childNode ? buildTree(childNode, nodesMap) : { id: childId, name: 'Unknown', type: 'unknown', allowed_children: [], children: [] };
+          return childNode
+            ? buildTree(childNode, nodesMap, node.id)
+            : {
+                id: childId,
+                name: 'Unknown',
+                type: 'unknown',
+                allowed_children: [],
+                children: [],
+                parent_id: node.id,
+              };
         }) || []
       };
     };
@@ -356,7 +372,7 @@ function App() {
       p.children?.includes(n.id)
     ));
 
-    return roots.map(root => buildTree(root, nodes));
+    return roots.map(root => buildTree(root, nodes, null));
   }, [templateSchema]);
 
   // Track if this is the first tree build after project load
@@ -515,8 +531,15 @@ function App() {
 
   const ensureSession = useCallback(async (): Promise<string> => {
     if (sessionIdRef.current) {
-      console.log(`[Session] Using existing sessionId: ${sessionIdRef.current}`);
-      return sessionIdRef.current;
+      // Validate the session still exists on the backend
+      try {
+        await apiClient.getSessionInfo(sessionIdRef.current);
+        console.log(`[Session] Using existing sessionId: ${sessionIdRef.current}`);
+        return sessionIdRef.current;
+      } catch (err) {
+        console.warn('[Session] Existing session invalid, creating new one:', err);
+        // Session is stale, create a new one
+      }
     }
     console.log('[Session] Creating new session...');
     const session = await apiClient.createSession();
@@ -783,8 +806,13 @@ function App() {
       await writeTextFile(filePath, payload);
       // Mark session as clean after saving
       if (sessionId) {
-        await apiClient.saveSession(sessionId);
-        setIsDirty(false);
+        try {
+          await apiClient.saveSession(sessionId);
+          setIsDirty(false);
+        } catch (err) {
+          console.warn('Failed to mark session as clean (session may be stale):', err);
+          // Continue anyway - file was saved successfully
+        }
       }
       console.log('✓ Project saved');
       return true;
@@ -845,10 +873,22 @@ function App() {
       const templateId = parsed.template_id || null;
       let finalGraph = normalizedGraph;
 
-      // Ensure we have a session for this file
+      // Ensure we have a valid session for this file
       let sid: string;
       if (sessionId) {
-        sid = sessionId;
+        // Validate that the session still exists on the backend
+        try {
+          await apiClient.getSessionInfo(sessionId);
+          sid = sessionId;
+          console.log(`[File Open] Using existing session: ${sid}`);
+        } catch (err) {
+          console.warn('Existing session invalid, creating new one:', err);
+          const newSession = await apiClient.createSession();
+          sid = newSession.session_id || newSession.id || 'unknown';
+          console.log(`[File Open] Created new session for file: ${sid}`);
+          setSessionId(sid);
+          localStorage.setItem('talus_tally_session_id', sid);
+        }
       } else {
         const newSession = await apiClient.createSession();
         sid = newSession.session_id || newSession.id || 'unknown';
@@ -998,17 +1038,21 @@ function App() {
   }, []);
 
   const getAssetNodeTypes = useCallback(() => {
-    if (!templateSchema) return ['part_asset', 'tool_asset', 'vehicle_asset'];
+    if (!templateSchema) return ['part_asset', 'tool_asset', 'vehicle_asset', 'camera_gear_asset'];
     const types = new Set<string>();
-    const addAllowed = (typeId: string) => {
-      const schema = templateSchema.node_types.find(nt => nt.id === typeId);
-      schema?.allowed_children?.forEach((child) => types.add(child));
-    };
+    
+    // Find all category types and get their allowed children (the actual assets)
+    templateSchema.node_types
+      .filter((nt) => nt.id.endsWith('_category'))
+      .forEach((category) => {
+        category.allowed_children?.forEach((child) => types.add(child));
+      });
 
-    addAllowed('part_category');
-    addAllowed('tool_category');
-    addAllowed('vehicles');
+    // Also check named categories like 'vehicles'
+    const vehiclesSchema = templateSchema.node_types.find(nt => nt.id === 'vehicles');
+    vehiclesSchema?.allowed_children?.forEach((child) => types.add(child));
 
+    // Fallback: if nothing found, look for all types ending in _asset
     if (types.size === 0) {
       templateSchema.node_types
         .map((t) => t.id)
@@ -1019,8 +1063,24 @@ function App() {
     return Array.from(types);
   }, [templateSchema]);
 
-  const assetOptions = useCallback(() => {
-    const assetTypes = new Set(getAssetNodeTypes());
+  const assetOptions = useCallback((nodeTypeName?: string) => {
+    let assetTypes: Set<string>;
+    
+    // If a specific node type is provided, check if it has allowed_asset_types filter
+    if (nodeTypeName && templateSchema) {
+      const nodeTypeSchema = templateSchema.node_types.find(nt => nt.id === nodeTypeName);
+      if (nodeTypeSchema?.allowed_asset_types && nodeTypeSchema.allowed_asset_types.length > 0) {
+        // Use the template-defined filter
+        assetTypes = new Set(nodeTypeSchema.allowed_asset_types);
+      } else {
+        // No filter defined - show all asset types
+        assetTypes = new Set(getAssetNodeTypes());
+      }
+    } else {
+      // No node type specified - show all asset types
+      assetTypes = new Set(getAssetNodeTypes());
+    }
+    
     return Object.values(storeNodes)
       .filter((node) => assetTypes.has(node.type))
       .map((node) => ({
@@ -1130,14 +1190,14 @@ function App() {
     try {
       const sid = await ensureSession();
       const createResult = await safeExecuteCommand('CreateNode', {
-        blueprint_type_id: 'asset_reference',
+        blueprint_type_id: assetSelectNodeType,
         name: assetNode.properties?.name || 'Asset Reference',
         parent_id: assetSelectParentId,
       });
 
       const createdGraph = normalizeGraph(createResult.graph ?? createResult);
       const createdNodeId = createdGraph.nodes.find(
-        (n) => n.type === 'asset_reference' && n.properties?.name === (assetNode.properties?.name || 'Asset Reference')
+        (n) => n.type === assetSelectNodeType && n.properties?.name === (assetNode.properties?.name || 'Asset Reference')
       )?.id;
 
       if (createdNodeId) {
@@ -1157,12 +1217,13 @@ function App() {
       setExpandedMap((prev) => ({ ...prev, [assetSelectParentId]: true }));
       setShowAssetSelectDialog(false);
       setAssetSelectParentId(null);
+      setAssetSelectNodeType('asset_reference');
       setIsDirty(true);
     } catch (err) {
       console.error('Failed to add asset reference:', err);
       alert('Failed to add asset reference');
     }
-  }, [assetSelectParentId, ensureSession, normalizeGraph, safeExecuteCommand, setCurrentGraph, storeNodes]);
+  }, [assetSelectParentId, assetSelectNodeType, ensureSession, normalizeGraph, safeExecuteCommand, setCurrentGraph, storeNodes]);
 
   const handleAssetCategoryConfirm = useCallback(async (categoryId: string, name: string) => {
     if (!assetCategoryParentId) {
@@ -1186,6 +1247,24 @@ function App() {
       alert('Failed to add asset category');
     }
   }, [assetCategoryParentId, normalizeGraph, safeExecuteCommand, setCurrentGraph]);
+
+  const handleImportSuccess = useCallback((details: {
+    graph: Graph;
+    createdNodeIds: string[];
+    parentId: string;
+    blueprintTypeId: string;
+    createdCount: number;
+    undoAvailable: boolean;
+    redoAvailable: boolean;
+  }) => {
+    const graph = normalizeGraph(details.graph);
+    setCurrentGraph(graph);
+    setExpandedMap((prev) => ({ ...prev, [details.parentId]: true }));
+    if (details.createdNodeIds.length > 0) {
+      setSelectedNode(details.createdNodeIds[0]);
+    }
+    setIsDirty(true);
+  }, [normalizeGraph, setCurrentGraph, setExpandedMap, setSelectedNode]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -1368,11 +1447,57 @@ function App() {
       { label: '---', onClick: () => {} },
       { label: 'Refresh Blueprint', onClick: async () => {
         try {
-          // Reload the blueprint/template from the backend
-          // This will re-fetch the template definitions
-          window.location.reload();
+          // Reload the template schema without losing the current graph
+          const templateId = currentTemplateId;
+          if (!templateId) {
+            alert('No template is currently loaded.');
+            return;
+          }
+          
+          if (!sessionId) {
+            alert('No active session. Please open or create a project first.');
+            return;
+          }
+          
+          console.log('Refreshing template schema:', templateId);
+          const schema = await apiClient.getTemplateSchema(templateId);
+          
+          // Validate the refreshed schema
+          const validation = validateTemplateSchema(schema);
+          if (!validation.isValid) {
+            console.error('Refreshed template validation failed:', validation.errors);
+            alert(`Template validation failed:\n${validation.errors.join('\n')}`);
+            return;
+          }
+          
+          setTemplateSchema(schema);
+          console.log('✓ Template schema refreshed successfully');
+          clearIconCache();
+          
+          // Reload the blueprint in the backend session
+          try {
+            await apiClient.reloadBlueprint(sessionId);
+            console.log('✓ Backend blueprint reloaded from disk');
+          } catch (blueprintErr) {
+            console.warn('Failed to reload backend blueprint:', blueprintErr);
+            // Continue anyway - the frontend schema is updated
+          }
+          
+          // Reload the graph from backend to get updated allowedchildren on nodes
+          try {
+            const graphData = await apiClient.getSessionGraph(sessionId);
+            const refreshedGraph = normalizeGraph(graphData.graph);
+            setCurrentGraph(refreshedGraph);
+            console.log('✓ Graph reloaded with updated node metadata');
+          } catch (graphErr) {
+            console.warn('Failed to reload graph after schema refresh:', graphErr);
+            // Schema is still updated, just nodes might have stale allowed_children
+          }
+          
+          alert('Template schema refreshed successfully!');
         } catch (error) {
           console.error('Failed to refresh blueprint:', error);
+          alert(`Failed to refresh template: ${error instanceof Error ? error.message : String(error)}`);
         }
       } },
       { label: '---', onClick: () => {} },
@@ -1395,6 +1520,7 @@ function App() {
       { label: 'Collapse All', onClick: handleCollapseAll },
     ],
     Tools: [
+      { label: 'Import from CSV...', onClick: () => setShowImportDialog(true) },
       { label: 'Template Editor', onClick: () => setShowTemplateEditor(true) },
       { label: 'Settings', onClick: () => setShowSettingsDialog(true) },
     ],
@@ -1479,8 +1605,9 @@ function App() {
                     setShowAssetCategoryDialog(true);
                     return;
                   }
-                  if (type === 'asset_reference') {
+                  if (type === 'asset_reference' || type === 'uses_camera_gear' || type === 'uses_car_part' || type === 'uses_tool') {
                     setAssetSelectParentId(nodeId);
+                    setAssetSelectNodeType(type);
                     setShowAssetSelectDialog(true);
                     return;
                   }
@@ -1509,6 +1636,100 @@ function App() {
                         alert('Failed to delete node');
                       });
                   }
+                } else if (action.startsWith('move:')) {
+                  const newParentId = action.split(':')[1];
+                  console.log(`Moving node ${nodeId} to new parent ${newParentId}`);
+                  safeExecuteCommand('MoveNode', {
+                    node_id: nodeId,
+                    new_parent_id: newParentId,
+                  })
+                    .then((result) => {
+                      const graph = normalizeGraph(result.graph ?? result);
+                      setCurrentGraph(graph);
+                      setIsDirty(result.is_dirty ?? true);
+                      console.log('✓ Node moved via API');
+                    })
+                    .catch((err) => {
+                      const msg = err instanceof Error ? err.message : String(err);
+                      console.error('Failed to move node:', err);
+                      // Extract error message from response
+                      const errorMsg = msg.includes('not allowed') ? msg : 'Failed to move node to this location';
+                      alert(`Cannot move node: ${errorMsg}`);
+                    });
+                } else if (action.startsWith('reorder:')) {
+                  // Handle reorder drop zone
+                  // action format: reorder:<targetNodeId>:<above|below>
+                  const [, targetNodeId, position] = action.split(':');
+                  const targetNode = storeNodes[targetNodeId];
+                  const draggedNode = storeNodes[nodeId];
+                  const normalizeId = (value: unknown) => (value === null || value === undefined ? null : String(value));
+                  const findParentId = (childId?: string): string | null => {
+                    if (!childId) return null;
+                    for (const candidate of Object.values(storeNodes ?? {})) {
+                      if (candidate?.children?.includes(childId)) {
+                        return candidate.id;
+                      }
+                    }
+                    return null;
+                  };
+
+                  const targetParentId = normalizeId(targetNode?.parent_id ?? findParentId(targetNodeId));
+                  const draggedParentId = normalizeId(draggedNode?.parent_id ?? findParentId(nodeId));
+                  if (!targetNode || !draggedNode || targetParentId !== draggedParentId) {
+                    alert('Invalid reorder operation');
+                    return;
+                  }
+
+                  const collectRootIds = (): string[] => {
+                    if (Array.isArray(treeNodes) && treeNodes.length > 0) {
+                      return treeNodes.map((root) => root.id);
+                    }
+                    const allNodes = Object.values(storeNodes ?? {});
+                    const childIds = new Set<string>();
+                    allNodes.forEach((n) => n.children?.forEach((childId) => childIds.add(childId)));
+                    return allNodes
+                      .filter((n) => !childIds.has(n.id))
+                      .map((n) => n.id);
+                  };
+
+                  let siblings: string[];
+                  if (targetParentId) {
+                    const parentNode = storeNodes[targetParentId];
+                    if (!parentNode || !Array.isArray(parentNode.children)) {
+                      alert('Parent not found for reorder');
+                      return;
+                    }
+                    siblings = parentNode.children.slice();
+                  } else {
+                    siblings = collectRootIds();
+                  }
+
+                  const filteredSiblings = siblings.filter((id) => id !== nodeId);
+                  const targetIndex = filteredSiblings.indexOf(targetNodeId);
+                  if (targetIndex === -1) {
+                    alert('Target position unavailable for reorder');
+                    return;
+                  }
+                  let newIndex = targetIndex;
+                  if (position === 'below') {
+                    newIndex += 1;
+                  }
+
+                  safeExecuteCommand('ReorderNode', {
+                    node_id: nodeId,
+                    new_index: newIndex,
+                  })
+                    .then((result) => {
+                      const graph = normalizeGraph(result.graph ?? result);
+                      setCurrentGraph(graph);
+                      setIsDirty(result.is_dirty ?? true);
+                      console.log('✓ Node reordered via API');
+                    })
+                    .catch((err) => {
+                      const msg = err instanceof Error ? err.message : String(err);
+                      console.error('Failed to reorder node:', err);
+                      alert(`Cannot reorder node: ${msg}`);
+                    });
                 }
               }}
             />
@@ -1678,11 +1899,12 @@ function App() {
       {showAssetSelectDialog && (
         <AssetSelectDialog
           title="Select Asset to Use"
-          assets={assetOptions()}
+          assets={assetOptions(assetSelectNodeType)}
           onConfirm={handleAssetSelectConfirm}
           onCancel={() => {
             setShowAssetSelectDialog(false);
             setAssetSelectParentId(null);
+            setAssetSelectNodeType('asset_reference');
           }}
         />
       )}
@@ -1696,6 +1918,18 @@ function App() {
             setShowAssetCategoryDialog(false);
             setAssetCategoryParentId(null);
           }}
+        />
+      )}
+
+      {showImportDialog && (
+        <ImportCsvDialog
+          isOpen={showImportDialog}
+          selectedNodeId={selectedNode}
+          nodes={storeNodes}
+          templateSchema={templateSchema}
+          ensureSession={ensureSession}
+          onClose={() => setShowImportDialog(false)}
+          onImported={handleImportSuccess}
         />
       )}
 

@@ -1,0 +1,19 @@
+id: markup_test
+version: '1.0'
+name: Markup Test Template
+description: Minimal template to exercise markup-aware endpoints.
+node_types:
+- id: root
+  label: Root
+  allowed_children: []
+  properties:
+  - id: name
+    label: Name
+    type: text
+    required: true
+  - id: script
+    label: Script
+    type: editor
+    markup_profile: script_default
+    required: false
+uuid: 1493c078-d9f2-49ab-93f4-b57b09a464be

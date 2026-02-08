@@ -1,6 +1,7 @@
 from typing import Dict, Any, List, Callable, Optional
 from uuid import UUID
 from backend.core.graph import ProjectGraph
+from backend.infra.template_persistence import get_templates_directory
 
 
 class GraphService:
@@ -103,10 +104,7 @@ class GraphService:
         import os
         import yaml
         
-        templates_dir = os.path.join(
-            os.path.dirname(__file__),
-            "../../data/templates"
-        )
+        templates_dir = get_templates_directory()
         
         template_names = []
         

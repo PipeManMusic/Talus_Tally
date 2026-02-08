@@ -1,16 +1,14 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type Dispatch, type SetStateAction, type DragEvent, type MouseEvent as ReactMouseEvent, type CSSProperties } from 'react';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import { mapNodeIndicator } from '../graph/mapNodeIndicator';
-import { mapNodeIcon } from '../graph/mapNodeIcon';
+import { mapNodeIcon, subscribeToIconCache } from '../graph/mapNodeIcon';
+import { API_BASE_URL } from '../../api/client';
+import type { TreeNode } from '../../utils/treeUtils';
 
-// Helper function to recolor SVG fills and strokes with the blueprint color
+// Helper to recolor SVG fills and strokes with the blueprint color
 const recolorSvg = (svgString: string, color: string | undefined): string => {
   if (!color || !svgString) return svgString;
-
   let recolored = svgString;
-
-  // Replace any fill or stroke attributes with the theme color,
-  // but preserve fill/stroke="none" or "transparent"
   recolored = recolored
     .replace(/fill="([^"]*)"/gi, (_match, value) => {
       const normalized = String(value).trim().toLowerCase();
@@ -32,74 +30,48 @@ const recolorSvg = (svgString: string, color: string | undefined): string => {
         return `stroke="${value}"`;
       }
       return `stroke="${color}"`;
-    })
-    .replace(/stroke='([^']*)'/gi, (_match, value) => {
-      const normalized = String(value).trim().toLowerCase();
-      if (normalized === 'none' || normalized === 'transparent') {
-        return `stroke='${value}'`;
-      }
-      return `stroke='${color}'`;
     });
-
-  // Replace inline style fill/stroke declarations with the theme color
-  // while preserving fill/stroke:none or transparent
-  recolored = recolored.replace(/style="([^"]*)"/g, (_match, styleContent) => {
-    let updatedStyle = String(styleContent)
-      .replace(/fill:\s*[^;]+/gi, (fillMatch) => {
-        const value = fillMatch.split(':')[1]?.trim().toLowerCase();
-        if (value === 'none' || value === 'transparent') {
-          return fillMatch;
-        }
-        return `fill:${color}`;
-      })
-      .replace(/stroke:\s*[^;]+/gi, (strokeMatch) => {
-        const value = strokeMatch.split(':')[1]?.trim().toLowerCase();
-        if (value === 'none' || value === 'transparent') {
-          return strokeMatch;
-        }
-        return `stroke:${color}`;
-      });
-    return `style="${updatedStyle}"`;
-  });
-
   return recolored;
 };
 
-export interface TreeNode {
-  id: string;
-  name: string;
-  type: string; // blueprint_type_id from template (e.g., 'project_root', 'phase', 'job', 'task', 'part')
-  children?: TreeNode[];
-  selected?: boolean;
-  indicator_id?: string;
-  indicator_set?: string;
-  icon_id?: string;
-  allowed_children?: string[];
-  // If properties is needed, define as below, else remove all usage
-  // properties?: { [key: string]: any };
-}
+const WILDCARD_CHILDREN = new Set(['*', '__any__', 'any']);
 
-interface TreeViewProps {
-  nodes: TreeNode[];
-  onSelectNode?: (nodeId: string) => void;
-  onExpandNode?: (nodeId: string) => void;
+type DragPayload = {
+  nodeId?: string;
+  nodeType?: string;
+  parent_id?: string | null;
+  descendants?: string[];
+};
+
+const globalDragPayloadRef: { current: DragPayload | null } = { current: null };
+
+const collectDescendantIds = (item: TreeNode): string[] => {
+  if (!Array.isArray(item.children) || item.children.length === 0) {
+    return [];
+  }
+  const results: string[] = [];
+  const stack: TreeNode[] = [...item.children];
+  while (stack.length > 0) {
+    const current = stack.pop();
+    if (!current) continue;
+    results.push(current.id);
+    if (Array.isArray(current.children) && current.children.length > 0) {
+      stack.push(...current.children);
+    }
+  }
+  return results;
+};
+
+type TreeItemProps = {
+  node: TreeNode;
+  level?: number;
+  onSelect?: (id: string) => void;
+  onExpand?: (id: string) => void;
   onContextMenu?: (nodeId: string, action: string) => void;
-  onBackgroundMenu?: (action: string) => void;
-  expandAllSignal?: number;
-  collapseAllSignal?: number;
+  expandedMap: Record<string, boolean>;
+  setExpandedMap: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
   getTypeLabel?: (typeId: string) => string;
-  expandedMap?: Record<string, boolean>;
-  setExpandedMap?: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
-}
-
-
-// Map node type to indicator type (customize as needed)
-const indicatorMap: Record<string, string> = {
-  project_root: 'empty',
-  phase: 'partial',
-  job: 'filled',
-  task: 'alert',
-  part: 'empty',
+  scrollContainerRef?: React.RefObject<HTMLDivElement | null>;
 };
 
 function TreeItem({
@@ -112,332 +84,536 @@ function TreeItem({
   setExpandedMap,
   getTypeLabel,
   scrollContainerRef,
-}: {
-  node: TreeNode;
-  level?: number;
-  onSelect?: (id: string) => void;
-  onExpand?: (id: string) => void;
-  onContextMenu?: (nodeId: string, action: string) => void;
-  expandedMap: Record<string, boolean>;
-  setExpandedMap: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
-  getTypeLabel?: (typeId: string) => string;
-  scrollContainerRef?: React.RefObject<HTMLDivElement | null>;
-}) {
-  const [indicatorSvg, setIndicatorSvg] = useState<string | undefined>(undefined);
-  const [indicatorText, setIndicatorText] = useState<string | undefined>(undefined);
+}: TreeItemProps) {
+  const [indicatorSvg, setIndicatorSvg] = useState<string | undefined>(() => (node as any).statusIndicatorSvg ?? undefined);
+  const [indicatorText, setIndicatorText] = useState<string | undefined>(() => (node as any).statusText ?? undefined);
   const [textColor, setTextColor] = useState<string | undefined>(undefined);
   const [textStyle, setTextStyle] = useState<string | undefined>(undefined);
   const [indicatorColor, setIndicatorColor] = useState<string | undefined>(undefined);
   const [iconSvg, setIconSvg] = useState<string | undefined>(undefined);
-  // Debug: log node props and expansion state
-  useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log('[TreeItem]', {
-      id: node.id,
-      name: node.name,
-      type: node.type,
-      allowed_children: node.allowed_children,
-      expanded: expandedMap[node.id],
-      childrenCount: node.children?.length,
-    });
-  }, [node, expandedMap]);
-  
-  // Debug: Log node fields to check for indicator metadata
-  useEffect(() => {
-    console.log('[TreeItem] Node fields:', {
-      id: node.id,
-      type: node.type,
-      name: node.name,
-      indicator_id: node.indicator_id,
-      indicator_set: node.indicator_set,
-      hasIndicatorId: !!node.indicator_id,
-      hasIndicatorSet: !!node.indicator_set
-    });
-  }, [node]);
-  
-  // Fetch indicator SVG/text and theme on mount and when indicator_id/set/type/name changes
-  useEffect(() => {
-    let mounted = true;
-    console.log('[TreeItem] Checking indicators for node:', node.id, {
-      indicator_id: node.indicator_id,
-      indicator_set: node.indicator_set,
-      willFetch: !!(node.indicator_id && node.indicator_set)
-    });
-    if (node.indicator_id && node.indicator_set) {
-      console.log('[TreeItem] Fetching indicator SVG for:', node.id);
-      // Fetch SVG
-      mapNodeIndicator(node).then((result) => {
-        if (mounted) {
-          setIndicatorSvg(result.statusIndicatorSvg);
-          setIndicatorText(result.statusText);
-          // Debug log SVG content
-          // eslint-disable-next-line no-console
-          console.log('[TreeView] indicatorSvg for node', node.id, ':', result.statusIndicatorSvg);
-        }
-      });
-      
-      // Fetch theme styling
-      const indicatorSet = node.indicator_set || 'status';
-      const indicatorId = node.indicator_id;
-      fetch(`http://localhost:5000/api/v1/indicators/${indicatorSet}/${indicatorId}/theme`)
-        .then(res => res.json())
-        .then(theme => {
-          if (mounted && theme) {
-            setTextColor(theme.text_color);
-            setTextStyle(theme.text_style);
-            setIndicatorColor(theme.indicator_color);
-          }
-        })
-        .catch(err => console.warn('Failed to fetch theme:', err));
-    } else {
-      setIndicatorSvg(undefined);
-      setIndicatorText(undefined);
-      setTextColor(undefined);
-      setTextStyle(undefined);
-      setIndicatorColor(undefined);
-    }
-    return () => { mounted = false; };
-  }, [node.indicator_id, node.indicator_set, node.type, node.name]);
-
-  useEffect(() => {
-    let mounted = true;
-    if (!node.icon_id) {
-      setIconSvg(undefined);
-      return () => { mounted = false; };
-    }
-    setIconSvg(undefined);
-    mapNodeIcon(node.icon_id).then((svg) => {
-      if (mounted) {
-        setIconSvg(svg);
-      }
-    });
-    return () => { mounted = false; };
-  }, [node.icon_id]);
+  const [dragOverDropZoneId, setDragOverDropZoneId] = useState<string | null>(null);
+  const [reorderDropZone, setReorderDropZone] = useState<'above' | 'below' | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [showFlyout, setShowFlyout] = useState(false);
-  const flyoutRef = useRef<HTMLDivElement>(null);
   const addButtonRef = useRef<HTMLButtonElement>(null);
-  const [flyoutPos, setFlyoutPos] = useState<{ x: number; y: number } | null>(null);
-    // Close flyout on outside click
-    useEffect(() => {
-      if (!showFlyout) return;
-      function handleClick(e: MouseEvent) {
-        if (flyoutRef.current && !flyoutRef.current.contains(e.target as Node)) {
-          setShowFlyout(false);
-        }
-      }
-      document.addEventListener('mousedown', handleClick);
-      return () => document.removeEventListener('mousedown', handleClick);
-    }, [showFlyout]);
+  const [iconCacheVersion, setIconCacheVersion] = useState(0);
+  const rowRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-      if (!showFlyout) return;
-      
-      let animationFrameId: number;
-      
-      const updatePosition = () => {
-        const button = addButtonRef.current;
-        if (!button) return;
+  const parentId = (node as any).parent_id ?? null;
+  const indicatorDefaults: Record<string, string> = {
+    project_root: 'empty',
+    season: 'partial',
+    episode: 'partial',
+    task: 'partial',
+    footage: 'filled',
+  };
+  const iconDefaults: Record<string, string> = {
+    project_root: 'film',
+    assets: 'archive-box',
+    inventory_root: 'archive-box',
+    camera_gear_inventory: 'camera',
+    camera_gear_category: 'camera',
+    camera_gear_asset: 'camera',
+    parts_inventory: 'cog',
+    part_category: 'cog',
+    part_asset: 'cog',
+    car_parts_inventory: 'cog',
+    tools_inventory: 'cog',
+    tool_category: 'cog',
+    tool_asset: 'cog',
+    vehicles: 'truck',
+    vehicle_asset: 'truck',
+    phase: 'calendar-days',
+    season: 'calendar-days',
+    episode: 'video-camera',
+    task: 'clipboard-document-check',
+    footage: 'play-circle',
+    location_scout: 'map-pin',
+  };
 
-        const rect = button.getBoundingClientRect();
-        const flyout = flyoutRef.current;
-        const flyoutRect = flyout?.getBoundingClientRect();
-        const padding = 8;
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
+  const indicatorId = (node as any).indicator_id ?? indicatorDefaults[node.type] ?? undefined;
+  const indicatorSet = (node as any).indicator_set ?? 'status';
+  const iconSourceId = (node as any).icon_id ?? iconDefaults[node.type] ?? node.type ?? undefined;
 
-        let x = rect.left;
-        let y = rect.bottom + 6;
+  useEffect(() => {
+    setIndicatorSvg((node as any).statusIndicatorSvg ?? undefined);
+    setIndicatorText((node as any).statusText ?? undefined);
+  }, [node.statusIndicatorSvg, node.statusText]);
 
-        if (flyoutRect) {
-          if (x + flyoutRect.width + padding > viewportWidth) {
-            x = rect.right - flyoutRect.width;
-          }
-          if (x < padding) {
-            x = padding;
-          }
+  useEffect(() => {
+    const unsubscribe = subscribeToIconCache(() => {
+      setIconSvg(undefined);
+      setIconCacheVersion((version) => version + 1);
+    });
+    return unsubscribe;
+  }, []);
 
-          if (y + flyoutRect.height + padding > viewportHeight) {
-            y = rect.top - flyoutRect.height - 6;
-          }
-          if (y < padding) {
-            y = padding;
-          }
-        }
-
-        setFlyoutPos({ x, y });
-        
-        // Continue updating position on every frame while flyout is open
-        animationFrameId = requestAnimationFrame(updatePosition);
-      };
-
-      // Start the animation frame loop
-      animationFrameId = requestAnimationFrame(updatePosition);
-
+  useEffect(() => {
+    let isMounted = true;
+    if (!iconSourceId) {
+      setIconSvg(undefined);
       return () => {
-        if (animationFrameId) {
-          cancelAnimationFrame(animationFrameId);
-        }
+        isMounted = false;
       };
-    }, [showFlyout]);
-  const hasChildren = node.children && node.children.length > 0;
-  const allowedChildren = node.allowed_children;
-  // Recognize inventory types by suffix pattern
+    }
+
+    mapNodeIcon(iconSourceId)
+      .then((icon) => {
+        if (isMounted) setIconSvg(icon);
+      })
+      .catch((err) => {
+        console.warn('[TreeView] Failed to load icon', iconSourceId, err);
+        if (isMounted) setIconSvg(undefined);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [iconSourceId, iconCacheVersion]);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (!indicatorId || !indicatorSet) {
+      if (isMounted) {
+        setIndicatorSvg(undefined);
+        setIndicatorText(undefined);
+      }
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    mapNodeIndicator({ ...node, indicator_id: indicatorId, indicator_set: indicatorSet })
+      .then((indicator) => {
+        if (!isMounted || !indicator) return;
+        setIndicatorSvg(indicator.statusIndicatorSvg ?? (node as any).statusIndicatorSvg ?? undefined);
+        setIndicatorText(indicator.statusText ?? (node as any).statusText ?? undefined);
+        if (indicator.indicatorColor || indicator.textColor || indicator.textStyle) {
+          setIndicatorColor(indicator.indicatorColor ?? undefined);
+          setTextColor(indicator.textColor ?? undefined);
+          setTextStyle(indicator.textStyle ?? undefined);
+        }
+      })
+      .catch((err) => {
+        console.warn('[TreeView] Failed to load indicator SVG', indicatorId, err);
+        if (isMounted) {
+          setIndicatorSvg((node as any).statusIndicatorSvg ?? undefined);
+          setIndicatorText((node as any).statusText ?? undefined);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [node.id, indicatorId, indicatorSet]);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (!indicatorId || !indicatorSet) {
+      if (isMounted) {
+        setIndicatorColor(undefined);
+        setTextColor(undefined);
+        setTextStyle(undefined);
+      }
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    const themeUrl = `${API_BASE_URL}/api/v1/indicators/${indicatorSet}/${indicatorId}/theme`;
+    fetch(themeUrl)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((theme) => {
+        if (!isMounted) return;
+        if (!theme) {
+          setIndicatorColor(undefined);
+          setTextColor(undefined);
+          setTextStyle(undefined);
+          return;
+        }
+
+        setIndicatorColor(theme.indicator_color ?? undefined);
+        setTextColor(theme.text_color ?? theme.indicator_color ?? undefined);
+        setTextStyle(theme.text_style ?? undefined);
+      })
+      .catch((err) => {
+        console.warn('[TreeView] Failed to load indicator theme', indicatorId, err);
+        if (isMounted) {
+          setIndicatorColor(undefined);
+          setTextColor(undefined);
+          setTextStyle(undefined);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [indicatorId, indicatorSet]);
+
+  const hasChildren = Array.isArray(node.children) && node.children.length > 0;
+  const allowedChildrenList = Array.isArray(node.allowed_children) ? node.allowed_children : [];
+  const normalizedAllowedChildren = allowedChildrenList.map((child) => String(child).trim().toLowerCase());
+  const acceptsChildType = (childType?: string | null): boolean => {
+    if (!childType) return false;
+    if (normalizedAllowedChildren.length === 0) return true;
+    const normalized = childType.trim().toLowerCase();
+    return normalizedAllowedChildren.some((allowed) => allowed === normalized || WILDCARD_CHILDREN.has(allowed));
+  };
+  const hasAllowedChildren = normalizedAllowedChildren.length > 0;
   const isInventoryType = (type: string) => type.endsWith('_inventory') || type === 'assets' || type === 'asset_category';
-  const allowedChildrenList = allowedChildren || [];
-  const hasAllowedChildren = allowedChildrenList.length > 0;
   const showAssetCategoryAction = allowedChildrenList.some((child) => isInventoryType(child));
   const standardTypes = allowedChildrenList.filter((child) => !isInventoryType(child));
   const handleMenuAction = (action: string) => {
     onContextMenu?.(node.id, action);
     setContextMenu(null);
   };
-  // Prefer backend-driven indicator_id and indicator_set, fallback to type map
-  const resolvedIndicatorId = node.indicator_id || indicatorMap[node.type] || 'empty';
-  const resolvedIndicatorSet = node.indicator_set || 'status';
+
   const expanded = expandedMap[node.id] ?? false;
-  const iconColor = textColor || indicatorColor;
+  const fallbackColor = 'var(--color-fg-primary)';
+  const iconColor = textColor || indicatorColor || fallbackColor;
+  const indicatorDisplayColor = indicatorColor || textColor || fallbackColor;
+  const targetParentId = parentId === null || typeof parentId === 'undefined' ? null : String(parentId);
 
-  const formatTypeLabel = (type: string) =>
-    type
-      .replace(/_/g, ' ')
-      .replace(/\b\w/g, (char) => char.toUpperCase());
-  const resolveTypeLabel = (type: string) =>
-    getTypeLabel?.(type) ?? formatTypeLabel(type);
+  const clearDragState = () => {
+    setDragOverDropZoneId(null);
+    setReorderDropZone(null);
+  };
 
-  const groupedChildren = (node.children || []).reduce<Record<string, TreeNode[]>>((acc, child) => {
-    const key = child.type || 'unknown';
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(child);
-    return acc;
-  }, {});
-  const groupedChildTypes = Object.keys(groupedChildren);
+  const computeDropZone = (clientY: number): 'above' | 'below' | 'inside' => {
+    const row = rowRef.current;
+    if (!row) return 'inside';
+    const rect = row.getBoundingClientRect();
+    const offsetY = clientY - rect.top;
+    if (offsetY < rect.height * 0.25) return 'above';
+    if (offsetY > rect.height * 0.75) return 'below';
+    return 'inside';
+  };
 
-  useEffect(() => {
-      let mounted = true;
-      const hasIndicatorMeta = !!(node.indicator_id && node.indicator_set);
-      console.log('[TreeItem] Checking indicators for node:', node.id, {
-        indicator_id: node.indicator_id,
-        indicator_set: node.indicator_set,
-        willFetchSvg: hasIndicatorMeta,
-        resolvedIndicator: `${resolvedIndicatorSet}/${resolvedIndicatorId}`,
+  const localDragPayloadRef = useRef<DragPayload | null>(null);
+
+  const parseDragPayload = (event: DragEvent<HTMLDivElement>) => {
+    let payload = event.dataTransfer.getData('application/json');
+    if (!payload) {
+      payload = event.dataTransfer.getData('text/plain');
+    }
+    if (!payload) {
+      return globalDragPayloadRef.current ?? localDragPayloadRef.current;
+    }
+    try {
+      const parsed = JSON.parse(payload) as DragPayload;
+      globalDragPayloadRef.current = parsed;
+      localDragPayloadRef.current = parsed;
+      return parsed;
+    } catch (err) {
+      console.warn('[TreeView] Could not parse drag payload', err);
+      return globalDragPayloadRef.current ?? localDragPayloadRef.current;
+    }
+  };
+
+  const normalizeParentId = (value: unknown): string | null => {
+    if (value === null || typeof value === 'undefined') {
+      return null;
+    }
+    return String(value);
+  };
+
+  const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
+    const info = parseDragPayload(event);
+    if (!info) {
+      console.debug('[TreeView] dragOver ignored: missing payload', { targetId: node.id });
+      clearDragState();
+      return;
+    }
+
+    const draggedId = info.nodeId;
+    const draggedType = info.nodeType;
+    const draggedParentId = normalizeParentId(info.parent_id);
+    const draggedDescendants = Array.isArray(info.descendants) ? info.descendants : [];
+    if (!draggedId || draggedId === node.id) {
+      console.debug('[TreeView] dragOver ignored: self drop blocked', { draggedId, targetId: node.id });
+      clearDragState();
+      return;
+    }
+    if (draggedDescendants.includes(node.id)) {
+      console.debug('[TreeView] dragOver ignored: descendant blocked', { draggedId, targetId: node.id });
+      clearDragState();
+      return;
+    }
+
+    const rect = rowRef.current?.getBoundingClientRect();
+    let dropZone = computeDropZone(event.clientY);
+    let isValid = false;
+
+    if (dropZone === 'inside') {
+      if (acceptsChildType(draggedType)) {
+        isValid = true;
+      } else if (draggedParentId === targetParentId) {
+        if (rect) {
+          dropZone = event.clientY < rect.top + rect.height / 2 ? 'above' : 'below';
+        } else {
+          dropZone = 'below';
+        }
+        isValid = true;
+      }
+    } else if (draggedParentId === targetParentId) {
+      isValid = true;
+    }
+
+    if (!isValid) {
+      console.debug('[TreeView] dragOver ignored: invalid target pairing', {
+        draggedId,
+        draggedType,
+        targetId: node.id,
+        dropZone,
+        draggedParentId,
+        targetParentId,
       });
-      if (hasIndicatorMeta) {
-        console.log('[TreeItem] Fetching indicator SVG for:', node.id);
-        mapNodeIndicator(node).then((result) => {
-          if (mounted) {
-            setIndicatorSvg(result.statusIndicatorSvg);
-            setIndicatorText(result.statusText);
-            // eslint-disable-next-line no-console
-            console.log('[TreeView] indicatorSvg for node', node.id, ':', result.statusIndicatorSvg);
-          }
-        });
-      } else {
-        setIndicatorSvg(undefined);
-        setIndicatorText(undefined);
-      }
+      clearDragState();
+      return;
+    }
 
-      if (resolvedIndicatorId && resolvedIndicatorSet) {
-        console.log('[TreeItem] Applying theme for indicator', resolvedIndicatorSet, resolvedIndicatorId);
-        fetch(`http://localhost:5000/api/v1/indicators/${resolvedIndicatorSet}/${resolvedIndicatorId}/theme`)
-          .then(res => res.json())
-          .then(theme => {
-            if (mounted && theme) {
-              setTextColor(theme.text_color ?? theme.indicator_color);
-              setTextStyle(theme.text_style);
-              setIndicatorColor(theme.indicator_color);
-            }
-          })
-          .catch(err => {
-            console.warn('Failed to fetch theme:', err);
-            if (mounted) {
-              setTextColor(undefined);
-              setTextStyle(undefined);
-              setIndicatorColor(undefined);
-            }
-          });
-      } else {
-        setTextColor(undefined);
-        setTextStyle(undefined);
-        setIndicatorColor(undefined);
-      }
+    console.debug('[TreeView] dragOver valid', {
+      draggedId,
+      draggedType,
+      targetId: node.id,
+      dropZone,
+    });
+    event.preventDefault();
+    event.stopPropagation();
+    event.dataTransfer.dropEffect = 'move';
 
-      return () => { mounted = false; };
-    }, [node.indicator_id, node.indicator_set, node.type, node.name, resolvedIndicatorId, resolvedIndicatorSet]);
-  return (
-    <>
-      <div
-      onClick={() => onSelect?.(node.id)}
-      onContextMenu={(e) => {
-        e.preventDefault();
-        setContextMenu({ x: e.clientX, y: e.clientY });
-      }}
-      className={`flex items-center gap-1 px-2 py-1.5 rounded-sm cursor-pointer transition-colors ${
-        node.selected
-          ? 'bg-bg-selection border-l-4 border-accent-primary'
+    if (dragOverDropZoneId !== node.id) {
+      setDragOverDropZoneId(node.id);
+    }
+
+    const nextReorder = dropZone === 'inside' ? null : dropZone;
+    if (reorderDropZone !== nextReorder) {
+      setReorderDropZone(nextReorder);
+    }
+  };
+
+  const handleDragLeave = (event: DragEvent<HTMLDivElement>) => {
+    const related = event.relatedTarget as Node | null;
+    if (rowRef.current && related && rowRef.current.contains(related)) {
+      return;
+    }
+    clearDragState();
+  };
+
+  const handleDrop = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const info = parseDragPayload(event);
+    clearDragState();
+    globalDragPayloadRef.current = null;
+    localDragPayloadRef.current = null;
+
+    if (!info) {
+      console.warn('[TreeView] drop ignored: missing payload', { targetId: node.id });
+      return;
+    }
+
+    const droppedId = info.nodeId;
+    const droppedType = info.nodeType;
+    const droppedParentId = normalizeParentId(info.parent_id);
+    const droppedDescendants = Array.isArray(info.descendants) ? info.descendants : [];
+    if (!droppedId || droppedId === node.id) {
+      console.debug('[TreeView] drop ignored: self drop blocked', { droppedId, targetId: node.id });
+      return;
+    }
+    if (droppedDescendants.includes(node.id)) {
+      console.debug('[TreeView] drop ignored: descendant blocked', { droppedId, targetId: node.id });
+      return;
+    }
+
+    const rect = rowRef.current?.getBoundingClientRect();
+    let dropZone = reorderDropZone ?? computeDropZone(event.clientY);
+    if (dropZone === 'inside' && !acceptsChildType(droppedType) && droppedParentId === targetParentId) {
+      if (rect) {
+        dropZone = event.clientY < rect.top + rect.height / 2 ? 'above' : 'below';
+      } else {
+        dropZone = 'below';
+      }
+    }
+
+    if (dropZone === 'above' || dropZone === 'below') {
+      console.debug('[TreeView] drop reorder', { droppedId, targetId: node.id, dropZone });
+      onContextMenu?.(droppedId, `reorder:${node.id}:${dropZone}`);
+    } else {
+      if (!acceptsChildType(droppedType)) {
+        console.debug('[TreeView] drop rejected: child type not accepted', { droppedId, droppedType, targetId: node.id });
+        return;
+      }
+      if (droppedParentId === node.id) {
+        console.debug('[TreeView] drop ignored: already child of target', { droppedId, targetId: node.id });
+        return;
+      }
+      console.debug('[TreeView] drop move', { droppedId, targetId: node.id });
+      onContextMenu?.(droppedId, `move:${node.id}`);
+    }
+  };
+
+  const resolveTypeLabel = (type: string) => (getTypeLabel ? getTypeLabel(type) : type);
+
+  const handleDragStart = (event: DragEvent<HTMLDivElement | HTMLButtonElement>) => {
+    event.stopPropagation();
+    event.dataTransfer.effectAllowed = 'move';
+    const payload: DragPayload = {
+      nodeId: node.id,
+      nodeType: node.type,
+      parent_id: parentId,
+      descendants: collectDescendantIds(node),
+    };
+    console.debug('[TreeView] dragStart', payload);
+    globalDragPayloadRef.current = payload;
+    localDragPayloadRef.current = payload;
+    const json = JSON.stringify(payload);
+    event.dataTransfer.setData('application/json', json);
+    event.dataTransfer.setData('text/plain', json);
+  };
+
+  const handleDragEnd = () => {
+    console.debug('[TreeView] dragEnd', { nodeId: node.id });
+    clearDragState();
+    if (globalDragPayloadRef.current?.nodeId === node.id) {
+      globalDragPayloadRef.current = null;
+    }
+    localDragPayloadRef.current = null;
+  };
+
+  const isActiveDropTarget = dragOverDropZoneId === node.id;
+  const isMoveTarget = isActiveDropTarget && reorderDropZone === null;
+  const isReorderAbove = isActiveDropTarget && reorderDropZone === 'above';
+  const isReorderBelow = isActiveDropTarget && reorderDropZone === 'below';
+
+  const rowClasses = [
+    'relative flex items-center gap-1 px-2 py-1.5 rounded-sm cursor-pointer transition-colors border-l-2 border-transparent',
+    (typeof (node as any).selected === 'boolean' && (node as any).selected)
+      ? 'bg-bg-selection border-l-4 border-accent-primary shadow-inner'
+      : isMoveTarget
+        ? 'bg-accent-primary/20 border-l-4 border-accent-primary shadow-inner ring-2 ring-accent-primary/70'
+        : isActiveDropTarget
+          ? 'bg-accent-primary/10 border-l-2 border-accent-primary/60 ring-1 ring-accent-primary/40'
           : 'hover:bg-bg-selection'
-      }`}
-      data-testid="tree-item-row"
+  ].join(' ');
+
+  const renderReorderLine = (position: 'above' | 'below') => (
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-x-0 z-20"
+      style={{ [position === 'above' ? 'top' : 'bottom']: '-1px' } as CSSProperties }
+    >
+      <div className="mx-2 h-0.5 rounded-full bg-accent-primary shadow-sm" />
+    </div>
+  );
+
+  return (
+    <div className="relative flex flex-col">
+      {isReorderAbove && renderReorderLine('above')}
+      <div
+        ref={rowRef}
+        className={rowClasses}
+        data-testid="tree-item-row"
+        onClick={() => onSelect?.(node.id)}
+        onContextMenu={(event) => {
+          event.preventDefault();
+          setContextMenu({ x: event.clientX, y: event.clientY });
+        }}
+        onDragEnter={handleDragOver}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
       >
-        {/* Add Node (+) Button on the left */}
         {hasAllowedChildren && (
-          <button
-            ref={addButtonRef}
-            className="mr-1 px-1 py-0.5 rounded bg-bg-light border border-border hover:bg-accent-primary hover:text-fg-primary"
-            title="Add child node"
-            onClick={e => {
-              e.stopPropagation();
-              setShowFlyout((v) => !v);
-            }}
-            aria-label="Add child node"
-            data-testid="add-child-btn"
-          >
-            +
-          </button>
+          <>
+            <button
+              ref={addButtonRef}
+              className="mr-1 px-1 py-0.5 rounded bg-bg-light border border-border hover:bg-accent-primary hover:text-fg-primary"
+              title="Add child node"
+              onClick={(event) => {
+                event.stopPropagation();
+                setShowFlyout((value) => !value);
+              }}
+              aria-label="Add child node"
+              data-testid="add-child-btn"
+            >
+              +
+            </button>
+            {showFlyout && (
+              <div
+                className="fixed z-50 bg-bg-light border border-border rounded shadow-lg mt-1"
+                style={{
+                  left: (addButtonRef.current?.getBoundingClientRect().left ?? 0) + window.scrollX,
+                  top: (addButtonRef.current?.getBoundingClientRect().bottom ?? 0) + window.scrollY,
+                }}
+                onMouseLeave={() => setShowFlyout(false)}
+              >
+                {standardTypes.map((type: string) => (
+                  <button
+                    key={type}
+                    className="block w-full text-left px-4 py-2 text-sm text-fg-primary hover:bg-bg-selection"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setShowFlyout(false);
+                      handleMenuAction(`add:${type}`);
+                    }}
+                  >
+                    ➕ Add {resolveTypeLabel(type)}
+                  </button>
+                ))}
+                {showAssetCategoryAction && (
+                  <button
+                    className="block w-full text-left px-4 py-2 text-sm text-fg-primary hover:bg-bg-selection"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setShowFlyout(false);
+                      handleMenuAction('add-asset-category');
+                    }}
+                  >
+                    ➕ Add Asset Category
+                  </button>
+                )}
+              </div>
+            )}
+          </>
         )}
 
-        {hasChildren && (
+        {hasChildren ? (
           <button
-            onClick={(e) => {
-              e.stopPropagation();
+            onClick={(event) => {
+              event.stopPropagation();
               setExpandedMap((prev) => ({ ...prev, [node.id]: !expanded }));
               onExpand?.(node.id);
             }}
             className="p-0 hover:text-accent-hover"
             data-testid="expand-toggle-btn"
           >
-            {expanded ? (
-              <ChevronDown size={14} />
-            ) : (
-              <ChevronRight size={14} />
-            )}
+            {expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
           </button>
+        ) : (
+          <div className="w-4" />
         )}
 
-        {!hasChildren && <div className="w-4" />}
-
         <span className="flex items-center gap-2">
-          {iconSvg && (
-            <span
-              className="node-icon-svg h-4 w-4 flex-shrink-0"
-              // eslint-disable-next-line react/no-danger
-              dangerouslySetInnerHTML={{ __html: recolorSvg(iconSvg, iconColor) }}
-            />
-          )}
-          {indicatorSvg ? (
-            <span
-              className="status-indicator-svg"
-              // eslint-disable-next-line react/no-danger
-              dangerouslySetInnerHTML={{ __html: recolorSvg(indicatorSvg, indicatorColor) }}
-            />
-          ) : indicatorText ? (
-            <span className="status-indicator-text text-xs opacity-80">{indicatorText}</span>
-          ) : (
-            <span className="status-indicator-text text-xs opacity-40">•</span>
-          )}
+          <span className="node-icon-svg h-4 w-4 flex-shrink-0">
+            {iconSvg ? (
+              <span dangerouslySetInnerHTML={{ __html: recolorSvg(iconSvg, iconColor) }} />
+            ) : (
+              <span className="opacity-30">□</span>
+            )}
+          </span>
+          <span className="status-indicator-svg">
+            {indicatorSvg ? (
+              <span dangerouslySetInnerHTML={{ __html: recolorSvg(indicatorSvg, indicatorDisplayColor) }} />
+            ) : indicatorText ? (
+              <span className="status-indicator-text text-xs opacity-80">{indicatorText}</span>
+            ) : (
+              <span className="status-indicator-text text-xs opacity-40">•</span>
+            )}
+          </span>
         </span>
-        {/* Always show node label with theme styling */}
-        <span 
+
+        <span
           className="text-sm truncate"
           style={{
             color: textColor,
@@ -447,107 +623,135 @@ function TreeItem({
         >
           {node.name || node.type || node.id}
         </span>
+
+        <button
+          draggable
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          className="ml-auto opacity-60 hover:opacity-100 cursor-grab"
+          title="Drag to move or reorder"
+          aria-label="Drag handle"
+          tabIndex={-1}
+        >
+          <span className="icon">≡</span>
+        </button>
+
+        {contextMenu && (
+          <div
+            className="fixed bg-bg-light border border-border rounded-sm shadow-lg z-50 min-w-max"
+            style={{ top: `${contextMenu.y}px`, left: `${contextMenu.x}px` }}
+            onMouseLeave={() => setContextMenu(null)}
+          >
+            {hasAllowedChildren && showAssetCategoryAction && (
+              <button
+                onClick={() => handleMenuAction('add-asset-category')}
+                className="w-full text-left px-4 py-2 text-sm text-fg-primary hover:bg-bg-selection transition-colors first:rounded-t-sm"
+              >
+                ➕ Add Asset Category
+              </button>
+            )}
+            {hasAllowedChildren && standardTypes.map((type: string) => (
+              <button
+                key={type}
+                onClick={() => handleMenuAction(`add:${type}`)}
+                className="w-full text-left px-4 py-2 text-sm text-fg-primary hover:bg-bg-selection transition-colors first:rounded-t-sm"
+              >
+                ➕ Add {resolveTypeLabel(type)}
+              </button>
+            ))}
+            <button
+              onClick={() => handleMenuAction('delete')}
+              className="w-full text-left px-4 py-2 text-sm text-fg-primary hover:bg-status-danger hover:text-fg-primary transition-colors last:rounded-b-sm"
+            >
+              🗑️ Delete
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Flyout for child type selection */}
-      {showFlyout && hasAllowedChildren && flyoutPos && (
-        <div
-          ref={flyoutRef}
-          className="fixed z-50 bg-bg-light border border-border rounded shadow-lg p-2"
-          style={{ top: `${flyoutPos.y}px`, left: `${flyoutPos.x}px` }}
-        >
-          {showAssetCategoryAction && (
-            <button
-              className="block w-full text-left px-2 py-1 hover:bg-accent-primary hover:text-fg-primary rounded"
-              onClick={() => {
-                setShowFlyout(false);
-                if (onContextMenu) onContextMenu(node.id, 'add-asset-category');
-              }}
-            >
-              Add Asset Category
-            </button>
-          )}
-          {standardTypes.map((type: string) => (
-            <button
-              key={type}
-              className="block w-full text-left px-2 py-1 hover:bg-accent-primary hover:text-fg-primary rounded"
-              onClick={() => {
-                setShowFlyout(false);
-                if (onContextMenu) onContextMenu(node.id, `add:${type}`);
-              }}
-            >
-              Add {resolveTypeLabel(type)}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Context Menu */}
-      {contextMenu && (
-        <div
-          className="fixed bg-bg-light border border-border rounded-sm shadow-lg z-50 min-w-max"
-          style={{ top: `${contextMenu.y}px`, left: `${contextMenu.x}px` }}
-          onMouseLeave={() => setContextMenu(null)}
-        >
-          {hasAllowedChildren && showAssetCategoryAction && (
-            <button
-              onClick={() => handleMenuAction('add-asset-category')}
-              className="w-full text-left px-4 py-2 text-sm text-fg-primary hover:bg-bg-selection transition-colors first:rounded-t-sm"
-            >
-              ➕ Add Asset Category
-            </button>
-          )}
-          {hasAllowedChildren && standardTypes.map((type: string) => (
-            <button
-              key={type}
-              onClick={() => handleMenuAction(`add:${type}`)}
-              className="w-full text-left px-4 py-2 text-sm text-fg-primary hover:bg-bg-selection transition-colors first:rounded-t-sm"
-            >
-              ➕ Add {resolveTypeLabel(type)}
-            </button>
-          ))}
-          <button
-            onClick={() => handleMenuAction('delete')}
-            className="w-full text-left px-4 py-2 text-sm text-fg-primary hover:bg-status-danger hover:text-fg-primary transition-colors last:rounded-b-sm"
-          >
-            🗑️ Delete
-          </button>
-        </div>
-      )}
+      {isReorderBelow && renderReorderLine('below')}
 
       {expanded && hasChildren && (
-        <div className="ml-2 border-l border-border">
-          {groupedChildTypes.map((type) => (
-            <div key={`${node.id}-${type}`} className="mt-2">
-              <div
-                className="px-2 py-1 text-xs font-semibold uppercase tracking-wide text-[var(--color-fg-secondary)]"
-                data-testid="tree-type-header"
-              >
-                  {resolveTypeLabel(type)}
+        <div className="ml-2 border-l border-border pl-3">
+          {(() => {
+            const groups: Array<{ key: string; title: string; items: TreeNode[] }> = [];
+            const typeMap = new Map<string, { title: string; items: TreeNode[] }>();
+
+            node.children?.forEach((child) => {
+              const rawType = child.type ?? 'Unknown';
+              const normalized = rawType.trim().toLowerCase();
+              if (!typeMap.has(normalized)) {
+                typeMap.set(normalized, {
+                  title: resolveTypeLabel(rawType),
+                  items: [],
+                });
+              }
+              typeMap.get(normalized)?.items.push(child);
+            });
+
+            const consumed = new Set<string>();
+            allowedChildrenList.forEach((typeId) => {
+              const normalized = String(typeId ?? '').trim().toLowerCase();
+              if (!normalized || consumed.has(normalized)) {
+                return;
+              }
+              const group = typeMap.get(normalized);
+              if (!group || group.items.length === 0) {
+                return;
+              }
+              groups.push({ key: normalized, title: resolveTypeLabel(String(typeId)), items: group.items });
+              consumed.add(normalized);
+            });
+
+            typeMap.forEach((group, normalized) => {
+              if (consumed.has(normalized) || group.items.length === 0) {
+                return;
+              }
+              groups.push({ key: normalized, title: group.title, items: group.items });
+            });
+
+            return groups.map((group) => (
+              <div key={`${node.id}-${group.key}`} className="mb-3 last:mb-0">
+                <div className="text-[11px] font-semibold uppercase tracking-wide text-fg-secondary mb-1">
+                  {group.title}
+                </div>
+                <div className="space-y-1">
+                  {group.items.map((child) => (
+                    <TreeItem
+                      key={child.id}
+                      node={child}
+                      level={level + 1}
+                      onSelect={onSelect}
+                      onExpand={onExpand}
+                      onContextMenu={onContextMenu}
+                      expandedMap={expandedMap}
+                      setExpandedMap={setExpandedMap}
+                      getTypeLabel={getTypeLabel}
+                      scrollContainerRef={scrollContainerRef}
+                    />
+                  ))}
+                </div>
               </div>
-              <div>
-                {groupedChildren[type].map((child) => (
-                  <TreeItem
-                    key={child.id}
-                    node={child}
-                    level={level + 1}
-                    onSelect={onSelect}
-                    onExpand={onExpand}
-                    onContextMenu={onContextMenu}
-                    expandedMap={expandedMap}
-                    setExpandedMap={setExpandedMap}
-                    getTypeLabel={getTypeLabel}
-                    scrollContainerRef={scrollContainerRef}
-                  />
-                ))}
-              </div>
-            </div>
-          ))}
+            ));
+          })()}
         </div>
       )}
-    </>
+    </div>
   );
 }
+
+type TreeViewProps = {
+  nodes: TreeNode[];
+  onSelectNode?: (id: string) => void;
+  onExpandNode?: (id: string) => void;
+  onContextMenu?: (id: string, action: string) => void;
+  onBackgroundMenu?: (action: string) => void;
+  expandAllSignal?: number;
+  collapseAllSignal?: number;
+  getTypeLabel?: (type: string) => string;
+  expandedMap?: Record<string, boolean>;
+  setExpandedMap?: Dispatch<SetStateAction<Record<string, boolean>>>;
+};
 
 export function TreeView({
   nodes,
@@ -564,23 +768,19 @@ export function TreeView({
   const [backgroundMenu, setBackgroundMenu] = useState<{ x: number; y: number } | null>(null);
   const [internalExpandedMap, setInternalExpandedMap] = useState<Record<string, boolean>>({});
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  
-  // Track previous signal values
   const prevExpandSignalRef = useRef<number | undefined>(undefined);
   const prevCollapseSignalRef = useRef<number | undefined>(undefined);
 
-  // Use external expandedMap if provided, otherwise use internal state
   const expandedMap = externalExpandedMap || internalExpandedMap;
   const setExpandedMap = externalSetExpandedMap || setInternalExpandedMap;
 
-  // Helper function to recursively get all node IDs
   const getAllNodeIds = (nodeList: TreeNode[]): string[] => {
     const ids: string[] = [];
-    const traverse = (nodes: TreeNode[]) => {
-      nodes.forEach(node => {
-        ids.push(node.id);
-        if (node.children) {
-          traverse(node.children);
+    const traverse = (list: TreeNode[]) => {
+      list.forEach((item) => {
+        ids.push(item.id);
+        if (Array.isArray(item.children) && item.children.length > 0) {
+          traverse(item.children);
         }
       });
     };
@@ -588,42 +788,39 @@ export function TreeView({
     return ids;
   };
 
-  // Handle expand all signal
   useEffect(() => {
-    if (expandAllSignal !== undefined && 
-        expandAllSignal > 0 && 
-        expandAllSignal !== prevExpandSignalRef.current) {
+    if (
+      expandAllSignal !== undefined &&
+      expandAllSignal > 0 &&
+      expandAllSignal !== prevExpandSignalRef.current
+    ) {
       prevExpandSignalRef.current = expandAllSignal;
       const allNodeIds = getAllNodeIds(nodes);
-      const newExpandedMap: Record<string, boolean> = {};
-      allNodeIds.forEach(id => {
-        newExpandedMap[id] = true;
+      const nextExpanded: Record<string, boolean> = {};
+      allNodeIds.forEach((id) => {
+        nextExpanded[id] = true;
       });
-      setExpandedMap(newExpandedMap);
-      console.log('✓ Expand all', { signal: expandAllSignal, nodeCount: allNodeIds.length });
+      setExpandedMap(nextExpanded);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [expandAllSignal]);
+  }, [expandAllSignal, nodes, setExpandedMap]);
 
-  // Handle collapse all signal
   useEffect(() => {
-    if (collapseAllSignal !== undefined && 
-        collapseAllSignal > 0 && 
-        collapseAllSignal !== prevCollapseSignalRef.current) {
+    if (
+      collapseAllSignal !== undefined &&
+      collapseAllSignal > 0 &&
+      collapseAllSignal !== prevCollapseSignalRef.current
+    ) {
       prevCollapseSignalRef.current = collapseAllSignal;
       setExpandedMap({});
-      console.log('✓ Collapse all', { signal: collapseAllSignal });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [collapseAllSignal]);
+  }, [collapseAllSignal, setExpandedMap]);
 
-  const handleBackgroundContextMenu = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setBackgroundMenu({ x: e.clientX, y: e.clientY });
+  const handleBackgroundContextMenu = (event: ReactMouseEvent) => {
+    event.preventDefault();
+    setBackgroundMenu({ x: event.clientX, y: event.clientY });
   };
 
-  // Separate project_root nodes from others
-  const projectRoots = nodes.filter(node => node.type === 'project_root');
+  const projectRoots = nodes.filter((node) => node.type === 'project_root');
   const hasMultipleProjects = projectRoots.length > 1;
 
   return (
@@ -631,6 +828,7 @@ export function TreeView({
       ref={scrollContainerRef}
       className="bg-bg-light border-r border-border p-3 overflow-y-auto"
       data-expanded-map={JSON.stringify(expandedMap)}
+      onContextMenu={handleBackgroundContextMenu}
     >
       <div className="font-display text-sm border-b border-accent-primary pb-2 mb-3">
         Project Tree
@@ -639,7 +837,6 @@ export function TreeView({
       <div className="space-y-1">
         {nodes.map((node) => (
           <div key={node.id}>
-            {/* Show project title separator if this is a project_root and there are multiple projects */}
             {hasMultipleProjects && node.type === 'project_root' && (
               <div className="font-display text-xs font-semibold uppercase tracking-wide text-accent-primary border-t border-border pt-2 mt-2 mb-1">
                 Project: {node.name}
@@ -654,7 +851,6 @@ export function TreeView({
               setExpandedMap={setExpandedMap}
               getTypeLabel={getTypeLabel}
               scrollContainerRef={scrollContainerRef}
-              data-expanded={expandedMap[node.id] ? 'true' : 'false'}
             />
           </div>
         ))}

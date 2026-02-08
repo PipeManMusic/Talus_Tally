@@ -4,6 +4,7 @@ import tempfile
 from pathlib import Path
 from uuid import UUID, uuid5, NAMESPACE_DNS
 from datetime import datetime
+from typing import Any, Dict
 from backend.core.graph import ProjectGraph
 from backend.core.node import Node
 from backend.infra.schema_loader import SchemaLoader
@@ -43,9 +44,17 @@ class PersistenceManager:
             'templates': template_paths or [],
             'nodes': {}
         }
+
+        select_option_map = self._build_select_option_map(template_paths or [])
         
         # Serialize each node
         for node in graph.nodes.values():
+            if select_option_map:
+                node.properties = self._normalize_select_values(
+                    node.properties,
+                    node.blueprint_type_id,
+                    select_option_map,
+                )
             node_data = {
                 'id': str(node.id),
                 'type': node.blueprint_type_id,
@@ -81,10 +90,22 @@ class PersistenceManager:
         graph = ProjectGraph()
         template_paths = data.get('templates', [])
         property_uuid_map = self._build_property_uuid_map(template_paths)
+        select_option_map = self._build_select_option_map(template_paths)
+        
+        # Handle both old format (nodes as dict) and new format (nodes as array under graph)
+        nodes_data = data.get('nodes', {})
+        
+        # If nodes_data is empty or None, check if nodes are under graph.nodes (array format)
+        if not nodes_data and 'graph' in data:
+            graph_data = data['graph']
+            if isinstance(graph_data, dict) and 'nodes' in graph_data:
+                nodes_list = graph_data['nodes']
+                if isinstance(nodes_list, list):
+                    # Convert array format to dict format for processing
+                    nodes_data = {node['id']: node for node in nodes_list}
         
         # Deserialize each node from dict
-        nodes_dict = data.get('nodes', {})
-        for node_id, node_data in nodes_dict.items():
+        for node_id, node_data in nodes_data.items():
             # Handle both 'type' and 'blueprint_type_id' for compatibility
             blueprint_type = node_data.get('type') or node_data.get('blueprint_type_id')
             
@@ -96,7 +117,7 @@ class PersistenceManager:
             
             node = Node(
                 blueprint_type_id=blueprint_type,
-                name=node_data['name'],
+                name=node_data.get('name', 'Unnamed'),
                 id=node_uuid
             )
             if 'created_at' in node_data:
@@ -104,7 +125,17 @@ class PersistenceManager:
             
             # Normalize properties: map from stored format (with UUIDs) back to template property names
             raw_properties = node_data.get('properties', {})
-            node.properties = self._normalize_properties(raw_properties, node.blueprint_type_id, property_uuid_map)
+            node.properties = self._normalize_properties(
+                raw_properties,
+                node.blueprint_type_id,
+                property_uuid_map,
+            )
+            if select_option_map:
+                node.properties = self._normalize_select_values(
+                    node.properties,
+                    node.blueprint_type_id,
+                    select_option_map,
+                )
             
             node.children = [string_to_uuid(child_id) for child_id in node_data.get('children', [])]
             if node_data.get('parent_id'):
@@ -158,6 +189,57 @@ class PersistenceManager:
 
         return normalized
 
+    def _normalize_select_values(
+        self,
+        properties: dict,
+        node_type_id: str,
+        select_option_map: Dict[str, Dict[str, Dict[str, Any]]],
+    ) -> dict:
+        """
+        Normalize select property values to UUIDs.
+
+        If a value is a label, it is mapped to the option UUID.
+        If a value is invalid, it is replaced with the default option UUID
+        when the property is required.
+        """
+        if not isinstance(properties, dict):
+            return properties
+
+        type_map = select_option_map.get(node_type_id, {})
+        if not type_map:
+            return properties
+
+        normalized = dict(properties)
+
+        for prop_id, info in type_map.items():
+            if prop_id not in normalized or normalized[prop_id] in (None, ''):
+                if info.get('required') and info.get('default_id'):
+                    normalized[prop_id] = info['default_id']
+                continue
+
+            current_val = normalized[prop_id]
+            current_val_str = str(current_val)
+
+            valid_ids = info.get('valid_ids', set())
+            name_to_id = info.get('name_to_id', {})
+
+            if current_val_str in valid_ids:
+                normalized[prop_id] = current_val_str
+                continue
+
+            if current_val in name_to_id:
+                normalized[prop_id] = name_to_id[current_val]
+                continue
+
+            if current_val_str in name_to_id:
+                normalized[prop_id] = name_to_id[current_val_str]
+                continue
+
+            if info.get('default_id'):
+                normalized[prop_id] = info['default_id']
+
+        return normalized
+
     def _build_property_uuid_map(self, template_paths: list[str]) -> dict:
         """
         Build a map of UUID-keyed property references to template property names.
@@ -192,4 +274,64 @@ class PersistenceManager:
                     total_mappings += 1
 
         print(f"[DEBUG][Persistence] Built property UUID map entries={total_mappings} templates={len(template_paths)}")
+        return mapping
+
+    def _build_select_option_map(self, template_paths: list[str]) -> Dict[str, Dict[str, Dict[str, Any]]]:
+        """
+        Build a map of select property options keyed by option UUID and label.
+
+        Returns:
+            Dict[node_type_id, Dict[prop_id, {name_to_id, valid_ids, required, default_id}]]
+        """
+        if not template_paths:
+            return {}
+
+        loader = SchemaLoader()
+        mapping: Dict[str, Dict[str, Dict[str, Any]]] = {}
+
+        for template_path in template_paths:
+            try:
+                blueprint = loader.load(template_path)
+            except Exception as e:
+                print(
+                    f"[WARN] Failed to load template for select mapping: {template_path} "
+                    f"({type(e).__name__}: {e})"
+                )
+                continue
+
+            for node_type in blueprint.node_types:
+                properties = getattr(node_type, '_extra_props', {}).get('properties', [])
+                for prop in properties:
+                    if prop.get('type') != 'select' or 'options' not in prop:
+                        continue
+
+                    prop_id = prop.get('id') or prop.get('name')
+                    if not prop_id:
+                        continue
+
+                    options = [opt for opt in prop.get('options', []) if isinstance(opt, dict)]
+                    if not options:
+                        continue
+
+                    name_to_id = {
+                        (opt.get('name') or opt.get('label')): str(opt.get('id'))
+                        for opt in options
+                        if opt.get('id') is not None
+                    }
+                    valid_ids = {
+                        str(opt.get('id'))
+                        for opt in options
+                        if opt.get('id') is not None
+                    }
+                    default_id = None
+                    if options and options[0].get('id') is not None:
+                        default_id = str(options[0].get('id'))
+
+                    mapping.setdefault(node_type.id, {})[prop_id] = {
+                        'name_to_id': name_to_id,
+                        'valid_ids': valid_ids,
+                        'required': bool(prop.get('required')),
+                        'default_id': default_id,
+                    }
+
         return mapping

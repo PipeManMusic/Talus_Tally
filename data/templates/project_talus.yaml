@@ -1,181 +1,438 @@
+description: Production workflow for YouTube channel and Restomod build with footage
+  tracking and asset management.
 id: project_talus
-version: 0.1.1
-name: Project Talus Workflow
-description: Production workflow for Project Talus with Dropbox footage tracking.
+name: Project Talus
 node_types:
-- id: project_root
-  name: Talus Project
-  icon: film
-  is_root: true
+- allowed_asset_types: []
   allowed_children:
-  - season
   - inventory_root
-  - camera_gear
-  - car_part
+  - season
+  - task
+  id: project_root
+  label: Project
   properties:
-  - name: project_lead
+  - id: name
+    label: Project Name
     type: text
+  - id: vehicle
+    label: Vehicle Name
+    type: text
+  - id: vin
+    label: VIN
+    type: text
+  - id: purchase_date
+    label: Purchase Date
+    type: date
+  - id: budget
+    label: Estimated Budget
+    type: currency
+  - id: actual_cost
+    label: Actual Cost
+    type: currency
+  - id: project_lead
     label: Project Lead
-    default: Daniel Worth
-- id: season
-  name: Season
-  icon: calendar-days
+    type: text
+- allowed_asset_types: []
+  allowed_children:
+  - camera_gear_inventory
+  - car_parts_inventory
+  - tools_inventory
+  id: inventory_root
+  label: Assets
+  properties:
+  - id: name
+    label: Assets
+    type: text
+- allowed_asset_types: []
+  allowed_children:
+  - camera_gear_category
+  id: camera_gear_inventory
+  label: Camera Gear Inventory
+  properties:
+  - id: name
+    label: Camera Gear Inventory
+    type: text
+- allowed_asset_types: []
+  allowed_children:
+  - camera_gear_asset
+  id: camera_gear_category
+  label: Camera Gear Category
+  properties:
+  - description: e.g., Cameras, Lenses, Accessories, Audio
+    id: name
+    label: Category Name
+    type: text
+- allowed_asset_types: []
+  allowed_children: []
+  id: camera_gear_asset
+  label: Camera Gear
+  properties:
+  - id: name
+    label: Equipment Name
+    type: text
+  - id: model
+    label: Model Name
+    type: text
+  - id: serial
+    label: Serial Number
+    type: text
+  - id: purchase_date
+    label: Purchase Date
+    type: date
+  - id: acquisition_cost
+    label: Acquisition Cost
+    type: currency
+  - id: status
+    indicator_set: status
+    label: Status
+    options:
+    - indicator_id: filled
+      name: Available
+    - indicator_id: partial
+      name: In Use
+    - indicator_id: alert
+      name: Maintenance
+    - indicator_id: empty
+      name: Retired
+    type: select
+  - id: notes
+    label: Notes
+    type: text
+- allowed_asset_types: []
+  allowed_children:
+  - part_category
+  icon: cog
+  id: car_parts_inventory
+  label: Car Parts Inventory
+  properties:
+  - id: name
+    label: Car Parts Inventory
+    type: text
+- allowed_asset_types: []
+  allowed_children:
+  - part_asset
+  icon: cog
+  id: part_category
+  label: Part Category
+  properties:
+  - description: e.g., Engine, Suspension, Body, Interior, Electrical
+    id: name
+    label: Category Name
+    type: text
+- allowed_asset_types: []
+  allowed_children: []
+  icon: cog
+  id: part_asset
+  label: Car Part
+  properties:
+  - id: name
+    label: Part Name
+    type: text
+  - id: part_number
+    label: OEM Part Number
+    type: text
+  - id: supplier
+    label: Vendor/Source
+    type: text
+  - id: unit_cost
+    label: Unit Cost
+    type: currency
+  - id: quantity_on_hand
+    label: Quantity On Hand
+    type: number
+  - id: status
+    indicator_set: status
+    label: Status
+    options:
+    - indicator_id: empty
+      name: Wishlist
+    - indicator_id: alert
+      name: Ordered
+    - indicator_id: partial
+      name: Arrived
+    - name: Installed
+      indicator_id: filled
+    type: select
+  - id: notes
+    label: Notes
+    type: text
+- allowed_asset_types: []
+  allowed_children:
+  - tool_category
+  id: tools_inventory
+  label: Tools Inventory
+  properties:
+  - id: name
+    label: Tools Inventory
+    type: text
+- allowed_asset_types: []
+  allowed_children:
+  - tool_asset
+  id: tool_category
+  label: Tool Category
+  properties:
+  - description: e.g., Power Tools, Hand Tools, Diagnostic Equipment, Safety
+    id: name
+    label: Category Name
+    type: text
+- allowed_asset_types: []
+  allowed_children: []
+  id: tool_asset
+  label: Tool
+  properties:
+  - id: name
+    label: Tool Name
+    type: text
+  - id: make_model
+    label: Make / Model
+    type: text
+  - id: serial_number
+    label: Serial Number
+    type: text
+  - id: purchase_date
+    label: Purchase Date
+    type: date
+  - id: acquisition_cost
+    label: Acquisition Cost
+    type: currency
+  - id: status
+    indicator_set: status
+    label: Status
+    options:
+    - indicator_id: filled
+      name: Available
+    - indicator_id: partial
+      name: In Use
+    - indicator_id: alert
+      name: Maintenance
+    - indicator_id: empty
+      name: Retired
+    type: select
+  - id: last_service_date
+    label: Last Service Date
+    type: date
+  - id: notes
+    label: Notes
+    type: text
+- allowed_asset_types: []
   allowed_children:
   - episode
   - task
+  icon: film
+  id: season
+  label: Season
   properties:
-  - name: year
+  - id: name
+    label: Season Name
+    type: text
+  - id: year
+    label: Release Year
     type: number
-    label: Broadcast Year
-    default: 2026
-- id: episode
-  name: Episode
-  icon: video-camera
+  - id: status
+    indicator_set: status
+    label: Status
+    options:
+    - indicator_id: empty
+      name: Planning
+    - indicator_id: partial
+      name: In Production
+    - indicator_id: filled
+      name: Released
+    type: select
+- allowed_asset_types: []
   allowed_children:
   - task
   - footage
   - location_scout
+  - uses_camera_gear
+  - uses_car_part
+  - uses_tool
+  id: episode
+  label: Episode
   properties:
-  - name: episode_number
-    type: number
+  - id: name
+    label: Episode Title
+    type: text
+  - id: episode_number
     label: 'Episode #'
-  - name: synopsis
-    type: text
-    label: Synopsis
-  - name: status
-    type: select
+    type: number
+  - description: 'Click Edit to write a detailed description. Use SCENE:, SPEAKER:,
+      [ACTION], NOTE: prefixes to structure content.'
+    id: description
+    label: script
+    markup_profile: script_default
+    type: editor
+  - id: status
+    indicator_set: status
     label: Edit Status
     options:
-    - name: Planning
-      indicator_id: empty
-    - name: Shooting
-      indicator_id: partial
-    - name: Editing
-      indicator_id: partial
-    - name: Uploaded
-      indicator_id: filled
-    indicator_set: status
-- id: task
-  name: Task
-  icon: clipboard-document-check
-  allowed_children: [asset_reference]
-  properties:
-  - name: description
-    type: text
-    label: Task Description
-  - name: status
+    - indicator_id: empty
+      name: Planning
+    - indicator_id: partial
+      name: Shooting
+    - indicator_id: partial
+      name: Editing
+    - indicator_id: filled
+      name: Uploaded
     type: select
-    label: Edit Status
-    options:
-    - name: Planning
-      indicator_id: empty
-    - name: In Progress
-      indicator_id: in_progress
-    - name: On Hold
-      indicator_id: alert
-    - name: Completed
-      indicator_id: filled
-    indicator_set: status
-- id: footage
-  name: Footage Clip
-  icon: play-circle
-  allowed_children: []
+- allowed_asset_types:
+  - camera_gear_asset
+  allowed_children:
+  - uses_camera_gear
+  icon: film
+  id: footage
+  label: Footage Clip
   properties:
-  - name: filename
+  - id: name
+    label: Clip Name
     type: text
+  - id: filename
     label: File Name
-  - name: dropbox_link
     type: text
+  - description: Paste the 'Copy Link' URL from Dropbox here.
+    id: dropbox_link
     label: Dropbox Share Link
-    description: Paste the 'Copy Link' URL from Dropbox here.
-  - name: camera
-    type: select
-    label: Camera Used
-    options:
-    - Canon EOS M50
-    - GoPro
-    - Drone
-    - Phone
-  - name: notes
     type: text
+  - id: notes
     label: Shoot Notes
-- id: location_scout
-  name: Location Scout
-  icon: map-pin
-  allowed_children: []
-  properties:
-  - name: location_name
     type: text
-    label: Location Name
-  - name: address
-    type: text
-    label: Address
-  - name: notes
-    type: text
-    label: Scout Notes
-  - name: permits_needed
-    type: boolean
-    label: Permits Required?
-  - name: scouted_date
-    type: text
-    label: Scout Date
-- id: camera_gear
-  name: Camera Gear
-  icon: camera
-  allowed_children: []
-  properties:
-  - name: model
-    type: text
-    label: Model Name
-  - name: serial
-    type: text
-    label: Serial Number
-- id: car_part
-  name: Car Part
-  icon: cog
-  allowed_children: []
-  properties:
-  - name: part_name
-    type: text
-    label: Part Name
-  - name: part_number
-    type: text
-    label: OEM Number
-  - name: vendor
-    type: text
-    label: Vendor/Source
-  - name: status
-    type: select
-    label: Status
-  - name: estimated_cost
-    type: currency
-    label: Estimated Cost
-  - name: actual_cost
-    type: currency
-    label: Actual Cost
-    options:
-    - name: Wishlist
-      indicator_id: empty
-    - name: Ordered
-      indicator_id: partial
-    - name: In Stock
-      indicator_id: partial
-    - name: Installed
-      indicator_id: filled
+  - id: prop_1770559115384
     indicator_set: status
-
-- id: asset_reference
-  name: Asset Reference
-  icon: link
+    label: Status
+    options:
+    - indicator_id: empty
+      name: Planned
+    - indicator_id: filled
+      name: Complete
+    type: select
+- allowed_asset_types: []
   allowed_children: []
+  id: location_scout
+  label: Location Scout
   properties:
-    - name: asset_id
-      label: Linked Asset
-      type: text
-      required: true
-    - name: role
-      label: Role/Purpose in Task
-      type: text
-    - name: quantity
-      label: Quantity Needed
-      type: number
+  - id: name
+    label: Location Name
+    type: text
+  - id: address
+    label: Address
+    type: text
+  - id: notes
+    label: Scout Notes
+    type: text
+  - id: permits_needed
+    label: Permits Required
+    type: checkbox
+  - id: scouted_date
+    label: Scout Date
+    type: date
+- allowed_asset_types: []
+  allowed_children:
+  - asset_reference
+  - uses_camera_gear
+  - uses_car_part
+  - uses_tool
+  has_time_log: true
+  id: task
+  label: Task
+  properties:
+  - id: name
+    label: Task Name
+    type: text
+  - id: description
+    label: Description
+    type: text
+  - id: status
+    indicator_set: status
+    label: Status
+    options:
+    - indicator_id: empty
+      name: Not Started
+    - indicator_id: partial
+      name: In Progress
+    - indicator_id: alert
+      name: Blocked
+    - indicator_id: filled
+      name: Done
+    type: select
+  - id: estimated_hours
+    label: Est. Hours
+    type: number
+  - id: approved
+    label: Approved for Production
+    type: checkbox
+  - id: notes
+    label: Notes
+    type: editor
+- allowed_asset_types:
+  - camera_gear_asset
+  allowed_children: []
+  id: uses_camera_gear
+  label: Uses Camera Gear
+  properties:
+  - id: name
+    label: Asset Name
+    type: text
+  - id: asset_id
+    label: Linked Camera Gear
+    type: text
+  - id: role
+    label: Role/Purpose
+    type: text
+  - id: quantity
+    label: Quantity Needed
+    type: number
+- allowed_asset_types:
+  - part_asset
+  allowed_children: []
+  id: uses_car_part
+  label: Uses Car Part
+  properties:
+  - id: name
+    label: Asset Name
+    type: text
+  - id: asset_id
+    label: Linked Car Part
+    type: text
+  - id: role
+    label: Role/Purpose
+    type: text
+  - id: quantity
+    label: Quantity Needed
+    type: number
+- allowed_asset_types:
+  - tool_asset
+  allowed_children: []
+  id: uses_tool
+  label: Uses Tool
+  properties:
+  - id: name
+    label: Asset Name
+    type: text
+  - id: asset_id
+    label: Linked Tool
+    type: text
+  - id: role
+    label: Role/Purpose
+    type: text
+  - id: quantity
+    label: Quantity Needed
+    type: number
+- allowed_asset_types: []
+  allowed_children: []
+  id: asset_reference
+  label: Uses Asset
+  properties:
+  - id: name
+    label: Asset Reference
+    type: text
+  - id: asset_id
+    label: Linked Asset
+    type: text
+  - id: role
+    label: Role/Purpose in Task
+    type: text
+  - id: quantity
+    label: Quantity Needed
+    type: number
+uuid: 574ecd39-bad3-4e44-b6e4-247d00cc5eca
+version: 0.2.0

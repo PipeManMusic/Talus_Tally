@@ -1,0 +1,11 @@
+id: broken_template_test
+name: BROKEN TEST TEMPLATE
+description: This template has intentional errors for testing error handling
+version: '1.0'
+node_types:
+- id: test_node
+  properties:
+  - id: status
+    type: select
+    options: []
+uuid: ffe9b8db-2a8d-413c-9817-b577528f3d75

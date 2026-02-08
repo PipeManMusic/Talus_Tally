@@ -49,15 +49,45 @@ def get_indicator_metadata(node, blueprint):
 
 def get_node_icon(node, blueprint):
     """Return the icon_id defined on the node type within the blueprint."""
+    default_icon_map = {
+        'project_root': 'film',
+        'season': 'calendar-days',
+        'episode': 'video-camera',
+        'task': 'clipboard-document-check',
+        'footage': 'play-circle',
+        'location_scout': 'map-pin',
+        'inventory_root': 'archive-box',
+        'camera_gear_inventory': 'camera',
+        'camera_gear_category': 'camera',
+        'camera_gear_asset': 'camera',
+        'car_parts_inventory': 'cog',
+        'part_category': 'cog',
+        'part_asset': 'cog',
+        'tools_inventory': 'cog',
+        'tool_category': 'cog',
+        'tool_asset': 'cog',
+        'asset_reference': 'clipboard-document-list',
+        'uses_camera_gear': 'camera',
+        'uses_car_part': 'cog',
+        'uses_tool': 'cog',
+        'phase': 'calendar-days',
+        'job': 'clipboard-document-list',
+        'part': 'cog',
+        'vehicles': 'truck',
+        'vehicle_asset': 'truck',
+    }
+
     if not blueprint:
-        return None
+        return node.properties.get('icon') or node.properties.get('icon_id') or default_icon_map.get(node.blueprint_type_id)
 
     node_type_def = blueprint._node_type_map.get(node.blueprint_type_id)
     if not node_type_def:
-        return None
+        return node.properties.get('icon') or node.properties.get('icon_id') or default_icon_map.get(node.blueprint_type_id)
 
     icon_id = node_type_def._extra_props.get('icon')
-    return icon_id
+    if icon_id:
+        return icon_id
+    return node.properties.get('icon') or node.properties.get('icon_id') or default_icon_map.get(node.blueprint_type_id)
 """
 REST API route handlers.
 
@@ -66,6 +96,8 @@ All endpoints are prefixed with /api/v1/.
 """
 
 from flask import Blueprint, request, jsonify, send_file, Response
+import io
+import json
 import logging
 import uuid
 from datetime import datetime, timezone
@@ -74,8 +106,15 @@ from backend.api.graph_service import GraphService
 from backend.core.node import Node
 from backend.handlers.dispatcher import CommandDispatcher
 from backend.infra.schema_loader import SchemaLoader
+from backend.infra.markup import MarkupRegistry, MarkupParser, resolve_markup_definition
+from backend.infra.template_validator import TemplateValidationError
+from backend.infra.orphan_manager import OrphanManager
 from backend.infra.persistence import string_to_uuid
 from backend.api.broadcaster import emit_node_created
+from backend.core.imports import CSVColumnBinding, CSVImportPlan, CSVImportPlanError
+from backend.infra.imports.csv_service import CSVImportService
+from backend.handlers.commands.macro_commands import ImportNodesCommand
+from uuid import UUID
 import os
 import re
 
@@ -198,6 +237,204 @@ def list_sessions():
     return jsonify({
         'sessions': sessions_info,
         'total': len(sessions_info)
+    }), 200
+
+
+# ============================================================================
+# CSV Import
+# ============================================================================
+
+
+@api_bp.route('/imports/csv', methods=['POST'])
+def import_nodes_from_csv():
+    """Import child nodes from a CSV file under a given parent node."""
+    session_id = request.form.get('session_id')
+    parent_id_str = request.form.get('parent_id')
+    blueprint_type_id = request.form.get('blueprint_type_id')
+    column_map_payload = request.form.get('column_map')
+    file_storage = request.files.get('file')
+
+    if not session_id or not parent_id_str or not blueprint_type_id or not column_map_payload or not file_storage:
+        return jsonify({
+            'error': {
+                'code': 'INVALID_REQUEST',
+                'message': 'session_id, parent_id, blueprint_type_id, column_map, and file are required'
+            }
+        }), 400
+
+    try:
+        parent_id = UUID(parent_id_str)
+    except (ValueError, TypeError):
+        return jsonify({
+            'error': {
+                'code': 'INVALID_REQUEST',
+                'message': 'parent_id must be a valid UUID'
+            }
+        }), 400
+
+    try:
+        column_map_data = json.loads(column_map_payload)
+    except json.JSONDecodeError:
+        return jsonify({
+            'error': {
+                'code': 'INVALID_REQUEST',
+                'message': 'column_map must be valid JSON'
+            }
+        }), 400
+
+    if not isinstance(column_map_data, list) or not column_map_data:
+        return jsonify({
+            'error': {
+                'code': 'INVALID_REQUEST',
+                'message': 'column_map must be a non-empty list'
+            }
+        }), 400
+
+    column_bindings = []
+    try:
+        for entry in column_map_data:
+            header = (entry or {}).get('header')
+            property_id = (entry or {}).get('property_id')
+            if not header or not property_id:
+                raise ValueError('Each mapping must include header and property_id')
+            column_bindings.append(CSVColumnBinding(header=header, property_id=property_id))
+    except ValueError as err:
+        return jsonify({
+            'error': {
+                'code': 'INVALID_REQUEST',
+                'message': str(err)
+            }
+        }), 400
+
+    session_data = _get_session_data(session_id)
+    if not session_data:
+        return jsonify({
+            'error': {
+                'code': 'INVALID_SESSION',
+                'message': 'Session not found'
+            }
+        }), 404
+
+    graph = session_data.get('graph')
+    blueprint = session_data.get('blueprint')
+    dispatcher: CommandDispatcher = session_data.get('dispatcher')
+
+    if not graph or not blueprint or not dispatcher:
+        return jsonify({
+            'error': {
+                'code': 'INVALID_STATE',
+                'message': 'Session is missing graph, blueprint, or dispatcher'
+            }
+        }), 400
+
+    if blueprint_type_id not in blueprint._node_type_map:
+        return jsonify({
+            'error': {
+                'code': 'INVALID_PLAN',
+                'message': f"Unknown blueprint type '{blueprint_type_id}'"
+            }
+        }), 400
+
+    try:
+        plan = CSVImportPlan(
+            parent_id=parent_id,
+            blueprint_type_id=blueprint_type_id,
+            column_bindings=column_bindings,
+        )
+    except ValueError as err:
+        return jsonify({
+            'error': {
+                'code': 'INVALID_PLAN',
+                'message': str(err)
+            }
+        }), 400
+
+    def resolve_property_schema(node_type_id: str):
+        node_type = blueprint._node_type_map.get(node_type_id)
+        if not node_type:
+            return []
+        return node_type._extra_props.get('properties', [])
+
+    service = CSVImportService(resolve_property_schema)
+
+    file_bytes = file_storage.read()
+    try:
+        csv_text = file_bytes.decode('utf-8-sig')
+    except UnicodeDecodeError:
+        try:
+            csv_text = file_bytes.decode('utf-8')
+        except UnicodeDecodeError:
+            return jsonify({
+                'error': {
+                    'code': 'INVALID_FILE',
+                    'message': 'Uploaded CSV must be UTF-8 encoded'
+                }
+            }), 400
+
+    try:
+        batch = service.prepare_import(plan, io.StringIO(csv_text))
+    except CSVImportPlanError as err:
+        return jsonify({
+            'error': {
+                'code': 'INVALID_PLAN',
+                'message': str(err)
+            }
+        }), 400
+
+    if batch.has_errors:
+        row_errors = [
+            {
+                'row_number': error.row_number,
+                'messages': list(error.messages),
+            }
+            for error in batch.errors
+        ]
+        return jsonify({
+            'error': {
+                'code': 'CSV_ROW_ERRORS',
+                'message': 'CSV rows contain validation errors',
+                'rows': row_errors,
+            }
+        }), 422
+
+    if not batch.prepared_nodes:
+        return jsonify({
+            'error': {
+                'code': 'INVALID_FILE',
+                'message': 'CSV contained no data rows'
+            }
+        }), 400
+
+    import_command = ImportNodesCommand(
+        plan=plan,
+        prepared_nodes=batch.prepared_nodes,
+        graph=graph,
+        blueprint=blueprint,
+        session_id=session_id,
+    )
+
+    try:
+        dispatcher.execute(import_command)
+    except ValueError as err:
+        return jsonify({
+            'error': {
+                'code': 'INVALID_PLAN',
+                'message': str(err)
+            }
+        }), 400
+
+    created_ids = [str(node_id) for node_id in import_command.created_node_ids]
+
+    _mark_session_dirty(session_id)
+    _update_session_activity(session_id)
+
+    return jsonify({
+        'success': True,
+        'created_count': len(created_ids),
+        'created_node_ids': created_ids,
+        'graph': _serialize_graph(graph, blueprint),
+        'undo_available': len(dispatcher.undo_stack) > 0 if dispatcher else False,
+        'redo_available': len(dispatcher.redo_stack) > 0 if dispatcher else False,
     }), 200
 
 
@@ -333,6 +570,58 @@ def reset_dirty_state(session_id):
         'is_dirty': False,
         'message': 'Dirty state reset (changes discarded)'
     }), 200
+
+
+@api_bp.route('/sessions/<session_id>/reload-blueprint', methods=['POST'])
+def reload_blueprint(session_id):
+    """Reload the blueprint/template from disk for a session.
+    
+    This is useful when the template file has been edited and you want
+    to pick up the changes without restarting the backend or reloading the project.
+    """
+    if session_id not in _sessions:
+        return jsonify({
+            'error': {
+                'code': 'INVALID_SESSION',
+                'message': 'Session not found'
+            }
+        }), 404
+    
+    session_data = _sessions[session_id]
+    graph = session_data.get('graph')
+    
+    if not graph or not graph.template_id:
+        return jsonify({
+            'error': {
+                'code': 'NO_TEMPLATE',
+                'message': 'Session has no template_id to reload'
+            }
+        }), 400
+    
+    try:
+        template_id = graph.template_id
+        loader = SchemaLoader()
+        blueprint = loader.load(f'{template_id}.yaml')
+        session_data['blueprint'] = blueprint
+        
+        logger.info(f"[API] Reloaded blueprint for session {session_id}, template_id={template_id}")
+        _update_session_activity(session_id)
+        
+        return jsonify({
+            'success': True,
+            'session_id': session_id,
+            'template_id': template_id,
+            'message': f'Blueprint reloaded from {template_id}.yaml'
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"[API] Failed to reload blueprint: {e}", exc_info=True)
+        return jsonify({
+            'error': {
+                'code': 'RELOAD_FAILED',
+                'message': f'Failed to reload blueprint: {str(e)}'
+            }
+        }), 500
 
 
 # ============================================================================
@@ -574,11 +863,26 @@ def create_project():
             loader = SchemaLoader()
             blueprint = loader.load(f'{template_id}.yaml')
             logger.info(f"[API] Loaded blueprint for template_id={template_id}")
+        except TemplateValidationError as e:
+            return jsonify({
+                'error': {
+                    'code': 'TEMPLATE_VALIDATION_ERROR',
+                    'message': f'Template validation failed: {str(e)}',
+                    'details': str(e)
+                }
+            }), 400
+        except FileNotFoundError as e:
+            return jsonify({
+                'error': {
+                    'code': 'TEMPLATE_NOT_FOUND',
+                    'message': f'Template not found: {template_id}'
+                }
+            }), 404
         except Exception as e:
             return jsonify({
                 'error': {
                     'code': 'INVALID_TEMPLATE',
-                    'message': f'Template not found or invalid: {str(e)}'
+                    'message': f'Failed to load template: {str(e)}'
                 }
             }), 400
         
@@ -672,7 +976,15 @@ def load_graph_into_session(session_id):
 
         # Create new graph from saved data
         from backend.core.graph import ProjectGraph
-        graph = ProjectGraph()
+        
+        # Extract template info from saved data
+        saved_template_version = data.get('template_version')
+        
+        # Default to '0.0.0' if template_version is missing (legacy project)
+        if not saved_template_version:
+            logger.warning("[API] Legacy project file missing template_version; defaulting to '0.0.0'")
+            saved_template_version = '0.0.0'
+        graph = ProjectGraph(template_id=template_id, template_version=saved_template_version)
 
         node_entries = graph_data.get('nodes', []) or []
         link_pairs: list[tuple[str, str]] = []
@@ -752,15 +1064,51 @@ def load_graph_into_session(session_id):
             try:
                 loader = SchemaLoader()
                 blueprint = loader.load(f'{template_id}.yaml')
-                logger.info(f"[API] Loaded blueprint for template_id={template_id}")
+                current_version = blueprint.version if hasattr(blueprint, 'version') else '0.1.0'
+                logger.info(f"[API] Loaded blueprint for template_id={template_id}, version={current_version}")
+                
+                # Check if migration is needed
+                if graph.template_version and graph.template_version != current_version:
+                    logger.info(f"[API] Template version mismatch: project={graph.template_version}, current={current_version}")
+                    logger.info(f"[API] Attempting to migrate project from {graph.template_version} to {current_version}")
+                    
+                    # Apply migrations
+                    try:
+                        from backend.infra.project_talus_migrations import registry as migrations_registry
+                        success, messages = migrations_registry.apply_migrations(
+                            graph,
+                            from_version=graph.template_version,
+                            to_version=current_version
+                        )
+                        
+                        if success:
+                            graph.template_version = current_version
+                            logger.info(f"[API] Migration successful. Messages: {messages}")
+                        else:
+                            logger.warning(f"[API] Migration failed. Messages: {messages}")
+                            # Continue anyway - better to load with warnings than fail entirely
+                    except Exception as e:
+                        logger.warning(f"[API] Migration error (continuing with loaded data): {e}")
+                        
+            except TemplateValidationError as e:
+                logger.error(f"[API] Template validation failed for {template_id}: {e}")
+                # Don't fail the load, but blueprint will be None
+            except FileNotFoundError as e:
+                logger.warning(f"[API] Template file not found: {template_id}")
             except Exception as e:
                 logger.warning(f"[API] Failed to load blueprint: {e}")
+        
+        # If no template version was saved, set to current version
+        if not graph.template_version and blueprint:
+            graph.template_version = blueprint.version if hasattr(blueprint, 'version') else '0.1.0'
+            logger.info(f"[API] Set initial template version to {graph.template_version}")
         
         # Update session with loaded graph
         session_data = _sessions[session_id]
         session_data['graph'] = graph
         session_data['blueprint'] = blueprint
         session_data['template_id'] = template_id
+        session_data['template_version'] = graph.template_version
         session_data['dispatcher'] = CommandDispatcher(graph, session_id=session_id)
         session_data['graph_service'] = GraphService(graph)
         session_data['current_project_id'] = str(uuid.uuid4())
@@ -828,6 +1176,7 @@ def get_template_schema(template_id):
     try:
         schema_loader = SchemaLoader()
         blueprint = schema_loader.load(f'{template_id}.yaml')
+        markup_registry = MarkupRegistry()
         
         # Serialize blueprint to JSON-compatible format
         node_types = []
@@ -844,6 +1193,8 @@ def get_template_schema(template_id):
                 required = prop_data.get('required', False)
                 indicator_set = prop_data.get('indicator_set')
                 options = None
+                markup_profile = prop_data.get('markup_profile')
+                markup_tokens = None
                 
                 # Handle select options
                 if prop_type == 'select' and 'options' in prop_data:
@@ -855,6 +1206,17 @@ def get_template_schema(template_id):
                         }
                         for opt in prop_data.get('options', [])
                     ]
+
+                if markup_profile:
+                    try:
+                        profile = markup_registry.load_profile(markup_profile)
+                        markup_tokens = profile.get('tokens') or []
+                    except Exception as exc:
+                        logger.warning(f"Failed to load markup profile '{markup_profile}': {exc}")
+
+                inline_markup = prop_data.get('markup')
+                if isinstance(inline_markup, dict):
+                    markup_tokens = inline_markup.get('tokens') or []
                 
                 properties.append({
                     'id': prop_id,
@@ -862,13 +1224,16 @@ def get_template_schema(template_id):
                     'type': prop_type,
                     'required': required,
                     'indicator_set': indicator_set,
-                    'options': options
+                    'options': options,
+                    'markup_profile': markup_profile,
+                    'markup_tokens': markup_tokens
                 })
             
             node_types.append({
                 'id': node_type.id,
                 'name': node_type.name,
                 'allowed_children': node_type.allowed_children,
+                'allowed_asset_types': node_type.allowed_asset_types,
                 'icon': node_type._extra_props.get('icon'),
                 'properties': properties
             })
@@ -887,12 +1252,365 @@ def get_template_schema(template_id):
                 'message': f'Template not found: {template_id}'
             }
         }), 404
+    except TemplateValidationError as e:
+        logger.error(f"Template validation error for {template_id}: {e}")
+        return jsonify({
+            'error': {
+                'code': 'TEMPLATE_VALIDATION_ERROR',
+                'message': f'Template validation failed: {str(e)}',
+                'details': str(e)
+            }
+        }), 400
     except Exception as e:
         logger.error(f"Error loading template schema: {e}")
         return jsonify({
             'error': {
                 'code': 'INTERNAL_ERROR',
-                'message': 'Internal server error'
+                'message': 'Internal server error',
+                'details': str(e)
+            }
+        }), 500
+
+
+# ============================================================================
+# Template Editor - CRUD Operations
+# ============================================================================
+
+@api_bp.route('/templates/editor/list', methods=['GET'])
+def editor_list_templates():
+    """List all templates with metadata for the template editor."""
+    try:
+        from backend.infra.template_persistence import TemplatePersistence
+        persistence = TemplatePersistence()
+        templates = persistence.list_templates()
+        
+        return jsonify({'templates': templates}), 200
+    except Exception as e:
+        logger.error(f"[API] Error listing templates for editor: {e}")
+        return jsonify({
+            'error': {
+                'code': 'INTERNAL_ERROR',
+                'message': 'Failed to list templates'
+            }
+        }), 500
+
+
+@api_bp.route('/templates/editor/<template_id>', methods=['GET'])
+def editor_get_template(template_id):
+    """Get a complete template document for editing."""
+    try:
+        from backend.infra.template_persistence import TemplatePersistence
+        persistence = TemplatePersistence()
+        template = persistence.load_template(template_id)
+        
+        # Migrate old templates for editor compatibility
+        if 'node_types' in template:
+            for node_type in template['node_types']:
+                # Ensure required fields exist
+                if 'label' not in node_type:
+                    node_type['label'] = node_type.get('id', 'Unnamed').replace('_', ' ').title()
+                if 'allowed_children' not in node_type:
+                    node_type['allowed_children'] = []
+                if 'allowed_asset_types' not in node_type:
+                    node_type['allowed_asset_types'] = []
+                if 'properties' not in node_type:
+                    node_type['properties'] = []
+                
+                # Clean up properties
+                for prop in node_type.get('properties', []):
+                    # Remove 'required' field (no longer supported in editor)
+                    prop.pop('required', None)
+                    
+                    # Ensure label exists
+                    if 'label' not in prop:
+                        prop['label'] = prop.get('id', 'Unnamed').replace('_', ' ').title()
+                    
+                    # Ensure type exists (required field)
+                    if 'type' not in prop:
+                        logger.warning(f"Property {node_type['id']}.{prop.get('id')} missing type, defaulting to 'text'")
+                        prop['type'] = 'text'
+        
+        return jsonify(template), 200
+    except FileNotFoundError:
+        return jsonify({
+            'error': {
+                'code': 'NOT_FOUND',
+                'message': f'Template not found: {template_id}'
+            }
+        }), 404
+    except Exception as e:
+        logger.error(f"[API] Error loading template {template_id}: {e}", exc_info=True)
+        return jsonify({
+            'error': {
+                'code': 'INTERNAL_ERROR',
+                'message': 'Failed to load template'
+            }
+        }), 500
+
+
+@api_bp.route('/templates/editor', methods=['POST'])
+def editor_create_template():
+    """Create a new template."""
+    try:
+        from backend.infra.template_persistence import TemplatePersistence
+        persistence = TemplatePersistence()
+        
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                'error': {
+                    'code': 'INVALID_REQUEST',
+                    'message': 'No JSON body provided'
+                }
+            }), 400
+        
+        # Validate that template has required fields
+        if not data.get('id'):
+            return jsonify({
+                'error': {
+                    'code': 'INVALID_REQUEST',
+                    'message': 'Template must have an id'
+                }
+            }), 400
+        
+        try:
+            persistence.save_template(data)
+            return jsonify({
+                'success': True,
+                'template_id': data['id'],
+                'message': f'Template "{data.get("name", data["id"])}" created successfully'
+            }), 201
+        except ValueError as ve:
+            return jsonify({
+                'error': {
+                    'code': 'VALIDATION_ERROR',
+                    'message': str(ve)
+                }
+            }), 400
+    except Exception as e:
+        logger.error(f"[API] Error creating template: {e}", exc_info=True)
+        return jsonify({
+            'error': {
+                'code': 'INTERNAL_ERROR',
+                'message': 'Failed to create template'
+            }
+        }), 500
+
+
+@api_bp.route('/templates/editor/<template_id>', methods=['PUT'])
+def editor_update_template(template_id):
+    """Update an existing template and handle orphaned nodes."""
+    try:
+        from backend.infra.template_persistence import TemplatePersistence
+        persistence = TemplatePersistence()
+        orphan_mgr = OrphanManager()
+        
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                'error': {
+                    'code': 'INVALID_REQUEST',
+                    'message': 'No JSON body provided'
+                }
+            }), 400
+        
+        # Ensure ID matches URL parameter
+        if data.get('id') != template_id:
+            data['id'] = template_id
+        
+        try:
+            # Load old template to detect removed node types
+            old_template = None
+            try:
+                old_template = persistence.load_template(template_id)
+            except FileNotFoundError:
+                pass  # New template, no orphaning needed
+            
+            # Save the updated template
+            persistence.save_template(data)
+            
+            # Check for orphaned node types
+            orphan_info = {
+                'orphaned_sessions': [],
+                'total_orphaned_nodes': 0,
+                'total_orphaned_properties': 0
+            }
+            
+            if old_template:
+                # Check for removed node types
+                removed_types = orphan_mgr.find_orphaned_node_types(
+                    old_template, data
+                )
+                
+                # Check for removed properties
+                orphaned_props_by_type = orphan_mgr.find_orphaned_properties(
+                    old_template, data
+                )
+                
+                if removed_types or orphaned_props_by_type:
+                    # Find all sessions using this template and mark orphaned nodes/properties
+                    sessions = GraphService.get_all_sessions()
+                    
+                    for session_id, session_data in sessions.items():
+                        blueprint = session_data.get('blueprint')
+                        if not blueprint or blueprint.get('id') != template_id:
+                            continue
+                        
+                        # Get graph for this session
+                        graph = session_data.get('graph', {})
+                        
+                        orphaned_node_count = 0
+                        orphaned_prop_count = 0
+                        orphaned_node_ids = []
+                        
+                        # Mark orphaned nodes
+                        if removed_types:
+                            result = orphan_mgr.mark_orphaned_nodes(
+                                graph, removed_types
+                            )
+                            orphaned_node_count = result['affected_count']
+                            orphaned_node_ids = result['orphaned_node_ids']
+                        
+                        # Mark orphaned properties
+                        if orphaned_props_by_type:
+                            orphaned_prop_count = orphan_mgr.mark_orphaned_properties(
+                                graph, orphaned_props_by_type
+                            )
+                        
+                        if orphaned_node_count > 0 or orphaned_prop_count > 0:
+                            orphan_info['orphaned_sessions'].append({
+                                'session_id': session_id,
+                                'orphaned_count': orphaned_node_count,
+                                'orphaned_node_ids': orphaned_node_ids,
+                                'orphaned_property_count': orphaned_prop_count
+                            })
+                            orphan_info['total_orphaned_nodes'] += orphaned_node_count
+                            orphan_info['total_orphaned_properties'] += orphaned_prop_count
+                    
+                    logger.info(
+                        f"Template update orphaned {orphan_info['total_orphaned_nodes']} nodes "
+                        f"and {orphan_info['total_orphaned_properties']} properties "
+                        f"across {len(orphan_info['orphaned_sessions'])} sessions"
+                    )
+            
+            return jsonify({
+                'success': True,
+                'template_id': template_id,
+                'message': f'Template "{data.get("name", template_id)}" updated successfully',
+                'orphan_info': orphan_info
+            }), 200
+            
+        except ValueError as ve:
+            return jsonify({
+                'error': {
+                    'code': 'VALIDATION_ERROR',
+                    'message': str(ve)
+                }
+            }), 400
+    except Exception as e:
+        logger.error(f"[API] Error updating template {template_id}: {e}", exc_info=True)
+        return jsonify({
+            'error': {
+                'code': 'INTERNAL_ERROR',
+                'message': 'Failed to update template'
+            }
+        }), 500
+
+
+@api_bp.route('/templates/editor/<template_id>', methods=['DELETE'])
+def editor_delete_template(template_id):
+    """Delete a template."""
+    try:
+        from backend.infra.template_persistence import TemplatePersistence
+        persistence = TemplatePersistence()
+        
+        try:
+            persistence.delete_template(template_id)
+            return jsonify({
+                'success': True,
+                'message': f'Template "{template_id}" deleted successfully'
+            }), 200
+        except FileNotFoundError:
+            return jsonify({
+                'error': {
+                    'code': 'NOT_FOUND',
+                    'message': f'Template not found: {template_id}'
+                }
+            }), 404
+    except Exception as e:
+        logger.error(f"[API] Error deleting template {template_id}: {e}")
+        return jsonify({
+            'error': {
+                'code': 'INTERNAL_ERROR',
+                'message': 'Failed to delete template'
+            }
+        }), 500
+
+
+@api_bp.route('/templates/editor/<template_id>/validate', methods=['POST'])
+def editor_validate_template(template_id):
+    """Validate a template."""
+    try:
+        from backend.infra.template_persistence import TemplatePersistence
+        persistence = TemplatePersistence()
+        
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                'error': {
+                    'code': 'INVALID_REQUEST',
+                    'message': 'No JSON body provided'
+                }
+            }), 400
+        
+        errors = persistence.validate_template(data)
+        
+        return jsonify({
+            'is_valid': len(errors) == 0,
+            'errors': errors
+        }), 200
+    except Exception as e:
+        logger.error(f"[API] Error validating template: {e}")
+        return jsonify({
+            'error': {
+                'code': 'INTERNAL_ERROR',
+                'message': 'Failed to validate template'
+            }
+        }), 500
+
+
+@api_bp.route('/sessions/<session_id>/orphaned-nodes', methods=['GET'])
+def get_orphaned_nodes(session_id):
+    """Get all orphaned nodes for a session."""
+    try:
+        orphan_mgr = OrphanManager()
+        
+        # Get session data
+        session_data = GraphService.get_session(session_id)
+        if not session_data:
+            return jsonify({
+                'error': {
+                    'code': 'SESSION_NOT_FOUND',
+                    'message': f'Session not found: {session_id}'
+                }
+            }), 404
+        
+        # Get orphaned nodes
+        graph = session_data.get('graph', {})
+        orphaned_nodes = orphan_mgr.get_orphaned_nodes(graph)
+        
+        return jsonify({
+            'session_id': session_id,
+            'orphaned_nodes': orphaned_nodes,
+            'count': len(orphaned_nodes)
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"[API] Error getting orphaned nodes: {e}", exc_info=True)
+        return jsonify({
+            'error': {
+                'code': 'INTERNAL_ERROR',
+                'message': 'Failed to get orphaned nodes'
             }
         }), 500
 
@@ -949,7 +1667,7 @@ def execute_command():
         # Execute command through dispatcher
         try:
             # Import command classes
-            from backend.handlers.commands.node_commands import CreateNodeCommand, DeleteNodeCommand, LinkNodeCommand, UpdatePropertyCommand
+            from backend.handlers.commands.node_commands import CreateNodeCommand, DeleteNodeCommand, LinkNodeCommand, UpdatePropertyCommand, MoveNodeCommand, ReorderNodeCommand
             from backend.handlers.commands.macro_commands import ApplyKitCommand
             from uuid import UUID
 
@@ -962,6 +1680,8 @@ def execute_command():
                 'DeleteNode': DeleteNodeCommand,
                 'LinkNode': LinkNodeCommand,
                 'UpdateProperty': UpdatePropertyCommand,
+                'MoveNode': MoveNodeCommand,
+                'ReorderNode': ReorderNodeCommand,
                 'ApplyKit': ApplyKitCommand,
             }
 
@@ -1053,6 +1773,57 @@ def execute_command():
                     session_id=session_id,
                 )
                 dispatcher.execute(command)
+            elif command_type == 'MoveNode':
+                node_id = command_data.get('node_id')
+                new_parent_id = command_data.get('new_parent_id')
+                if not node_id or not new_parent_id:
+                    return jsonify({
+                        'error': {
+                            'code': 'INVALID_COMMAND',
+                            'message': 'MoveNode requires node_id and new_parent_id'
+                        }
+                    }), 400
+                try:
+                    command = MoveNodeCommand(
+                        node_id=UUID(node_id),
+                        new_parent_id=UUID(new_parent_id),
+                        graph=graph,
+                        blueprint=session_data.get('blueprint'),
+                        session_id=session_id,
+                    )
+                    dispatcher.execute(command)
+                except ValueError as e:
+                    return jsonify({
+                        'error': {
+                            'code': 'MOVE_INVALID',
+                            'message': str(e)
+                        }
+                    }), 400
+            elif command_type == 'ReorderNode':
+                node_id = command_data.get('node_id')
+                new_index = command_data.get('new_index')
+                if node_id is None or new_index is None:
+                    return jsonify({
+                        'error': {
+                            'code': 'INVALID_COMMAND',
+                            'message': 'ReorderNode requires node_id and new_index'
+                        }
+                    }), 400
+                try:
+                    command = ReorderNodeCommand(
+                        node_id=UUID(node_id),
+                        new_index=int(new_index),
+                        graph=graph,
+                        session_id=session_id,
+                    )
+                    dispatcher.execute(command)
+                except Exception as e:
+                    return jsonify({
+                        'error': {
+                            'code': 'REORDER_INVALID',
+                            'message': str(e)
+                        }
+                    }), 400
             elif command_type == 'ApplyKit':
                 target_id = command_data.get('target_id')
                 kit_root_id = command_data.get('kit_root_id')
@@ -1245,15 +2016,62 @@ def search_nodes(project_id):
 # ============================================================================
 
 def _serialize_graph(graph, blueprint=None):
-    """Convert ProjectGraph to JSON-serializable dict with indicator metadata.
+    """Convert ProjectGraph to JSON-serializable dict with indicator metadata and schema enrichment.
     
     Args:
         graph: ProjectGraph to serialize
-        blueprint: Optional Blueprint definition for indicator lookup
+        blueprint: Optional Blueprint definition for schema enrichment
     """
     # get_indicator_metadata is now a top-level function
     
-    def serialize_node(node):
+    def get_allowed_children(node_type_id: str) -> list:
+        """Get allowed_children from blueprint schema for a node type, with logging."""
+        import logging
+        logger = logging.getLogger("talus.api.routes")
+        logger.info(f"[get_allowed_children] node_type_id={node_type_id} blueprint={blueprint}")
+        if not blueprint:
+            logger.warning(f"[get_allowed_children] blueprint is None!")
+            return []
+        logger.info(f"[get_allowed_children] blueprint._node_type_map keys: {list(blueprint._node_type_map.keys())}")
+        node_type_def = blueprint._node_type_map.get(node_type_id)
+        logger.info(f"[get_allowed_children] node_type_def={node_type_def}")
+        if not node_type_def:
+            logger.warning(f"[get_allowed_children] node_type_def not found for {node_type_id}")
+            return []
+        allowed = node_type_def.allowed_children or []
+        logger.info(f"[get_allowed_children] returning allowed_children={allowed}")
+        return allowed
+    
+    markup_registry = MarkupRegistry()
+    markup_parser = MarkupParser()
+
+    def serialize_node(node, visited=None, ancestry=None):
+        if visited is None:
+            visited = set()
+        if ancestry is None:
+            ancestry = []
+        
+        node_id = str(node.id)
+        if node_id in visited:
+            print(f"[serialize_node] Cycle detected at node {node_id}, ancestry: {ancestry}")
+            return {
+                'id': node_id,
+                'blueprint_type_id': node.blueprint_type_id,
+                'name': node.name,
+                'properties': node.properties,
+                'children': [],
+                'indicator': None,
+                'indicator_id': None,
+                'indicator_set': None,
+                'icon_id': get_node_icon(node, blueprint),
+                'allowed_children': get_allowed_children(node.blueprint_type_id),
+                'cycle_warning': True
+            }
+        
+        # Create a new visited set for this branch that includes current node
+        branch_visited = visited | {node_id}
+        new_ancestry = ancestry + [node_id]
+        
         print(f"[DEBUG][serialize_node] node={node} type(node)={type(node)}")
         # Get child nodes
         child_nodes = []
@@ -1263,13 +2081,38 @@ def _serialize_graph(graph, blueprint=None):
             print(f"[DEBUG][serialize_node] child={child} type(child)={type(child)}")
             if child is not None:
                 child_nodes.append(child)
+            else:
+                print(f"[WARN][serialize_node] Skipping orphaned child_id={child_id} (parent={node_id})")
         node_data = {
-            'id': str(node.id),
+            'id': node_id,
             'blueprint_type_id': node.blueprint_type_id,
             'name': node.name,
             'properties': node.properties,
-            'children': [serialize_node(child) for child in child_nodes]
+            'children': [serialize_node(child, branch_visited, new_ancestry) for child in child_nodes]
         }
+
+        if blueprint:
+            node_type_def = blueprint._node_type_map.get(node.blueprint_type_id)
+            if node_type_def:
+                prop_defs = node_type_def._extra_props.get('properties', [])
+                property_markup = {}
+                for prop_def in prop_defs:
+                    if prop_def.get('type') != 'editor':
+                        continue
+                    prop_id = prop_def.get('id') or prop_def.get('name')
+                    if not prop_id:
+                        continue
+                    markup_def = resolve_markup_definition(prop_def, markup_registry)
+                    if not markup_def:
+                        continue
+                    raw_value = node.properties.get(prop_id, '')
+                    parsed = markup_parser.parse(str(raw_value), markup_def)
+                    property_markup[prop_id] = {
+                        'profile_id': markup_def.get('id'),
+                        'blocks': parsed.get('blocks', [])
+                    }
+                if property_markup:
+                    node_data['property_markup'] = property_markup
         # Add indicator metadata if available
         indicator_meta = get_indicator_metadata(node, blueprint)
         if indicator_meta:
@@ -1280,14 +2123,334 @@ def _serialize_graph(graph, blueprint=None):
             node_data['indicator_id'] = None
             node_data['indicator_set'] = None
         node_data['icon_id'] = get_node_icon(node, blueprint)
-        print(f"[serialize_node] id={node.id} status={node.properties.get('status')} indicator_id={node_data['indicator_id']} indicator_set={node_data['indicator_set']}")
+        # Add allowed_children from schema
+        node_data['allowed_children'] = get_allowed_children(node.blueprint_type_id)
+        print(f"[serialize_node] id={node_id} type={node.blueprint_type_id} allowed_children={node_data['allowed_children']} status={node.properties.get('status')} indicator_id={node_data['indicator_id']} indicator_set={node_data['indicator_set']}")
         return node_data
-    
+
     return {
         'roots': [serialize_node(root) for root in graph.roots]
     }
 
 
+# Config endpoints
+
+@api_bp.route('/config/icons', methods=['GET'])
+def get_icons_config():
+    """Get the icons catalog configuration with API URLs for accessing icons."""
+    try:
+        import yaml
+        from pathlib import Path
+        
+        # Find the icons catalog file
+        assets_icons_dir = Path(__file__).parent.parent.parent / 'assets' / 'icons'
+        catalog_file = assets_icons_dir / 'catalog.yaml'
+        
+        if not catalog_file.exists():
+            logger.warning(f"Icons catalog not found at {catalog_file}")
+            return jsonify({
+                'error': {
+                    'code': 'CATALOG_NOT_FOUND',
+                    'message': 'Icons catalog not found'
+                }
+            }), 404
+        
+        with open(catalog_file, 'r') as f:
+            catalog_data = yaml.safe_load(f)
+        
+        # Enhance icon data with API URL
+        icons = catalog_data.get('icons', [])
+        for icon in icons:
+            icon['url'] = f'/api/v1/assets/icons/{icon["id"]}'
+        
+        return jsonify({
+            'icons': icons
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Error loading icons catalog: {e}", exc_info=True)
+        return jsonify({
+            'error': {
+                'code': 'CATALOG_ERROR',
+                'message': f'Failed to load icons catalog: {str(e)}'
+            }
+        }), 500
+
+
+@api_bp.route('/config/indicators', methods=['GET'])
+def get_indicators_config():
+    """Get the indicators catalog configuration with API URLs for accessing indicator files."""
+    try:
+        import yaml
+        from pathlib import Path
+        
+        # Find the indicators catalog file
+        assets_indicators_dir = Path(__file__).parent.parent.parent / 'assets' / 'indicators'
+        catalog_file = assets_indicators_dir / 'catalog.yaml'
+        
+        if not catalog_file.exists():
+            logger.warning(f"Indicators catalog not found at {catalog_file}")
+            return jsonify({
+                'error': {
+                    'code': 'CATALOG_NOT_FOUND',
+                    'message': 'Indicators catalog not found'
+                }
+            }), 404
+        
+        with open(catalog_file, 'r') as f:
+            catalog_data = yaml.safe_load(f)
+        
+        # Enhance indicator data with API URLs
+        indicator_sets = catalog_data.get('indicator_sets', {})
+        for set_key, set_def in indicator_sets.items():
+            for indicator in set_def.get('indicators', []):
+                indicator['url'] = f'/api/v1/assets/indicators/{set_key}/{indicator["id"]}'
+        
+        return jsonify({
+            'indicator_sets': indicator_sets
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Error loading indicators catalog: {e}", exc_info=True)
+        return jsonify({
+            'error': {
+                'code': 'CATALOG_ERROR',
+                'message': f'Failed to load indicators catalog: {str(e)}'
+            }
+        }), 500
+
+
+@api_bp.route('/assets/icons/<icon_id>', methods=['GET'])
+def get_icon_file(icon_id: str):
+    """Get an individual icon SVG file."""
+    try:
+        from pathlib import Path
+        
+        # Sanitize the icon_id to prevent path traversal
+        if '..' in icon_id or '/' in icon_id:
+            return jsonify({'error': 'Invalid icon ID'}), 400
+        
+        assets_icons_dir = Path(__file__).parent.parent.parent / 'assets' / 'icons'
+        icon_file = assets_icons_dir / f'{icon_id}.svg'
+        
+        if not icon_file.exists():
+            return jsonify({'error': 'Icon not found'}), 404
+        
+        with open(icon_file, 'r') as f:
+            svg_content = f.read()
+        
+        return svg_content, 200, {'Content-Type': 'image/svg+xml'}
+        
+    except Exception as e:
+        logger.error(f"Error loading icon file: {e}", exc_info=True)
+        return jsonify({'error': 'Failed to load icon'}), 500
+
+
+@api_bp.route('/assets/indicators/<set_id>/<indicator_id>', methods=['GET'])
+def get_indicator_file(set_id: str, indicator_id: str):
+    """Get an individual indicator SVG file."""
+    try:
+        from pathlib import Path
+        import yaml
+        
+        # Sanitize to prevent path traversal
+        if '..' in set_id or '/' in set_id or '..' in indicator_id or '/' in indicator_id:
+            return jsonify({'error': 'Invalid indicator ID'}), 400
+        
+        assets_indicators_dir = Path(__file__).parent.parent.parent / 'assets' / 'indicators'
+        
+        # Load catalog to find the actual filename for this indicator
+        catalog_file = assets_indicators_dir / 'catalog.yaml'
+        with open(catalog_file, 'r') as f:
+            catalog_data = yaml.safe_load(f)
+        
+        indicator_set = catalog_data.get('indicator_sets', {}).get(set_id, {})
+        indicators = indicator_set.get('indicators', [])
+        
+        # Find the indicator with matching id
+        target_indicator = None
+        for ind in indicators:
+            if ind.get('id') == indicator_id:
+                target_indicator = ind
+                break
+        
+        if not target_indicator:
+            return jsonify({'error': 'Indicator not found in catalog'}), 404
+        
+        # Use the filename from the catalog
+        indicator_filename = target_indicator.get('file')
+        if not indicator_filename:
+            return jsonify({'error': 'Indicator file not specified'}), 400
+        
+        indicator_file = assets_indicators_dir / indicator_filename
+        
+        if not indicator_file.exists():
+            return jsonify({'error': f'Indicator file not found: {indicator_filename}'}), 404
+        
+        with open(indicator_file, 'r') as f:
+            svg_content = f.read()
+        
+        return svg_content, 200, {'Content-Type': 'image/svg+xml'}
+        
+    except Exception as e:
+        logger.error(f"Error loading indicator file: {e}", exc_info=True)
+        return jsonify({'error': 'Failed to load indicator'}), 500
+
+
 def register_routes(app):
     """Register all API routes with Flask app."""
     app.register_blueprint(api_bp)
+
+
+@api_bp.route('/session/<session_id>/migrations/status', methods=['GET'])
+def get_migration_status(session_id):
+    """Get migration status for current session.
+    
+    Returns info about template version mismatch and available migrations.
+    """
+    session_data = _get_session_data(session_id)
+    if not session_data:
+        return jsonify({
+            'error': {
+                'code': 'SESSION_NOT_FOUND',
+                'message': f'Session {session_id} not found'
+            }
+        }), 404
+    
+    try:
+        graph = session_data.get('graph')
+        blueprint = session_data.get('blueprint')
+        template_id = session_data.get('template_id')
+        
+        if not graph or not blueprint:
+            return jsonify({
+                'status': 'no_migration_needed',
+                'message': 'No graph or blueprint loaded'
+            }), 200
+        
+        current_version = blueprint.version if hasattr(blueprint, 'version') else '0.1.0'
+        saved_version = graph.template_version or '0.1.0'
+        
+        if saved_version == current_version:
+            return jsonify({
+                'status': 'up_to_date',
+                'saved_version': saved_version,
+                'current_version': current_version,
+                'template_id': template_id
+            }), 200
+        
+        # Check if migration path exists
+        try:
+            from backend.infra.project_talus_migrations import registry as migrations_registry
+            migrations = migrations_registry.get_migration_path(saved_version, current_version)
+            
+            return jsonify({
+                'status': 'migration_available',
+                'saved_version': saved_version,
+                'current_version': current_version,
+                'template_id': template_id,
+                'migration_count': len(migrations),
+                'migration_path': [f"{m.from_version} -> {m.to_version}" for m in migrations]
+            }), 200
+        except Exception as e:
+            return jsonify({
+                'status': 'migration_not_available',
+                'saved_version': saved_version,
+                'current_version': current_version,
+                'error': str(e)
+            }), 200
+            
+    except Exception as e:
+        logger.error(f"[API] Failed to get migration status: {e}", exc_info=True)
+        return jsonify({
+            'error': {
+                'code': 'STATUS_CHECK_FAILED',
+                'message': f'Failed to check migration status: {str(e)}'
+            }
+        }), 500
+
+
+@api_bp.route('/session/<session_id>/migrations/apply', methods=['POST'])
+def apply_migrations(session_id):
+    """Apply pending migrations to the current session.
+    
+    Migrates the graph from saved template version to current version.
+    """
+    session_data = _get_session_data(session_id)
+    if not session_data:
+        return jsonify({
+            'error': {
+                'code': 'SESSION_NOT_FOUND',
+                'message': f'Session {session_id} not found'
+            }
+        }), 404
+    
+    try:
+        graph = session_data.get('graph')
+        blueprint = session_data.get('blueprint')
+        template_id = session_data.get('template_id')
+        
+        if not graph or not blueprint:
+            return jsonify({
+                'error': {
+                    'code': 'INCOMPLETE_SESSION',
+                    'message': 'Graph or blueprint not loaded'
+                }
+            }), 400
+        
+        current_version = blueprint.version if hasattr(blueprint, 'version') else '0.1.0'
+        saved_version = graph.template_version or '0.1.0'
+        
+        if saved_version == current_version:
+            return jsonify({
+                'status': 'already_up_to_date',
+                'version': current_version
+            }), 200
+        
+        # Apply migrations
+        try:
+            from backend.infra.project_talus_migrations import registry as migrations_registry
+            success, messages = migrations_registry.apply_migrations(
+                graph,
+                from_version=saved_version,
+                to_version=current_version
+            )
+            
+            if success:
+                graph.template_version = current_version
+                session_data['template_version'] = current_version
+                _mark_session_dirty(session_id)
+                logger.info(f"[API] Migration successful for session {session_id}")
+                
+                return jsonify({
+                    'status': 'migration_successful',
+                    'from_version': saved_version,
+                    'to_version': current_version,
+                    'messages': messages
+                }), 200
+            else:
+                logger.warning(f"[API] Migration failed for session {session_id}: {messages}")
+                return jsonify({
+                    'status': 'migration_failed',
+                    'from_version': saved_version,
+                    'to_version': current_version,
+                    'messages': messages
+                }), 400
+                
+        except Exception as e:
+            logger.error(f"[API] Migration error: {e}", exc_info=True)
+            return jsonify({
+                'error': {
+                    'code': 'MIGRATION_ERROR',
+                    'message': f'Migration failed: {str(e)}'
+                }
+            }), 500
+            
+    except Exception as e:
+        logger.error(f"[API] Failed to apply migrations: {e}", exc_info=True)
+        return jsonify({
+            'error': {
+                'code': 'APPLY_FAILED',
+                'message': f'Failed to apply migrations: {str(e)}'
+            }
+        }), 500

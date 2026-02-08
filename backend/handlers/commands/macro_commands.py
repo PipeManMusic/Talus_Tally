@@ -1,7 +1,10 @@
 from uuid import UUID
-from typing import List
+from typing import List, Optional, Tuple
 from backend.handlers.command import Command
 from backend.core.node import Node
+from backend.core.imports import CSVImportPlan, PreparedCSVNode
+from backend.handlers.commands.node_commands import CreateNodeCommand
+from backend.api.broadcaster import emit_property_changed
 
 
 class ApplyKitCommand(Command):
@@ -69,3 +72,97 @@ class ApplyKitCommand(Command):
             self.graph.remove_node(clone_id)
         
         self.cloned_node_ids.clear()
+
+
+
+class ImportNodesCommand(Command):
+    """Command to bulk-create nodes from prepared CSV data."""
+
+    def __init__(
+        self,
+        plan: CSVImportPlan,
+        prepared_nodes: List[PreparedCSVNode],
+        graph=None,
+        blueprint=None,
+        session_id: Optional[str] = None,
+    ):
+        self.plan = plan
+        self.prepared_nodes = prepared_nodes
+        self.graph = graph
+        self.blueprint = blueprint
+        self.session_id = session_id
+        self._child_commands: List[Tuple[CreateNodeCommand, PreparedCSVNode]] = []
+        self.created_node_ids: List[UUID] = []
+
+    def execute(self) -> None:
+        if not self.graph:
+            raise ValueError("Graph is required for import execution")
+
+        parent_node = None
+        if self.plan.parent_id:
+            parent_node = self.graph.get_node(self.plan.parent_id)
+            if not parent_node:
+                raise ValueError(f"Parent node {self.plan.parent_id} not found")
+            if self.blueprint and not self.blueprint.is_allowed_child(
+                parent_node.blueprint_type_id,
+                self.plan.blueprint_type_id,
+            ):
+                raise ValueError(
+                    f"Type '{self.plan.blueprint_type_id}' not allowed under '{parent_node.blueprint_type_id}'"
+                )
+
+        if not self._child_commands:
+            for prepared in self.prepared_nodes:
+                child_command = CreateNodeCommand(
+                    blueprint_type_id=self.plan.blueprint_type_id,
+                    name=prepared.name,
+                    graph=self.graph,
+                    blueprint=self.blueprint,
+                    session_id=self.session_id,
+                    parent_id=self.plan.parent_id,
+                )
+                self._child_commands.append((child_command, prepared))
+
+        self.created_node_ids = []
+
+        for child_command, prepared in self._child_commands:
+            child_command.execute()
+            node = child_command.node
+            if not node:
+                continue
+
+            node.name = prepared.name
+            if not hasattr(node, "properties") or node.properties is None:
+                node.properties = {}
+
+            previous_name = node.properties.get("name")
+            node.properties["name"] = prepared.name
+            if self.session_id and previous_name != prepared.name:
+                emit_property_changed(
+                    self.session_id,
+                    str(node.id),
+                    "name",
+                    previous_name,
+                    prepared.name,
+                )
+
+            for prop_id, value in prepared.properties.items():
+                previous = node.properties.get(prop_id)
+                if previous == value:
+                    continue
+                node.properties[prop_id] = value
+                if self.session_id:
+                    emit_property_changed(
+                        self.session_id,
+                        str(node.id),
+                        prop_id,
+                        previous,
+                        value,
+                    )
+
+            self.created_node_ids.append(node.id)
+
+    def undo(self) -> None:
+        for child_command, _ in reversed(self._child_commands):
+            child_command.undo()
+        self.created_node_ids.clear()

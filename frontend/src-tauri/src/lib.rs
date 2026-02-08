@@ -120,6 +120,7 @@ fn start_backend(backend_process: Arc<Mutex<Option<Child>>>, _app_handle: tauri:
   
   match Command::new(&venv_python)
     .args(&["-m", "backend.app"])
+    .env("TALUS_DAEMON", "1")  // Disable Flask reloader to prevent job control issues
     .current_dir(&project_root)
     .spawn() {
     Ok(child) => {

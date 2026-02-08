@@ -80,6 +80,8 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
       const template = await apiClient.getTemplateForEditor(templateId);
       setCurrentTemplate(template);
       setOriginalTemplate(JSON.parse(JSON.stringify(template))); // Deep clone
+      setSavedSuccessfully(false);
+      setOrphanInfo(null);
       setView('editor');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load template');
@@ -115,6 +117,8 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
     setOriginalTemplate(null); // New template has no original
     setValidationErrors([]);
     setError(null);
+    setSavedSuccessfully(false);
+    setOrphanInfo(null);
     setView('editor');
     console.log('[TemplateEditor] New template created, switching to editor view');
   }, []);
@@ -126,6 +130,8 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
     setOriginalTemplate(null);
     setValidationErrors([]);
     setError(null);
+    setSavedSuccessfully(false);
+    setOrphanInfo(null);
     setView('list');
     console.log('[TemplateEditor] Cancel complete, view set to list');
   }, []);
@@ -139,7 +145,6 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
     setOrphanInfo(null);
 
     try {
-      // Validate first
       const validation: ValidationResult = await apiClient.validateTemplate(currentTemplate);
       if (!validation.is_valid) {
         setValidationErrors(validation.errors);
@@ -149,7 +154,6 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
       }
       setValidationErrors([]);
 
-      // Save template
       const isNew = !templates.some(t => t.id === currentTemplate.id);
       let result;
       if (isNew) {
@@ -158,18 +162,20 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
         result = await apiClient.updateTemplate(currentTemplate.id, currentTemplate);
       }
 
-      // Check for orphaned nodes
-      if (result.orphan_info && result.orphan_info.total_orphaned_nodes > 0) {
+      if (result?.orphan_info && result.orphan_info.total_orphaned_nodes > 0) {
         setOrphanInfo(result.orphan_info);
       }
+
+      const updatedTemplate: Template = result?.template ?? { ...currentTemplate };
+      setCurrentTemplate(updatedTemplate);
+      setOriginalTemplate(JSON.parse(JSON.stringify(updatedTemplate)));
 
       setSavedSuccessfully(true);
       setTimeout(() => {
         setSavedSuccessfully(false);
         setOrphanInfo(null);
       }, 8000);
-      
-      // Reload templates list
+
       await loadTemplates();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save template');
@@ -201,13 +207,14 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
   }, [currentTemplate, loadTemplates]);
 
   const updateCurrentTemplate = useCallback((updates: Partial<Template>) => {
+    setSavedSuccessfully(false);
     setCurrentTemplate(prev => {
       if (!prev) return prev;
       return { ...prev, ...updates };
     });
   }, []);
 
-  const handleNodeTypesChange = useCallback((nodeTypes: NodeType[]) => {
+  const handleNodeTypesChange = useCallback(async (nodeTypes: NodeType[]) => {
     updateCurrentTemplate({ node_types: nodeTypes });
   }, [updateCurrentTemplate]);
 
@@ -305,6 +312,10 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
     return null;
   }
 
+  const orphanedNodesCount = orphanInfo?.total_orphaned_nodes ?? 0;
+  const orphanedPropertiesCount = orphanInfo?.total_orphaned_properties ?? 0;
+  const orphanedSessionsCount = orphanInfo?.orphaned_sessions?.length ?? 0;
+
   return (
     <div className="flex flex-col h-full bg-bg-dark">
       {/* Title Bar - provides window management controls */}
@@ -337,15 +348,21 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
               <AlertCircle size={18} />
               <div className="text-sm">
                 <span className="font-semibold">
-                  Saved with {orphanInfo.total_orphaned_nodes} orphaned node{orphanInfo.total_orphaned_nodes !== 1 ? 's' : ''}
-                  {orphanInfo.total_orphaned_properties > 0 && (
-                    <span> and {orphanInfo.total_orphaned_properties} orphaned propert{orphanInfo.total_orphaned_properties !== 1 ? 'ies' : 'y'}</span>
+                  Saved with {orphanedNodesCount} orphaned node{orphanedNodesCount !== 1 ? 's' : ''}
+                  {orphanedPropertiesCount > 0 && (
+                    <span> and {orphanedPropertiesCount} orphaned propert{orphanedPropertiesCount !== 1 ? 'ies' : 'y'}</span>
                   )}
                 </span>
                 <span className="text-xs block text-orange-300/80">
-                  {orphanInfo.orphaned_sessions.length} active session{orphanInfo.orphaned_sessions.length !== 1 ? 's' : ''} affected
+                  {orphanedSessionsCount} active session{orphanedSessionsCount !== 1 ? 's' : ''} affected
                 </span>
               </div>
+            </div>
+          )}
+          {error && (
+            <div className="flex items-center gap-2 px-3 py-2 bg-status-danger/10 text-status-danger rounded">
+              <AlertCircle size={18} />
+              <span className="text-sm font-semibold">{error}</span>
             </div>
           )}
           <button
@@ -390,32 +407,32 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
           </div>
         )}
 
-        {orphanInfo && (orphanInfo.total_orphaned_nodes > 0 || orphanInfo.total_orphaned_properties > 0) && (
+        {orphanInfo && (orphanedNodesCount > 0 || orphanedPropertiesCount > 0) && (
           <div className="mb-6 p-4 bg-orange-500/10 border border-orange-500/30 rounded">
             <h3 className="font-semibold text-orange-400 mb-2 flex items-center gap-2">
               <AlertCircle size={18} />
               Orphaned Data Created
             </h3>
             <p className="text-sm text-orange-300/90 mb-3">
-              {orphanInfo.total_orphaned_nodes > 0 && (
+              {orphanedNodesCount > 0 && (
                 <span>
-                  {orphanInfo.total_orphaned_nodes} node{orphanInfo.total_orphaned_nodes !== 1 ? 's' : ''} in{' '}
-                  {orphanInfo.orphaned_sessions.length} active session{orphanInfo.orphaned_sessions.length !== 1 ? 's' : ''}{' '}
+                  {orphanedNodesCount} node{orphanedNodesCount !== 1 ? 's' : ''} in{' '}
+                  {orphanedSessionsCount} active session{orphanedSessionsCount !== 1 ? 's' : ''}{' '}
                   became orphaned because their node type was removed.
-                  {orphanInfo.total_orphaned_properties > 0 && ' '}
+                  {orphanedPropertiesCount > 0 && ' '}
                 </span>
               )}
-              {orphanInfo.total_orphaned_properties > 0 && (
+              {orphanedPropertiesCount > 0 && (
                 <span>
-                  {orphanInfo.total_orphaned_nodes > 0 && 'Additionally, '}
-                  {orphanInfo.total_orphaned_properties} propert{orphanInfo.total_orphaned_properties !== 1 ? 'ies' : 'y'} became orphaned because they were removed from node types.
+                  {orphanedNodesCount > 0 && 'Additionally, '}
+                  {orphanedPropertiesCount} propert{orphanedPropertiesCount !== 1 ? 'ies' : 'y'} became orphaned because they were removed from node types.
                 </span>
               )}
             </p>
             <div className="text-xs text-orange-200/80 space-y-1">
               <p><strong>What this means:</strong></p>
               <ul className="ml-4 space-y-1">
-                {orphanInfo.total_orphaned_nodes > 0 && (
+                {orphanedNodesCount > 0 && (
                   <>
                     <li>• <strong>Orphaned nodes:</strong> Preserve all data and properties</li>
                     <li>• You can still view, edit, and delete orphaned nodes</li>
@@ -423,7 +440,7 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
                     <li>• They exist outside the template structure</li>
                   </>
                 )}
-                {orphanInfo.total_orphaned_properties > 0 && (
+                {orphanedPropertiesCount > 0 && (
                   <>
                     <li>• <strong>Orphaned properties:</strong> Preserve existing values</li>
                     <li>• Appear in "Orphaned Properties" section in Inspector</li>

@@ -14,3 +14,11 @@ def test_render_template():
     result = engine.render_string(template, context={"node": node})
     
     assert result == "Status of Report Task: Done"
+
+
+def test_parse_markup_filter():
+    engine = ReportEngine()
+    template = "{{ parse_markup(text, 'script_default').blocks[0].type }}"
+    result = engine.render_string(template, context={"text": "SCENE: Garage"})
+
+    assert result == "scene"

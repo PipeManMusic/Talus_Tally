@@ -1,0 +1,18 @@
+id: script_default
+version: "0.1.0"
+name: "Script Default"
+description: "Default markup for scripts and structured notes."
+tokens:
+  - id: scene
+    label: Scene
+    prefix: "SCENE:"
+  - id: speaker
+    label: Speaker
+    prefix: "SPEAKER:"
+    pattern: '^(?P<name>[A-Z][A-Z0-9_ ]+):\s*(?P<text>.*)$'
+  - id: action
+    label: Action
+    prefix: "[ACTION]"
+  - id: note
+    label: Note
+    prefix: "NOTE:"
