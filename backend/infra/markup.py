@@ -1,5 +1,7 @@
 import os
 import re
+import sys
+from pathlib import Path
 import yaml
 from typing import Any, Dict, List, Optional
 
@@ -9,10 +11,22 @@ class MarkupRegistry:
 
     def __init__(self, base_dir: Optional[str] = None):
         if base_dir is None:
-            infra_dir = os.path.dirname(os.path.abspath(__file__))
-            project_root = os.path.dirname(os.path.dirname(infra_dir))
-            base_dir = os.path.join(project_root, 'data', 'markups')
-        self.base_dir = base_dir
+            infra_dir = Path(__file__).resolve().parent
+            project_root = infra_dir.parent.parent
+            candidates = [Path('/opt/talus_tally/data/markups')]
+            if hasattr(sys, '_MEIPASS'):
+                candidates.append(Path(sys._MEIPASS) / 'data' / 'markups')
+            candidates.append(project_root / 'data' / 'markups')
+
+            selected = None
+            for candidate in candidates:
+                if candidate.exists():
+                    selected = candidate
+                    break
+            if selected is None:
+                selected = candidates[-1]
+            base_dir = selected
+        self.base_dir = str(base_dir)
         self._cache: Dict[str, Dict[str, Any]] = {}
 
     def load_profile(self, profile_id: str) -> Dict[str, Any]:

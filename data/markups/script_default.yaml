@@ -1,11 +1,21 @@
 id: script_default
-version: "0.1.0"
-name: "Script Default"
-description: "Default markup for scripts and structured notes."
+label: Default Script
 tokens:
   - id: scene
     label: Scene
     prefix: "SCENE:"
+  - id: hook
+    label: Hook
+    prefix: "HOOK:"
+  - id: visual
+    label: Visual / B-Roll
+    prefix: "[VISUAL]"
+  - id: audio
+    label: Audio / SFX
+    prefix: "[AUDIO]"
+  - id: text
+    label: On-Screen Text
+    prefix: "[TEXT]"
   - id: speaker
     label: Speaker
     prefix: "SPEAKER:"
@@ -13,6 +23,18 @@ tokens:
   - id: action
     label: Action
     prefix: "[ACTION]"
+  - id: payoff
+    label: Retention Payoff
+    prefix: "PAYOFF:"
+  - id: loop
+    label: Open Loop
+    prefix: "LOOP:"
+  - id: cta
+    label: Call to Action
+    prefix: "CTA:"
+  - id: part
+    label: Inventory Part
+    prefix: "PART:"
   - id: note
     label: Note
     prefix: "NOTE:"

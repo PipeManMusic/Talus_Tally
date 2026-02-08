@@ -62,7 +62,6 @@
           "synopsis": "The who what where and why of Project Talus"
         },
         "children": [
-          "5e26aa30-e22f-40fb-beed-ff9d5ae9d611",
           "820342f7-a2d4-4ba8-a069-71464831e660",
           "1fd92134-4784-464c-9962-da6806ec1c76"
         ],
@@ -73,24 +72,6 @@
           "task",
           "footage",
           "location_scout",
-          "uses_camera_gear",
-          "uses_car_part",
-          "uses_tool"
-        ]
-      },
-      {
-        "id": "5e26aa30-e22f-40fb-beed-ff9d5ae9d611",
-        "type": "task",
-        "properties": {
-          "name": "Write Script",
-          "status": "c96378bf-66e5-8e04-2cf3-d1f65cab2f9f"
-        },
-        "children": [],
-        "indicator_id": "partial",
-        "indicator_set": "status",
-        "icon_id": "clipboard-document-check",
-        "allowed_children": [
-          "asset_reference",
           "uses_camera_gear",
           "uses_car_part",
           "uses_tool"
@@ -2590,7 +2571,7 @@
     "8f0b11a8-aea2-415b-938c-3633e816eff7": true,
     "063e0759-c0d2-4caf-b411-ed87e2f16637": true,
     "58e9689c-0b7f-4325-8ebe-ca53944cf667": true,
-    "fb04ceae-e213-462b-805e-a94fead8b824": true,
+    "fb04ceae-e213-462b-805e-a94fead8b824": false,
     "0f71cdf1-f7b1-4ce9-bf97-dc55b20eb208": true,
     "be07bc50-f298-4e9b-a7b0-9c5b5e7db4c8": true,
     "80050417-1151-4cae-8431-ac5e047f58e9": false,

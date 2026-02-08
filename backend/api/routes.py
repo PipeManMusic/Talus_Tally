@@ -1,3 +1,24 @@
+from pathlib import Path
+import sys
+
+def _resolve_assets_subpath(*parts: str) -> Path:
+    """Resolve an assets subpath preferring production layout."""
+    candidates = []
+    production_root = Path('/opt/talus_tally')
+    if production_root.exists():
+        candidates.append(production_root)
+    if hasattr(sys, '_MEIPASS'):
+        candidates.append(Path(sys._MEIPASS))
+    candidates.append(Path(__file__).resolve().parent.parent.parent)
+
+    for base in candidates:
+        candidate = base.joinpath(*parts)
+        if candidate.exists():
+            return candidate
+
+    # Fallback to repo layout even if missing so callers can handle errors
+    return candidates[-1].joinpath(*parts)
+
 def get_indicator_metadata(node, blueprint):
     """Get indicator metadata for any node property with indicator_set defined."""
     if not blueprint:
@@ -2140,10 +2161,9 @@ def get_icons_config():
     """Get the icons catalog configuration with API URLs for accessing icons."""
     try:
         import yaml
-        from pathlib import Path
-        
+
         # Find the icons catalog file
-        assets_icons_dir = Path(__file__).parent.parent.parent / 'assets' / 'icons'
+        assets_icons_dir = _resolve_assets_subpath('assets', 'icons')
         catalog_file = assets_icons_dir / 'catalog.yaml'
         
         if not catalog_file.exists():
@@ -2182,10 +2202,9 @@ def get_indicators_config():
     """Get the indicators catalog configuration with API URLs for accessing indicator files."""
     try:
         import yaml
-        from pathlib import Path
-        
+
         # Find the indicators catalog file
-        assets_indicators_dir = Path(__file__).parent.parent.parent / 'assets' / 'indicators'
+        assets_indicators_dir = _resolve_assets_subpath('assets', 'indicators')
         catalog_file = assets_indicators_dir / 'catalog.yaml'
         
         if not catalog_file.exists():
@@ -2224,13 +2243,11 @@ def get_indicators_config():
 def get_icon_file(icon_id: str):
     """Get an individual icon SVG file."""
     try:
-        from pathlib import Path
-        
         # Sanitize the icon_id to prevent path traversal
         if '..' in icon_id or '/' in icon_id:
             return jsonify({'error': 'Invalid icon ID'}), 400
         
-        assets_icons_dir = Path(__file__).parent.parent.parent / 'assets' / 'icons'
+        assets_icons_dir = _resolve_assets_subpath('assets', 'icons')
         icon_file = assets_icons_dir / f'{icon_id}.svg'
         
         if not icon_file.exists():
@@ -2250,14 +2267,13 @@ def get_icon_file(icon_id: str):
 def get_indicator_file(set_id: str, indicator_id: str):
     """Get an individual indicator SVG file."""
     try:
-        from pathlib import Path
         import yaml
         
         # Sanitize to prevent path traversal
         if '..' in set_id or '/' in set_id or '..' in indicator_id or '/' in indicator_id:
             return jsonify({'error': 'Invalid indicator ID'}), 400
         
-        assets_indicators_dir = Path(__file__).parent.parent.parent / 'assets' / 'indicators'
+        assets_indicators_dir = _resolve_assets_subpath('assets', 'indicators')
         
         # Load catalog to find the actual filename for this indicator
         catalog_file = assets_indicators_dir / 'catalog.yaml'

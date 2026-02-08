@@ -1,3 +1,4 @@
+use std::path::{Path, PathBuf};
 use std::process::{Command, Child};
 use std::net::TcpStream;
 use std::sync::{Arc, Mutex};
@@ -60,25 +61,31 @@ fn start_backend(backend_process: Arc<Mutex<Option<Child>>>, _app_handle: tauri:
   println!("Checking for existing backend processes...");
   #[cfg(target_os = "linux")]
   {
-    let _ = Command::new("pkill")
-      .args(&["-f", "python.*backend.app"])
-      .output();
+    for pattern in ["python.*backend.app", "talus-tally-backend"] {
+      let _ = Command::new("pkill")
+        .args(&["-f", pattern])
+        .output();
+    }
     println!("✓ Killed any existing backend processes");
   }
 
   #[cfg(target_os = "macos")]
   {
-    let _ = Command::new("pkill")
-      .args(&["-f", "python.*backend.app"])
-      .output();
+    for pattern in ["python.*backend.app", "talus-tally-backend"] {
+      let _ = Command::new("pkill")
+        .args(&["-f", pattern])
+        .output();
+    }
     println!("✓ Killed any existing backend processes");
   }
 
   #[cfg(target_os = "windows")]
   {
-    let _ = Command::new("taskkill")
-      .args(&["/F", "/IM", "python.exe"])
-      .output();
+    for image in ["python.exe", "talus-tally-backend.exe"] {
+      let _ = Command::new("taskkill")
+        .args(&["/F", "/IM", image])
+        .output();
+    }
     println!("✓ Killed any existing backend processes");
   }
 
@@ -86,47 +93,44 @@ fn start_backend(backend_process: Arc<Mutex<Option<Child>>>, _app_handle: tauri:
   std::thread::sleep(std::time::Duration::from_millis(1000));
 
   // Determine project root - handle both development and installed locations
-  let project_root = if let Ok(exe_path) = std::env::current_exe() {
-    // If running from /usr/bin/talus-tally, backend is at /opt/talus-tally
-    if exe_path.to_string_lossy().contains("/usr/bin/talus-tally") {
-      std::path::PathBuf::from("/opt/talus-tally")
-    } else {
-      // Development: go up from binary location to find project root
-      exe_path
-        .parent()        // src-tauri/target/release
-        .unwrap()
-        .parent()        // src-tauri/target
-        .unwrap()
-        .parent()        // src-tauri
-        .unwrap()
-        .parent()        // frontend
-        .unwrap()
-        .parent()        // project root
-        .unwrap()
-        .to_path_buf()
-    }
-  } else {
-    // Fallback to current_dir
-    std::env::current_dir()
-      .unwrap()
-      .parent()
-      .unwrap()
-      .parent()
-      .unwrap()
-      .to_path_buf()
-  };
-  
+  let project_root = determine_project_root();
+
+  let packaged_backend = project_root.join("talus-tally-backend");
   let venv_python = project_root.join(".venv/bin/python3");
-  
-  match Command::new(&venv_python)
-    .args(&["-m", "backend.app"])
-    .env("TALUS_DAEMON", "1")  // Disable Flask reloader to prevent job control issues
-    .current_dir(&project_root)
-    .spawn() {
+
+  let spawn_result = if packaged_backend.exists() {
+    println!(
+      "✓ Starting packaged backend binary at {}",
+      packaged_backend.display()
+    );
+    Command::new(&packaged_backend)
+      .env("TALUS_DAEMON", "1")
+      .current_dir(&project_root)
+      .spawn()
+  } else if venv_python.exists() {
+    println!(
+      "✓ Starting backend via virtualenv Python at {}",
+      venv_python.display()
+    );
+    Command::new(&venv_python)
+      .args(["-m", "backend.app"])
+      .env("TALUS_DAEMON", "1")
+      .current_dir(&project_root)
+      .spawn()
+  } else {
+    println!("⚠️  Virtualenv not found, falling back to system python3");
+    Command::new("python3")
+      .args(["-m", "backend.app"])
+      .env("TALUS_DAEMON", "1")
+      .current_dir(&project_root)
+      .spawn()
+  };
+
+  match spawn_result {
     Ok(child) => {
       if let Ok(mut proc) = backend_process.lock() {
         *proc = Some(child);
-        println!("✓ Python backend started successfully");
+        println!("✓ Backend started successfully");
       }
     }
     Err(e) => {
@@ -136,6 +140,28 @@ fn start_backend(backend_process: Arc<Mutex<Option<Child>>>, _app_handle: tauri:
       eprintln!("Make sure you have Python installed and .venv activated");
     }
   }
+}
+
+fn determine_project_root() -> PathBuf {
+  if let Ok(exe_path) = std::env::current_exe() {
+    let exe_dir = exe_path.parent().unwrap_or_else(|| Path::new("."));
+
+    // Installed package layout
+    if exe_dir.starts_with("/opt/talus-tally") {
+      return PathBuf::from("/opt/talus-tally");
+    }
+
+    // Search upwards for the repo root (contains backend folder)
+    if let Some(found) = exe_dir
+      .ancestors()
+      .find(|ancestor| ancestor.join("backend").exists())
+    {
+      return found.to_path_buf();
+    }
+  }
+
+  // Fallback to current working directory or '.'
+  std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."))
 }
 
 #[tauri::command]

@@ -2,6 +2,8 @@ import yaml
 import uuid
 import hashlib
 import os
+import sys
+from pathlib import Path
 from typing import List, Dict, Any, Optional
 from backend.infra.icon_catalog import IconCatalog
 from backend.infra.template_validator import TemplateValidator, TemplateValidationError
@@ -197,21 +199,39 @@ class SchemaLoader:
         self.icon_catalog = None
         
         # Get absolute path to project root
-        schema_loader_dir = os.path.dirname(os.path.abspath(__file__))  # backend/infra
-        project_root = os.path.dirname(os.path.dirname(schema_loader_dir))  # Go up 2 levels to project root
-        
-        # Try to load indicator catalog if it exists
-        catalog_path = os.path.join(project_root, 'assets/indicators/catalog.yaml')
-        if os.path.exists(catalog_path):
+        schema_loader_dir = Path(__file__).resolve().parent  # backend/infra
+        project_root = schema_loader_dir.parent.parent  # Go up 2 levels to project root
+
+        # Look for assets in preferred order: production install, PyInstaller bundle, repo root
+        asset_roots = []
+        production_root = Path('/opt/talus_tally')
+        if production_root.exists():
+            asset_roots.append(production_root)
+        if hasattr(sys, '_MEIPASS'):
+            asset_roots.append(Path(sys._MEIPASS))
+        asset_roots.append(project_root)
+
+        catalog_path = None
+        icon_catalog_path = None
+        for root in asset_roots:
+            candidate_catalog = root / 'assets' / 'indicators' / 'catalog.yaml'
+            candidate_icon = root / 'assets' / 'icons' / 'catalog.yaml'
+            if catalog_path is None and candidate_catalog.exists():
+                catalog_path = candidate_catalog
+            if icon_catalog_path is None and candidate_icon.exists():
+                icon_catalog_path = candidate_icon
+            if catalog_path and icon_catalog_path:
+                break
+
+        if catalog_path:
             try:
-                self.indicator_catalog = IndicatorCatalog.load(catalog_path)
+                self.indicator_catalog = IndicatorCatalog.load(str(catalog_path))
             except Exception as e:
                 print(f"[WARN] Failed to load indicator catalog: {e}")
-        # Load icon catalog (maps logical icon ids to SVG files)
-        icon_catalog_path = os.path.join(project_root, 'assets/icons/catalog.yaml')
-        if os.path.exists(icon_catalog_path):
+
+        if icon_catalog_path:
             try:
-                self.icon_catalog = IconCatalog.load(icon_catalog_path)
+                self.icon_catalog = IconCatalog.load(str(icon_catalog_path))
             except Exception as e:
                 print(f"[WARN] Failed to load icon catalog: {e}")
         

@@ -9,6 +9,7 @@ override_dh_auto_build:
 override_dh_auto_install:
 	mkdir -p debian/talus-tally/usr/bin
 	mkdir -p debian/talus-tally/opt/talus-tally
+	mkdir -p debian/talus-tally/opt/talus_tally
 	mkdir -p debian/talus-tally/usr/share/applications
 	mkdir -p debian/talus-tally/usr/share/icons/hicolor/256x256/apps
 	
@@ -17,8 +18,10 @@ override_dh_auto_install:
 	
 	# Copy backend and assets
 	cp -r backend debian/talus-tally/opt/talus-tally/
-	cp -r assets debian/talus-tally/opt/talus-tally/
-	cp -r data debian/talus-tally/opt/talus-tally/
+	cp -r assets debian/talus-tally/opt/talus_tally/
+	cp -r data debian/talus-tally/opt/talus_tally/
+	ln -s ../talus_tally/assets debian/talus-tally/opt/talus-tally/assets
+	ln -s ../talus_tally/data debian/talus-tally/opt/talus-tally/data
 	cp -r venv debian/talus-tally/opt/talus-tally/ || true
 	cp requirements.txt debian/talus-tally/opt/talus-tally/
 	

@@ -57,16 +57,11 @@ echo "✅ Frontend built to frontend/dist"
 # Step 1.5: Build Tauri desktop app
 echo "📦 Step 1.5/4: Building Tauri desktop app..."
 cd frontend
-TAURI_BUILD_LOG="../.tauri-build.log"
-rm -f "$TAURI_BUILD_LOG"
-if npx tauri build --bundles none > "$TAURI_BUILD_LOG" 2>&1; then
-    tail -20 "$TAURI_BUILD_LOG"
+if npx tauri build --no-bundle; then
     echo "✅ Tauri app built"
 else
-    tail -20 "$TAURI_BUILD_LOG"
     echo "⚠️  Tauri build failed - will use web browser fallback"
 fi
-rm -f "$TAURI_BUILD_LOG"
 cd ..
 
 # Step 2: Build backend
@@ -85,6 +80,7 @@ mkdir -p "$PACKAGE_DIR/usr/bin"
 mkdir -p "$PACKAGE_DIR/usr/share/applications"
 mkdir -p "$PACKAGE_DIR/usr/share/icons/hicolor/256x256/apps"
 mkdir -p "$PACKAGE_DIR/opt/talus-tally"
+mkdir -p "$PACKAGE_DIR/opt/talus_tally"
 
 # Copy backend binary
 cp dist/talus-tally-backend "$PACKAGE_DIR/opt/talus-tally/"
@@ -95,10 +91,15 @@ cp -r frontend/dist "$PACKAGE_DIR/opt/talus-tally/"
 
 # Copy data files and assets (templates, indicators, etc)
 echo "📁 Copying application data and assets..."
-mkdir -p "$PACKAGE_DIR/opt/talus-tally/data"
-mkdir -p "$PACKAGE_DIR/opt/talus-tally/assets"
-cp -r data/* "$PACKAGE_DIR/opt/talus-tally/data/" 2>/dev/null || true
-cp -r assets/* "$PACKAGE_DIR/opt/talus-tally/assets/" 2>/dev/null || true
+DATA_TARGET="$PACKAGE_DIR/opt/talus_tally/data"
+ASSETS_TARGET="$PACKAGE_DIR/opt/talus_tally/assets"
+mkdir -p "$DATA_TARGET" "$ASSETS_TARGET"
+cp -r data/* "$DATA_TARGET/" 2>/dev/null || true
+cp -r assets/* "$ASSETS_TARGET/" 2>/dev/null || true
+
+# Provide legacy path compatibility via symlinks
+ln -s ../talus_tally/data "$PACKAGE_DIR/opt/talus-tally/data"
+ln -s ../talus_tally/assets "$PACKAGE_DIR/opt/talus-tally/assets"
 
 # Copy Tauri binary if it exists
 for tauri_binary in \
@@ -118,37 +119,60 @@ cat > "$PACKAGE_DIR/usr/bin/talus-tally" << 'LAUNCHER'
 # Talus Tally Desktop Launcher
 # Starts backend in background, launches Tauri app, cleans up on exit
 
+LOG_FILE="/tmp/talus-tally.log"
+
+echo "[$(date)] Starting Talus Tally backend" >> "$LOG_FILE"
+
 # Start backend in background
-/opt/talus-tally/talus-tally-backend > /tmp/talus-tally.log 2>&1 &
+/opt/talus-tally/talus-tally-backend >> "$LOG_FILE" 2>&1 &
 BACKEND_PID=$!
 
-# Trap to cleanup on exit
+# Ensure backend PID is cleaned up on exit
 cleanup() {
-    kill $BACKEND_PID 2>/dev/null || true
+    if kill -0 $BACKEND_PID 2>/dev/null; then
+        kill $BACKEND_PID 2>/dev/null || true
+    fi
     wait $BACKEND_PID 2>/dev/null || true
 }
 trap cleanup EXIT
 
-# Wait for backend to start
-for i in {1..30}; do
-    if curl -s http://127.0.0.1:5000/ > /dev/null 2>&1; then
+# Detect when backend is ready
+READY=0
+for i in {1..60}; do
+    if ! kill -0 $BACKEND_PID 2>/dev/null; then
+        echo "Talus Tally backend exited unexpectedly. See $LOG_FILE for details." >&2
+        tail -n 40 "$LOG_FILE" >&2
+        exit 1
+    fi
+
+    if command -v curl >/dev/null 2>&1 && \
+       curl -sf http://127.0.0.1:5000/ >/dev/null 2>&1; then
+        READY=1
         break
     fi
+
     sleep 0.5
 done
+
+if [ $READY -ne 1 ]; then
+    echo "Talus Tally backend did not become ready. See $LOG_FILE for details." >&2
+    tail -n 40 "$LOG_FILE" >&2
+    exit 1
+fi
 
 # Launch Tauri app if available
 if [ -f /opt/talus-tally/talus-tally-app ]; then
     exec /opt/talus-tally/talus-tally-app
-# Otherwise open in browser
-elif command -v xdg-open &> /dev/null; then
-    xdg-open http://127.0.0.1:5000/
-    # Keep backend running
-    wait $BACKEND_PID
-else
-    # Fallback: just keep backend running
-    wait $BACKEND_PID
 fi
+
+# Otherwise open in browser if possible
+if command -v xdg-open &> /dev/null; then
+    echo "Talus Tally desktop binary missing; falling back to browser." >&2
+    xdg-open http://127.0.0.1:5000/ >/dev/null 2>&1
+fi
+
+# Keep backend running for browser mode
+wait $BACKEND_PID
 LAUNCHER
 chmod +x "$PACKAGE_DIR/usr/bin/talus-tally"
 
@@ -209,7 +233,7 @@ echo "✅ Package created: ${PACKAGE_DIR}.deb"
 # Verify the package
 echo ""
 echo "🔍 Package contents:"
-dpkg-deb -c "${PACKAGE_DIR}.deb" | head -20
+dpkg-deb -c "${PACKAGE_DIR}.deb" 2>/dev/null | head -20 || true
 echo "..."
 
 echo ""
@@ -223,7 +247,6 @@ echo "✅ Tauri build artifacts removed."
 # Step 6: Clean up other build artifacts and caches
 echo "🧹 Cleaning up other build artifacts and caches..."
 rm -rf build/
-rm -rf frontend/node_modules/
 rm -rf frontend/.pytest_cache/
 rm -rf .pytest_cache/
 rm -rf talus-tally_0.1.0_amd64/
