@@ -7,13 +7,26 @@ No business logic here - just serialization and API wrapping.
 Layer 5: REST API Bridge
 """
 
+import os
+import sys
+from pathlib import Path
+
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    # Load from project root
+    env_path = Path(__file__).parent.parent / '.env'
+    if env_path.exists():
+        load_dotenv(env_path)
+        print(f"[ENV] Loaded .env from {env_path}")
+        print(f"[ENV] TALUS_ENV={os.getenv('TALUS_ENV', 'not set')}")
+except ImportError:
+    print("[WARN] python-dotenv not installed; skipping .env file")
+
 from flask import Flask, request, jsonify, send_from_directory, send_file
 from flask_cors import CORS
 from flask_socketio import SocketIO
 import logging
-import os
-import sys
-from pathlib import Path
 
 # Configure logging
 import sys

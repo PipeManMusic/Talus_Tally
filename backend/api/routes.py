@@ -1,23 +1,76 @@
 from pathlib import Path
 import sys
+import os
 
-def _resolve_assets_subpath(*parts: str) -> Path:
-    """Resolve an assets subpath preferring production layout."""
-    candidates = []
+def _resolve_assets_subpath(*parts: str, prefer_writable: bool = False) -> Path:
+    """Resolve an assets subpath with environment-aware path preference.
+    
+    Args:
+        *parts: Path components to join (e.g., 'assets', 'indicators', 'catalog.yaml')
+        prefer_writable: If True, prefer paths with write access (for create/update operations)
+    
+    Returns:
+        Path to the asset, respecting TALUS_ENV environment variable:
+        - TALUS_ENV=development: Prefer repo/development paths
+        - TALUS_ENV=production: Prefer /opt/talus_tally paths
+        - Not set: Auto-detect (prefer development if repo exists and is writable)
+    """
+    env_mode = os.environ.get('TALUS_ENV', 'auto').lower()
+    
     production_root = Path('/opt/talus_tally')
-    if production_root.exists():
-        candidates.append(production_root)
-    if hasattr(sys, '_MEIPASS'):
-        candidates.append(Path(sys._MEIPASS))
-    candidates.append(Path(__file__).resolve().parent.parent.parent)
-
+    repo_root = Path(__file__).resolve().parent.parent.parent
+    pyinstaller_root = Path(sys._MEIPASS) if hasattr(sys, '_MEIPASS') else None
+    
+    # Build candidate list based on environment mode
+    if env_mode == 'development':
+        # Development mode: prefer repo first
+        candidates = [repo_root]
+        if production_root.exists():
+            candidates.append(production_root)
+        if pyinstaller_root:
+            candidates.append(pyinstaller_root)
+    elif env_mode == 'production':
+        # Production mode: prefer production install
+        candidates = []
+        if production_root.exists():
+            candidates.append(production_root)
+        if pyinstaller_root:
+            candidates.append(pyinstaller_root)
+        candidates.append(repo_root)
+    else:
+        # Auto mode: prefer development if writable, otherwise production
+        if prefer_writable:
+            # For write operations, prefer writable paths
+            candidates = [repo_root]
+            if production_root.exists() and os.access(production_root, os.W_OK):
+                candidates.insert(0, production_root)
+        else:
+            # For read operations, prefer what exists
+            candidates = []
+            if production_root.exists():
+                candidates.append(production_root)
+            if pyinstaller_root:
+                candidates.append(pyinstaller_root)
+            candidates.append(repo_root)
+    
+    # Find first existing path
     for base in candidates:
         candidate = base.joinpath(*parts)
         if candidate.exists():
-            return candidate
-
-    # Fallback to repo layout even if missing so callers can handle errors
-    return candidates[-1].joinpath(*parts)
+            if prefer_writable:
+                # Verify write access
+                parent = candidate.parent if candidate.is_file() else candidate
+                if os.access(parent, os.W_OK):
+                    return candidate
+            else:
+                return candidate
+    
+    # Fallback: return repo path (will be created if needed for write operations)
+    fallback = repo_root.joinpath(*parts)
+    if prefer_writable:
+        # Ensure parent directory exists for write operations
+        fallback.parent.mkdir(parents=True, exist_ok=True)
+    return fallback
 
 def get_indicator_metadata(node, blueprint):
     """Get indicator metadata for any node property with indicator_set defined."""
@@ -788,10 +841,12 @@ def get_indicator_theme(set_id, indicator_id):
 
 def _get_indicator_catalog_path():
     """Get the path to the indicator catalog file for management endpoints."""
+    # Allow override via environment variable
     if os.environ.get('INDICATOR_CATALOG_PATH'):
         return os.environ.get('INDICATOR_CATALOG_PATH')
-
-    return str(_resolve_assets_subpath('assets', 'indicators', 'catalog.yaml'))
+    
+    # Use unified resolver with write preference
+    return str(_resolve_assets_subpath('assets', 'indicators', 'catalog.yaml', prefer_writable=True))
 
 
 @api_bp.route('/indicator-catalog/sets/<set_id>/indicators', methods=['GET'])
@@ -2551,9 +2606,8 @@ def get_indicators_config():
     try:
         import yaml
 
-        # Find the indicators catalog file
-        assets_indicators_dir = _resolve_assets_subpath('assets', 'indicators')
-        catalog_file = assets_indicators_dir / 'catalog.yaml'
+        # Find the indicators catalog file using the same path as write operations
+        catalog_file = Path(_get_indicator_catalog_path())
         
         if not catalog_file.exists():
             logger.warning(f"Indicators catalog not found at {catalog_file}")
@@ -2621,10 +2675,11 @@ def get_indicator_file(set_id: str, indicator_id: str):
         if '..' in set_id or '/' in set_id or '..' in indicator_id or '/' in indicator_id:
             return jsonify({'error': 'Invalid indicator ID'}), 400
         
-        assets_indicators_dir = _resolve_assets_subpath('assets', 'indicators')
+        # Use same path as write operations
+        catalog_file = Path(_get_indicator_catalog_path())
+        assets_indicators_dir = catalog_file.parent
         
         # Load catalog to find the actual filename for this indicator
-        catalog_file = assets_indicators_dir / 'catalog.yaml'
         with open(catalog_file, 'r') as f:
             catalog_data = yaml.safe_load(f)
         

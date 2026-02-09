@@ -16,11 +16,15 @@ def get_templates_directory() -> str:
     """
     Determine the templates directory based on environment and deployment context.
     
+    Environment control via TALUS_ENV:
+    - TALUS_ENV=development: Prefer <repo>/data/templates
+    - TALUS_ENV=production: Prefer /opt/talus_tally/data/templates
+    - Not set or 'auto': Auto-detect based on what exists and is writable
+    
     Priority:
-    1. TEMPLATES_DIR environment variable (if set)
-    2. Development path: <project_root>/data/templates when available
-    3. Production path: /opt/talus_tally/data/templates when writable
-    4. Fallback to development path (creating it if needed)
+    1. TEMPLATES_DIR environment variable (explicit override)
+    2. Path selection based on TALUS_ENV mode
+    3. Fallback to development path (creating if needed)
     
     Returns:
         Absolute path to templates directory
@@ -28,48 +32,51 @@ def get_templates_directory() -> str:
     import logging
     logger = logging.getLogger(__name__)
     
-    # Check environment variable first
+    # Check explicit override first
     env_dir = os.getenv('TEMPLATES_DIR')
     if env_dir:
         logger.info(f"Using templates directory from TEMPLATES_DIR env var: {env_dir}")
         return env_dir
     
-    # Prefer development path when running from the source tree
+    # Determine mode
+    env_mode = os.getenv('TALUS_ENV', 'auto').lower()
     current_dir = Path(__file__).resolve().parent.parent.parent  # Go up from backend/infra
     dev_path = current_dir / 'data' / 'templates'
-    if dev_path.exists():
-        logger.info(f"Using development templates directory: {dev_path}")
-        return str(dev_path)
-
-    # Check production path
     production_path = Path('/opt/talus_tally/data/templates')
-    if production_path.exists():
-        if os.access(production_path, os.W_OK):
+    
+    if env_mode == 'development':
+        # Development mode: always prefer dev path
+        dev_path.mkdir(parents=True, exist_ok=True)
+        logger.info(f"Using development templates directory (TALUS_ENV=development): {dev_path}")
+        return str(dev_path)
+    
+    elif env_mode == 'production':
+        # Production mode: prefer production path
+        if production_path.exists() and os.access(production_path, os.W_OK):
+            logger.info(f"Using production templates directory (TALUS_ENV=production): {production_path}")
+            return str(production_path)
+        logger.warning(f"Production path not available; falling back to dev: {dev_path}")
+        dev_path.mkdir(parents=True, exist_ok=True)
+        return str(dev_path)
+    
+    else:
+        # Auto mode: prefer what exists and is writable, with dev preference
+        if dev_path.exists():
+            logger.info(f"Using development templates directory: {dev_path}")
+            return str(dev_path)
+        
+        if production_path.exists() and os.access(production_path, os.W_OK):
             logger.info(f"Using production templates directory: {production_path}")
             return str(production_path)
-        logger.warning(
-            f"Production templates directory {production_path} is not writable; falling back to development path"
-        )
+        
+        # Fallback to creating dev path
         try:
             dev_path.mkdir(parents=True, exist_ok=True)
             logger.info(f"Using development templates directory: {dev_path}")
             return str(dev_path)
-        except Exception as fallback_error:
-            logger.error(
-                f"Failed to prepare development templates directory {dev_path}: {fallback_error}"
-            )
-            return str(production_path)
-
-    # Final fallback attempts to create development path
-    try:
-        dev_path.mkdir(parents=True, exist_ok=True)
-    except Exception as create_error:
-        logger.error(
-            f"Failed to create development templates directory {dev_path}: {create_error}"
-        )
-        return str(Path.cwd())
-    logger.info(f"Using development templates directory: {dev_path}")
-    return str(dev_path)
+        except Exception as create_error:
+            logger.error(f"Failed to create dev templates directory: {create_error}")
+            return str(production_path) if production_path.exists() else str(Path.cwd())
 
 
 class TemplatePersistence:
