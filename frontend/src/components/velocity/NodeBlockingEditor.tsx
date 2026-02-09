@@ -336,10 +336,8 @@ export function NodeBlockingEditor({ sessionId, nodes }: Props) {
 
             {/* Draw nodes */}
             {nodePositions.map(nodeData => (
-              <g key={nodeData.id}>
+              <g key={nodeData.id} transform={`translate(${nodeData.x}, ${nodeData.y})`}>
                 <rect
-                  x={nodeData.x}
-                  y={nodeData.y}
                   width={nodeSize.width}
                   height={nodeSize.height}
                   rx="12"
@@ -354,8 +352,8 @@ export function NodeBlockingEditor({ sessionId, nodes }: Props) {
 
                 {/* Node label */}
                 <text
-                  x={nodeData.x + nodeSize.width / 2}
-                  y={nodeData.y + nodeSize.height / 2 + 6}
+                  x={nodeSize.width / 2}
+                  y={nodeSize.height / 2 + 6}
                   textAnchor="middle"
                   fontSize="13"
                   fontWeight="600"
@@ -367,8 +365,8 @@ export function NodeBlockingEditor({ sessionId, nodes }: Props) {
 
                 {/* Output handle (wire start) */}
                 <circle
-                  cx={nodeData.x + nodeSize.width}
-                  cy={nodeData.y + nodeSize.height / 2}
+                  cx={nodeSize.width}
+                  cy={nodeSize.height / 2}
                   r="7"
                   fill="#3b82f6"
                   stroke="#1e40af"
@@ -379,8 +377,8 @@ export function NodeBlockingEditor({ sessionId, nodes }: Props) {
 
                 {/* Input handle (wire end) */}
                 <circle
-                  cx={nodeData.x}
-                  cy={nodeData.y + nodeSize.height / 2}
+                  cx="0"
+                  cy={nodeSize.height / 2}
                   r="7"
                   fill={hoveredNode === nodeData.id && drawingWire ? '#10b981' : '#6b7280'}
                   stroke={hoveredNode === nodeData.id && drawingWire ? '#059669' : '#4b5563'}
