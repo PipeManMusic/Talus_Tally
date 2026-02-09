@@ -18,8 +18,9 @@ def get_templates_directory() -> str:
     
     Priority:
     1. TEMPLATES_DIR environment variable (if set)
-    2. Production path: /opt/talus_tally/data/templates (if exists)
-    3. Development path: <project_root>/data/templates
+    2. Development path: <project_root>/data/templates when available
+    3. Production path: /opt/talus_tally/data/templates when writable
+    4. Fallback to development path (creating it if needed)
     
     Returns:
         Absolute path to templates directory
@@ -33,15 +34,40 @@ def get_templates_directory() -> str:
         logger.info(f"Using templates directory from TEMPLATES_DIR env var: {env_dir}")
         return env_dir
     
+    # Prefer development path when running from the source tree
+    current_dir = Path(__file__).resolve().parent.parent.parent  # Go up from backend/infra
+    dev_path = current_dir / 'data' / 'templates'
+    if dev_path.exists():
+        logger.info(f"Using development templates directory: {dev_path}")
+        return str(dev_path)
+
     # Check production path
     production_path = Path('/opt/talus_tally/data/templates')
     if production_path.exists():
-        logger.info(f"Using production templates directory: {production_path}")
-        return str(production_path)
-    
-    # Fall back to development path
-    current_dir = Path(__file__).parent.parent.parent  # Go up from backend/infra
-    dev_path = current_dir / 'data' / 'templates'
+        if os.access(production_path, os.W_OK):
+            logger.info(f"Using production templates directory: {production_path}")
+            return str(production_path)
+        logger.warning(
+            f"Production templates directory {production_path} is not writable; falling back to development path"
+        )
+        try:
+            dev_path.mkdir(parents=True, exist_ok=True)
+            logger.info(f"Using development templates directory: {dev_path}")
+            return str(dev_path)
+        except Exception as fallback_error:
+            logger.error(
+                f"Failed to prepare development templates directory {dev_path}: {fallback_error}"
+            )
+            return str(production_path)
+
+    # Final fallback attempts to create development path
+    try:
+        dev_path.mkdir(parents=True, exist_ok=True)
+    except Exception as create_error:
+        logger.error(
+            f"Failed to create development templates directory {dev_path}: {create_error}"
+        )
+        return str(Path.cwd())
     logger.info(f"Using development templates directory: {dev_path}")
     return str(dev_path)
 
