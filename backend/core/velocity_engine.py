@@ -98,7 +98,12 @@ class VelocityEngine:
         calc = VelocityCalculation(node_id=node_id)
         
         # 1. Calculate base score from node type
-        node_type = node.get("type")
+        # Handle both Node objects and dicts
+        if hasattr(node, 'blueprint_type_id'):
+            node_type = node.blueprint_type_id
+        else:
+            node_type = node.get("type")
+        
         velocity_config = self._get_velocity_config(node_type)
         
         if velocity_config and velocity_config.get("baseScore"):
@@ -165,7 +170,12 @@ class VelocityEngine:
             if not parent:
                 break
             
-            parent_type = parent.get("type")
+            # Handle both Node objects and dicts
+            if hasattr(parent, 'blueprint_type_id'):
+                parent_type = parent.blueprint_type_id
+            else:
+                parent_type = parent.get("type")
+            
             parent_config = self._get_velocity_config(parent_type)
             
             if parent_config and parent_config.get("baseScore"):
@@ -180,15 +190,28 @@ class VelocityEngine:
         node = self.nodes.get(node_id)
         if not node:
             return None
-        return node.get("parent_id")
+        
+        # Handle both Node objects and dicts
+        if hasattr(node, 'parent_id'):
+            return str(node.parent_id) if node.parent_id else None
+        else:
+            parent_id = node.get("parent_id")
+            return str(parent_id) if parent_id else None
+    
+    def _get_node_properties(self, node_id: str) -> dict:
+        """Get properties dict from a node (handles both Node objects and dicts)"""
+        node = self.nodes.get(node_id)
+        if not node:
+            return {}
+        
+        if hasattr(node, 'properties'):
+            return node.properties or {}
+        else:
+            return node.get("properties", {})
     
     def _calculate_status_score(self, node_id: str, node_type: str) -> float:
         """Calculate score based on current status"""
-        node = self.nodes.get(node_id)
-        if not node:
-            return 0
-        
-        properties = node.get("properties", {})
+        properties = self._get_node_properties(node_id)
         
         # Look for status property in schema
         if not self.schema or "node_types" not in self.schema:
@@ -217,12 +240,8 @@ class VelocityEngine:
     
     def _calculate_numerical_scores(self, node_id: str, node_type: str) -> float:
         """Calculate scores from numerical field multipliers"""
-        node = self.nodes.get(node_id)
-        if not node:
-            return 0
-        
         score = 0
-        properties = node.get("properties", {})
+        properties = self._get_node_properties(node_id)
         
         if not self.schema or "node_types" not in self.schema:
             return 0
