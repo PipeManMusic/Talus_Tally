@@ -25,6 +25,35 @@ def _convert_node_id(node_id_str: str) -> Optional[UUID]:
         return None
 
 
+def _convert_blueprint_to_schema(blueprint) -> Optional[Dict]:
+    """Convert Blueprint object to schema dict for VelocityEngine."""
+    if not blueprint:
+        return None
+    
+    # If it's already a dict, return it
+    if isinstance(blueprint, dict):
+        return blueprint
+    
+    # If it's a Blueprint object, build a schema dict from it
+    if hasattr(blueprint, 'node_types'):
+        schema = {'node_types': []}
+        for node_type in blueprint.node_types:
+            nt_dict = {
+                'id': node_type.id if hasattr(node_type, 'id') else str(node_type),
+            }
+            # Extract velocityConfig if it exists
+            if hasattr(node_type, '_extra_props') and isinstance(node_type._extra_props, dict):
+                nt_dict['velocityConfig'] = node_type._extra_props.get('velocityConfig', {})
+            elif hasattr(node_type, 'velocityConfig'):
+                nt_dict['velocityConfig'] = node_type.velocityConfig
+            
+            schema['node_types'].append(nt_dict)
+        return schema
+    
+    # If we can't convert it, return None
+    return None
+
+
 def _get_velocity_context(session_id: str):
     """
     Extract velocity calculation context from session data.
@@ -44,8 +73,9 @@ def _get_velocity_context(session_id: str):
     # Extract nodes dict from the graph object
     graph_nodes = graph.nodes if hasattr(graph, 'nodes') else {}
     
-    # Get schema from session
-    schema = session_data.get('blueprint')
+    # Get schema from session and convert if needed
+    blueprint = session_data.get('blueprint')
+    schema = _convert_blueprint_to_schema(blueprint)
     
     # Get blocking relationships from session metadata
     blocking_relationships = session_data.get('blocking_relationships', [])
