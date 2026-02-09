@@ -1,9 +1,32 @@
 import { TitleBar } from './components/layout/TitleBar';
 import { MenuBar } from './components/layout/MenuBar';
+import { Toolbar, type ViewType } from './components/layout/Toolbar';
 import { clearIconCache } from './components/graph/mapNodeIcon';
 import type { TreeNode } from './utils/treeUtils';
 import { TreeView } from './components/layout/TreeView';
 import { Inspector } from './components/layout/Inspector';
+
+// Ensure Tauri context is initialized for plugin APIs
+// This import triggers Tauri's webview initialization in v2
+try {
+  // Try to detect and initialize Tauri - this works in both dev and release builds
+  const checkTauri = async () => {
+    // Wait for window to have __TAURI__ injected by the Tauri framework
+    let attempts = 0;
+    while (!window.__TAURI__ && attempts < 50) {
+      await new Promise(resolve => setTimeout(resolve, 50));
+      attempts++;
+    }
+    if (window.__TAURI__) {
+      console.log('[App] Tauri context initialized successfully');
+    }
+  };
+  checkTauri().catch(() => {
+    console.log('[App] Not running in Tauri environment');
+  });
+} catch (e) {
+  console.log('[App] Tauri initialization check completed');
+}
 import type { NodeProperty } from './components/layout/Inspector';
 import { NewProjectDialog } from './components/dialogs/NewProjectDialog';
 import { AddChildDialog } from './components/dialogs/AddChildDialog';
@@ -12,9 +35,11 @@ import { AssetCategoryDialog } from './components/dialogs/AssetCategoryDialog';
 import { SettingsDialog } from './components/dialogs/SettingsDialog';
 import { SaveConfirmDialog, type SaveAction } from './components/dialogs/SaveConfirmDialog';
 import { ImportCsvDialog } from './components/dialogs/ImportCsvDialog';
+import { ExportDialog } from './components/dialogs/ExportDialog';
 import { TemplateEditor } from './views/TemplateEditor';
 import { IndicatorEditor } from './views/IndicatorEditor';
 import { IconEditor } from './views/IconEditor';
+import { ToolsView } from './views/ToolsView';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { DebugPanel, type DebugLogEntry } from './components/dev/DebugPanel';
 import { ErrorBoundary } from './components/dev/ErrorBoundary';
@@ -30,6 +55,7 @@ import { validateTemplateSchema, safeExtractOptions } from './utils/templateVali
 function App() {
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [inspectorOpen, setInspectorOpen] = useState(true);
+  const [activeView, setActiveView] = useState<ViewType>('graph');
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isDirty, setIsDirty] = useState(false);  // Track dirty state
   const isDirtyRef = useRef(false);  // Ref to access current dirty state in callbacks
@@ -48,6 +74,7 @@ function App() {
   const [showIconEditor, setShowIconEditor] = useState(false);
   const [showSaveConfirmDialog, setShowSaveConfirmDialog] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
+  const [showExportDialog, setShowExportDialog] = useState(false);
   const pendingCloseActionRef = useRef<(() => Promise<void>) | null>(null);
   const [addChildParentId, setAddChildParentId] = useState<string | null>(null);
   const [addChildTitle, setAddChildTitle] = useState<string | undefined>(undefined);
@@ -1538,9 +1565,12 @@ function App() {
     ],
     Tools: [
       { label: 'Import from CSV...', onClick: () => setShowImportDialog(true) },
+      { label: 'Export Data...', onClick: () => setShowExportDialog(true) },
+      { label: '---', onClick: () => {} },
       { label: 'Template Editor', onClick: () => setShowTemplateEditor(true) },
       { label: 'Indicator Editor', onClick: () => setShowIndicatorEditor(true) },
       { label: 'Icon Editor', onClick: () => setShowIconEditor(true) },
+      { label: '---', onClick: () => {} },
       { label: 'Settings', onClick: () => setShowSettingsDialog(true) },
     ],
     Help: [
@@ -1577,10 +1607,14 @@ function App() {
       <div className="flex flex-col h-screen bg-bg-dark text-fg-primary relative">
       <TitleBar title={isDirty ? "TALUS TALLY *" : "TALUS TALLY"} isDirty={isDirty} onClose={handleCloseApp} />
       <MenuBar menus={menus} />
+      <Toolbar
+        activeView={activeView}
+        onViewChange={setActiveView}
+      />
 
-      {/* Main Content - Tree View with Optional Inspector */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Main Tree View */}
+      {/* Main Content - Conditional based on active view */}
+      {activeView === 'graph' ? (
+      <div className="flex-1 flex overflow-hidden">{/* Main Tree View */}
         <main className="flex-1 bg-bg-dark border-r border-border overflow-auto p-4">
           {treeNodes.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-fg-secondary">
@@ -1860,6 +1894,12 @@ function App() {
           </aside>
         )}
       </div>
+      ) : (
+        /* Tools View */
+        <div className="flex-1 overflow-hidden">
+          <ToolsView />
+        </div>
+      )}
 
       {/* New Project Dialog */}
       {showNewProjectDialog && (
@@ -1932,6 +1972,15 @@ function App() {
           ensureSession={ensureSession}
           onClose={() => setShowImportDialog(false)}
           onImported={handleImportSuccess}
+        />
+      )}
+
+      {/* Export Dialog */}
+      {showExportDialog && (
+        <ExportDialog
+          isOpen={showExportDialog}
+          onClose={() => setShowExportDialog(false)}
+          sessionId={sessionId}
         />
       )}
 

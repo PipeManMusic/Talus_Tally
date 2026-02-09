@@ -1,6 +1,4 @@
 import React from 'react';
-import { Plus, Save, Undo2, Redo2 } from 'lucide-react';
-import { Button } from '../ui/Button';
 
 export interface ToolbarButton {
   id: string;
@@ -10,68 +8,53 @@ export interface ToolbarButton {
   disabled?: boolean;
 }
 
+export type ViewType = 'graph' | 'tools';
+
 interface ToolbarProps {
   buttons?: ToolbarButton[];
+  activeView?: ViewType;
+  onViewChange?: (view: ViewType) => void;
 }
 
-const defaultButtons: ToolbarButton[] = [
-  {
-    id: 'new',
-    label: 'New',
-    icon: <Plus size={16} />,
-    onClick: () => console.log('New project'),
-  },
-  {
-    id: 'save',
-    label: 'Save',
-    icon: <Save size={16} />,
-    onClick: () => console.log('Save project'),
-  },
-  {
-    id: 'separator1',
-    label: '',
-    icon: null,
-    onClick: () => {},
-  },
-  {
-    id: 'undo',
-    label: 'Undo',
-    icon: <Undo2 size={16} />,
-    onClick: () => console.log('Undo'),
-  },
-  {
-    id: 'redo',
-    label: 'Redo',
-    icon: <Redo2 size={16} />,
-    onClick: () => console.log('Redo'),
-  },
-];
+const defaultButtons: ToolbarButton[] = [];
 
-export function Toolbar({ buttons = defaultButtons }: ToolbarProps) {
+export function Toolbar({ 
+  buttons = defaultButtons,
+  activeView = 'graph',
+  onViewChange,
+}: ToolbarProps) {
   return (
     <div className="h-toolbar bg-bg-light border-b border-border px-2 flex items-center gap-2">
-      {buttons.map((btn) => {
-        if (btn.id.includes('separator')) {
-          return <div key={btn.id} className="w-px h-6 bg-border mx-1" />;
-        }
-
-        return (
-          <Button
-            key={btn.id}
-            onClick={btn.onClick}
-            disabled={btn.disabled}
-            variant="default"
-            size="sm"
-            title={btn.label}
-            className="flex items-center gap-1"
-          >
-            {btn.icon}
-            <span className="hidden sm:inline">{btn.label}</span>
-          </Button>
-        );
-      })}
-
+      {/* Left: Spacer */}
       <div className="flex-1" />
+
+      {/* Right: View Switcher */}
+      {onViewChange && (
+        <div className="flex items-center bg-bg-dark border border-border rounded p-1">
+          <button
+            onClick={() => onViewChange('graph')}
+            className={`px-3 py-1.5 rounded text-sm font-semibold transition-colors ${
+              activeView === 'graph'
+                ? 'bg-accent-primary text-fg-primary'
+                : 'text-fg-secondary hover:text-fg-primary hover:bg-bg-selection'
+            }`}
+            title="Switch to tree view"
+          >
+            Tree
+          </button>
+          <button
+            onClick={() => onViewChange('tools')}
+            className={`px-3 py-1.5 rounded text-sm font-semibold transition-colors ${
+              activeView === 'tools'
+                ? 'bg-accent-primary text-fg-primary'
+                : 'text-fg-secondary hover:text-fg-primary hover:bg-bg-selection'
+            }`}
+            title="Switch to tools view"
+          >
+            Tools
+          </button>
+        </div>
+      )}
     </div>
   );
 }
