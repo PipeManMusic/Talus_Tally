@@ -10,10 +10,19 @@ Endpoints:
 
 from flask import Blueprint, jsonify, request, current_app
 from typing import Optional, Dict, Any
+from uuid import UUID
 import logging
 
 velocity_bp = Blueprint('velocity', __name__, url_prefix='/api/v1')
 logger = logging.getLogger(__name__)
+
+
+def _convert_node_id(node_id_str: str) -> Optional[UUID]:
+    """Convert string node_id from URL to UUID."""
+    try:
+        return UUID(node_id_str)
+    except (ValueError, TypeError):
+        return None
 
 
 def _get_velocity_context(session_id: str):
@@ -77,7 +86,7 @@ def get_velocity_ranking(session_id: str):
                 node_type = node.get('type', 'unknown')
             
             nodes.append({
-                'nodeId': node_id,
+                'nodeId': str(node_id),
                 'nodeName': node_name,
                 'nodeType': node_type,
                 'baseScore': calc.base_score,
@@ -105,17 +114,24 @@ def get_velocity_ranking(session_id: str):
 def get_node_velocity(session_id: str, node_id: str):
     """Get velocity score for a single node"""
     try:
+        node_uuid = _convert_node_id(node_id)
+        if not node_uuid:
+            return jsonify({'error': 'Invalid node ID format'}), 400
+        
         graph_nodes, schema, blocking_graph = _get_velocity_context(session_id)
         
         if graph_nodes is None:
             return jsonify({'error': 'Session not found'}), 404
         
+        if node_uuid not in graph_nodes:
+            return jsonify({'error': f'Node {node_id} not found'}), 404
+        
         from backend.core.velocity_engine import VelocityEngine
         
         engine = VelocityEngine(graph_nodes, schema, blocking_graph)
-        calc = engine.calculate_velocity(node_id)
+        calc = engine.calculate_velocity(node_uuid)
         
-        node = graph_nodes.get(node_id, {})
+        node = graph_nodes.get(node_uuid, {})
         
         # Get node properties safely
         if hasattr(node, 'properties'):
@@ -126,7 +142,7 @@ def get_node_velocity(session_id: str, node_id: str):
             node_type = node.get('type', 'unknown')
         
         return jsonify({
-            'nodeId': node_id,
+            'nodeId': str(node_uuid),
             'nodeName': node_name,
             'nodeType': node_type,
             'baseScore': calc.base_score,
@@ -156,8 +172,18 @@ def update_blocking_relationship(session_id: str, node_id: str):
     }
     """
     try:
+        node_uuid = _convert_node_id(node_id)
+        if not node_uuid:
+            return jsonify({'error': 'Invalid node ID format'}), 400
+        
         data = request.get_json()
-        blocking_node_id = data.get('blocking_node_id')
+        blocking_node_id_str = data.get('blocking_node_id')
+        blocking_node_uuid = None
+        
+        if blocking_node_id_str:
+            blocking_node_uuid = _convert_node_id(blocking_node_id_str)
+            if not blocking_node_uuid:
+                return jsonify({'error': 'Invalid blocking_node_id format'}), 400
         
         from backend.api.routes import get_session_data
         
@@ -173,11 +199,11 @@ def update_blocking_relationship(session_id: str, node_id: str):
         nodes = graph.nodes if hasattr(graph, 'nodes') else {}
         
         # Validate nodes exist
-        if node_id not in nodes:
+        if node_uuid not in nodes:
             return jsonify({'error': f'Node {node_id} not found'}), 404
         
-        if blocking_node_id and blocking_node_id not in nodes:
-            return jsonify({'error': f'Blocking node {blocking_node_id} not found'}), 404
+        if blocking_node_uuid and blocking_node_uuid not in nodes:
+            return jsonify({'error': f'Blocking node {blocking_node_id_str} not found'}), 404
         
         # Get or create blocking relationships
         if 'blocking_relationships' not in session_data:
@@ -185,17 +211,18 @@ def update_blocking_relationship(session_id: str, node_id: str):
         
         relationships = session_data['blocking_relationships']
         
-        # Remove existing blocking for this node
+        # Remove existing blocking for this node (compare as strings)
+        node_id_str = str(node_uuid)
         relationships[:] = [
             rel for rel in relationships 
-            if rel.get('blockedNodeId') != node_id
+            if rel.get('blockedNodeId') != node_id_str
         ]
         
         # Add new relationship if blocking_node_id provided
-        if blocking_node_id:
+        if blocking_node_uuid:
             relationships.append({
-                'blockedNodeId': node_id,
-                'blockingNodeId': blocking_node_id,
+                'blockedNodeId': node_id_str,
+                'blockingNodeId': str(blocking_node_uuid),
             })
         
         return jsonify({
