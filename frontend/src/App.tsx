@@ -349,6 +349,7 @@ function App() {
         statusIndicatorSvg: node.statusIndicatorSvg ?? undefined,
         statusText: node.statusText ?? undefined,
         parent_id: parentId ?? undefined,
+        selected: node.id === selectedNode,
         allowed_children: allowedChildren,
         children: node.children?.map(childId => {
           const childNode = nodesMap[childId];
@@ -360,6 +361,7 @@ function App() {
                 type: 'unknown',
                 allowed_children: [],
                 children: [],
+                selected: false,
                 parent_id: node.id,
               };
         }) || []
@@ -372,7 +374,7 @@ function App() {
     ));
 
     return roots.map(root => buildTree(root, nodes, null));
-  }, [templateSchema]);
+  }, [templateSchema, selectedNode]);
 
   // Track if this is the first tree build after project load
   const firstTreeBuild = useRef(true);

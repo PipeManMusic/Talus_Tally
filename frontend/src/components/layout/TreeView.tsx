@@ -98,6 +98,7 @@ function TreeItem({
   const addButtonRef = useRef<HTMLButtonElement>(null);
   const [iconCacheVersion, setIconCacheVersion] = useState(0);
   const rowRef = useRef<HTMLDivElement>(null);
+  const isSelected = node.selected === true;
 
   const parentId = (node as any).parent_id ?? null;
   const indicatorDefaults: Record<string, string> = {
@@ -488,8 +489,8 @@ function TreeItem({
 
   const rowClasses = [
     'relative flex w-full items-center gap-1 px-2 py-1.5 rounded-sm cursor-pointer transition-colors border-l-2 border-transparent',
-    (typeof (node as any).selected === 'boolean' && (node as any).selected)
-      ? 'bg-bg-selection border-l-4 border-accent-primary shadow-inner'
+    isSelected
+      ? 'bg-bg-selection border-l-4 border-accent-primary shadow-inner ring-1 ring-accent-primary/60'
       : isMoveTarget
         ? 'bg-accent-primary/20 border-l-4 border-accent-primary shadow-inner ring-2 ring-accent-primary/70'
         : isActiveDropTarget
@@ -514,6 +515,8 @@ function TreeItem({
         ref={rowRef}
         className={rowClasses}
         data-testid="tree-item-row"
+        data-selected={isSelected ? 'true' : 'false'}
+        aria-selected={isSelected}
         onClick={() => onSelect?.(node.id)}
         onContextMenu={(event) => {
           event.preventDefault();
@@ -524,6 +527,13 @@ function TreeItem({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
+        {isSelected && (
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-y-1 left-0.5 w-1 rounded-full bg-accent-primary"
+          />
+        )}
+
         {hasAllowedChildren && (
           <>
             <button

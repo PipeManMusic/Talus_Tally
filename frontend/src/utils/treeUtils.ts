@@ -8,6 +8,7 @@ export interface TreeNode {
   type: string;
   allowed_children: string[];
   children: TreeNode[];
+  selected?: boolean;
   indicator_id?: string;
   indicator_set?: string;
   parent_id?: string;
