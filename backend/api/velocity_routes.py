@@ -62,10 +62,21 @@ def get_velocity_ranking(session_id: str):
     Returns nodes sorted by velocity score (highest first)
     """
     try:
+        from backend.api.routes import get_session_data
+        
+        # Check if session exists
+        session_data = get_session_data(session_id)
+        if not session_data:
+            return jsonify({'error': 'Session not found'}), 404
+        
+        # If no graph loaded, return empty ranking
         graph_nodes, schema, blocking_graph = _get_velocity_context(session_id)
         
         if graph_nodes is None:
-            return jsonify({'error': 'Session not found'}), 404
+            return jsonify({
+                'nodes': [],
+                'timestamp': int(__import__('time').time() * 1000),
+            })
         
         # Import and use velocity engine
         from backend.core.velocity_engine import VelocityEngine
@@ -114,14 +125,21 @@ def get_velocity_ranking(session_id: str):
 def get_node_velocity(session_id: str, node_id: str):
     """Get velocity score for a single node"""
     try:
+        from backend.api.routes import get_session_data
+        
         node_uuid = _convert_node_id(node_id)
         if not node_uuid:
             return jsonify({'error': 'Invalid node ID format'}), 400
         
+        # Check if session exists
+        session_data = get_session_data(session_id)
+        if not session_data:
+            return jsonify({'error': 'Session not found'}), 404
+        
         graph_nodes, schema, blocking_graph = _get_velocity_context(session_id)
         
         if graph_nodes is None:
-            return jsonify({'error': 'Session not found'}), 404
+            return jsonify({'error': f'Node {node_id} not found'}), 404
         
         if node_uuid not in graph_nodes:
             return jsonify({'error': f'Node {node_id} not found'}), 404
