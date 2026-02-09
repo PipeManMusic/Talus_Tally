@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 
 interface MenuItem {
@@ -61,9 +61,21 @@ function MenuItemRenderer({ item, onItemClick, depth = 0 }: { item: MenuItem; on
 
 export function MenuBar({ menus }: MenuBarProps) {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const menuBarRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuBarRef.current && !menuBarRef.current.contains(event.target as Node)) {
+        setOpenMenu(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
-    <nav className="h-menubar bg-bg-light border-b border-border flex items-center">
+    <nav className="h-menubar bg-bg-light border-b border-border flex items-center" ref={menuBarRef}>
       <div className="flex h-full">
         {Object.entries(menus).map(([menuName, items]) => (
           <div key={menuName} className="relative">
