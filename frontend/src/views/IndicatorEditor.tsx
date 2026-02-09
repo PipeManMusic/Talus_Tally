@@ -1,14 +1,21 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { ChevronLeft, AlertCircle } from 'lucide-react';
-import { apiClient, type IndicatorSet } from '../api/client';
+import { apiClient, API_BASE_URL, type IndicatorSet } from '../api/client';
 import { TitleBar } from '../components/layout/TitleBar';
 
 export interface IndicatorEditorProps {
   onClose: () => void;
 }
 
+interface ExtendedIndicatorSet {
+  description: string;
+  style_guide?: string;
+  indicators: Array<{ id: string; file: string; description: string }>;
+  default_theme?: Record<string, { indicator_color?: string; text_color?: string; text_style?: string }>;
+}
+
 export function IndicatorEditor({ onClose }: IndicatorEditorProps) {
-  const [indicatorSets, setIndicatorSets] = useState<Record<string, IndicatorSet>>({});
+  const [indicatorSets, setIndicatorSets] = useState<Record<string, ExtendedIndicatorSet>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
@@ -19,6 +26,11 @@ export function IndicatorEditor({ onClose }: IndicatorEditorProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [svgPreviewUrl, setSvgPreviewUrl] = useState<string | null>(null);
+  const [indicatorColor, setIndicatorColor] = useState('#000000');
+  const [textColor, setTextColor] = useState('#000000');
+  const [isBold, setIsBold] = useState(false);
+  const [isStrikethrough, setIsStrikethrough] = useState(false);
 
   useEffect(() => {
     loadIndicators();
@@ -46,6 +58,11 @@ export function IndicatorEditor({ onClose }: IndicatorEditorProps) {
     setEditingId(null);
     setFormData({ id: '', file: '', description: '' });
     setSelectedFile(null);
+    setSvgPreviewUrl(null);
+    setIndicatorColor('#000000');
+    setTextColor('#000000');
+    setIsBold(false);
+    setIsStrikethrough(false);
     setFormError(null);
     setFormOpen(true);
   };
@@ -60,6 +77,30 @@ export function IndicatorEditor({ onClose }: IndicatorEditorProps) {
       description: indicator.description || '',
     });
     setSelectedFile(null);
+    
+    // Load SVG preview from existing file
+    if (indicator.file) {
+      const svgUrl = `${API_BASE_URL}/api/v1/assets/indicators/${setId}/${indicator.id}`;
+      setSvgPreviewUrl(svgUrl);
+    } else {
+      setSvgPreviewUrl(null);
+    }
+    
+    // Load existing theme if available
+    const indicatorSet = indicatorSets[setId];
+    if (indicatorSet?.default_theme?.[indicator.id]) {
+      const theme = indicatorSet.default_theme[indicator.id];
+      setIndicatorColor(theme.indicator_color || '#000000');
+      setTextColor(theme.text_color || '#000000');
+      setIsBold(theme.text_style?.includes('bold') || false);
+      setIsStrikethrough(theme.text_style?.includes('strikethrough') || false);
+    } else {
+      setIndicatorColor('#000000');
+      setTextColor('#000000');
+      setIsBold(false);
+      setIsStrikethrough(false);
+    }
+    
     setFormError(null);
     setFormOpen(true);
   };
@@ -67,6 +108,7 @@ export function IndicatorEditor({ onClose }: IndicatorEditorProps) {
   const closeForm = () => {
     setFormOpen(false);
     setSelectedFile(null);
+    setSvgPreviewUrl(null);
     setFormError(null);
     setSaving(false);
   };
@@ -105,24 +147,33 @@ export function IndicatorEditor({ onClose }: IndicatorEditorProps) {
       setFormError(null);
 
       let resolvedFile = formData.file;
-      if (selectedFile) {
-        const targetId = formData.id || editingId || '';
-        if (!targetId) {
-          setFormError('Indicator ID is required before uploading a file.');
-          setSaving(false);
-          return;
-        }
-        const upload = await apiClient.uploadIndicatorFile(activeSetId, targetId, selectedFile);
-        resolvedFile = upload.file;
-      }
-
+      
       if (formMode === 'create') {
+        // For create mode: create indicator first, then upload file if needed
         await apiClient.createIndicator(activeSetId, {
           id: formData.id,
           file: resolvedFile,
           description: formData.description,
         });
+        
+        // Now upload the file if one was selected
+        if (selectedFile) {
+          const upload = await apiClient.uploadIndicatorFile(activeSetId, formData.id, selectedFile);
+          // Update the indicator with the uploaded filename
+          await apiClient.updateIndicator(activeSetId, formData.id, {
+            id: formData.id,
+            file: upload.file,
+            description: formData.description,
+          });
+        }
       } else if (editingId) {
+        // For edit mode: upload file first if selected, then update
+        if (selectedFile) {
+          const targetId = formData.id || editingId;
+          const upload = await apiClient.uploadIndicatorFile(activeSetId, targetId, selectedFile);
+          resolvedFile = upload.file;
+        }
+        
         await apiClient.updateIndicator(activeSetId, editingId, {
           id: formData.id,
           file: resolvedFile,
@@ -130,8 +181,21 @@ export function IndicatorEditor({ onClose }: IndicatorEditorProps) {
         });
       }
 
+      // Save theme
+      const textStyleParts: string[] = [];
+      if (isBold) textStyleParts.push('bold');
+      if (isStrikethrough) textStyleParts.push('strikethrough');
+      
+      const finalIndicatorId = formMode === 'create' ? formData.id : formData.id;
+      await apiClient.setIndicatorTheme(activeSetId, finalIndicatorId, {
+        indicator_color: indicatorColor,
+        text_color: textColor,
+        text_style: textStyleParts.length > 0 ? textStyleParts.join(',') : undefined,
+      });
+
       await loadIndicators();
       closeForm();
+
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       setFormError(`Failed to ${formMode} indicator: ${message}`);
@@ -252,7 +316,7 @@ export function IndicatorEditor({ onClose }: IndicatorEditorProps) {
 
       {formOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-lg rounded border border-border bg-bg-dark">
+          <div className="w-full max-w-2xl rounded border border-border bg-bg-dark max-h-96 overflow-y-auto">
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
               <h2 className="text-lg font-semibold text-fg-primary">
                 {formMode === 'create' ? 'Create Indicator' : 'Edit Indicator'}
@@ -298,6 +362,12 @@ export function IndicatorEditor({ onClose }: IndicatorEditorProps) {
                     const file = event.target.files?.[0] || null;
                     setSelectedFile(file);
                     setFormData({ ...formData, file: file ? file.name : formData.file });
+                    if (file) {
+                      const url = URL.createObjectURL(file);
+                      setSvgPreviewUrl(url);
+                    } else {
+                      setSvgPreviewUrl(null);
+                    }
                   }}
                   className="w-full rounded border border-border bg-bg-light px-3 py-2 text-sm text-fg-primary focus:outline-none focus:ring-2 focus:ring-accent-primary"
                 />
@@ -311,6 +381,96 @@ export function IndicatorEditor({ onClose }: IndicatorEditorProps) {
                   )}
                 </div>
               </div>
+
+              {svgPreviewUrl && (
+                <div className="space-y-2 rounded border border-border bg-bg-dark p-4">
+                  <h3 className="text-sm font-semibold text-fg-secondary">Preview</h3>
+                  <div className="flex items-center gap-4 rounded bg-bg-light p-4">
+                    <div 
+                      style={{
+                        backgroundColor: indicatorColor,
+                        maskImage: `url(${svgPreviewUrl})`,
+                        maskSize: 'contain',
+                        maskRepeat: 'no-repeat',
+                        maskPosition: 'center',
+                        WebkitMaskImage: `url(${svgPreviewUrl})`,
+                        WebkitMaskSize: 'contain',
+                        WebkitMaskRepeat: 'no-repeat',
+                        WebkitMaskPosition: 'center',
+                      }}
+                      className="h-12 w-12 flex-shrink-0"
+                    />
+                    <div 
+                      style={{
+                        color: textColor,
+                        fontWeight: isBold ? 'bold' : 'normal',
+                        textDecoration: isStrikethrough ? 'line-through' : 'none',
+                      }}
+                      className="text-sm"
+                    >
+                      Example: Status Active
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-fg-secondary">Indicator Color</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={indicatorColor}
+                          onChange={(e) => setIndicatorColor(e.target.value)}
+                          className="h-10 w-16 rounded border border-border bg-bg-light cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={indicatorColor}
+                          onChange={(e) => setIndicatorColor(e.target.value)}
+                          className="flex-1 rounded border border-border bg-bg-light px-3 py-2 text-xs text-fg-primary font-mono focus:outline-none focus:ring-2 focus:ring-accent-primary"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-fg-secondary">Text Color</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={textColor}
+                          onChange={(e) => setTextColor(e.target.value)}
+                          className="h-10 w-16 rounded border border-border bg-bg-light cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={textColor}
+                          onChange={(e) => setTextColor(e.target.value)}
+                          className="flex-1 rounded border border-border bg-bg-light px-3 py-2 text-xs text-fg-primary font-mono focus:outline-none focus:ring-2 focus:ring-accent-primary"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isBold}
+                        onChange={(e) => setIsBold(e.target.checked)}
+                        className="w-4 h-4 rounded border border-border cursor-pointer"
+                      />
+                      <span className="text-xs font-semibold text-fg-secondary">Bold</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isStrikethrough}
+                        onChange={(e) => setIsStrikethrough(e.target.checked)}
+                        className="w-4 h-4 rounded border border-border cursor-pointer"
+                      />
+                      <span className="text-xs font-semibold text-fg-secondary">Strikethrough</span>
+                    </label>
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-fg-secondary">Description</label>
