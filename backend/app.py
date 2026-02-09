@@ -164,6 +164,10 @@ def create_app(config=None):
     from backend.api.export_routes import export_bp
     app.register_blueprint(export_bp)
     
+    # Register velocity routes
+    from backend.api.velocity_routes import velocity_bp
+    app.register_blueprint(velocity_bp)
+    
     # Register WebSocket namespace for /graph
     from backend.api.socketio_handlers import GraphNamespace
     socketio.on_namespace(GraphNamespace('/graph'))

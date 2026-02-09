@@ -42,7 +42,7 @@ export function NodeBlockingEditor({ sessionId, nodes }: Props) {
     // Find project node (if any) to ignore for grouping
     const projectNodeId = nodeIds.find(id => nodes[id].type === 'project');
 
-    // Build parent-child relationships, but skip project node as parent
+    // Build parent-child relationships
     const nodeDepth: Record<string, number> = {};
     const childrenMap: Record<string, string[]> = {};
     
@@ -51,12 +51,10 @@ export function NodeBlockingEditor({ sessionId, nodes }: Props) {
       childrenMap[id] = [];
     });
 
-    // Build relationships, treating project node's children as root-level
     nodeIds.forEach(id => {
       const node = nodes[id];
       const parentId = node.parent_id;
       
-      // Skip project node in hierarchy (treat its children as roots)
       if (parentId && parentId !== projectNodeId) {
         childrenMap[parentId] = childrenMap[parentId] || [];
         if (!childrenMap[parentId].includes(id)) {
@@ -65,13 +63,12 @@ export function NodeBlockingEditor({ sessionId, nodes }: Props) {
       }
     });
 
-    // Calculate depth via BFS, starting with non-project roots
+    // Calculate depth
     const visited = new Set<string>();
     const queue: string[] = [];
     
     nodeIds.forEach(id => {
       const parentId = nodes[id].parent_id;
-      // Root nodes are those with no parent, or whose parent is the project
       if (!parentId || parentId === projectNodeId) {
         queue.push(id);
         nodeDepth[id] = 0;
@@ -91,42 +88,35 @@ export function NodeBlockingEditor({ sessionId, nodes }: Props) {
       });
     }
 
-    // Group nodes by depth level
-    const depthGroups: Record<number, string[]> = {};
-    nodeIds.forEach(id => {
-      // Skip project node in display
-      if (id === projectNodeId) return;
-      
-      const depth = nodeDepth[id];
-      if (!depthGroups[depth]) depthGroups[depth] = [];
-      depthGroups[depth].push(id);
-    });
-
-    // Position nodes in a grid layout
-    // x = depth level, y = position within level
+    // Create grid layout spread across canvas
+    // Only include non-project nodes
+    const positionableNodes = nodeIds.filter(id => id !== projectNodeId);
     const nodeSize = { width: 160, height: 100 };
-    const colWidth = 300; // Space between depth levels
-    const rowHeight = 140; // Space between nodes in same level
+    const padding = 50;
+    const spacing = 180; // Space between nodes
     
-    const positions: NodeData[] = nodeIds
-      .filter(id => id !== projectNodeId) // Skip project node
-      .map(id => {
-        const depth = nodeDepth[id];
-        const nodesAtDepth = depthGroups[depth] || [];
-        const indexInLevel = nodesAtDepth.indexOf(id);
-        const totalAtLevel = nodesAtDepth.length;
+    // Determine grid dimensions based on number of nodes
+    const nodesPerRow = Math.max(3, Math.ceil(Math.sqrt(positionableNodes.length * 0.7)));
+    
+    const positions: NodeData[] = positionableNodes.map((id, idx) => {
+      const depth = nodeDepth[id];
+      
+      // Simple grid layout: arrange in rows and columns
+      const row = Math.floor(idx / nodesPerRow);
+      const col = idx % nodesPerRow;
+      
+      // Weight x position by depth, but spread across columns
+      const x = col * spacing + (depth * 80) + padding;
+      // Y position is just based on grid row
+      const y = row * spacing + padding;
 
-        // Grid layout: columns by depth, rows by index
-        const x = depth * colWidth + 50;
-        const y = indexInLevel * rowHeight - ((totalAtLevel - 1) * rowHeight) / 2 + 400;
-
-        return {
-          id,
-          label: nodes[id].properties?.name || id,
-          x,
-          y
-        };
-      });
+      return {
+        id,
+        label: nodes[id].properties?.name || id,
+        x,
+        y
+      };
+    });
 
     setNodePositions(positions);
   }, [nodes]);
