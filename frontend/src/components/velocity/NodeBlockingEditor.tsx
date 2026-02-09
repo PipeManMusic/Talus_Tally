@@ -39,34 +39,40 @@ export function NodeBlockingEditor({ sessionId, nodes }: Props) {
     const nodeIds = Object.keys(nodes);
     if (nodeIds.length === 0) return;
 
-    // Build parent-child relationships and calculate depth for each node
+    // Find project node (if any) to ignore for grouping
+    const projectNodeId = nodeIds.find(id => nodes[id].type === 'project');
+
+    // Build parent-child relationships, but skip project node as parent
     const nodeDepth: Record<string, number> = {};
     const childrenMap: Record<string, string[]> = {};
     
-    // Initialize
     nodeIds.forEach(id => {
       nodeDepth[id] = 0;
       childrenMap[id] = [];
     });
 
-    // Build parent-child relationships
+    // Build relationships, treating project node's children as root-level
     nodeIds.forEach(id => {
       const node = nodes[id];
-      if (node.parent_id) {
-        childrenMap[node.parent_id] = childrenMap[node.parent_id] || [];
-        if (!childrenMap[node.parent_id].includes(id)) {
-          childrenMap[node.parent_id].push(id);
+      const parentId = node.parent_id;
+      
+      // Skip project node in hierarchy (treat its children as roots)
+      if (parentId && parentId !== projectNodeId) {
+        childrenMap[parentId] = childrenMap[parentId] || [];
+        if (!childrenMap[parentId].includes(id)) {
+          childrenMap[parentId].push(id);
         }
       }
     });
 
-    // Calculate depth via BFS
+    // Calculate depth via BFS, starting with non-project roots
     const visited = new Set<string>();
     const queue: string[] = [];
     
-    // Start with root nodes (no parent)
     nodeIds.forEach(id => {
-      if (!nodes[id].parent_id) {
+      const parentId = nodes[id].parent_id;
+      // Root nodes are those with no parent, or whose parent is the project
+      if (!parentId || parentId === projectNodeId) {
         queue.push(id);
         nodeDepth[id] = 0;
         visited.add(id);
@@ -76,7 +82,7 @@ export function NodeBlockingEditor({ sessionId, nodes }: Props) {
     while (queue.length > 0) {
       const nodeId = queue.shift()!;
       const children = childrenMap[nodeId] || [];
-      children.forEach((childId, idx) => {
+      children.forEach(childId => {
         if (!visited.has(childId)) {
           nodeDepth[childId] = nodeDepth[nodeId] + 1;
           visited.add(childId);
@@ -88,25 +94,39 @@ export function NodeBlockingEditor({ sessionId, nodes }: Props) {
     // Group nodes by depth level
     const depthGroups: Record<number, string[]> = {};
     nodeIds.forEach(id => {
+      // Skip project node in display
+      if (id === projectNodeId) return;
+      
       const depth = nodeDepth[id];
       if (!depthGroups[depth]) depthGroups[depth] = [];
       depthGroups[depth].push(id);
     });
 
-    // Position nodes by hierarchy - x based on depth, y based on position within level
-    const positions: NodeData[] = nodeIds.map(id => {
-      const depth = nodeDepth[id];
-      const siblingsAtLevel = depthGroups[depth] || [];
-      const indexInLevel = siblingsAtLevel.indexOf(id);
-      const levelSize = siblingsAtLevel.length;
+    // Position nodes in a grid layout
+    // x = depth level, y = position within level
+    const nodeSize = { width: 160, height: 100 };
+    const colWidth = 300; // Space between depth levels
+    const rowHeight = 140; // Space between nodes in same level
+    
+    const positions: NodeData[] = nodeIds
+      .filter(id => id !== projectNodeId) // Skip project node
+      .map(id => {
+        const depth = nodeDepth[id];
+        const nodesAtDepth = depthGroups[depth] || [];
+        const indexInLevel = nodesAtDepth.indexOf(id);
+        const totalAtLevel = nodesAtDepth.length;
 
-      return {
-        id,
-        label: nodes[id].properties?.name || id,
-        x: depth * 300 + 50,
-        y: indexInLevel * 160 - ((levelSize - 1) * 160) / 2 + 300
-      };
-    });
+        // Grid layout: columns by depth, rows by index
+        const x = depth * colWidth + 50;
+        const y = indexInLevel * rowHeight - ((totalAtLevel - 1) * rowHeight) / 2 + 400;
+
+        return {
+          id,
+          label: nodes[id].properties?.name || id,
+          x,
+          y
+        };
+      });
 
     setNodePositions(positions);
   }, [nodes]);
