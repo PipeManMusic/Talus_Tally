@@ -147,7 +147,11 @@
           "cb666fe0-8e9b-4096-9cf0-fba1169dbc76",
           "1fc8206f-4ec6-4df0-a477-01f8a10fbe06",
           "46e0ec93-c139-4e5c-bcf2-37b213b8731e",
-          "1917a858-0294-4561-95de-109d8828d1e4"
+          "1917a858-0294-4561-95de-109d8828d1e4",
+          "e09f39d3-4ed6-4c54-8ce0-0dd198618941",
+          "6c53b542-1a3e-43cf-a0de-6d1c74f0bd04",
+          "c2504f1a-e609-4da9-b1ac-95c6540126ef",
+          "269dbcbb-db3e-476c-bc14-9fd164af2b6c"
         ],
         "indicator_id": "partial",
         "indicator_set": "status",
@@ -383,6 +387,66 @@
         },
         "children": [],
         "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "allowed_children": [
+          "uses_camera_gear"
+        ]
+      },
+      {
+        "id": "e09f39d3-4ed6-4c54-8ce0-0dd198618941",
+        "type": "footage",
+        "properties": {
+          "name": "Cabin Loudness Off",
+          "prop_1770559115384": "c5707e0e-c9d6-3397-0b55-578878e04e81"
+        },
+        "children": [],
+        "indicator_id": "filled",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "allowed_children": [
+          "uses_camera_gear"
+        ]
+      },
+      {
+        "id": "6c53b542-1a3e-43cf-a0de-6d1c74f0bd04",
+        "type": "footage",
+        "properties": {
+          "name": "Cabin Loudness Idle",
+          "prop_1770559115384": "c5707e0e-c9d6-3397-0b55-578878e04e81"
+        },
+        "children": [],
+        "indicator_id": "filled",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "allowed_children": [
+          "uses_camera_gear"
+        ]
+      },
+      {
+        "id": "c2504f1a-e609-4da9-b1ac-95c6540126ef",
+        "type": "footage",
+        "properties": {
+          "name": "Cabin Loudness Street",
+          "prop_1770559115384": "c5707e0e-c9d6-3397-0b55-578878e04e81"
+        },
+        "children": [],
+        "indicator_id": "filled",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "allowed_children": [
+          "uses_camera_gear"
+        ]
+      },
+      {
+        "id": "269dbcbb-db3e-476c-bc14-9fd164af2b6c",
+        "type": "footage",
+        "properties": {
+          "name": "Cabin Loudness Highway",
+          "prop_1770559115384": "c5707e0e-c9d6-3397-0b55-578878e04e81"
+        },
+        "children": [],
+        "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "film",
         "allowed_children": [

@@ -135,12 +135,10 @@ class TestIndicatorHandlerCreate:
             indicator_id="custom",
             file="status_custom.svg",
             description="Custom indicator",
-            url="https://example.com/custom",
         )
 
         assert indicator["id"] == "custom"
         assert indicator["description"] == "Custom indicator"
-        assert indicator["url"] == "https://example.com/custom"
 
     def test_create_indicator_without_url(self, temp_catalog_copy):
         """Verify we can create indicator without URL."""
@@ -211,12 +209,35 @@ class TestIndicatorHandlerUpdate:
             indicator_id="empty",
             file="status_empty_v2.svg",
             description="Updated",
-            url="https://example.com/updated",
         )
 
         assert indicator["file"] == "status_empty_v2.svg"
         assert indicator["description"] == "Updated"
-        assert indicator["url"] == "https://example.com/updated"
+
+    def test_update_indicator_id(self, temp_catalog_copy):
+        """Verify we can update indicator ID."""
+        handler = IndicatorHandler(temp_catalog_copy)
+
+        updated = handler.update_indicator(
+            set_id="status",
+            indicator_id="empty",
+            new_id="empty_renamed",
+        )
+
+        assert updated["id"] == "empty_renamed"
+        with pytest.raises(IndicatorNotFoundError):
+            handler.get_indicator("status", "empty")
+
+    def test_update_indicator_id_duplicate_raises_error(self, temp_catalog_copy):
+        """Verify renaming to an existing ID raises an error."""
+        handler = IndicatorHandler(temp_catalog_copy)
+
+        with pytest.raises(IndicatorAlreadyExistsError):
+            handler.update_indicator(
+                set_id="status",
+                indicator_id="empty",
+                new_id="filled",
+            )
 
     def test_update_nonexistent_indicator_raises_error(self, temp_catalog_copy):
         """Verify updating nonexistent indicator raises error."""
@@ -404,7 +425,6 @@ class TestIndicatorHandlerWorkflow:
             indicator_id="workflow_test",
             file="status_workflow.svg",
             description="Test indicator",
-            url="https://example.com/test",
         )
         assert created["id"] == "workflow_test"
 

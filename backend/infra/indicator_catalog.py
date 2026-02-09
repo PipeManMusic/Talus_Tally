@@ -162,7 +162,6 @@ class IndicatorCatalogManager:
         indicator_id: str,
         file: str,
         description: str,
-        url: Optional[str] = None,
     ) -> IndicatorDef:
         """
         Create a new indicator in a set.
@@ -172,7 +171,6 @@ class IndicatorCatalogManager:
             indicator_id: Unique ID for the indicator within the set
             file: Path to SVG file relative to catalog directory
             description: Human-readable description
-            url: Optional URL for indicator documentation
 
         Returns:
             The created IndicatorDef
@@ -198,7 +196,6 @@ class IndicatorCatalogManager:
             id=indicator_id,
             file=file,
             description=description,
-            url=url,
         )
         indicator_set.indicators.append(indicator)
 
@@ -210,7 +207,7 @@ class IndicatorCatalogManager:
         indicator_id: str,
         file: Optional[str] = None,
         description: Optional[str] = None,
-        url: Optional[str] = None,
+        new_id: Optional[str] = None,
     ) -> IndicatorDef:
         """
         Update an existing indicator.
@@ -220,7 +217,7 @@ class IndicatorCatalogManager:
             indicator_id: The indicator ID to update
             file: New file path (optional)
             description: New description (optional)
-            url: New URL (optional)
+            new_id: New indicator ID (optional)
 
         Returns:
             The updated IndicatorDef
@@ -247,13 +244,20 @@ class IndicatorCatalogManager:
                 f"Indicator '{indicator_id}' not found in set '{set_id}'"
             )
 
+        if new_id and new_id != indicator_id:
+            if any(ind.id == new_id for ind in indicator_set.indicators):
+                raise ValueError(
+                    f"Indicator '{new_id}' already exists in set '{set_id}'"
+                )
+            indicator.id = new_id
+            if indicator_set.default_theme and indicator_id in indicator_set.default_theme:
+                indicator_set.default_theme[new_id] = indicator_set.default_theme.pop(indicator_id)
+
         # Update only provided fields
         if file is not None:
             indicator.file = file
         if description is not None:
             indicator.description = description
-        if url is not None:
-            indicator.url = url
 
         return indicator
 

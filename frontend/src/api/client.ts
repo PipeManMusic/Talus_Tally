@@ -129,6 +129,15 @@ export interface IndicatorTheme {
   text_style?: string;
 }
 
+export interface IndicatorThemeResponse {
+  id: string;
+  theme: IndicatorTheme;
+}
+
+export interface IndicatorFileUploadResponse {
+  file: string;
+}
+
 export interface IndicatorSet {
   description: string;
   style_guide?: string;
@@ -142,6 +151,11 @@ export interface IconsConfig {
 
 export interface IndicatorsConfig {
   indicator_sets: Record<string, IndicatorSet>;
+}
+
+export interface IndicatorSetListResponse {
+  set_id: string;
+  indicators: IndicatorDef[];
 }
 
 export class APIClient {
@@ -294,6 +308,129 @@ export class APIClient {
     const response = await fetch(`${this.baseUrl}/api/v1/config/indicators`);
     if (!response.ok) {
       throw new Error(`Failed to fetch indicators config: ${response.status} ${response.statusText}`);
+    }
+    return response.json();
+  }
+
+  // Indicator Catalog Management
+  async listIndicatorSetIndicators(setId: string): Promise<IndicatorSetListResponse> {
+    const response = await fetch(
+      `${this.baseUrl}/api/v1/indicator-catalog/sets/${encodeURIComponent(setId)}/indicators`
+    );
+    if (!response.ok) {
+      throw new Error(`Failed to list indicators: ${response.status} ${response.statusText}`);
+    }
+    return response.json();
+  }
+
+  async getIndicator(setId: string, indicatorId: string): Promise<IndicatorDef> {
+    const response = await fetch(
+      `${this.baseUrl}/api/v1/indicator-catalog/sets/${encodeURIComponent(setId)}/indicators/${encodeURIComponent(indicatorId)}`
+    );
+    if (!response.ok) {
+      throw new Error(`Failed to get indicator: ${response.status} ${response.statusText}`);
+    }
+    return response.json();
+  }
+
+  async createIndicator(setId: string, payload: IndicatorDef): Promise<IndicatorDef> {
+    const response = await fetch(
+      `${this.baseUrl}/api/v1/indicator-catalog/sets/${encodeURIComponent(setId)}/indicators`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          indicator_id: payload.id,
+          file: payload.file,
+          description: payload.description,
+        }),
+      }
+    );
+    if (!response.ok) {
+      const error = await response.json().catch(() => null);
+      const message = error?.error?.message || `Failed to create indicator: ${response.status}`;
+      throw new Error(message);
+    }
+    return response.json();
+  }
+
+  async updateIndicator(
+    setId: string,
+    indicatorId: string,
+    payload: Partial<IndicatorDef>
+  ): Promise<IndicatorDef> {
+    const response = await fetch(
+      `${this.baseUrl}/api/v1/indicator-catalog/sets/${encodeURIComponent(setId)}/indicators/${encodeURIComponent(indicatorId)}`,
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          indicator_id: payload.id,
+          file: payload.file,
+          description: payload.description,
+        }),
+      }
+    );
+    if (!response.ok) {
+      const error = await response.json().catch(() => null);
+      const message = error?.error?.message || `Failed to update indicator: ${response.status}`;
+      throw new Error(message);
+    }
+    return response.json();
+  }
+
+  async uploadIndicatorFile(
+    setId: string,
+    indicatorId: string,
+    file: File
+  ): Promise<IndicatorFileUploadResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(
+      `${this.baseUrl}/api/v1/indicator-catalog/sets/${encodeURIComponent(setId)}/indicators/${encodeURIComponent(indicatorId)}/file`,
+      {
+        method: 'POST',
+        body: formData,
+      }
+    );
+    if (!response.ok) {
+      const error = await response.json().catch(() => null);
+      const message = error?.error?.message || `Failed to upload indicator file: ${response.status}`;
+      throw new Error(message);
+    }
+    return response.json();
+  }
+
+  async deleteIndicator(setId: string, indicatorId: string): Promise<void> {
+    const response = await fetch(
+      `${this.baseUrl}/api/v1/indicator-catalog/sets/${encodeURIComponent(setId)}/indicators/${encodeURIComponent(indicatorId)}`,
+      { method: 'DELETE' }
+    );
+    if (!response.ok) {
+      const error = await response.json().catch(() => null);
+      const message = error?.error?.message || `Failed to delete indicator: ${response.status}`;
+      throw new Error(message);
+    }
+  }
+
+  async setIndicatorTheme(
+    setId: string,
+    indicatorId: string,
+    theme: IndicatorTheme
+  ): Promise<IndicatorThemeResponse> {
+    const response = await fetch(
+      `${this.baseUrl}/api/v1/indicator-catalog/sets/${encodeURIComponent(setId)}/indicators/${encodeURIComponent(indicatorId)}/theme`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(theme),
+      }
+    );
+    if (!response.ok) {
+      const error = await response.json().catch(() => null);
+      const message = error?.error?.message || `Failed to set indicator theme: ${response.status}`;
+      throw new Error(message);
     }
     return response.json();
   }

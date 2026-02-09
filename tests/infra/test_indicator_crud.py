@@ -154,13 +154,11 @@ class TestIndicatorCatalogCreate:
             indicator_id="custom",
             file="status_custom.svg",
             description="Custom indicator state",
-            url="https://example.com/custom",
         )
 
         assert indicator.id == "custom"
         assert indicator.file == "status_custom.svg"
         assert indicator.description == "Custom indicator state"
-        assert indicator.url == "https://example.com/custom"
 
     def test_create_indicator_without_url(self, temp_catalog_copy):
         """Verify we can create a new indicator without URL."""
@@ -260,13 +258,15 @@ class TestIndicatorCatalogUpdate:
         manager = IndicatorCatalogManager(temp_catalog_copy)
         manager.load()
 
+        # URL is now backend-generated, not user-editable
+        # This test verifies other fields can still be updated
         indicator = manager.update_indicator(
             set_id="status",
             indicator_id="empty",
-            url="https://example.com/new",
+            description="Updated description",
         )
 
-        assert indicator.url == "https://example.com/new"
+        assert indicator.description == "Updated description"
 
     def test_update_multiple_fields(self, temp_catalog_copy):
         """Verify we can update multiple fields at once."""
@@ -278,12 +278,39 @@ class TestIndicatorCatalogUpdate:
             indicator_id="empty",
             file="status_empty_new.svg",
             description="New description",
-            url="https://example.com/updated",
         )
 
         assert indicator.file == "status_empty_new.svg"
         assert indicator.description == "New description"
-        assert indicator.url == "https://example.com/updated"
+
+    def test_update_indicator_id(self, temp_catalog_copy):
+        """Verify we can update indicator ID."""
+        manager = IndicatorCatalogManager(temp_catalog_copy)
+        manager.load()
+
+        manager.update_indicator(
+            set_id="status",
+            indicator_id="empty",
+            new_id="empty_renamed",
+        )
+
+        assert manager.get_indicator("status", "empty") is None
+        assert manager.get_indicator("status", "empty_renamed") is not None
+
+    def test_update_indicator_id_moves_theme(self, temp_catalog_copy):
+        """Verify theme entries move when indicator ID changes."""
+        manager = IndicatorCatalogManager(temp_catalog_copy)
+        manager.load()
+
+        manager.set_theme("status", "empty", {"indicator_color": "#111111"})
+        manager.update_indicator(
+            set_id="status",
+            indicator_id="empty",
+            new_id="empty_renamed",
+        )
+
+        assert manager.get_theme("status", "empty") is None
+        assert manager.get_theme("status", "empty_renamed") == {"indicator_color": "#111111"}
 
     def test_update_nonexistent_indicator_raises_error(self, temp_catalog_copy):
         """Verify updating nonexistent indicator raises error."""
@@ -496,7 +523,6 @@ class TestIndicatorCatalogMutationWorkflow:
             indicator_id="test_indicator",
             file="status_test.svg",
             description="Test indicator",
-            url="https://example.com/test",
         )
 
         # READ

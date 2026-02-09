@@ -117,9 +117,11 @@ All endpoints are prefixed with /api/v1/.
 """
 
 from flask import Blueprint, request, jsonify, send_file, Response
+from werkzeug.utils import secure_filename
 import io
 import json
 import logging
+import tempfile
 import uuid
 from datetime import datetime, timezone
 from backend.api.project_manager import ProjectManager
@@ -776,6 +778,352 @@ def get_indicator_theme(set_id, indicator_id):
             'error': {
                 'code': 'INTERNAL_ERROR',
                 'message': 'Failed to get indicator theme'
+            }
+        }), 500
+
+
+# ============================================================================
+# Indicator Catalog Management (CRUD)
+# ============================================================================
+
+def _get_indicator_catalog_path():
+    """Get the path to the indicator catalog file for management endpoints."""
+    if os.environ.get('INDICATOR_CATALOG_PATH'):
+        return os.environ.get('INDICATOR_CATALOG_PATH')
+
+    return str(_resolve_assets_subpath('assets', 'indicators', 'catalog.yaml'))
+
+
+@api_bp.route('/indicator-catalog/sets/<set_id>/indicators', methods=['GET'])
+def list_indicators(set_id):
+    """List all indicators in a set (management endpoint)."""
+    try:
+        from backend.handlers.indicator_handler import IndicatorHandler, IndicatorSetNotFoundError
+
+        handler = IndicatorHandler(_get_indicator_catalog_path())
+        indicators = handler.list_indicators(set_id)
+
+        return jsonify({
+            'set_id': set_id,
+            'indicators': indicators,
+        }), 200
+
+    except IndicatorSetNotFoundError:
+        return jsonify({
+            'error': {
+                'code': 'NOT_FOUND',
+                'message': f'Indicator set {set_id} not found',
+            }
+        }), 404
+
+    except Exception as e:
+        logger.error(f"Error listing indicators: {e}", exc_info=True)
+        return jsonify({
+            'error': {
+                'code': 'INTERNAL_ERROR',
+                'message': 'Failed to list indicators',
+            }
+        }), 500
+
+
+@api_bp.route('/indicator-catalog/sets/<set_id>/indicators/<indicator_id>', methods=['GET'])
+def get_single_indicator(set_id, indicator_id):
+    """Get a single indicator (management endpoint)."""
+    try:
+        from backend.handlers.indicator_handler import (
+            IndicatorHandler,
+            IndicatorNotFoundError,
+            IndicatorSetNotFoundError,
+        )
+
+        handler = IndicatorHandler(_get_indicator_catalog_path())
+        indicator = handler.get_indicator(set_id, indicator_id)
+
+        return jsonify(indicator), 200
+
+    except (IndicatorNotFoundError, IndicatorSetNotFoundError):
+        return jsonify({
+            'error': {
+                'code': 'NOT_FOUND',
+                'message': f'Indicator {set_id}/{indicator_id} not found',
+            }
+        }), 404
+
+    except Exception as e:
+        logger.error(f"Error getting indicator: {e}", exc_info=True)
+        return jsonify({
+            'error': {
+                'code': 'INTERNAL_ERROR',
+                'message': 'Failed to get indicator',
+            }
+        }), 500
+
+
+@api_bp.route('/indicator-catalog/sets/<set_id>/indicators', methods=['POST'])
+def create_indicator(set_id):
+    """Create a new indicator (management endpoint)."""
+    try:
+        from backend.handlers.indicator_handler import (
+            IndicatorHandler,
+            IndicatorSetNotFoundError,
+            IndicatorAlreadyExistsError,
+        )
+
+        data = request.get_json(silent=True)
+        if not data:
+            return jsonify({
+                'error': {
+                    'code': 'INVALID_REQUEST',
+                    'message': 'Request body must be valid JSON',
+                }
+            }), 400
+
+        required_fields = ['indicator_id', 'file', 'description']
+        missing_fields = [field for field in required_fields if field not in data]
+        if missing_fields:
+            return jsonify({
+                'error': {
+                    'code': 'INVALID_REQUEST',
+                    'message': f'Missing required fields: {", ".join(missing_fields)}',
+                }
+            }), 400
+
+        handler = IndicatorHandler(_get_indicator_catalog_path())
+        indicator = handler.create_indicator(
+            set_id=set_id,
+            indicator_id=data['indicator_id'],
+            file=data['file'],
+            description=data['description'],
+        )
+        handler.save()
+
+        return jsonify(indicator), 201
+
+    except IndicatorSetNotFoundError:
+        return jsonify({
+            'error': {
+                'code': 'NOT_FOUND',
+                'message': f'Indicator set {set_id} not found',
+            }
+        }), 404
+
+    except IndicatorAlreadyExistsError as e:
+        return jsonify({
+            'error': {
+                'code': 'CONFLICT',
+                'message': str(e),
+            }
+        }), 409
+
+    except Exception as e:
+        logger.error(f"Error creating indicator: {e}", exc_info=True)
+        return jsonify({
+            'error': {
+                'code': 'INTERNAL_ERROR',
+                'message': 'Failed to create indicator',
+            }
+        }), 500
+
+
+@api_bp.route('/indicator-catalog/sets/<set_id>/indicators/<indicator_id>', methods=['PUT'])
+def update_indicator(set_id, indicator_id):
+    """Update an existing indicator (management endpoint)."""
+    try:
+        from backend.handlers.indicator_handler import (
+            IndicatorHandler,
+            IndicatorNotFoundError,
+            IndicatorSetNotFoundError,
+            IndicatorAlreadyExistsError,
+        )
+
+        data = request.get_json(silent=True)
+        if not data:
+            return jsonify({
+                'error': {
+                    'code': 'INVALID_REQUEST',
+                    'message': 'Request body must be valid JSON',
+                }
+            }), 400
+
+        handler = IndicatorHandler(_get_indicator_catalog_path())
+        indicator = handler.update_indicator(
+            set_id=set_id,
+            indicator_id=indicator_id,
+            file=data.get('file'),
+            description=data.get('description'),
+            new_id=data.get('indicator_id'),
+        )
+        handler.save()
+
+        return jsonify(indicator), 200
+
+    except IndicatorSetNotFoundError:
+        return jsonify({
+            'error': {
+                'code': 'NOT_FOUND',
+                'message': f'Indicator set {set_id} not found',
+            }
+        }), 404
+
+    except IndicatorNotFoundError:
+        return jsonify({
+            'error': {
+                'code': 'NOT_FOUND',
+                'message': f'Indicator {set_id}/{indicator_id} not found',
+            }
+        }), 404
+
+    except IndicatorAlreadyExistsError as e:
+        return jsonify({
+            'error': {
+                'code': 'CONFLICT',
+                'message': str(e),
+            }
+        }), 409
+
+    except Exception as e:
+        logger.error(f"Error updating indicator: {e}", exc_info=True)
+        return jsonify({
+            'error': {
+                'code': 'INTERNAL_ERROR',
+                'message': 'Failed to update indicator',
+            }
+        }), 500
+
+
+@api_bp.route('/indicator-catalog/sets/<set_id>/indicators/<indicator_id>/file', methods=['POST'])
+def upload_indicator_file(set_id, indicator_id):
+    """Upload an SVG file for an indicator (management endpoint)."""
+    try:
+        if 'file' not in request.files:
+            return jsonify({
+                'error': {
+                    'code': 'INVALID_REQUEST',
+                    'message': 'Missing file upload',
+                }
+            }), 400
+
+        file_storage = request.files['file']
+        filename = secure_filename(file_storage.filename or '')
+        if not filename:
+            return jsonify({
+                'error': {
+                    'code': 'INVALID_REQUEST',
+                    'message': 'File name is required',
+                }
+            }), 400
+
+        if not filename.lower().endswith('.svg'):
+            return jsonify({
+                'error': {
+                    'code': 'INVALID_REQUEST',
+                    'message': 'Only .svg files are allowed',
+                }
+            }), 400
+
+        catalog_path = _get_indicator_catalog_path()
+        indicators_dir = os.path.dirname(catalog_path)
+        os.makedirs(indicators_dir, exist_ok=True)
+
+        temp_fd, temp_path = tempfile.mkstemp(prefix=filename, dir=indicators_dir)
+        try:
+            with os.fdopen(temp_fd, 'wb') as tmp_file:
+                file_storage.save(tmp_file)
+            target_path = os.path.join(indicators_dir, filename)
+            os.replace(temp_path, target_path)
+        finally:
+            if os.path.exists(temp_path):
+                os.unlink(temp_path)
+
+        return jsonify({'file': filename}), 200
+
+    except Exception as e:
+        logger.error(f"Error uploading indicator file: {e}", exc_info=True)
+        return jsonify({
+            'error': {
+                'code': 'INTERNAL_ERROR',
+                'message': 'Failed to upload indicator file',
+            }
+        }), 500
+
+
+@api_bp.route('/indicator-catalog/sets/<set_id>/indicators/<indicator_id>', methods=['DELETE'])
+def delete_indicator(set_id, indicator_id):
+    """Delete an indicator (management endpoint)."""
+    try:
+        from backend.handlers.indicator_handler import (
+            IndicatorHandler,
+            IndicatorNotFoundError,
+            IndicatorSetNotFoundError,
+        )
+
+        handler = IndicatorHandler(_get_indicator_catalog_path())
+        handler.delete_indicator(set_id, indicator_id)
+        handler.save()
+
+        return '', 204
+
+    except IndicatorSetNotFoundError:
+        return jsonify({
+            'error': {
+                'code': 'NOT_FOUND',
+                'message': f'Indicator set {set_id} not found',
+            }
+        }), 404
+
+    except IndicatorNotFoundError:
+        return jsonify({
+            'error': {
+                'code': 'NOT_FOUND',
+                'message': f'Indicator {set_id}/{indicator_id} not found',
+            }
+        }), 404
+
+    except Exception as e:
+        logger.error(f"Error deleting indicator: {e}", exc_info=True)
+        return jsonify({
+            'error': {
+                'code': 'INTERNAL_ERROR',
+                'message': 'Failed to delete indicator',
+            }
+        }), 500
+
+
+@api_bp.route('/indicator-catalog/sets/<set_id>/indicators/<indicator_id>/theme', methods=['POST'])
+def set_indicator_theme(set_id, indicator_id):
+    """Set theme for an indicator (management endpoint)."""
+    try:
+        from backend.handlers.indicator_handler import IndicatorHandler, IndicatorSetNotFoundError
+
+        data = request.get_json(silent=True)
+        if not data:
+            return jsonify({
+                'error': {
+                    'code': 'INVALID_REQUEST',
+                    'message': 'Request body must be valid JSON',
+                }
+            }), 400
+
+        handler = IndicatorHandler(_get_indicator_catalog_path())
+        result = handler.set_indicator_theme(set_id, indicator_id, data)
+        handler.save()
+
+        return jsonify(result), 200
+
+    except IndicatorSetNotFoundError:
+        return jsonify({
+            'error': {
+                'code': 'NOT_FOUND',
+                'message': f'Indicator set {set_id} not found',
+            }
+        }), 404
+
+    except Exception as e:
+        logger.error(f"Error setting indicator theme: {e}", exc_info=True)
+        return jsonify({
+            'error': {
+                'code': 'INTERNAL_ERROR',
+                'message': 'Failed to set indicator theme',
             }
         }), 500
 

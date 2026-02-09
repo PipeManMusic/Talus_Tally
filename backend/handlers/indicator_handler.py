@@ -161,7 +161,6 @@ class IndicatorHandler:
         indicator_id: str,
         file: str,
         description: str,
-        url: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Create a new indicator.
@@ -171,7 +170,6 @@ class IndicatorHandler:
             indicator_id: Unique ID for the indicator
             file: Path to SVG file
             description: Human-readable description
-            url: Optional documentation URL
 
         Returns:
             Dictionary with created indicator details
@@ -188,7 +186,6 @@ class IndicatorHandler:
                 indicator_id=indicator_id,
                 file=file,
                 description=description,
-                url=url,
             )
         except ValueError as e:
             if "not found" in str(e):
@@ -207,7 +204,7 @@ class IndicatorHandler:
         indicator_id: str,
         file: Optional[str] = None,
         description: Optional[str] = None,
-        url: Optional[str] = None,
+        new_id: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Update an existing indicator.
@@ -217,7 +214,7 @@ class IndicatorHandler:
             indicator_id: The indicator ID
             file: New file path (optional)
             description: New description (optional)
-            url: New URL (optional)
+            new_id: New indicator ID (optional)
 
         Returns:
             Dictionary with updated indicator details
@@ -234,14 +231,15 @@ class IndicatorHandler:
                 indicator_id=indicator_id,
                 file=file,
                 description=description,
-                url=url,
+                new_id=new_id,
             )
         except ValueError as e:
             error_msg = str(e)
             if error_msg.startswith("Indicator set"):
                 raise IndicatorSetNotFoundError(error_msg)
-            else:
-                raise IndicatorNotFoundError(error_msg)
+            if "already exists" in error_msg:
+                raise IndicatorAlreadyExistsError(error_msg)
+            raise IndicatorNotFoundError(error_msg)
 
         return self._serialize_indicator(indicator)
 
