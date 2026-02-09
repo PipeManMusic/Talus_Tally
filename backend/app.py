@@ -160,6 +160,10 @@ def create_app(config=None):
     from backend.api.routes import register_routes
     register_routes(app)
     
+    # Register export routes
+    from backend.api.export_routes import export_bp
+    app.register_blueprint(export_bp)
+    
     # Register WebSocket namespace for /graph
     from backend.api.socketio_handlers import GraphNamespace
     socketio.on_namespace(GraphNamespace('/graph'))

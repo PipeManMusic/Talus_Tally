@@ -149,6 +149,12 @@ export interface IndicatorSet {
   default_theme?: Record<string, IndicatorTheme>;
 }
 
+export interface ExportTemplate {
+  id: string;
+  name: string;
+  extension: string;
+}
+
 export interface IconsConfig {
   icons: IconCatalog[];
 }
@@ -728,6 +734,32 @@ export class APIClient {
       throw new Error(error.error?.message || 'Failed to validate template');
     }
     return response.json();
+  }
+
+  // Export API
+  async listExportTemplates(): Promise<{ templates: ExportTemplate[]; count: number }> {
+    const response = await fetch(`${this.baseUrl}/api/export/list`);
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || 'Failed to list export templates');
+    }
+    return response.json();
+  }
+
+  async downloadExport(sessionId: string, templateId: string, context?: Record<string, any>): Promise<Blob> {
+    const response = await fetch(`${this.baseUrl}/api/export/${sessionId}/download`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        template_id: templateId,
+        context: context || {},
+      }),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || 'Failed to download export');
+    }
+    return response.blob();
   }
 
   // WebSocket Connection
