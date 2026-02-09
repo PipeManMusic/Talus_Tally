@@ -14,6 +14,7 @@ import { SaveConfirmDialog, type SaveAction } from './components/dialogs/SaveCon
 import { ImportCsvDialog } from './components/dialogs/ImportCsvDialog';
 import { TemplateEditor } from './views/TemplateEditor';
 import { IndicatorEditor } from './views/IndicatorEditor';
+import { IconEditor } from './views/IconEditor';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { DebugPanel, type DebugLogEntry } from './components/dev/DebugPanel';
 import { ErrorBoundary } from './components/dev/ErrorBoundary';
@@ -44,6 +45,7 @@ function App() {
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [showTemplateEditor, setShowTemplateEditor] = useState(false);
   const [showIndicatorEditor, setShowIndicatorEditor] = useState(false);
+  const [showIconEditor, setShowIconEditor] = useState(false);
   const [showSaveConfirmDialog, setShowSaveConfirmDialog] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const pendingCloseActionRef = useRef<(() => Promise<void>) | null>(null);
@@ -1538,6 +1540,7 @@ function App() {
       { label: 'Import from CSV...', onClick: () => setShowImportDialog(true) },
       { label: 'Template Editor', onClick: () => setShowTemplateEditor(true) },
       { label: 'Indicator Editor', onClick: () => setShowIndicatorEditor(true) },
+      { label: 'Icon Editor', onClick: () => setShowIconEditor(true) },
       { label: 'Settings', onClick: () => setShowSettingsDialog(true) },
     ],
     Help: [
@@ -1951,6 +1954,13 @@ function App() {
       {showIndicatorEditor && (
         <div className="absolute inset-0 bg-bg-dark z-50">
           <IndicatorEditor onClose={() => setShowIndicatorEditor(false)} />
+        </div>
+      )}
+
+      {/* Icon Editor View */}
+      {showIconEditor && (
+        <div className="absolute inset-0 bg-bg-dark z-50">
+          <IconEditor onClose={() => setShowIconEditor(false)} />
         </div>
       )}
 

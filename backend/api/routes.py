@@ -849,6 +849,47 @@ def _get_indicator_catalog_path():
     return str(_resolve_assets_subpath('assets', 'indicators', 'catalog.yaml', prefer_writable=True))
 
 
+def _get_icon_catalog_path():
+    """Get the path to the icon catalog file for management endpoints."""
+    # Allow override via environment variable
+    if os.environ.get('ICON_CATALOG_PATH'):
+        return os.environ.get('ICON_CATALOG_PATH')
+
+    # Use unified resolver with write preference
+    return str(_resolve_assets_subpath('assets', 'icons', 'catalog.yaml', prefer_writable=True))
+
+
+def _load_icon_catalog():
+    import yaml
+
+    catalog_path = Path(_get_icon_catalog_path())
+    if not catalog_path.exists():
+        return catalog_path, {'icons': []}
+
+    with open(catalog_path, 'r', encoding='utf-8') as f:
+        catalog_data = yaml.safe_load(f) or {}
+
+    icons = catalog_data.get('icons')
+    if not isinstance(icons, list):
+        icons = []
+    catalog_data['icons'] = icons
+    return catalog_path, catalog_data
+
+
+def _save_icon_catalog(catalog_path: Path, catalog_data: dict) -> None:
+    import yaml
+
+    catalog_path.parent.mkdir(parents=True, exist_ok=True)
+    temp_fd, temp_path = tempfile.mkstemp(prefix='icon-catalog-', dir=str(catalog_path.parent))
+    try:
+        with os.fdopen(temp_fd, 'w', encoding='utf-8') as tmp_file:
+            yaml.safe_dump(catalog_data, tmp_file, sort_keys=False)
+        os.replace(temp_path, catalog_path)
+    finally:
+        if os.path.exists(temp_path):
+            os.unlink(temp_path)
+
+
 @api_bp.route('/indicator-catalog/sets/<set_id>/indicators', methods=['GET'])
 def list_indicators(set_id):
     """List all indicators in a set (management endpoint)."""
@@ -1179,6 +1220,285 @@ def set_indicator_theme(set_id, indicator_id):
             'error': {
                 'code': 'INTERNAL_ERROR',
                 'message': 'Failed to set indicator theme',
+            }
+        }), 500
+
+
+# ============================================================================
+# Icon Catalog Management (CRUD)
+# ============================================================================
+
+@api_bp.route('/icon-catalog/icons', methods=['GET'])
+def list_icons():
+    """List all icons (management endpoint)."""
+    try:
+        _, catalog_data = _load_icon_catalog()
+        return jsonify({'icons': catalog_data.get('icons', [])}), 200
+    except Exception as e:
+        logger.error(f"Error listing icons: {e}", exc_info=True)
+        return jsonify({
+            'error': {
+                'code': 'INTERNAL_ERROR',
+                'message': 'Failed to list icons',
+            }
+        }), 500
+
+
+@api_bp.route('/icon-catalog/icons/<icon_id>', methods=['GET'])
+def get_icon_entry(icon_id: str):
+    """Get an icon entry (management endpoint)."""
+    try:
+        if '..' in icon_id or '/' in icon_id:
+            return jsonify({'error': {'code': 'INVALID_REQUEST', 'message': 'Invalid icon ID'}}), 400
+
+        _, catalog_data = _load_icon_catalog()
+        for icon in catalog_data.get('icons', []):
+            if icon.get('id') == icon_id:
+                return jsonify(icon), 200
+
+        return jsonify({
+            'error': {
+                'code': 'NOT_FOUND',
+                'message': f'Icon {icon_id} not found',
+            }
+        }), 404
+    except Exception as e:
+        logger.error(f"Error getting icon: {e}", exc_info=True)
+        return jsonify({
+            'error': {
+                'code': 'INTERNAL_ERROR',
+                'message': 'Failed to get icon',
+            }
+        }), 500
+
+
+@api_bp.route('/icon-catalog/icons', methods=['POST'])
+def create_icon():
+    """Create an icon entry (management endpoint)."""
+    try:
+        data = request.get_json(silent=True)
+        if not data:
+            return jsonify({
+                'error': {
+                    'code': 'INVALID_REQUEST',
+                    'message': 'Request body must be valid JSON',
+                }
+            }), 400
+
+        icon_id = data.get('icon_id') or data.get('id')
+        filename = data.get('file')
+        description = data.get('description')
+
+        if not icon_id or not filename or not description:
+            return jsonify({
+                'error': {
+                    'code': 'INVALID_REQUEST',
+                    'message': 'icon_id, file, and description are required',
+                }
+            }), 400
+
+        if '..' in icon_id or '/' in icon_id:
+            return jsonify({
+                'error': {
+                    'code': 'INVALID_REQUEST',
+                    'message': 'Invalid icon ID',
+                }
+            }), 400
+
+        catalog_path, catalog_data = _load_icon_catalog()
+        icons = catalog_data.get('icons', [])
+        if any(icon.get('id') == icon_id for icon in icons):
+            return jsonify({
+                'error': {
+                    'code': 'CONFLICT',
+                    'message': f'Icon {icon_id} already exists',
+                }
+            }), 409
+
+        entry = {
+            'id': icon_id,
+            'file': filename,
+            'description': description,
+        }
+        icons.append(entry)
+        catalog_data['icons'] = icons
+        _save_icon_catalog(catalog_path, catalog_data)
+
+        return jsonify(entry), 201
+    except Exception as e:
+        logger.error(f"Error creating icon: {e}", exc_info=True)
+        return jsonify({
+            'error': {
+                'code': 'INTERNAL_ERROR',
+                'message': 'Failed to create icon',
+            }
+        }), 500
+
+
+@api_bp.route('/icon-catalog/icons/<icon_id>', methods=['PUT'])
+def update_icon(icon_id: str):
+    """Update an icon entry (management endpoint)."""
+    try:
+        if '..' in icon_id or '/' in icon_id:
+            return jsonify({'error': {'code': 'INVALID_REQUEST', 'message': 'Invalid icon ID'}}), 400
+
+        data = request.get_json(silent=True)
+        if not data:
+            return jsonify({
+                'error': {
+                    'code': 'INVALID_REQUEST',
+                    'message': 'Request body must be valid JSON',
+                }
+            }), 400
+
+        new_id = data.get('icon_id') or data.get('id') or icon_id
+        filename = data.get('file')
+        description = data.get('description')
+
+        if not new_id or not filename or not description:
+            return jsonify({
+                'error': {
+                    'code': 'INVALID_REQUEST',
+                    'message': 'icon_id, file, and description are required',
+                }
+            }), 400
+
+        if '..' in new_id or '/' in new_id:
+            return jsonify({
+                'error': {
+                    'code': 'INVALID_REQUEST',
+                    'message': 'Invalid icon ID',
+                }
+            }), 400
+
+        catalog_path, catalog_data = _load_icon_catalog()
+        icons = catalog_data.get('icons', [])
+
+        target = None
+        for icon in icons:
+            if icon.get('id') == icon_id:
+                target = icon
+                break
+
+        if not target:
+            return jsonify({
+                'error': {
+                    'code': 'NOT_FOUND',
+                    'message': f'Icon {icon_id} not found',
+                }
+            }), 404
+
+        if new_id != icon_id and any(icon.get('id') == new_id for icon in icons):
+            return jsonify({
+                'error': {
+                    'code': 'CONFLICT',
+                    'message': f'Icon {new_id} already exists',
+                }
+            }), 409
+
+        target['id'] = new_id
+        target['file'] = filename
+        target['description'] = description
+        catalog_data['icons'] = icons
+        _save_icon_catalog(catalog_path, catalog_data)
+
+        return jsonify(target), 200
+    except Exception as e:
+        logger.error(f"Error updating icon: {e}", exc_info=True)
+        return jsonify({
+            'error': {
+                'code': 'INTERNAL_ERROR',
+                'message': 'Failed to update icon',
+            }
+        }), 500
+
+
+@api_bp.route('/icon-catalog/icons/<icon_id>', methods=['DELETE'])
+def delete_icon(icon_id: str):
+    """Delete an icon entry (management endpoint)."""
+    try:
+        if '..' in icon_id or '/' in icon_id:
+            return jsonify({'error': {'code': 'INVALID_REQUEST', 'message': 'Invalid icon ID'}}), 400
+
+        catalog_path, catalog_data = _load_icon_catalog()
+        icons = catalog_data.get('icons', [])
+        filtered = [icon for icon in icons if icon.get('id') != icon_id]
+
+        if len(filtered) == len(icons):
+            return jsonify({
+                'error': {
+                    'code': 'NOT_FOUND',
+                    'message': f'Icon {icon_id} not found',
+                }
+            }), 404
+
+        catalog_data['icons'] = filtered
+        _save_icon_catalog(catalog_path, catalog_data)
+        return jsonify({'status': 'deleted'}), 200
+    except Exception as e:
+        logger.error(f"Error deleting icon: {e}", exc_info=True)
+        return jsonify({
+            'error': {
+                'code': 'INTERNAL_ERROR',
+                'message': 'Failed to delete icon',
+            }
+        }), 500
+
+
+@api_bp.route('/icon-catalog/icons/<icon_id>/file', methods=['POST'])
+def upload_icon_file(icon_id: str):
+    """Upload an SVG file for an icon (management endpoint)."""
+    try:
+        if '..' in icon_id or '/' in icon_id:
+            return jsonify({'error': {'code': 'INVALID_REQUEST', 'message': 'Invalid icon ID'}}), 400
+
+        if 'file' not in request.files:
+            return jsonify({
+                'error': {
+                    'code': 'INVALID_REQUEST',
+                    'message': 'Missing file upload',
+                }
+            }), 400
+
+        file_storage = request.files['file']
+        filename = secure_filename(file_storage.filename or '')
+        if not filename:
+            return jsonify({
+                'error': {
+                    'code': 'INVALID_REQUEST',
+                    'message': 'File name is required',
+                }
+            }), 400
+
+        if not filename.lower().endswith('.svg'):
+            return jsonify({
+                'error': {
+                    'code': 'INVALID_REQUEST',
+                    'message': 'Only .svg files are allowed',
+                }
+            }), 400
+
+        catalog_path = Path(_get_icon_catalog_path())
+        icons_dir = catalog_path.parent
+        icons_dir.mkdir(parents=True, exist_ok=True)
+
+        temp_fd, temp_path = tempfile.mkstemp(prefix=filename, dir=str(icons_dir))
+        try:
+            with os.fdopen(temp_fd, 'wb') as tmp_file:
+                file_storage.save(tmp_file)
+            target_path = icons_dir / filename
+            os.replace(temp_path, target_path)
+        finally:
+            if os.path.exists(temp_path):
+                os.unlink(temp_path)
+
+        return jsonify({'file': filename}), 200
+    except Exception as e:
+        logger.error(f"Error uploading icon file: {e}", exc_info=True)
+        return jsonify({
+            'error': {
+                'code': 'INTERNAL_ERROR',
+                'message': 'Failed to upload icon file',
             }
         }), 500
 
@@ -2565,9 +2885,8 @@ def get_icons_config():
     try:
         import yaml
 
-        # Find the icons catalog file
-        assets_icons_dir = _resolve_assets_subpath('assets', 'icons')
-        catalog_file = assets_icons_dir / 'catalog.yaml'
+        # Find the icons catalog file using the same path as write operations
+        catalog_file = Path(_get_icon_catalog_path())
         
         if not catalog_file.exists():
             logger.warning(f"Icons catalog not found at {catalog_file}")
@@ -2645,17 +2964,35 @@ def get_indicators_config():
 def get_icon_file(icon_id: str):
     """Get an individual icon SVG file."""
     try:
+        import yaml
+
         # Sanitize the icon_id to prevent path traversal
         if '..' in icon_id or '/' in icon_id:
             return jsonify({'error': 'Invalid icon ID'}), 400
-        
-        assets_icons_dir = _resolve_assets_subpath('assets', 'icons')
-        icon_file = assets_icons_dir / f'{icon_id}.svg'
-        
-        if not icon_file.exists():
+
+        catalog_file = Path(_get_icon_catalog_path())
+        if not catalog_file.exists():
+            return jsonify({'error': 'Icon catalog not found'}), 404
+
+        with open(catalog_file, 'r', encoding='utf-8') as f:
+            catalog_data = yaml.safe_load(f) or {}
+
+        target_icon = None
+        for icon in catalog_data.get('icons', []):
+            if icon.get('id') == icon_id:
+                target_icon = icon
+                break
+
+        if not target_icon:
             return jsonify({'error': 'Icon not found'}), 404
-        
-        with open(icon_file, 'r') as f:
+
+        filename = target_icon.get('file') or f'{icon_id}.svg'
+        icon_file = catalog_file.parent / filename
+
+        if not icon_file.exists():
+            return jsonify({'error': 'Icon file not found'}), 404
+
+        with open(icon_file, 'r', encoding='utf-8') as f:
             svg_content = f.read()
         
         return svg_content, 200, {'Content-Type': 'image/svg+xml'}

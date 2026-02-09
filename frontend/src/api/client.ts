@@ -116,6 +116,10 @@ export interface IconCatalog {
   url?: string;
 }
 
+export interface IconFileUploadResponse {
+  file: string;
+}
+
 export interface IndicatorDef {
   id: string;
   file: string;
@@ -308,6 +312,81 @@ export class APIClient {
     const response = await fetch(`${this.baseUrl}/api/v1/config/indicators`);
     if (!response.ok) {
       throw new Error(`Failed to fetch indicators config: ${response.status} ${response.statusText}`);
+    }
+    return response.json();
+  }
+
+  // Icon Catalog Management
+  async listIcons(): Promise<IconsConfig> {
+    const response = await fetch(`${this.baseUrl}/api/v1/icon-catalog/icons`);
+    if (!response.ok) {
+      throw new Error(`Failed to list icons: ${response.status} ${response.statusText}`);
+    }
+    return response.json();
+  }
+
+  async createIcon(payload: IconCatalog): Promise<IconCatalog> {
+    const response = await fetch(`${this.baseUrl}/api/v1/icon-catalog/icons`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        icon_id: payload.id,
+        file: payload.file,
+        description: payload.description,
+      }),
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => null);
+      const message = error?.error?.message || `Failed to create icon: ${response.status}`;
+      throw new Error(message);
+    }
+    return response.json();
+  }
+
+  async updateIcon(iconId: string, payload: IconCatalog): Promise<IconCatalog> {
+    const response = await fetch(`${this.baseUrl}/api/v1/icon-catalog/icons/${encodeURIComponent(iconId)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        icon_id: payload.id,
+        file: payload.file,
+        description: payload.description,
+      }),
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => null);
+      const message = error?.error?.message || `Failed to update icon: ${response.status}`;
+      throw new Error(message);
+    }
+    return response.json();
+  }
+
+  async deleteIcon(iconId: string): Promise<void> {
+    const response = await fetch(`${this.baseUrl}/api/v1/icon-catalog/icons/${encodeURIComponent(iconId)}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => null);
+      const message = error?.error?.message || `Failed to delete icon: ${response.status}`;
+      throw new Error(message);
+    }
+  }
+
+  async uploadIconFile(iconId: string, file: File): Promise<IconFileUploadResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(
+      `${this.baseUrl}/api/v1/icon-catalog/icons/${encodeURIComponent(iconId)}/file`,
+      {
+        method: 'POST',
+        body: formData,
+      }
+    );
+    if (!response.ok) {
+      const error = await response.json().catch(() => null);
+      const message = error?.error?.message || `Failed to upload icon file: ${response.status}`;
+      throw new Error(message);
     }
     return response.json();
   }
