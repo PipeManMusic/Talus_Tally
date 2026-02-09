@@ -32,6 +32,7 @@ export function NodeBlockingEditor({ sessionId, nodes }: Props) {
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [scale, setScale] = useState(1);
+  const [spacePressed, setSpacePressed] = useState(false);
 
   // Calculate node hierarchy and positions
   useEffect(() => {
@@ -109,6 +110,31 @@ export function NodeBlockingEditor({ sessionId, nodes }: Props) {
 
     setNodePositions(positions);
   }, [nodes]);
+
+  // Keyboard handlers for space pan
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space' && !spacePressed) {
+        setSpacePressed(true);
+        e.preventDefault();
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        setSpacePressed(false);
+        e.preventDefault();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [spacePressed]);
 
   // Fetch existing relationships
   useEffect(() => {
@@ -234,7 +260,11 @@ export function NodeBlockingEditor({ sessionId, nodes }: Props) {
   };
 
   const handleSVGMouseDown = (e: React.MouseEvent) => {
-    if (e.button === 2 || e.ctrlKey || e.metaKey) { // Right click or Ctrl/Cmd for panning
+    // Middle mouse button or space+left click for panning
+    const isMiddleClick = e.button === 1;
+    const isSpaceClick = spacePressed && e.button === 0 && !draggingNode;
+
+    if (isMiddleClick || isSpaceClick) {
       setIsPanning(true);
       const rect = svgRef.current!.getBoundingClientRect();
       setPanStart({
@@ -247,8 +277,45 @@ export function NodeBlockingEditor({ sessionId, nodes }: Props) {
 
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
-    const newScale = Math.max(0.5, Math.min(3, scale - e.deltaY * 0.001));
-    setScale(newScale);
+    // Invert so scroll up = zoom in, scroll down = zoom out
+    const zoomFactor = 1.1;
+    const newScale = e.deltaY < 0 ? scale * zoomFactor : scale / zoomFactor;
+    setScale(Math.max(0.1, Math.min(10, newScale)));
+  };
+
+  const fitToView = () => {
+    if (nodePositions.length === 0 || !svgRef.current) return;
+
+    // Calculate bounds of all nodes
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    const nodeSize = { width: 160, height: 100 };
+
+    nodePositions.forEach(node => {
+      minX = Math.min(minX, node.x);
+      minY = Math.min(minY, node.y);
+      maxX = Math.max(maxX, node.x + nodeSize.width);
+      maxY = Math.max(maxY, node.y + nodeSize.height);
+    });
+
+    const svgRect = svgRef.current.getBoundingClientRect();
+    const svgWidth = svgRect.width;
+    const svgHeight = svgRect.height;
+
+    const boundsWidth = maxX - minX;
+    const boundsHeight = maxY - minY;
+
+    // Add 20% padding
+    const padding = 1.2;
+    const scaleX = (svgWidth / (boundsWidth * padding));
+    const scaleY = (svgHeight / (boundsHeight * padding));
+    const newScale = Math.min(scaleX, scaleY);
+
+    // Center the view
+    const centeredX = (svgWidth / 2) - ((minX + boundsWidth / 2) * newScale);
+    const centeredY = (svgHeight / 2) - ((minY + boundsHeight / 2) * newScale);
+
+    setScale(Math.max(0.1, Math.min(10, newScale)));
+    setPan({ x: centeredX, y: centeredY });
   };
 
   if (!sessionId) {
@@ -274,8 +341,16 @@ export function NodeBlockingEditor({ sessionId, nodes }: Props) {
             <h3 className="font-semibold text-fg-primary">Node Blocker Editor</h3>
             <p className="text-xs text-fg-secondary mt-1">Drag from blue circle → target node to create blocking relationship</p>
           </div>
-          <div className="text-xs text-fg-secondary">
-            {nodePositions.length} nodes • {edges.length} relationships
+          <div className="flex items-center gap-4">
+            <button
+              onClick={fitToView}
+              className="px-3 py-1 bg-accent-primary text-fg-primary text-xs font-semibold rounded hover:bg-accent-hover transition-colors"
+            >
+              Fit to View
+            </button>
+            <div className="text-xs text-fg-secondary">
+              {nodePositions.length} nodes • {edges.length} relationships
+            </div>
           </div>
         </div>
       </div>
@@ -536,7 +611,8 @@ export function NodeBlockingEditor({ sessionId, nodes }: Props) {
             <p className="font-semibold text-fg-primary mb-1">Map Controls</p>
             <ul className="space-y-0.5">
               <li><span className="font-mono">Left Drag:</span> Move nodes</li>
-              <li><span className="font-mono">Right Drag:</span> Pan canvas</li>
+              <li><span className="font-mono">Space + Drag:</span> Pan canvas</li>
+              <li><span className="font-mono">Middle Click + Drag:</span> Pan canvas</li>
               <li><span className="font-mono">Scroll:</span> Zoom in/out</li>
             </ul>
           </div>
