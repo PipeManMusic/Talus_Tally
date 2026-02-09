@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
-import { apiClient } from '../api/client';
+import { apiClient, type IndicatorsConfig, type IndicatorSet } from '../api/client';
 
 export interface IndicatorEditorProps {
   onClose: () => void;
 }
 
 export function IndicatorEditor({ onClose }: IndicatorEditorProps) {
-  const [indicators, setIndicators] = useState<any[]>([]);
+  const [indicatorSets, setIndicatorSets] = useState<Record<string, IndicatorSet>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -19,11 +19,9 @@ export function IndicatorEditor({ onClose }: IndicatorEditorProps) {
     try {
       setLoading(true);
       setError(null);
-      // TODO: Add indicator API endpoint to fetch indicators
-      // const data = await apiClient.getIndicators();
-      // setIndicators(data);
-      console.log('Loading indicators...');
-      setIndicators([]);
+      const data = await apiClient.getIndicatorsConfig();
+      setIndicatorSets(data.indicator_sets || {});
+      console.log('Loaded indicator sets:', data.indicator_sets);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       setError(`Failed to load indicators: ${message}`);
@@ -59,18 +57,35 @@ export function IndicatorEditor({ onClose }: IndicatorEditorProps) {
           </div>
         ) : (
           <div className="p-4">
-            {indicators.length === 0 ? (
+            {Object.keys(indicatorSets).length === 0 ? (
               <div className="text-fg-secondary">
-                <p>No indicators found.</p>
-                <p className="text-sm mt-2">Indicators will be displayed here once they are created.</p>
+                <p>No indicator sets found.</p>
+                <p className="text-sm mt-2">Indicator sets will be displayed here once they are available.</p>
               </div>
             ) : (
-              <div className="space-y-4">
-                {indicators.map((indicator: any) => (
-                  <div key={indicator.id} className="p-4 bg-bg-lighter rounded border border-bg-medium">
-                    <h3 className="font-semibold text-fg-primary">{indicator.name}</h3>
-                    {indicator.description && (
-                      <p className="text-sm text-fg-secondary mt-1">{indicator.description}</p>
+              <div className="space-y-6">
+                {Object.entries(indicatorSets).map(([setId, set]) => (
+                  <div key={setId} className="border-b border-bg-medium pb-6">
+                    <h2 className="text-lg font-semibold text-fg-primary mb-2">{setId}</h2>
+                    {set.description && (
+                      <p className="text-sm text-fg-secondary mb-4">{set.description}</p>
+                    )}
+                    {set.indicators && set.indicators.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {set.indicators.map((indicator) => (
+                          <div key={indicator.id} className="p-3 bg-bg-lighter rounded border border-bg-medium">
+                            <h3 className="font-mono text-sm text-fg-primary">{indicator.id}</h3>
+                            {indicator.description && (
+                              <p className="text-xs text-fg-secondary mt-1">{indicator.description}</p>
+                            )}
+                            {indicator.file && (
+                              <p className="text-xs text-fg-secondary mt-1">File: {indicator.file}</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-fg-secondary">No indicators in this set.</p>
                     )}
                   </div>
                 ))}
