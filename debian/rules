@@ -29,4 +29,4 @@ override_dh_auto_install:
 	cp debian/talus-tally.desktop debian/talus-tally/usr/share/applications/
 	
 	# Copy icon
-	cp assets/icons/icon.png debian/talus-tally/usr/share/icons/hicolor/256x256/apps/talus-tally.png || true
+	install -m 644 assets/icons/TalusTallyIcon.png debian/talus-tally/usr/share/icons/hicolor/256x256/apps/talus-tally.png

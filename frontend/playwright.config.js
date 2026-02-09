@@ -1,12 +1,11 @@
 // @ts-check
-const { defineConfig, devices } = require('@playwright/test');
-const { spawn } = require('child_process');
+import { defineConfig, devices } from '@playwright/test';
 
 /**
  * See https://playwright.dev/docs/test-configuration
  * for more information about Playwright test config.
  */
-module.exports = defineConfig({
+export default defineConfig({
   testDir: './tests/e2e',
   timeout: 60 * 1000,
   expect: {

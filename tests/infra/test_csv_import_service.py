@@ -77,4 +77,3 @@ def test_prepare_import_collects_row_errors_for_missing_required_values(schema_r
     # First row missing optional description, so should still import
     assert len(batch.prepared_nodes) == 1
     assert batch.prepared_nodes[0].name == "Widget"
-*** End of File

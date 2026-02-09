@@ -132,7 +132,23 @@
           "episode_number": 2,
           "status": "3094f28b-3fc3-2667-5ae1-933b041d78ed"
         },
-        "children": [],
+        "children": [
+          "9b6d26d8-9ac0-4846-b10c-c667d221d941",
+          "2e79852a-2689-4c55-86fc-3551e38b6f11",
+          "b6bbe747-2f96-4774-8a3c-bdb3b65288cb",
+          "701f5718-88dd-400b-a3fb-c7413b14f359",
+          "8955a0d9-12be-44e9-8229-c942a43fa4e2",
+          "88f29f14-cda7-4921-867a-930c0ac4e14f",
+          "79d70133-7369-4936-ae37-3caea28dfad1",
+          "96baf06a-829d-45a3-85dc-7e0b7355cd12",
+          "ce98ccbb-20e8-4342-83aa-2a3beee0baca",
+          "198744f3-58fc-40e1-9c5a-120ade6c96bc",
+          "72700a15-614d-4990-954f-3f5880d78e4b",
+          "cb666fe0-8e9b-4096-9cf0-fba1169dbc76",
+          "1fc8206f-4ec6-4df0-a477-01f8a10fbe06",
+          "46e0ec93-c139-4e5c-bcf2-37b213b8731e",
+          "1917a858-0294-4561-95de-109d8828d1e4"
+        ],
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "video-camera",
@@ -143,6 +159,234 @@
           "uses_camera_gear",
           "uses_car_part",
           "uses_tool"
+        ]
+      },
+      {
+        "id": "9b6d26d8-9ac0-4846-b10c-c667d221d941",
+        "type": "footage",
+        "properties": {
+          "name": "Emission Test",
+          "dropbox_link": "https://www.dropbox.com/scl/fi/47xa46zapqq91hvzqt7eu/DiagnosticsEmissions.mp4?rlkey=21ytv1y0ehhde5g3j12i4k720&st=1bc0o4qd&dl=0",
+          "filename": "DiagnosticsEmisions.mp4",
+          "notes": "I was old I couldn't shoot by an employee, no signs where posted but I let it go.",
+          "prop_1770559115384": "c5707e0e-c9d6-3397-0b55-578878e04e81"
+        },
+        "children": [],
+        "indicator_id": "filled",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "allowed_children": [
+          "uses_camera_gear"
+        ]
+      },
+      {
+        "id": "2e79852a-2689-4c55-86fc-3551e38b6f11",
+        "type": "footage",
+        "properties": {
+          "name": "Check Oil Level",
+          "prop_1770559115384": "835e3b27-866f-0294-1cac-b31b8cef5eb2"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "allowed_children": [
+          "uses_camera_gear"
+        ]
+      },
+      {
+        "id": "b6bbe747-2f96-4774-8a3c-bdb3b65288cb",
+        "type": "footage",
+        "properties": {
+          "name": "Coolant Level",
+          "prop_1770559115384": "835e3b27-866f-0294-1cac-b31b8cef5eb2"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "allowed_children": [
+          "uses_camera_gear"
+        ]
+      },
+      {
+        "id": "701f5718-88dd-400b-a3fb-c7413b14f359",
+        "type": "footage",
+        "properties": {
+          "name": "Transmission Fluid Level",
+          "prop_1770559115384": "835e3b27-866f-0294-1cac-b31b8cef5eb2"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "allowed_children": [
+          "uses_camera_gear"
+        ]
+      },
+      {
+        "id": "8955a0d9-12be-44e9-8229-c942a43fa4e2",
+        "type": "footage",
+        "properties": {
+          "name": "Transfer Case Fluid Level",
+          "prop_1770559115384": "835e3b27-866f-0294-1cac-b31b8cef5eb2"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "allowed_children": [
+          "uses_camera_gear"
+        ]
+      },
+      {
+        "id": "88f29f14-cda7-4921-867a-930c0ac4e14f",
+        "type": "footage",
+        "properties": {
+          "name": "Rear Axel Fluid Level",
+          "prop_1770559115384": "835e3b27-866f-0294-1cac-b31b8cef5eb2"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "allowed_children": [
+          "uses_camera_gear"
+        ]
+      },
+      {
+        "id": "79d70133-7369-4936-ae37-3caea28dfad1",
+        "type": "footage",
+        "properties": {
+          "name": "Front Differencial Fluid Level",
+          "prop_1770559115384": "835e3b27-866f-0294-1cac-b31b8cef5eb2"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "allowed_children": [
+          "uses_camera_gear"
+        ]
+      },
+      {
+        "id": "96baf06a-829d-45a3-85dc-7e0b7355cd12",
+        "type": "footage",
+        "properties": {
+          "name": "Brake Fluid Level",
+          "prop_1770559115384": "835e3b27-866f-0294-1cac-b31b8cef5eb2"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "allowed_children": [
+          "uses_camera_gear"
+        ]
+      },
+      {
+        "id": "ce98ccbb-20e8-4342-83aa-2a3beee0baca",
+        "type": "footage",
+        "properties": {
+          "name": "Power Steering Fluid Level",
+          "prop_1770559115384": "835e3b27-866f-0294-1cac-b31b8cef5eb2"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "allowed_children": [
+          "uses_camera_gear"
+        ]
+      },
+      {
+        "id": "198744f3-58fc-40e1-9c5a-120ade6c96bc",
+        "type": "footage",
+        "properties": {
+          "name": "Tire Pressure",
+          "prop_1770559115384": "835e3b27-866f-0294-1cac-b31b8cef5eb2"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "allowed_children": [
+          "uses_camera_gear"
+        ]
+      },
+      {
+        "id": "72700a15-614d-4990-954f-3f5880d78e4b",
+        "type": "footage",
+        "properties": {
+          "name": "Tire Tread Depth",
+          "prop_1770559115384": "835e3b27-866f-0294-1cac-b31b8cef5eb2"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "allowed_children": [
+          "uses_camera_gear"
+        ]
+      },
+      {
+        "id": "cb666fe0-8e9b-4096-9cf0-fba1169dbc76",
+        "type": "footage",
+        "properties": {
+          "name": "Tire Age",
+          "prop_1770559115384": "835e3b27-866f-0294-1cac-b31b8cef5eb2"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "allowed_children": [
+          "uses_camera_gear"
+        ]
+      },
+      {
+        "id": "1fc8206f-4ec6-4df0-a477-01f8a10fbe06",
+        "type": "footage",
+        "properties": {
+          "name": "Brake Pad Thickness",
+          "prop_1770559115384": "835e3b27-866f-0294-1cac-b31b8cef5eb2"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "allowed_children": [
+          "uses_camera_gear"
+        ]
+      },
+      {
+        "id": "46e0ec93-c139-4e5c-bcf2-37b213b8731e",
+        "type": "footage",
+        "properties": {
+          "name": "Brake Fluid Corroson Test",
+          "prop_1770559115384": "835e3b27-866f-0294-1cac-b31b8cef5eb2"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "allowed_children": [
+          "uses_camera_gear"
+        ]
+      },
+      {
+        "id": "1917a858-0294-4561-95de-109d8828d1e4",
+        "type": "footage",
+        "properties": {
+          "name": "Brake Fluid Moisture Test",
+          "prop_1770559115384": "835e3b27-866f-0294-1cac-b31b8cef5eb2"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "allowed_children": [
+          "uses_camera_gear"
         ]
       },
       {
@@ -503,7 +747,6 @@
           "04b539a7-808d-40af-9d0b-9fefde93682d",
           "5e66a573-7e72-4a46-86cd-88c85aec8fe6",
           "e0ce1b66-502e-4cfb-bc69-54bbbc18e4b7",
-          "cf083b12-7441-4236-a973-ef875393f555",
           "b12bbe00-ce28-45a8-9b82-5a1fce27b54e",
           "ca6f4e06-43a4-4b75-863c-9d53c45e9ac1",
           "fff14e1b-0f97-4013-adb6-3fb9977f27a7",
@@ -601,12 +844,12 @@
           "notes": "Order 81365682",
           "part_number": "96050",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Bronco Graveyard",
           "unit_cost": "5.00"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -619,12 +862,12 @@
           "notes": "Order 81365682",
           "part_number": "96020",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Bronco Graveyard",
           "unit_cost": "85.00"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -636,12 +879,12 @@
           "name": "Headlight Switch Knob (Black Billet)",
           "notes": "Order 13280",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "supplier": "JC Customs CNC",
           "unit_cost": "25.00"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -653,12 +896,12 @@
           "name": "Vent Window Handle (Driver Side)",
           "notes": "Order 121936",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "supplier": "eClassics.com",
           "unit_cost": "9.10"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -670,12 +913,12 @@
           "name": "Mustang Automatic T-Handle Shifter",
           "notes": "Order VH19521",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "supplier": "LMR",
           "unit_cost": "24.99"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -687,12 +930,12 @@
           "name": "Ignition Door & Tailgate Lock Cylinder Set",
           "notes": "Order 51810",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Pro Steering Columns",
           "unit_cost": "146.21"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -704,12 +947,12 @@
           "name": "Acerkyt Single Din Touchscreen Stereo",
           "notes": "Order 113-5755298-4531422",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "55.99"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -722,12 +965,12 @@
           "notes": "Order 113-5772056-1777033",
           "part_number": "A23592",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "supplier": "Amazon",
           "unit_cost": "9.92"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -740,12 +983,12 @@
           "notes": "Order 113-7405377-0513052",
           "part_number": "1156",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "supplier": "Amazon",
           "unit_cost": "13.99"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -758,12 +1001,12 @@
           "notes": "Order 113-7405377-0513052",
           "part_number": "1157",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "supplier": "Amazon",
           "unit_cost": "16.14"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -776,12 +1019,12 @@
           "notes": "Order 113-6837171-9368256",
           "part_number": "3157",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "supplier": "Amazon",
           "unit_cost": "13.99"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -793,12 +1036,12 @@
           "name": "YOGEIER 24-Piece LED Interior Bulb Set",
           "notes": "Order 113-6837171-9368256",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "7.99"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -811,12 +1054,12 @@
           "notes": "Order 113-9797078-2910603",
           "part_number": "PBL30001",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "15.99"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -829,12 +1072,12 @@
           "notes": "Order 209266272083",
           "part_number": "74973",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "AutoZone",
           "unit_cost": "7.99"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -847,12 +1090,12 @@
           "notes": "Order 113-2773185-0817049",
           "part_number": "8006-B",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "14.97"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -864,12 +1107,12 @@
           "name": "TCP Global Paint Strainers (50 Pack)",
           "notes": "Order 113-2773185-0817049",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "8.99"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -882,12 +1125,12 @@
           "notes": "Order 113-3591847-7097832",
           "part_number": "AS105",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "14.49"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -899,12 +1142,12 @@
           "name": "AITRIP ESP32 Development Board (3 Pcs)",
           "notes": "Order 113-7549109-5968215",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "15.99"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -916,12 +1159,12 @@
           "name": "hiBCTR CAN Transceiver Module (3 Pcs)",
           "notes": "Order 113-7549109-5968215",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "7.97"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -933,29 +1176,12 @@
           "name": "RS485 CAN HAT for Raspberry Pi",
           "notes": "Order 113-7549109-5968215",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "16.31"
         },
         "children": [],
-        "indicator_id": "empty",
-        "indicator_set": "status",
-        "icon_id": "cog",
-        "allowed_children": []
-      },
-      {
-        "id": "cf083b12-7441-4236-a973-ef875393f555",
-        "type": "part_asset",
-        "properties": {
-          "name": "Logitech Wireless Mouse",
-          "notes": "Order 113-7549109-5968215",
-          "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
-          "supplier": "Amazon",
-          "unit_cost": "14.79"
-        },
-        "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -967,12 +1193,12 @@
           "name": "IDIK Heat Shrink Label Tape",
           "notes": "Order 113-7549109-5968215",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "9.69"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -984,12 +1210,12 @@
           "name": "ACEIRMC 8CH Optocoupler",
           "notes": "Order 113-9492001-6861849",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "15.69"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1002,12 +1228,12 @@
           "notes": "Order 113-9492001-6861849",
           "part_number": "CPC200-CCPA",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "55.99"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1019,12 +1245,12 @@
           "name": "Coolwell HDMI to USB Capture Card",
           "notes": "Order 113-4459009-2675434",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "20.90"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1037,12 +1263,12 @@
           "notes": "Order 113-0896419-0819443",
           "part_number": "V4 R828D",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "39.95"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1054,12 +1280,12 @@
           "name": "A-Premium Rear Tailgate Lift Supports",
           "notes": "Order 113-3598232-5019468",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "supplier": "Amazon",
           "unit_cost": "25.09"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1071,12 +1297,12 @@
           "name": "TOMALL T10 Bulb Sockets (Pack of 4)",
           "notes": "Order 113-9978039-2329857",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "5.99"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1088,12 +1314,12 @@
           "name": "Mobil 1 High Mileage 10W-30 Oil (5 Qt)",
           "notes": "Order 113-9978039-2329857",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "27.97"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1106,12 +1332,12 @@
           "notes": "Order 113-9978039-2329857",
           "part_number": "EF32",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "supplier": "Amazon",
           "unit_cost": "11.19"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1124,12 +1350,12 @@
           "notes": "Order 113-8170202-8044248",
           "part_number": "620-112",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "38.78"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1142,12 +1368,12 @@
           "notes": "Order 113-0185488-1976276",
           "part_number": "8312",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "6.99"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1159,12 +1385,12 @@
           "name": "Ultimate No Spill Coolant Funnel Kit",
           "notes": "Order 113-8203985-7070602",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "16.99"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1177,12 +1403,12 @@
           "notes": "Order 113-3193159-3144240",
           "part_number": "K8736",
           "quantity_on_hand": "2",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "35.49"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1194,12 +1420,12 @@
           "name": "Toolwiz Magnetic Camber Gauge",
           "notes": "Order 113-3193159-3144240",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "13.49"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1212,12 +1438,12 @@
           "notes": "Order 113-3193159-3144240",
           "part_number": "AT-205",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "supplier": "Amazon",
           "unit_cost": "18.00"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1229,13 +1455,13 @@
           "name": "Bosch Clear Advantage Wiper Blade 18in",
           "notes": "Order 113-3193159-3144240",
           "part_number": "18CA",
-          "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "quantity_on_hand": 2,
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "10.00"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1248,12 +1474,12 @@
           "notes": "Order 113-4842826-4464226",
           "part_number": "51-0056-02-00",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "49.99"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1266,12 +1492,12 @@
           "notes": "Order 113-0565454-4792220",
           "part_number": "344050",
           "quantity_on_hand": "2",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "b3b79228-4930-102f-7da4-6b0cbb28cf76",
           "supplier": "Amazon",
           "unit_cost": "31.52"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "alert",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1284,12 +1510,12 @@
           "notes": "Order 113-2820310-8076257",
           "part_number": "RDS 55393",
           "quantity_on_hand": "2",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "7.49"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1302,12 +1528,12 @@
           "notes": "Order 113-9595477-0381812",
           "part_number": "2614",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "46.05"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1320,12 +1546,12 @@
           "notes": "Order 113-1210497-9601038",
           "part_number": "6005R",
           "quantity_on_hand": "2",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "58.04"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1338,12 +1564,12 @@
           "notes": "Order 113-8321077-1869806",
           "part_number": "2604R",
           "quantity_on_hand": "2",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "b3b79228-4930-102f-7da4-6b0cbb28cf76",
           "supplier": "Amazon",
           "unit_cost": "36.78"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "alert",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1356,12 +1582,12 @@
           "notes": "Order 113-8321077-1869806",
           "part_number": "ES2215L",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "27.34"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1374,12 +1600,12 @@
           "notes": "Order 113-8321077-1869806",
           "part_number": "DS1041",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "52.78"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1392,12 +1618,12 @@
           "notes": "Order 113-8321077-1869806",
           "part_number": "H2592",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "10.26"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1410,12 +1636,12 @@
           "notes": "Order 113-8321077-1869806",
           "part_number": "W37862",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "b3b79228-4930-102f-7da4-6b0cbb28cf76",
           "supplier": "Amazon",
           "unit_cost": "7.25"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "alert",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1428,12 +1654,12 @@
           "notes": "Order 113-8321077-1869806",
           "part_number": "XT-5-5QM",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "40.31"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1446,12 +1672,12 @@
           "notes": "Order 113-8321077-1869806",
           "part_number": "35404",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "4.41"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1464,12 +1690,12 @@
           "notes": "Order 113-8321077-1869806",
           "part_number": "99166",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "31.24"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1481,12 +1707,12 @@
           "name": "Zerex Original Green Coolant (1 Gal)",
           "notes": "Order 113-8321077-1869806",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "20.49"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1499,12 +1725,12 @@
           "notes": "Order 113-8321077-1869806",
           "part_number": "SET45",
           "quantity_on_hand": "4",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "17.85"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1517,12 +1743,12 @@
           "notes": "Order 113-8321077-1869806",
           "part_number": "559PG",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "15.68"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1535,12 +1761,12 @@
           "notes": "Order 113-8321077-1869806",
           "part_number": "34328",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "14.38"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1553,12 +1779,12 @@
           "notes": "Order 113-8321077-1869806",
           "part_number": "43054",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "53.78"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1571,12 +1797,12 @@
           "notes": "Order 113-8321077-1869806",
           "part_number": "WR4010C",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "43.78"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1589,12 +1815,12 @@
           "notes": "Order 113-8321077-1869806",
           "part_number": "PGD249M",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "22.53"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1607,12 +1833,12 @@
           "notes": "Order 113-8321077-1869806",
           "part_number": "344049",
           "quantity_on_hand": "2",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "30.69"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1625,12 +1851,12 @@
           "notes": "Order 113-8321077-1869806",
           "part_number": "SP409AX",
           "quantity_on_hand": "6",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "4.89"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1643,12 +1869,12 @@
           "notes": "Order 113-8321077-1869806",
           "part_number": "L4197",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "62.65"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1661,12 +1887,12 @@
           "notes": "Order 113-8321077-1869806",
           "part_number": "L4196",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "44.85"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1679,12 +1905,12 @@
           "notes": "Order 113-8321077-1869806",
           "part_number": "H2312",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "15.89"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1697,12 +1923,12 @@
           "notes": "Order 113-8321077-1869806",
           "part_number": "W1269",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "13.84"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1715,12 +1941,12 @@
           "notes": "Order 113-8321077-1869806",
           "part_number": "TCS 45791",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "22.71"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1732,12 +1958,12 @@
           "name": "HDPE Plastic Welding Rods",
           "notes": "Order 113-8518811-4433833",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "14.35"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1750,12 +1976,12 @@
           "notes": "Order 113-8518811-4433833",
           "part_number": "DY1284",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "65.28"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1767,12 +1993,12 @@
           "name": "NY Threads Coverall (Grey XX-Large)",
           "notes": "Order 113-8921857-3726624",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "28.49"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1784,12 +2010,12 @@
           "name": "Decibel Meter",
           "notes": "Order 113-8921857-3726624",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "RISEPRO",
           "unit_cost": "30.00"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1801,12 +2027,12 @@
           "name": "Espusta Brake Pad Gauge",
           "notes": "Order 113-6163034-9629866",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "9.99"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1819,12 +2045,12 @@
           "notes": "Order 113-6163034-9629866",
           "part_number": "BF200",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "21.37"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1837,12 +2063,12 @@
           "notes": "Order 113-4257500-9827458",
           "part_number": "40513",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "supplier": "Amazon",
           "unit_cost": "12.69"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1855,12 +2081,12 @@
           "notes": "Order 113-7989869-5202600",
           "part_number": "99-5700",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "14.99"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1873,12 +2099,12 @@
           "notes": "Order 113-7989869-5202600",
           "part_number": "70-1770",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "8.60"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1891,12 +2117,12 @@
           "notes": "Order 113-7989869-5202600",
           "part_number": "FD-308",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "11.97"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1909,12 +2135,12 @@
           "notes": "Order 113-7989869-5202600",
           "part_number": "71-1770",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "21.95"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1927,12 +2153,12 @@
           "notes": "Order 113-4787138-6269046",
           "part_number": "K8361",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "30.49"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1945,12 +2171,12 @@
           "notes": "Order 113-4787138-6269046",
           "part_number": "ES2214R",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "23.97"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1963,12 +2189,12 @@
           "notes": "Order 113-4787138-6269046",
           "part_number": "SDT106",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "43.20"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1981,12 +2207,12 @@
           "notes": "Order 113-4787138-6269046",
           "part_number": "TRP1563TAV",
           "quantity_on_hand": "2",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "36.78"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -1999,12 +2225,12 @@
           "notes": "Order 113-4787138-6269046",
           "part_number": "ES2079S",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "16.87"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -2017,12 +2243,12 @@
           "notes": "Order 113-4787138-6269046",
           "part_number": "31527",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "9.09"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -2035,12 +2261,12 @@
           "notes": "Order 113-4787138-6269046",
           "part_number": "ES2080S",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "16.99"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -2053,12 +2279,12 @@
           "notes": "Order 113-4787138-6269046",
           "part_number": "64650",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "8.49"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -2070,12 +2296,12 @@
           "name": "Hose Pinch Off Pliers Set",
           "notes": "Order 113-4787138-6269046",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "DPTOOL",
           "unit_cost": "24.99"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -2087,12 +2313,12 @@
           "name": "RX WELD Plastic Welder Kit",
           "notes": "Order 113-4787138-6269046",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "39.99"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -2105,12 +2331,12 @@
           "notes": "Order 113-4787138-6269046",
           "part_number": "3145",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "36.79"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -2123,12 +2349,12 @@
           "notes": "Order 113-1413231-0669819",
           "part_number": "9-4151S",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "96.81"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -2140,12 +2366,12 @@
           "name": "StonyLab Filter Paper (100 Pack)",
           "notes": "Order 113-5089179-4637061",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "b3b79228-4930-102f-7da4-6b0cbb28cf76",
           "supplier": "Amazon",
           "unit_cost": "15.99"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "alert",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -2157,12 +2383,12 @@
           "name": "VEVOR Toe Alignment Plates",
           "notes": "Order 113-4340895-1946666",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "35.90"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -2175,12 +2401,12 @@
           "notes": "Order 113-4340895-1946666",
           "part_number": "1250",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "9.30"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -2192,12 +2418,12 @@
           "name": "Valvoline Gear Oil 80W-90 (1 Qt)",
           "notes": "Order 113-4340895-1946666",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "12.49"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -2209,12 +2435,12 @@
           "name": "Valvoline DOT 3 & 4 Brake Fluid",
           "notes": "Order 113-4340895-1946666",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "9.88"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -2227,12 +2453,12 @@
           "notes": "Order 113-7006402-8249017",
           "part_number": "8312",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "6.99"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -2245,12 +2471,12 @@
           "notes": "Order 113-9966641-7922652",
           "part_number": "RT1161",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "41.00"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -2263,12 +2489,12 @@
           "notes": "Order 113-9966641-7922652",
           "part_number": "GV22",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "7.14"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -2281,12 +2507,12 @@
           "notes": "Order 113-9966641-7922652",
           "part_number": "V288",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "10.17"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -2299,12 +2525,12 @@
           "notes": "Order 113-9966641-7922652",
           "part_number": "H2593",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "14.46"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -2317,12 +2543,12 @@
           "notes": "Order 113-9364954-5874637",
           "part_number": "W37862",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "7.25"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -2335,12 +2561,12 @@
           "notes": "Order 113-9966641-7922652",
           "part_number": "MDS1042",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "32.05"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -2352,12 +2578,12 @@
           "name": "Zerex Original Green Coolant (1 Gal)",
           "notes": "Order 113-9364954-5874637",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "20.49"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -2370,12 +2596,12 @@
           "notes": "Order 113-3562115-2735432",
           "part_number": "FD169X",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "19.95"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -2388,12 +2614,12 @@
           "notes": "Order 113-8618213-6130662",
           "part_number": "F50126",
           "quantity_on_hand": "1",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "18.25"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "allowed_children": []
@@ -2572,7 +2798,7 @@
     "063e0759-c0d2-4caf-b411-ed87e2f16637": true,
     "58e9689c-0b7f-4325-8ebe-ca53944cf667": true,
     "fb04ceae-e213-462b-805e-a94fead8b824": false,
-    "0f71cdf1-f7b1-4ce9-bf97-dc55b20eb208": true,
+    "0f71cdf1-f7b1-4ce9-bf97-dc55b20eb208": false,
     "be07bc50-f298-4e9b-a7b0-9c5b5e7db4c8": true,
     "80050417-1151-4cae-8431-ac5e047f58e9": false,
     "89941716-6549-4335-9b87-7a9a5b544233": true,

@@ -115,4 +115,3 @@ def test_csv_import_route_returns_row_errors(client):
     rows = payload["error"]["rows"]
     assert rows[0]["row_number"] == 2
     assert "Missing value" in rows[0]["messages"][0]
-*** End of File

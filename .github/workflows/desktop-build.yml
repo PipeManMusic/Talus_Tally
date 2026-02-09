@@ -1,0 +1,125 @@
+name: Desktop Builds
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+env:
+  PYTHONUNBUFFERED: "1"
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    name: Build (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: linux
+            artifact: talus-tally-linux
+          - os: macos-latest
+            target: macos
+            artifact: talus-tally-macos
+          - os: windows-latest
+            target: windows
+            artifact: talus-tally-windows
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies (Linux)
+        if: matrix.target == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            pkg-config
+
+      - name: Install system dependencies (macOS)
+        if: matrix.target == 'macos'
+        run: |
+          brew update
+          brew install create-dmg
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build frontend bundle
+        working-directory: frontend
+        run: npm run build
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt pyinstaller
+
+      - name: Build backend executable
+        run: python -m PyInstaller --clean talus-tally.spec
+
+      - name: Build Tauri shell
+        working-directory: frontend
+        run: npx tauri build --bundles none
+
+      - name: Package artifacts
+        id: package
+        run: |
+          set -euo pipefail
+
+          ARTIFACT_ROOT="build/${{ matrix.target }}"
+          mkdir -p "${ARTIFACT_ROOT}"
+
+          BACKEND_PATH="dist/talus-tally-backend"
+          TAURI_PATH="frontend/src-tauri/target/release/app"
+          EXT=""
+
+          if [[ "${{ matrix.target }}" == "windows" ]]; then
+            BACKEND_PATH="${BACKEND_PATH}.exe"
+            TAURI_PATH="${TAURI_PATH}.exe"
+            EXT=".exe"
+          fi
+
+          cp "${BACKEND_PATH}" "${ARTIFACT_ROOT}/talus-tally-backend${EXT}"
+          cp "${TAURI_PATH}" "${ARTIFACT_ROOT}/talus-tally${EXT}"
+          cp -r frontend/dist "${ARTIFACT_ROOT}/frontend-dist"
+
+          TAG_OR_SHA="${GITHUB_REF_NAME:-${GITHUB_SHA}}"
+          ARCHIVE="talus-tally-${{ matrix.target }}-${TAG_OR_SHA}.tar.gz"
+          tar -czf "${ARCHIVE}" -C "${ARTIFACT_ROOT}" .
+
+          echo "archive=${ARCHIVE}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload packaged artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ steps.package.outputs.archive }}
+          if-no-files-found: error

@@ -1,8 +1,8 @@
 import { TitleBar } from './components/layout/TitleBar';
 import { MenuBar } from './components/layout/MenuBar';
-import { TreeView } from './components/layout/TreeView';
 import { clearIconCache } from './components/graph/mapNodeIcon';
 import type { TreeNode } from './utils/treeUtils';
+import { TreeView } from './components/layout/TreeView';
 import { Inspector } from './components/layout/Inspector';
 import type { NodeProperty } from './components/layout/Inspector';
 import { NewProjectDialog } from './components/dialogs/NewProjectDialog';
@@ -18,6 +18,7 @@ import { DebugPanel, type DebugLogEntry } from './components/dev/DebugPanel';
 import { ErrorBoundary } from './components/dev/ErrorBoundary';
 // Toggleable debug logging for tree/expansion state
 const DEBUG_TREE = process.env.NODE_ENV !== 'production';
+const RECENT_FILES_KEY = 'talus-tally:recent-files';
 import { useGraphStore } from './store';
 import { useGraphSync } from './hooks';
 import { apiClient, type Node, type Template, type Graph, type TemplateSchema, API_BASE_URL } from './api/client';
@@ -56,6 +57,20 @@ function App() {
   const [expandAllSignal, setExpandAllSignal] = useState(0);
   const [collapseAllSignal, setCollapseAllSignal] = useState(0);
   const [debugLogs, setDebugLogs] = useState<DebugLogEntry[]>([]);
+  const [recentFiles, setRecentFiles] = useState<string[]>(() => {
+    try {
+      const stored = localStorage.getItem(RECENT_FILES_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          return parsed.filter((item): item is string => typeof item === 'string');
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to restore recent files list:', err);
+    }
+    return [];
+  });
   const debugLogCounterRef = useRef(0);
   const [isAppInitialized, setIsAppInitialized] = useState(false);
   // Track which nodes are expanded (by id) - restore from localStorage
@@ -116,6 +131,14 @@ function App() {
       console.warn('Failed to persist expanded state:', err);
     }
   }, [expandedMap]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(RECENT_FILES_KEY, JSON.stringify(recentFiles));
+    } catch (err) {
+      console.warn('Failed to persist recent files list:', err);
+    }
+  }, [recentFiles]);
 
   // Wait for backend and create/restore session on mount
   useEffect(() => {
@@ -696,6 +719,20 @@ function App() {
     }
   }, [normalizeGraph, setCurrentGraph]);
 
+  const recordRecentFile = useCallback((filePath: string | null | undefined) => {
+    if (!filePath) {
+      return;
+    }
+    const trimmed = String(filePath).trim();
+    if (!trimmed) {
+      return;
+    }
+    setRecentFiles((prev: string[]) => {
+      const withoutDuplicate = prev.filter((item) => item !== trimmed);
+      return [trimmed, ...withoutDuplicate].slice(0, 5);
+    });
+  }, [setRecentFiles]);
+
   const handleSave = useCallback(async (): Promise<boolean> => {
     console.log('[DEBUG] handleSave called. lastFilePath:', lastFilePath);
     if (!sessionId) {
@@ -727,12 +764,14 @@ function App() {
         if (!filePath) return false;
         console.log('[DEBUG] User selected save path:', filePath);
         setLastFilePath(filePath);
+        recordRecentFile(filePath);
         const { writeTextFile } = await import('@tauri-apps/plugin-fs');
         await writeTextFile(filePath, payload);
       } else {
         console.log('[DEBUG] Saving to existing path:', lastFilePath);
         const { writeTextFile } = await import('@tauri-apps/plugin-fs');
         await writeTextFile(lastFilePath, payload);
+        recordRecentFile(lastFilePath);
       }
       // Mark session as clean after saving
       await apiClient.saveSession(sessionId);
@@ -744,7 +783,7 @@ function App() {
       alert('Save failed.');
       return false;
     }
-  }, [currentGraph, lastFilePath, sessionId, currentTemplateId, expandedMap]);
+  }, [currentGraph, lastFilePath, sessionId, currentTemplateId, expandedMap, recordRecentFile]);
 
   const handleSaveAs = useCallback(async (): Promise<boolean> => {
     try {
@@ -788,6 +827,111 @@ function App() {
     }
   }, [currentGraph, sessionId, currentTemplateId, expandedMap]);
 
+  const handleOpenRecent = useCallback(async (filePath: string) => {
+    console.log('📂 Opening recent file:', filePath);
+    
+    // Read and parse file
+    let fileContents: string;
+    let parsed: any;
+    try {
+      const { readTextFile } = await import('@tauri-apps/plugin-fs');
+      fileContents = await readTextFile(filePath);
+    } catch (readErr) {
+      const errMsg = readErr instanceof Error ? readErr.message : String(readErr);
+      console.error('✗ Failed to read file:', readErr);
+      alert(`Cannot read file: ${errMsg}`);
+      return;
+    }
+    
+    try {
+      parsed = JSON.parse(fileContents);
+    } catch (parseErr) {
+      console.error('✗ File is not valid JSON:', parseErr);
+      alert('File is not a valid Talus project (invalid JSON).');
+      return;
+    }
+    
+    let normalizedGraph;
+    try {
+      normalizedGraph = normalizeGraph(parsed.graph ?? parsed);
+    } catch (normErr) {
+      console.error('✗ Failed to normalize graph structure:', normErr);
+      alert('Project file has an invalid graph structure.');
+      return;
+    }
+
+    const templateId = parsed.template_id || null;
+    let finalGraph = normalizedGraph;
+
+    // Ensure we have a valid session for this file
+    let sid: string;
+    if (sessionId) {
+      try {
+        await apiClient.getSessionInfo(sessionId);
+        sid = sessionId;
+        console.log(`[File Open] Using existing session: ${sid}`);
+      } catch (err) {
+        console.warn('Existing session invalid, creating new one:', err);
+        const newSession = await apiClient.createSession();
+        sid = newSession.session_id || newSession.id || 'unknown';
+        console.log(`[File Open] Created new session for file: ${sid}`);
+        setSessionId(sid);
+        localStorage.setItem('talus_tally_session_id', sid);
+      }
+    } else {
+      const newSession = await apiClient.createSession();
+      sid = newSession.session_id || newSession.id || 'unknown';
+      console.log(`[File Open] Created new session for file: ${sid}`);
+      setSessionId(sid);
+      localStorage.setItem('talus_tally_session_id', sid);
+    }
+
+    try {
+      console.log(`[File Open] Loading graph into session ${sid}...`);
+      const loadResult = await apiClient.loadGraphIntoSession(sid, normalizedGraph, templateId);
+      console.log('✓ Graph loaded into backend session');
+      finalGraph = normalizeGraph(loadResult.graph ?? loadResult);
+      setCurrentTemplateId(templateId);
+      
+      if (templateId) {
+        try {
+          const schema = await apiClient.getTemplateSchema(templateId);
+          const validation = validateTemplateSchema(schema);
+          if (!validation.isValid) {
+            console.error('Template validation failed:', validation.errors);
+            throw new Error(`Template validation failed:\n${validation.errors.join('\n')}`);
+          }
+          setTemplateSchema(schema);
+          console.log('✓ Template schema loaded for:', templateId);
+        } catch (schemaErr) {
+          console.error('✗ Template schema error:', schemaErr);
+          alert(`Template Error: ${schemaErr instanceof Error ? schemaErr.message : String(schemaErr)}\n\nThe template may be invalid or corrupted.\nThe project will load but some features may not work correctly.`);
+          setTemplateSchema(null);
+        }
+      } else {
+        console.info('ℹ No template ID in project file, working with schema-less data');
+        setTemplateSchema(null);
+      }
+    } catch (sessionErr) {
+      const errMsg = sessionErr instanceof Error ? sessionErr.message : String(sessionErr);
+      console.error('⚠ Failed to load graph into backend session:', sessionErr);
+      console.log('Continuing with local graph only - operations may fail later...');
+      alert('Warning: Could not sync project to backend. Edit operations may not work properly.');
+    }
+
+    setCurrentGraph(finalGraph);
+    setLastFilePath(filePath);
+    recordRecentFile(filePath);
+    console.log('[DEBUG] File opened and lastFilePath set to:', filePath);
+    
+    if (parsed.expanded_map && typeof parsed.expanded_map === 'object') {
+      setExpandedMap(parsed.expanded_map);
+      console.log('✓ Restored tree expansion state');
+    }
+    
+    console.log('✓ Project opened:', filePath);
+  }, [normalizeGraph, setCurrentGraph, sessionId, setSessionId, setExpandedMap, setTemplateSchema, setCurrentTemplateId, recordRecentFile]);
+
   const handleOpen = useCallback(async () => {
     try {
       const { isTauri } = await import('@tauri-apps/api/core');
@@ -804,120 +948,13 @@ function App() {
       if (!filePath || Array.isArray(filePath)) return;
       
       console.log('📂 Opening file:', filePath);
-      
-      // Read and parse file
-      let fileContents: string;
-      let parsed: any;
-      try {
-        const { readTextFile } = await import('@tauri-apps/plugin-fs');
-        fileContents = await readTextFile(filePath);
-      } catch (readErr) {
-        const errMsg = readErr instanceof Error ? readErr.message : String(readErr);
-        console.error('✗ Failed to read file:', readErr);
-        alert(`Cannot read file: ${errMsg}`);
-        return;
-      }
-      
-      try {
-        parsed = JSON.parse(fileContents);
-      } catch (parseErr) {
-        console.error('✗ File is not valid JSON:', parseErr);
-        alert('File is not a valid Talus project (invalid JSON).');
-        return;
-      }
-      
-      let normalizedGraph;
-      try {
-        normalizedGraph = normalizeGraph(parsed.graph ?? parsed);
-      } catch (normErr) {
-        console.error('✗ Failed to normalize graph structure:', normErr);
-        alert('Project file has an invalid graph structure.');
-        return;
-      }
-
-      const templateId = parsed.template_id || null;
-      let finalGraph = normalizedGraph;
-
-      // Ensure we have a valid session for this file
-      let sid: string;
-      if (sessionId) {
-        // Validate that the session still exists on the backend
-        try {
-          await apiClient.getSessionInfo(sessionId);
-          sid = sessionId;
-          console.log(`[File Open] Using existing session: ${sid}`);
-        } catch (err) {
-          console.warn('Existing session invalid, creating new one:', err);
-          const newSession = await apiClient.createSession();
-          sid = newSession.session_id || newSession.id || 'unknown';
-          console.log(`[File Open] Created new session for file: ${sid}`);
-          setSessionId(sid);
-          localStorage.setItem('talus_tally_session_id', sid);
-        }
-      } else {
-        const newSession = await apiClient.createSession();
-        sid = newSession.session_id || newSession.id || 'unknown';
-        console.log(`[File Open] Created new session for file: ${sid}`);
-        setSessionId(sid);
-        localStorage.setItem('talus_tally_session_id', sid);
-      }
-
-      // Load graph into backend session (always - we just ensured a session exists)
-      try {
-        console.log(`[File Open] Loading graph into session ${sid}...`);
-        const loadResult = await apiClient.loadGraphIntoSession(sid, normalizedGraph, templateId);
-        console.log('✓ Graph loaded into backend session');
-        finalGraph = normalizeGraph(loadResult.graph ?? loadResult);
-        setCurrentTemplateId(templateId);
-        
-        if (templateId) {
-          try {
-            const schema = await apiClient.getTemplateSchema(templateId);
-            
-            // Validate template schema before using it
-            const validation = validateTemplateSchema(schema);
-            if (!validation.isValid) {
-              console.error('Template validation failed:', validation.errors);
-              throw new Error(`Template validation failed:\n${validation.errors.join('\n')}`);
-            }
-            
-            setTemplateSchema(schema);
-            console.log('✓ Template schema loaded for:', templateId);
-          } catch (schemaErr) {
-            console.error('✗ Template schema error:', schemaErr);
-            alert(`Template Error: ${schemaErr instanceof Error ? schemaErr.message : String(schemaErr)}\n\nThe template may be invalid or corrupted.\nThe project will load but some features may not work correctly.`);
-            // Keep templateSchema as null but don't crash - we'll use backend-provided allowed_children
-            setTemplateSchema(null);
-          }
-        } else {
-          console.info('ℹ No template ID in project file, working with schema-less data');
-          setTemplateSchema(null);
-        }
-      } catch (sessionErr) {
-        const errMsg = sessionErr instanceof Error ? sessionErr.message : String(sessionErr);
-        console.error('⚠ Failed to load graph into backend session:', sessionErr);
-        console.log('Continuing with local graph only - operations may fail later...');
-        // Don't break the flow, but warn user that backend operations may fail
-        alert('Warning: Could not sync project to backend. Edit operations may not work properly.');
-      }
-
-      setCurrentGraph(finalGraph);
-      setLastFilePath(filePath);
-      console.log('[DEBUG] File opened and lastFilePath set to:', filePath);
-      
-      // Restore expanded state if saved in file
-      if (parsed.expanded_map && typeof parsed.expanded_map === 'object') {
-        setExpandedMap(parsed.expanded_map);
-        console.log('✓ Restored tree expansion state');
-      }
-      
-      console.log('✓ Project opened:', filePath);
+      await handleOpenRecent(filePath);
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : String(err);
       console.error('✗ Open failed:', err);
       alert(`Failed to open project: ${errMsg}`);
     }
-  }, [normalizeGraph, setCurrentGraph, sessionId, setSessionId, setExpandedMap, setTemplateSchema, setCurrentTemplateId]);
+  }, [handleOpenRecent]);
 
   const handleUndo = useCallback(async () => {
     if (!sessionId) return;
@@ -1407,6 +1444,17 @@ function App() {
     File: [
       { label: 'New Project', onClick: handleNew },
       { label: 'Open Project...', onClick: handleOpen },
+      ...(recentFiles.length > 0 ? [
+        { label: '---', onClick: () => {} },
+        {
+          label: 'Open Recent',
+          submenu: recentFiles.map(filePath => ({
+            label: filePath.split('/').pop() || filePath,
+            onClick: () => handleOpenRecent(filePath),
+          })),
+        },
+      ] : []),
+      { label: '---', onClick: () => {} },
       { label: 'Save', onClick: handleSave },
       { label: 'Save As...', onClick: handleSaveAs },
       { label: '---', onClick: () => {} },
@@ -1539,14 +1587,14 @@ function App() {
               onSelectNode={setSelectedNode}
               expandAllSignal={expandAllSignal}
               collapseAllSignal={collapseAllSignal}
-              getTypeLabel={(typeId) => {
+              getTypeLabel={(typeId: string) => {
                 if (!templateSchema) return typeId;
                 const typeSchema = templateSchema.node_types.find(nt => nt.id === typeId);
                 return typeSchema?.name || typeId;
               }}
               expandedMap={expandedMap}
               setExpandedMap={setExpandedMap}
-              onContextMenu={(nodeId, action) => {
+              onContextMenu={(nodeId: string, action: string) => {
                 console.log(`Context menu action "${action}" on node:`, nodeId);
                 if (action === 'add-asset-category') {
                   setAssetCategoryParentId(nodeId);
