@@ -13,6 +13,7 @@ import { SettingsDialog } from './components/dialogs/SettingsDialog';
 import { SaveConfirmDialog, type SaveAction } from './components/dialogs/SaveConfirmDialog';
 import { ImportCsvDialog } from './components/dialogs/ImportCsvDialog';
 import { TemplateEditor } from './views/TemplateEditor';
+import { IndicatorEditor } from './views/IndicatorEditor';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { DebugPanel, type DebugLogEntry } from './components/dev/DebugPanel';
 import { ErrorBoundary } from './components/dev/ErrorBoundary';
@@ -42,6 +43,7 @@ function App() {
   const [showAssetCategoryDialog, setShowAssetCategoryDialog] = useState(false);
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [showTemplateEditor, setShowTemplateEditor] = useState(false);
+  const [showIndicatorEditor, setShowIndicatorEditor] = useState(false);
   const [showSaveConfirmDialog, setShowSaveConfirmDialog] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const pendingCloseActionRef = useRef<(() => Promise<void>) | null>(null);
@@ -1535,6 +1537,7 @@ function App() {
     Tools: [
       { label: 'Import from CSV...', onClick: () => setShowImportDialog(true) },
       { label: 'Template Editor', onClick: () => setShowTemplateEditor(true) },
+      { label: 'Indicator Editor', onClick: () => setShowIndicatorEditor(true) },
       { label: 'Settings', onClick: () => setShowSettingsDialog(true) },
     ],
     Help: [
@@ -1941,6 +1944,13 @@ function App() {
       {showTemplateEditor && (
         <div className="absolute inset-0 bg-bg-dark z-50">
           <TemplateEditor onClose={() => setShowTemplateEditor(false)} />
+        </div>
+      )}
+
+      {/* Indicator Editor View */}
+      {showIndicatorEditor && (
+        <div className="absolute inset-0 bg-bg-dark z-50">
+          <IndicatorEditor onClose={() => setShowIndicatorEditor(false)} />
         </div>
       )}
 
