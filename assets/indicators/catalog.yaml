@@ -1,58 +1,68 @@
 indicator_sets:
   status:
-    description: "Task/item status progress indicators"
-    style_guide: |
-      SVG Format:
-      - 24x24 viewBox
-      - Stroke-based (no fills)
-      - 2px stroke width
-      - Single path for simplicity
-      - Colors applied programmatically via stroke attribute
-    
+    description: Task/item status progress indicators
     indicators:
-      - id: "empty"
-        file: "status_empty.svg"
-        description: "Empty/pending state"
-      - id: "partial"
-        file: "status_partial.svg"
-        description: "Partially complete/in progress state"
-      - id: "filled"
-        file: "status_filled.svg"
-        description: "Fully complete/done state"
-      - id: "alert"
-        file: "status_alert.svg"
-        description: "Alert/blocked/error state"
-      - id: "low"
-        file: "status_priority.svg"
-        description: "Low priority state"
-      - id: "medium"
-        file: "status_priority.svg"
-        description: "Medium priority state"
-      - id: "high"
-        file: "status_priority.svg" 
-        description: "High priority state"
-    
+    - id: empty
+      file: status_empty.svg
+      description: Empty/pending state
+    - id: partial
+      file: status_partial.svg
+      description: Partially complete/in progress state
+    - id: filled
+      file: status_filled.svg
+      description: Fully complete/done state
+    - id: alert
+      file: status_alert.svg
+      description: Alert/blocked/error state
+    - id: low
+      file: status_priority.svg
+      description: Low priority state
+    - id: medium
+      file: status_priority.svg
+      description: Medium priority state
+    - id: high
+      file: status_priority.svg
+      description: High priority state
+    - id: Started
+      file: status_partial.svg
+      description: Started
+    style_guide: 'SVG Format:
+
+      - 24x24 viewBox
+
+      - Stroke-based (no fills)
+
+      - 2px stroke width
+
+      - Single path for simplicity
+
+      - Colors applied programmatically via stroke attribute
+
+      '
     default_theme:
       empty:
-        indicator_color: "#888888"
-        text_color: "#888888"
+        indicator_color: '#888888'
+        text_color: '#888888'
       partial:
-        indicator_color: "#4A90E2"
-        text_color: "#4A90E2"
-        text_style: "bold"
+        indicator_color: '#4A90E2'
+        text_color: '#4A90E2'
+        text_style: bold
       filled:
-        indicator_color: "#7ED321"
-        text_color: "#7ED321"
-        text_style: "strikethrough"
+        indicator_color: '#7ED321'
+        text_color: '#7ED321'
+        text_style: strikethrough
       alert:
-        indicator_color: "#F5A623"
-        text_color: "#F5A623"
+        indicator_color: '#F5A623'
+        text_color: '#F5A623'
       low:
-        indicator_color: "#7ED321"
-        text_color: "#7ED321"
+        indicator_color: '#7ED321'
+        text_color: '#7ED321'
       medium:
-        indicator_color: "#F5A623"
-        text_color: "#F5A623"
+        indicator_color: '#F5A623'
+        text_color: '#F5A623'
       high:
-        indicator_color: "#D0021B"
-        text_color: "#D0021B"
+        indicator_color: '#D0021B'
+        text_color: '#D0021B'
+      Started:
+        indicator_color: '#26a269'
+        text_color: '#33d17a'
