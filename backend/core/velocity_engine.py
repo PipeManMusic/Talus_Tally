@@ -262,7 +262,8 @@ class VelocityEngine:
         return score
     
     def _is_node_blocked(self, node_id: str) -> bool:
-        """Check if a node has any blocking nodes"""
+        """Check if a node has any blocking nodes (direct or ancestor)"""
+        # Check direct blocking relationships
         if "relationships" not in self.blocking_relationships:
             return False
         
@@ -270,17 +271,48 @@ class VelocityEngine:
             if rel["blockedNodeId"] == node_id:
                 return True
         
+        # Check if any ancestor node is blocked (cascading block)
+        current = node_id
+        for _ in range(100):  # Prevent infinite loops
+            parent_id = self._get_parent_id(current)
+            if not parent_id:
+                break
+            
+            # Check if parent is blocked
+            for rel in self.blocking_relationships["relationships"]:
+                if rel["blockedNodeId"] == parent_id:
+                    # Parent is blocked, so children are also blocked
+                    return True
+            
+            current = parent_id
+        
         return False
     
     def _get_blocking_nodes(self, node_id: str) -> List[str]:
-        """Get list of nodes blocking this node"""
+        """Get list of nodes blocking this node (direct or via ancestor)"""
         if "relationships" not in self.blocking_relationships:
             return []
         
         blocking = []
+        
+        # Direct blocking relationships
         for rel in self.blocking_relationships["relationships"]:
             if rel["blockedNodeId"] == node_id:
                 blocking.append(rel["blockingNodeId"])
+        
+        # Blocking via ancestor
+        current = node_id
+        for _ in range(100):  # Prevent infinite loops
+            parent_id = self._get_parent_id(current)
+            if not parent_id:
+                break
+            
+            # Check if parent is blocked
+            for rel in self.blocking_relationships["relationships"]:
+                if rel["blockedNodeId"] == parent_id:
+                    blocking.append(rel["blockingNodeId"])
+            
+            current = parent_id
         
         return blocking
     

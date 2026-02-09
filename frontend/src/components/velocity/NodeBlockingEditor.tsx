@@ -33,17 +33,80 @@ export function NodeBlockingEditor({ sessionId, nodes }: Props) {
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [scale, setScale] = useState(1);
 
-  // Initialize node positions
+  // Calculate node hierarchy and positions
   useEffect(() => {
     const nodeIds = Object.keys(nodes);
     if (nodeIds.length === 0) return;
 
-    const positions: NodeData[] = nodeIds.map((id, idx) => ({
-      id,
-      label: nodes[id].properties?.name || id,
-      x: (idx % 5) * 220 + 50,
-      y: Math.floor(idx / 5) * 140 + 50
-    }));
+    // Build parent-child relationships and calculate depth for each node
+    const nodeDepth: Record<string, number> = {};
+    const childrenMap: Record<string, string[]> = {};
+    
+    // Initialize
+    nodeIds.forEach(id => {
+      nodeDepth[id] = 0;
+      childrenMap[id] = [];
+    });
+
+    // Build parent-child relationships
+    nodeIds.forEach(id => {
+      const node = nodes[id];
+      if (node.parent_id) {
+        childrenMap[node.parent_id] = childrenMap[node.parent_id] || [];
+        if (!childrenMap[node.parent_id].includes(id)) {
+          childrenMap[node.parent_id].push(id);
+        }
+      }
+    });
+
+    // Calculate depth via BFS
+    const visited = new Set<string>();
+    const queue: string[] = [];
+    
+    // Start with root nodes (no parent)
+    nodeIds.forEach(id => {
+      if (!nodes[id].parent_id) {
+        queue.push(id);
+        nodeDepth[id] = 0;
+        visited.add(id);
+      }
+    });
+
+    while (queue.length > 0) {
+      const nodeId = queue.shift()!;
+      const children = childrenMap[nodeId] || [];
+      children.forEach((childId, idx) => {
+        if (!visited.has(childId)) {
+          nodeDepth[childId] = nodeDepth[nodeId] + 1;
+          visited.add(childId);
+          queue.push(childId);
+        }
+      });
+    }
+
+    // Group nodes by depth level
+    const depthGroups: Record<number, string[]> = {};
+    nodeIds.forEach(id => {
+      const depth = nodeDepth[id];
+      if (!depthGroups[depth]) depthGroups[depth] = [];
+      depthGroups[depth].push(id);
+    });
+
+    // Position nodes by hierarchy - x based on depth, y based on position within level
+    const positions: NodeData[] = nodeIds.map(id => {
+      const depth = nodeDepth[id];
+      const siblingsAtLevel = depthGroups[depth] || [];
+      const indexInLevel = siblingsAtLevel.indexOf(id);
+      const levelSize = siblingsAtLevel.length;
+
+      return {
+        id,
+        label: nodes[id].properties?.name || id,
+        x: depth * 300 + 50,
+        y: indexInLevel * 160 - ((levelSize - 1) * 160) / 2 + 300
+      };
+    });
+
     setNodePositions(positions);
   }, [nodes]);
 
@@ -199,7 +262,7 @@ export function NodeBlockingEditor({ sessionId, nodes }: Props) {
     );
   }
 
-  const nodeSize = { width: 140, height: 70 };
+  const nodeSize = { width: 160, height: 100 };
   const edgeKey = (edge: Edge) => `${edge.from}-${edge.to}`;
 
   return (
@@ -271,6 +334,36 @@ export function NodeBlockingEditor({ sessionId, nodes }: Props) {
 
           {/* Draw edges */}
           <g transform={`translate(${pan.x}, ${pan.y}) scale(${scale})`}>
+            {/* Family connection wires (parent-child) */}
+            {nodePositions.map((nodeData) => {
+              const childNode = nodes[nodeData.id];
+              if (!childNode || !childNode.parent_id) return null;
+
+              const parentNode = nodePositions.find(n => n.id === childNode.parent_id);
+              if (!parentNode) return null;
+
+              const x1 = parentNode.x + nodeSize.width;
+              const y1 = parentNode.y + nodeSize.height / 2;
+              const x2 = nodeData.x;
+              const y2 = nodeData.y + nodeSize.height / 2;
+
+              return (
+                <line
+                  key={`family-${nodeData.id}`}
+                  x1={x1}
+                  y1={y1}
+                  x2={x2}
+                  y2={y2}
+                  stroke="#6b7280"
+                  strokeWidth="1"
+                  strokeDasharray="3,3"
+                  opacity="0.5"
+                  pointerEvents="none"
+                />
+              );
+            })}
+
+            {/* Blocking relationship wires */}
             {edges.map((edge) => {
               const fromNode = getNodePosition(edge.from);
               const toNode = getNodePosition(edge.to);
@@ -335,62 +428,103 @@ export function NodeBlockingEditor({ sessionId, nodes }: Props) {
             )}
 
             {/* Draw nodes */}
-            {nodePositions.map(nodeData => (
-              <g key={nodeData.id} transform={`translate(${nodeData.x}, ${nodeData.y})`}>
-                <rect
-                  width={nodeSize.width}
-                  height={nodeSize.height}
-                  rx="12"
-                  fill={hoveredNode === nodeData.id ? '#1e3a8a' : '#1f2937'}
-                  stroke={hoveredNode === nodeData.id || drawingWire?.from === nodeData.id ? '#3b82f6' : '#4b5563'}
-                  strokeWidth="2"
-                  className="cursor-move select-none transition-all"
-                  onMouseDown={(e) => handleNodeMouseDown(nodeData.id, e)}
-                  onMouseEnter={() => handleNodeMouseEnter(nodeData.id)}
-                  onMouseLeave={handleNodeMouseLeave}
-                />
+            {nodePositions.map(nodeData => {
+              const node = nodes[nodeData.id];
+              const parentNode = node.parent_id ? nodes[node.parent_id] : null;
+              const parentName = parentNode?.properties?.name || (node.parent_id ? node.parent_id.slice(0, 8) : '');
 
-                {/* Node label */}
-                <text
-                  x={nodeSize.width / 2}
-                  y={nodeSize.height / 2 + 6}
-                  textAnchor="middle"
-                  fontSize="13"
-                  fontWeight="600"
-                  className="pointer-events-none select-none"
-                  fill="#e5e7eb"
-                >
-                  {nodeData.label.length > 14 ? nodeData.label.substring(0, 12) + '...' : nodeData.label}
-                </text>
+              return (
+                <g key={nodeData.id} transform={`translate(${nodeData.x}, ${nodeData.y})`}>
+                  {/* Main node body */}
+                  <rect
+                    width={nodeSize.width}
+                    height={nodeSize.height}
+                    rx="8"
+                    fill={hoveredNode === nodeData.id ? '#1e3a8a' : '#1f2937'}
+                    stroke={hoveredNode === nodeData.id || drawingWire?.from === nodeData.id ? '#3b82f6' : '#4b5563'}
+                    strokeWidth="2"
+                    className="cursor-move select-none transition-all"
+                    onMouseDown={(e) => handleNodeMouseDown(nodeData.id, e)}
+                    onMouseEnter={() => handleNodeMouseEnter(nodeData.id)}
+                    onMouseLeave={handleNodeMouseLeave}
+                  />
 
-                {/* Output handle (wire start) */}
-                <circle
-                  cx={nodeSize.width}
-                  cy={nodeSize.height / 2}
-                  r="7"
-                  fill="#3b82f6"
-                  stroke="#1e40af"
-                  strokeWidth="1"
-                  className="cursor-crosshair hover:opacity-90 transition-opacity"
-                  onMouseDown={(e) => handleNodeStartWire(nodeData.id, e)}
-                />
+                  {/* Type header bar */}
+                  <rect
+                    width={nodeSize.width}
+                    height="24"
+                    rx="8"
+                    fill="#1e40af"
+                    className="pointer-events-none"
+                  />
+                  <text
+                    x={nodeSize.width / 2}
+                    y="17"
+                    textAnchor="middle"
+                    fontSize="11"
+                    fontWeight="700"
+                    className="pointer-events-none select-none"
+                    fill="#dbeafe"
+                  >
+                    {node.type.toUpperCase()}
+                  </text>
 
-                {/* Input handle (wire end) */}
-                <circle
-                  cx="0"
-                  cy={nodeSize.height / 2}
-                  r="7"
-                  fill={hoveredNode === nodeData.id && drawingWire ? '#10b981' : '#6b7280'}
-                  stroke={hoveredNode === nodeData.id && drawingWire ? '#059669' : '#4b5563'}
-                  strokeWidth="2"
-                  className="cursor-crosshair transition-all"
-                  onMouseUp={() => drawingWire && handleNodeDrop(nodeData.id)}
-                  onMouseEnter={() => {
-                    if (drawingWire) handleNodeMouseEnter(nodeData.id);
-                  }}
-                />
-              </g>
-            ))}
+                  {/* Node name */}
+                  <text
+                    x={nodeSize.width / 2}
+                    y="50"
+                    textAnchor="middle"
+                    fontSize="13"
+                    fontWeight="600"
+                    className="pointer-events-none select-none"
+                    fill="#e5e7eb"
+                  >
+                    {nodeData.label.length > 16 ? nodeData.label.substring(0, 14) + '...' : nodeData.label}
+                  </text>
+
+                  {/* Parent breadcrumb */}
+                  {parentName && (
+                    <text
+                      x={nodeSize.width / 2}
+                      y="75"
+                      textAnchor="middle"
+                      fontSize="10"
+                      className="pointer-events-none select-none"
+                      fill="#9ca3af"
+                    >
+                      ← {parentName.length > 14 ? parentName.substring(0, 12) + '...' : parentName}
+                    </text>
+                  )}
+
+                  {/* Output handle (wire start) */}
+                  <circle
+                    cx={nodeSize.width}
+                    cy={nodeSize.height / 2}
+                    r="7"
+                    fill="#3b82f6"
+                    stroke="#1e40af"
+                    strokeWidth="1"
+                    className="cursor-crosshair hover:opacity-90 transition-opacity"
+                    onMouseDown={(e) => handleNodeStartWire(nodeData.id, e)}
+                  />
+
+                  {/* Input handle (wire end) */}
+                  <circle
+                    cx="0"
+                    cy={nodeSize.height / 2}
+                    r="7"
+                    fill={hoveredNode === nodeData.id && drawingWire ? '#10b981' : '#6b7280'}
+                    stroke={hoveredNode === nodeData.id && drawingWire ? '#059669' : '#4b5563'}
+                    strokeWidth="2"
+                    className="cursor-crosshair transition-all"
+                    onMouseUp={() => drawingWire && handleNodeDrop(nodeData.id)}
+                    onMouseEnter={() => {
+                      if (drawingWire) handleNodeMouseEnter(nodeData.id);
+                    }}
+                  />
+                </g>
+              );
+            })}
           </g>
         </svg>
       </div>
