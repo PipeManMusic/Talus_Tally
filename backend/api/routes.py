@@ -246,6 +246,7 @@ def _create_session():
         'graph_service': None,
         'current_project_id': None,
         'blueprint': None,
+        'blocking_relationships': [],  # Initialize empty blocking relationships
     }
     
     # Track session metadata
@@ -512,6 +513,16 @@ def import_nodes_from_csv():
         'undo_available': len(dispatcher.undo_stack) > 0 if dispatcher else False,
         'redo_available': len(dispatcher.redo_stack) > 0 if dispatcher else False,
     }), 200
+
+
+def get_session_data(session_id: str) -> Optional[Dict[str, Any]]:
+    """
+    Get raw session data for internal use (not HTTP response).
+    
+    Returns the session dict or None if not found.
+    Used by internal modules like velocity_routes to access session state.
+    """
+    return _sessions.get(session_id)
 
 
 @api_bp.route('/sessions/<session_id>/info', methods=['GET'])

@@ -16,6 +16,35 @@ velocity_bp = Blueprint('velocity', __name__, url_prefix='/api/v1')
 logger = logging.getLogger(__name__)
 
 
+def _get_velocity_context(session_id: str):
+    """
+    Extract velocity calculation context from session data.
+    
+    Returns: (graph_nodes, schema, blocking_relationships) or (None, None, None) if not found
+    """
+    from backend.api.routes import get_session_data
+    
+    session_data = get_session_data(session_id)
+    if not session_data:
+        return None, None, None
+    
+    graph = session_data.get('graph')
+    if not graph:
+        return None, None, None
+    
+    # Extract nodes dict from the graph object
+    graph_nodes = graph.nodes if hasattr(graph, 'nodes') else {}
+    
+    # Get schema from session
+    schema = session_data.get('blueprint')
+    
+    # Get blocking relationships from session metadata
+    blocking_relationships = session_data.get('blocking_relationships', [])
+    blocking_graph = {'relationships': blocking_relationships}
+    
+    return graph_nodes, schema, blocking_graph
+
+
 @velocity_bp.route('/sessions/<session_id>/velocity', methods=['GET'])
 def get_velocity_ranking(session_id: str):
     """
@@ -24,34 +53,33 @@ def get_velocity_ranking(session_id: str):
     Returns nodes sorted by velocity score (highest first)
     """
     try:
-        from backend.api.routes import get_session_graph_data
+        graph_nodes, schema, blocking_graph = _get_velocity_context(session_id)
         
-        graph_data = get_session_graph_data(session_id)
-        if not graph_data:
+        if graph_nodes is None:
             return jsonify({'error': 'Session not found'}), 404
-        
-        graph = graph_data.get('graph', {})
-        schema = graph_data.get('schema')
-        
-        # Get blocking relationships from session metadata
-        blocking_graph = {
-            'relationships': graph_data.get('blocking_relationships', [])
-        }
         
         # Import and use velocity engine
         from backend.core.velocity_engine import VelocityEngine
         
-        engine = VelocityEngine(graph.get('nodes', {}), schema, blocking_graph)
+        engine = VelocityEngine(graph_nodes, schema, blocking_graph)
         ranking = engine.get_ranking()
         
         # Format response
         nodes = []
         for node_id, calc in ranking:
-            node = graph.get('nodes', {}).get(node_id, {})
+            node = graph_nodes.get(node_id, {})
+            # Get node properties safely
+            if hasattr(node, 'properties'):
+                node_name = node.properties.get('name', 'Unnamed')
+                node_type = node.blueprint_type_id if hasattr(node, 'blueprint_type_id') else 'unknown'
+            else:
+                node_name = node.get('properties', {}).get('name', 'Unnamed')
+                node_type = node.get('type', 'unknown')
+            
             nodes.append({
                 'nodeId': node_id,
-                'nodeName': node.get('properties', {}).get('name', 'Unnamed'),
-                'nodeType': node.get('type', 'unknown'),
+                'nodeName': node_name,
+                'nodeType': node_type,
                 'baseScore': calc.base_score,
                 'inheritedScore': calc.inherited_score,
                 'statusScore': calc.status_score,
@@ -77,30 +105,30 @@ def get_velocity_ranking(session_id: str):
 def get_node_velocity(session_id: str, node_id: str):
     """Get velocity score for a single node"""
     try:
-        from backend.api.routes import get_session_graph_data
+        graph_nodes, schema, blocking_graph = _get_velocity_context(session_id)
         
-        graph_data = get_session_graph_data(session_id)
-        if not graph_data:
+        if graph_nodes is None:
             return jsonify({'error': 'Session not found'}), 404
-        
-        graph = graph_data.get('graph', {})
-        schema = graph_data.get('schema')
-        
-        blocking_graph = {
-            'relationships': graph_data.get('blocking_relationships', [])
-        }
         
         from backend.core.velocity_engine import VelocityEngine
         
-        engine = VelocityEngine(graph.get('nodes', {}), schema, blocking_graph)
+        engine = VelocityEngine(graph_nodes, schema, blocking_graph)
         calc = engine.calculate_velocity(node_id)
         
-        node = graph.get('nodes', {}).get(node_id, {})
+        node = graph_nodes.get(node_id, {})
+        
+        # Get node properties safely
+        if hasattr(node, 'properties'):
+            node_name = node.properties.get('name', 'Unnamed')
+            node_type = node.blueprint_type_id if hasattr(node, 'blueprint_type_id') else 'unknown'
+        else:
+            node_name = node.get('properties', {}).get('name', 'Unnamed')
+            node_type = node.get('type', 'unknown')
         
         return jsonify({
             'nodeId': node_id,
-            'nodeName': node.get('properties', {}).get('name', 'Unnamed'),
-            'nodeType': node.get('type', 'unknown'),
+            'nodeName': node_name,
+            'nodeType': node_type,
             'baseScore': calc.base_score,
             'inheritedScore': calc.inherited_score,
             'statusScore': calc.status_score,
@@ -131,16 +159,20 @@ def update_blocking_relationship(session_id: str, node_id: str):
         data = request.get_json()
         blocking_node_id = data.get('blocking_node_id')
         
-        from backend.api.routes import get_session_data, save_session_data
+        from backend.api.routes import get_session_data
         
         session_data = get_session_data(session_id)
         if not session_data:
             return jsonify({'error': 'Session not found'}), 404
         
-        graph = session_data.get('graph', {})
+        graph = session_data.get('graph')
+        if not graph:
+            return jsonify({'error': 'No project loaded in session'}), 400
+        
+        # Get nodes from graph
+        nodes = graph.nodes if hasattr(graph, 'nodes') else {}
         
         # Validate nodes exist
-        nodes = graph.get('nodes', {})
         if node_id not in nodes:
             return jsonify({'error': f'Node {node_id} not found'}), 404
         
@@ -166,9 +198,6 @@ def update_blocking_relationship(session_id: str, node_id: str):
                 'blockingNodeId': blocking_node_id,
             })
         
-        # Save updated session
-        save_session_data(session_id, session_data)
-        
         return jsonify({
             'success': True,
             'message': f'Blocking relationship updated for node {node_id}',
@@ -183,13 +212,13 @@ def update_blocking_relationship(session_id: str, node_id: str):
 def get_blocking_graph(session_id: str):
     """Get all blocking relationships for the session"""
     try:
-        from backend.api.routes import get_session_graph_data
+        from backend.api.routes import get_session_data
         
-        graph_data = get_session_graph_data(session_id)
-        if not graph_data:
+        session_data = get_session_data(session_id)
+        if not session_data:
             return jsonify({'error': 'Session not found'}), 404
         
-        blocking_relationships = graph_data.get('blocking_relationships', [])
+        blocking_relationships = session_data.get('blocking_relationships', [])
         
         return jsonify({
             'relationships': blocking_relationships,
@@ -199,3 +228,4 @@ def get_blocking_graph(session_id: str):
     except Exception as e:
         logger.error(f'Error getting blocking graph: {str(e)}')
         return jsonify({'error': f'Failed to get blocking graph: {str(e)}'}), 500
+
