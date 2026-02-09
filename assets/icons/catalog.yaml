@@ -1,34 +1,37 @@
 icons:
-  - id: film
-    file: film.svg
-    description: "Cinematic film reel representing a project root"
-  - id: calendar-days
-    file: calendar-days.svg
-    description: "Calendar slab for season planning"
-  - id: video-camera
-    file: video-camera.svg
-    description: "Camera icon for episode-level work"
-  - id: clipboard-document-check
-    file: clipboard-document-check.svg
-    description: "Checklist symbol for task nodes"
-  - id: play-circle
-    file: play-circle.svg
-    description: "Play button for footage clips"
-  - id: map-pin
-    file: map-pin.svg
-    description: "Pin icon for location scouting"
-  - id: archive-box
-    file: archive-box.svg
-    description: "Archive box for inventory roots"
-  - id: camera
-    file: camera.svg
-    description: "Camera gear categories"
-  - id: cog
-    file: cog.svg
-    description: "Machine gear for car parts"
-  - id: clipboard-document-list
-    file: clipboard-document-list.svg
-    description: "List style clipboard used in other templates"
-  - id: truck
-    file: truck.svg
-    description: "Logistics/transport icon for future types"
+- id: film
+  file: film.svg
+  description: Cinematic film reel representing a project root
+- id: calendar-days
+  file: calendar-days.svg
+  description: Calendar slab for season planning
+- id: video-camera
+  file: video-camera.svg
+  description: Camera icon for episode-level work
+- id: clipboard-document-check
+  file: clipboard-document-check.svg
+  description: Checklist symbol for task nodes
+- id: play-circle
+  file: play-circle.svg
+  description: Play button for footage clips
+- id: map-pin
+  file: map-pin.svg
+  description: Pin icon for location scouting
+- id: archive-box
+  file: archive-box.svg
+  description: Archive box for inventory roots
+- id: camera
+  file: camera.svg
+  description: Camera gear categories
+- id: cog
+  file: cog.svg
+  description: Machine gear for car parts
+- id: clipboard-document-list
+  file: clipboard-document-list.svg
+  description: List style clipboard used in other templates
+- id: truck
+  file: truck.svg
+  description: Logistics/transport icon for future types
+- id: arrow-turn-left-down
+  file: arrow-turn-left-down.svg
+  description: Arrow with a turn pointing down to the left.

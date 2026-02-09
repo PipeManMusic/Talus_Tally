@@ -1897,7 +1897,7 @@ function App() {
       ) : (
         /* Tools View */
         <div className="flex-1 overflow-hidden">
-          <ToolsView />
+          <ToolsView sessionId={sessionId} nodes={storeNodes} />
         </div>
       )}
 

@@ -151,7 +151,8 @@
           "e09f39d3-4ed6-4c54-8ce0-0dd198618941",
           "6c53b542-1a3e-43cf-a0de-6d1c74f0bd04",
           "c2504f1a-e609-4da9-b1ac-95c6540126ef",
-          "269dbcbb-db3e-476c-bc14-9fd164af2b6c"
+          "269dbcbb-db3e-476c-bc14-9fd164af2b6c",
+          "106df4c1-205a-464f-871b-fab1be402549"
         ],
         "indicator_id": "partial",
         "indicator_set": "status",
@@ -448,6 +449,20 @@
         "children": [],
         "indicator_id": "filled",
         "indicator_set": "status",
+        "icon_id": "film",
+        "allowed_children": [
+          "uses_camera_gear"
+        ]
+      },
+      {
+        "id": "106df4c1-205a-464f-871b-fab1be402549",
+        "type": "footage",
+        "properties": {
+          "name": "Coolant Acidity"
+        },
+        "children": [],
+        "indicator_id": null,
+        "indicator_set": null,
         "icon_id": "film",
         "allowed_children": [
           "uses_camera_gear"
@@ -2860,7 +2875,7 @@
   "expanded_map": {
     "8f0b11a8-aea2-415b-938c-3633e816eff7": true,
     "063e0759-c0d2-4caf-b411-ed87e2f16637": true,
-    "58e9689c-0b7f-4325-8ebe-ca53944cf667": true,
+    "58e9689c-0b7f-4325-8ebe-ca53944cf667": false,
     "fb04ceae-e213-462b-805e-a94fead8b824": false,
     "0f71cdf1-f7b1-4ce9-bf97-dc55b20eb208": false,
     "be07bc50-f298-4e9b-a7b0-9c5b5e7db4c8": true,

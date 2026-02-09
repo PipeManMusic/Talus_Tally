@@ -168,6 +168,45 @@ export interface IndicatorSetListResponse {
   indicators: IndicatorDef[];
 }
 
+// --- Velocity System Interfaces ---
+
+export interface VelocityConfig {
+  baseScore?: number;
+  scoreMode?: 'inherit' | 'fixed';
+  penaltyScore?: boolean;
+}
+
+export interface PropertyVelocityConfig {
+  enabled: boolean;
+  mode: 'multiplier' | 'status';
+  multiplierFactor?: number;
+  penaltyMode?: boolean;
+  statusScores?: Record<string, number>;
+}
+
+export interface VelocityScore {
+  nodeId: string;
+  baseScore: number;
+  inheritedScore: number;
+  statusScore: number;
+  numericalScore: number;
+  blockingPenalty: number;
+  totalVelocity: number;
+  isBlocked: boolean;
+  blockedByNodes?: string[];
+  blocksNodeIds?: string[];
+}
+
+export interface BlockingRelationship {
+  blockedNodeId: string;
+  blockingNodeId: string;
+}
+
+export interface VelocityRanking {
+  nodes: Array<VelocityScore & { nodeName: string; nodeType: string }>;
+  timestamp: number;
+}
+
 export class APIClient {
   private baseUrl: string;
   private socket: Socket | null = null;
@@ -760,6 +799,54 @@ export class APIClient {
       throw new Error(error.error?.message || 'Failed to download export');
     }
     return response.blob();
+  }
+
+  // Velocity System API
+  async getVelocityRanking(sessionId: string): Promise<VelocityRanking> {
+    const response = await fetch(`${this.baseUrl}/api/v1/sessions/${sessionId}/velocity`);
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || 'Failed to get velocity ranking');
+    }
+    return response.json();
+  }
+
+  async getNodeVelocity(sessionId: string, nodeId: string): Promise<VelocityScore> {
+    const response = await fetch(`${this.baseUrl}/api/v1/sessions/${sessionId}/nodes/${nodeId}/velocity`);
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || 'Failed to get node velocity');
+    }
+    return response.json();
+  }
+
+  async updateBlockingRelationship(
+    sessionId: string,
+    blockedNodeId: string,
+    blockingNodeId: string | null
+  ): Promise<any> {
+    const response = await fetch(
+      `${this.baseUrl}/api/v1/sessions/${sessionId}/nodes/${blockedNodeId}/blocking`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ blocking_node_id: blockingNodeId }),
+      }
+    );
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || 'Failed to update blocking relationship');
+    }
+    return response.json();
+  }
+
+  async getBlockingGraph(sessionId: string): Promise<{ relationships: BlockingRelationship[] }> {
+    const response = await fetch(`${this.baseUrl}/api/v1/sessions/${sessionId}/blocking-graph`);
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || 'Failed to get blocking graph');
+    }
+    return response.json();
   }
 
   // WebSocket Connection
