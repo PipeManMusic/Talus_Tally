@@ -36,7 +36,6 @@ function App() {
   const [treeNodes, setTreeNodes] = useState<TreeNode[]>([]);
   const [selectedNodeData, setSelectedNodeData] = useState<Node | null>(null);
   const [showNewProjectDialog, setShowNewProjectDialog] = useState(false);
-  const [showAddRootDialog, setShowAddRootDialog] = useState(false);
   const [showAddChildDialog, setShowAddChildDialog] = useState(false);
   const [showAssetSelectDialog, setShowAssetSelectDialog] = useState(false);
   const [showAssetCategoryDialog, setShowAssetCategoryDialog] = useState(false);
@@ -637,24 +636,6 @@ function App() {
     }
   }, [templates.length, isDirty, sessionId]);
 
-  const handleAddRoot = useCallback(async () => {
-    try {
-      if (templates.length === 0) {
-        const loadedTemplates = await apiClient.listTemplates();
-        console.log('Loaded templates:', loadedTemplates);
-        setTemplates(loadedTemplates);
-        if (loadedTemplates.length === 0) {
-          alert('No templates available. Please add templates to the backend.');
-          return;
-        }
-      }
-      setShowAddRootDialog(true);
-    } catch (err) {
-      console.error('✗ Failed to load templates:', err);
-      alert(`Failed to load templates. Error: ${err instanceof Error ? err.message : String(err)}`);
-    }
-  }, [templates.length]);
-
   const handleCreateProject = useCallback(async (templateId: string, projectName: string) => {
     try {
       console.log('Creating project with template:', templateId, 'and name:', projectName);
@@ -712,24 +693,6 @@ function App() {
       alert(`Failed to create project. Error: ${err instanceof Error ? err.message : String(err)}`);
     }
   }, [normalizeGraph, setCurrentGraph]);
-
-  const handleAddProjectRoot = useCallback(async (templateId: string, rootName: string) => {
-    try {
-      const result = await safeExecuteCommand('CreateNode', {
-        blueprint_type_id: templateId,
-        name: rootName,
-        parent_id: null,
-      });
-      const graph = normalizeGraph(result.graph ?? result);
-      setCurrentGraph(graph);
-      setShowAddRootDialog(false);
-      setIsDirty(result.is_dirty ?? true);  // Update dirty state from API
-      console.log('✓ Project root added');
-    } catch (err) {
-      console.error('✗ Failed to add project root:', err);
-      alert('Failed to add project root');
-    }
-  }, [normalizeGraph, safeExecuteCommand, setCurrentGraph]);
 
   const handleSave = useCallback(async (): Promise<boolean> => {
     console.log('[DEBUG] handleSave called. lastFilePath:', lastFilePath);
@@ -1572,11 +1535,6 @@ function App() {
             <TreeView
               nodes={treeNodes}
               onSelectNode={setSelectedNode}
-              onBackgroundMenu={(action) => {
-                if (action === 'add-project-root') {
-                  handleAddRoot();
-                }
-              }}
               expandAllSignal={expandAllSignal}
               collapseAllSignal={collapseAllSignal}
               getTypeLabel={(typeId) => {
@@ -1870,18 +1828,6 @@ function App() {
           onCancel={() => setShowNewProjectDialog(false)}
         />
       )}
-
-      {/* Add Root Dialog */}
-      {showAddRootDialog && (
-        <NewProjectDialog
-          templates={templates}
-          title="Add Project Root"
-          confirmLabel="Add Root"
-          onConfirm={handleAddProjectRoot}
-          onCancel={() => setShowAddRootDialog(false)}
-        />
-      )}
-
       {/* Add Child Dialog */}
       {showAddChildDialog && (
         <AddChildDialog

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type Dispatch, type SetStateAction, type DragEvent, type MouseEvent as ReactMouseEvent, type CSSProperties } from 'react';
+import { useState, useEffect, useRef, type Dispatch, type SetStateAction, type DragEvent, type CSSProperties } from 'react';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import { mapNodeIndicator } from '../graph/mapNodeIndicator';
 import { mapNodeIcon, subscribeToIconCache } from '../graph/mapNodeIcon';
@@ -487,7 +487,7 @@ function TreeItem({
   const isReorderBelow = isActiveDropTarget && reorderDropZone === 'below';
 
   const rowClasses = [
-    'relative flex items-center gap-1 px-2 py-1.5 rounded-sm cursor-pointer transition-colors border-l-2 border-transparent',
+    'relative flex w-full items-center gap-1 px-2 py-1.5 rounded-sm cursor-pointer transition-colors border-l-2 border-transparent',
     (typeof (node as any).selected === 'boolean' && (node as any).selected)
       ? 'bg-bg-selection border-l-4 border-accent-primary shadow-inner'
       : isMoveTarget
@@ -508,7 +508,7 @@ function TreeItem({
   );
 
   return (
-    <div className="relative flex flex-col">
+    <div className="relative flex flex-col w-full">
       {isReorderAbove && renderReorderLine('above')}
       <div
         ref={rowRef}
@@ -745,7 +745,6 @@ type TreeViewProps = {
   onSelectNode?: (id: string) => void;
   onExpandNode?: (id: string) => void;
   onContextMenu?: (id: string, action: string) => void;
-  onBackgroundMenu?: (action: string) => void;
   expandAllSignal?: number;
   collapseAllSignal?: number;
   getTypeLabel?: (type: string) => string;
@@ -758,14 +757,12 @@ export function TreeView({
   onSelectNode,
   onExpandNode,
   onContextMenu,
-  onBackgroundMenu,
   expandAllSignal,
   collapseAllSignal,
   getTypeLabel,
   expandedMap: externalExpandedMap,
   setExpandedMap: externalSetExpandedMap,
 }: TreeViewProps) {
-  const [backgroundMenu, setBackgroundMenu] = useState<{ x: number; y: number } | null>(null);
   const [internalExpandedMap, setInternalExpandedMap] = useState<Record<string, boolean>>({});
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const prevExpandSignalRef = useRef<number | undefined>(undefined);
@@ -815,11 +812,6 @@ export function TreeView({
     }
   }, [collapseAllSignal, setExpandedMap]);
 
-  const handleBackgroundContextMenu = (event: ReactMouseEvent) => {
-    event.preventDefault();
-    setBackgroundMenu({ x: event.clientX, y: event.clientY });
-  };
-
   const projectRoots = nodes.filter((node) => node.type === 'project_root');
   const hasMultipleProjects = projectRoots.length > 1;
 
@@ -828,7 +820,6 @@ export function TreeView({
       ref={scrollContainerRef}
       className="bg-bg-light border-r border-border p-3 overflow-y-auto"
       data-expanded-map={JSON.stringify(expandedMap)}
-      onContextMenu={handleBackgroundContextMenu}
     >
       <div className="font-display text-sm border-b border-accent-primary pb-2 mb-3">
         Project Tree
@@ -855,24 +846,6 @@ export function TreeView({
           </div>
         ))}
       </div>
-
-      {backgroundMenu && (
-        <div
-          className="fixed bg-bg-light border border-border rounded-sm shadow-lg z-50 min-w-max"
-          style={{ top: `${backgroundMenu.y}px`, left: `${backgroundMenu.x}px` }}
-          onMouseLeave={() => setBackgroundMenu(null)}
-        >
-          <button
-            onClick={() => {
-              onBackgroundMenu?.('add-project-root');
-              setBackgroundMenu(null);
-            }}
-            className="w-full text-left px-4 py-2 text-sm text-fg-primary hover:bg-bg-selection transition-colors first:rounded-t-sm last:rounded-b-sm"
-          >
-            ➕ Add Project Root
-          </button>
-        </div>
-      )}
     </aside>
   );
 }
