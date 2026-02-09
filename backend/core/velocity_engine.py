@@ -155,6 +155,22 @@ class VelocityEngine:
         
         return None
     
+    def _has_velocity_config(self, node_id: str) -> bool:
+        """Check if a node has velocity configuration (is included in velocity system)"""
+        node = self.nodes.get(node_id)
+        if not node:
+            return False
+        
+        # Get node type
+        if hasattr(node, 'blueprint_type_id'):
+            node_type = node.blueprint_type_id
+        else:
+            node_type = node.get("type")
+        
+        # Check if it has velocity config
+        velocity_config = self._get_velocity_config(node_type)
+        return velocity_config is not None and bool(velocity_config)
+    
     def _calculate_inherited_score(self, node_id: str) -> float:
         """Sum base scores from all parent nodes"""
         score = 0
@@ -365,12 +381,14 @@ class VelocityEngine:
         return score
     
     def get_ranking(self) -> List[Tuple[str, VelocityCalculation]]:
-        """Get all nodes ranked by velocity (highest first)"""
+        """Get all nodes with velocity config ranked by velocity (highest first)"""
         self.calculate_all_velocities()
         
         ranked = []
         for node_id, calc in self._velocity_cache.items():
-            ranked.append((node_id, calc))
+            # Only include nodes that have velocity configuration
+            if self._has_velocity_config(node_id):
+                ranked.append((node_id, calc))
         
         # Sort by total velocity descending
         ranked.sort(key=lambda x: x[1].total_velocity, reverse=True)

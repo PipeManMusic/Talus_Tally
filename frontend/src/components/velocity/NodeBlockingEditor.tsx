@@ -33,6 +33,25 @@ export function NodeBlockingEditor({ sessionId, nodes }: Props) {
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [scale, setScale] = useState(1);
   const [spacePressed, setSpacePressed] = useState(false);
+  const [velocityNodeIds, setVelocityNodeIds] = useState<Set<string>>(new Set());
+
+  // Fetch velocity nodes to determine which nodes should be in the blocking workflow
+  useEffect(() => {
+    if (!sessionId) return;
+
+    const fetchVelocityNodes = async () => {
+      try {
+        const ranking = await apiClient.getVelocityRanking(sessionId);
+        const ids = new Set(ranking.nodes.map(node => node.nodeId));
+        setVelocityNodeIds(ids);
+      } catch (err) {
+        // If unable to fetch velocity ranking, don't filter nodes
+        console.debug('Unable to fetch velocity ranking for filtering:', err);
+      }
+    };
+
+    fetchVelocityNodes();
+  }, [sessionId]);
 
   // Calculate node hierarchy and positions
   useEffect(() => {
@@ -89,8 +108,8 @@ export function NodeBlockingEditor({ sessionId, nodes }: Props) {
     }
 
     // Create grid layout spread across canvas
-    // Only include non-project nodes
-    const positionableNodes = nodeIds.filter(id => id !== projectNodeId);
+    // Only include non-project nodes that have velocity configuration
+    const positionableNodes = nodeIds.filter(id => id !== projectNodeId && (velocityNodeIds.size === 0 || velocityNodeIds.has(id)));
     const nodeSize = { width: 160, height: 100 };
     const padding = 50;
     const spacing = 180; // Space between nodes
@@ -119,7 +138,7 @@ export function NodeBlockingEditor({ sessionId, nodes }: Props) {
     });
 
     setNodePositions(positions);
-  }, [nodes]);
+  }, [nodes, velocityNodeIds]);
 
   // Keyboard handlers for space pan
   useEffect(() => {
