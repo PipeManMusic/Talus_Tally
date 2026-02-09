@@ -1,3 +1,11 @@
+talus-tally (0.1.1-1) jammy; urgency=medium
+
+  * Alpha 0.1.1 desktop bundle
+  * Production asset path resolution improvements
+  * Launcher robustness for packaged backend
+
+ -- Talus Tally Dev <dev@talusstally.local>  Sun, 08 Feb 2026 00:00:00 +0000
+
 talus-tally (0.1.0-1) jammy; urgency=medium
 
   * Initial release

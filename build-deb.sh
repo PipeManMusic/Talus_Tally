@@ -36,7 +36,7 @@ cd "$PROJECT_ROOT"
 
 # Configuration
 PYTHON_BIN="${PYTHON_BIN:-python3}"
-VERSION="0.1.0"
+VERSION="0.1.1"
 ARCH="amd64"
 PACKAGE_DIR="talus-tally_${VERSION}_${ARCH}"
 
