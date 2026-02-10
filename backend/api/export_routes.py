@@ -127,15 +127,37 @@ def download_export(session_id):
         
         user_context = body.get('context', {})
         
+        # Build status label map from blueprint if available
+        status_label_map: Dict[str, str] = {}
+        blueprint = session_data.get('blueprint')
+        if blueprint and hasattr(blueprint, 'node_types'):
+            for node_type in blueprint.node_types:
+                properties = []
+                if hasattr(node_type, '_extra_props') and isinstance(node_type._extra_props, dict):
+                    properties = node_type._extra_props.get('properties', [])
+                elif hasattr(node_type, 'properties'):
+                    properties = node_type.properties or []
+                status_prop = next((p for p in properties if p.get('id') == 'status'), None)
+                if not status_prop:
+                    continue
+                for option in status_prop.get('options', []) or []:
+                    option_id = option.get('id')
+                    option_name = option.get('name')
+                    if option_id and option_name:
+                        status_label_map[str(option_id)] = option_name
+
         # Flatten graph nodes into list of dicts
         nodes = []
         for node_id, node in graph.nodes.items():
+            status_value = node.properties.get('status', 'unknown')
+            status_label = status_label_map.get(str(status_value), status_value)
             node_dict = {
                 'id': str(node.id),
                 'name': node.name,
                 'type': node.blueprint_type_id,
                 'properties': node.properties,
-                'status': node.properties.get('status', 'unknown'),
+                'status': status_value,
+                'status_label': status_label,
                 'created_at': node.created_at.isoformat() if hasattr(node, 'created_at') else None,
                 'parent_id': str(node.parent_id) if node.parent_id else None,
                 'children': [str(child_id) for child_id in node.children] if hasattr(node, 'children') else []
@@ -144,14 +166,68 @@ def download_export(session_id):
         
         # Build template context
         project_id = session_data.get('current_project_id', 'unknown')
-        template_version = graph.template_version if hasattr(graph, 'template_version') else None
+        blueprint_version = None
+        if blueprint and hasattr(blueprint, 'version'):
+            blueprint_version = blueprint.version
+        template_version = blueprint_version or (graph.template_version if hasattr(graph, 'template_version') else None)
+        blocking_relationships = session_data.get('blocking_relationships', [])
+
+        velocity_nodes = []
+        try:
+            from backend.core.velocity_engine import VelocityEngine
+            from backend.api.velocity_routes import _get_velocity_context
+
+            graph_nodes, schema, blocking_graph = _get_velocity_context(session_id)
+            if graph_nodes and schema:
+                engine = VelocityEngine(graph_nodes, schema, blocking_graph)
+                ranking = engine.get_ranking()
+                for node_id, calc in ranking:
+                    node = graph_nodes.get(node_id, {})
+                    if not node or node == {}:
+                        try:
+                            node = graph_nodes.get(UUID(node_id), {})
+                        except (ValueError, KeyError):
+                            node = {}
+                    if hasattr(node, 'properties'):
+                        node_name = node.properties.get('name', 'Unnamed')
+                        node_type = node.blueprint_type_id if hasattr(node, 'blueprint_type_id') else 'unknown'
+                        status_value = node.properties.get('status')
+                    else:
+                        node_name = node.get('properties', {}).get('name', 'Unnamed')
+                        node_type = node.get('type', 'unknown')
+                        status_value = node.get('properties', {}).get('status')
+                    status_label = status_label_map.get(str(status_value), status_value)
+                    velocity_nodes.append({
+                        'nodeId': str(node_id),
+                        'nodeName': node_name,
+                        'nodeType': node_type,
+                        'status': status_value,
+                        'statusLabel': status_label,
+                        'baseScore': calc.base_score,
+                        'inheritedScore': calc.inherited_score,
+                        'statusScore': calc.status_score,
+                        'numericalScore': calc.numerical_score,
+                        'blockingPenalty': calc.blocking_penalty,
+                        'blockingBonus': calc.blocking_bonus,
+                        'totalVelocity': calc.total_velocity,
+                        'isBlocked': calc.is_blocked,
+                        'blockedByNodes': calc.blocked_by_nodes,
+                        'blocksNodeIds': calc.blocks_node_ids,
+                    })
+        except Exception as velocity_error:
+            logger.warning(f"[EXPORT] Velocity data unavailable: {velocity_error}")
         
+        from datetime import datetime
+
         context = {
             'nodes': nodes,
             'project_id': project_id,
             'template_id': graph.template_id if hasattr(graph, 'template_id') else None,
             'template_version': template_version,
             'node_count': len(nodes),
+            'generated_date': datetime.now().date().isoformat(),
+            'blocking_relationships': blocking_relationships,
+            'velocity_nodes': velocity_nodes,
             # Include user-provided context (can override defaults)
             **user_context
         }

@@ -63,6 +63,7 @@ describe('Inspector', () => {
             statusScore: 0,
             numericalScore: 0,
             blockingPenalty: 0,
+            blockingBonus: 0,
             totalVelocity: 9,
             isBlocked: false,
           }}
@@ -105,6 +106,7 @@ describe('Inspector', () => {
             statusScore: 0,
             numericalScore: 0,
             blockingPenalty: -5,
+            blockingBonus: 0,
             totalVelocity: 5,
             isBlocked: true,
           }}

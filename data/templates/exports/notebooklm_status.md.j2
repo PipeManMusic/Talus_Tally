@@ -1,39 +1,101 @@
-# Project Status Report: [Insert Project Name, e.g., Project Talus]
-**Date Generated:** [YYYY-MM-DD]
-**Status:** [On Track / At Risk / Off Track]
+# Project Status Report: {{ root.name if root is defined and root else (nodes | selectattr('parent_id', 'equalto', None) | map(attribute='name') | list | first) | default('Project') }}
+**Date Generated:** {{ generated_date | default('YYYY-MM-DD') }}
+**Project ID:** {{ project_id | default('unknown') }}
+**Template:** {{ template_id | default('unknown') }} ({{ template_version | default('unknown') }})
+**Node Count:** {{ node_count | default(nodes | length) }}
 
 ---
 
 ## 1. Executive Summary
-*Briefly describe the current focus. Example: "Currently focusing on the front-end UI for the inventory module and sourcing the rear axle for the Bronco."*
+{{ executive_summary | default('Add a short summary of current focus and priorities.') }}
 
-## 2. Active Milestones (The "Now")
-*List the high-level goals currently in progress.*
-* **[Milestone Name]**: [Completion %] - [Target Date]
-    * *Notes:* [Any specific context for the AI, e.g., "Waiting on parts delivery"]
+## 2. Snapshot
+### Counts by Type
+{% set type_counts = {} %}
+{% for n in nodes %}
+    {% set _ = type_counts.update({ n.type: (type_counts.get(n.type, 0) + 1) }) %}
+{% endfor %}
+{% for t, count in type_counts.items() | sort %}
+- {{ t }}: {{ count }}
+{% endfor %}
 
-## 3. Task Board Snapshot
-### In Progress
-* [ ] **Task ID/Name**: [Description]
-* [ ] **Task ID/Name**: [Description]
+### Counts by Status (Human Readable)
+{% set status_counts = {} %}
+{% for n in nodes %}
+    {% if n.status_label is defined %}
+        {% set status_value = n.status_label %}
+        {% set _ = status_counts.update({ status_value: (status_counts.get(status_value, 0) + 1) }) %}
+    {% endif %}
+{% endfor %}
+{% if status_counts %}
+{% for s, count in status_counts.items() | sort %}
+- {{ s }}: {{ count }}
+{% endfor %}
+{% else %}
+- No status values found.
+{% endif %}
 
-### Blocked / At Risk
-* [!] **Task ID/Name**: [Reason for block, e.g., "Need to research correct wiring diagram"]
+## 3. Active Milestones (The "Now")
+{% set milestones = nodes | selectattr('type', 'equalto', 'season') | list %}
+{% if milestones %}
+{% for n in milestones %}
+- **{{ n.name }}** (status: {{ n.status_label | default('n/a') }})
+{% endfor %}
+{% else %}
+- No milestones found.
+{% endif %}
 
-### Up Next (Backlog)
-* [ ] **Task ID/Name**: [Priority Level]
-* [ ] **Task ID/Name**: [Priority Level]
+## 4. Task Board Snapshot
+{% set tasks = nodes | selectattr('type', 'equalto', 'task') | list %}
+### Tasks
+{% if tasks %}
+{% for n in tasks %}
+- {{ n.name }} (status: {{ n.status_label | default('n/a') }})
+{% endfor %}
+{% else %}
+- No tasks found.
+{% endif %}
 
-## 4. Resource & Material Tracker
-*Useful if your project involves physical builds like the Bronco or hardware.*
-| Item Name | Status | Cost | ETA |
-| :--- | :--- | :--- | :--- |
-| [e.g. Dana 44 Axle] | [Ordered] | [$500] | [2025-06-01] |
-| [e.g. ESP-32 Board] | [In Stock] | [$15] | [N/A] |
+## 5. Episodes / Work Items
+{% set episodes = nodes | selectattr('type', 'equalto', 'episode') | list %}
+{% if episodes %}
+{% for n in episodes %}
+- {{ n.name }} (status: {{ n.status_label | default('n/a') }})
+{% endfor %}
+{% else %}
+- No episodes found.
+{% endif %}
 
-## 5. Technical Technical Debt / Known Issues
-* [Issue Description]: [Potential solution or impact]
-* [Issue Description]: [Potential solution or impact]
+## 6. Assets / Resources
+{% set assets = nodes | selectattr('type', 'in', ['asset_reference','camera_gear_asset','tool_asset','part_asset','vehicle_asset']) | list %}
+{% if assets %}
+{% for n in assets %}
+- {{ n.name }} (status: {{ n.status_label | default('n/a') }})
+{% endfor %}
+{% else %}
+- No asset items found.
+{% endif %}
+
+## 7. Technical Debt / Known Issues
+{{ known_issues | default('- Add known issues here.') }}
+
+## 8. Blocking Relationships
+{% if blocking_relationships %}
+{% for rel in blocking_relationships %}
+- Blocked: {{ rel.blockedNodeId }} <- Blocking: {{ rel.blockingNodeId }}
+{% endfor %}
+{% else %}
+- No blocking relationships found.
+{% endif %}
+
+## 9. Velocity Snapshot (Top 15)
+{% if velocity_nodes %}
+{% for v in velocity_nodes[:15] %}
+- {{ v.nodeName }} ({{ v.nodeType }}): total={{ v.totalVelocity }}, status={{ v.statusScore }}, inherited={{ v.inheritedScore }}, blocked={{ v.isBlocked }}, label={{ v.statusLabel | default('n/a') }}
+{% endfor %}
+{% else %}
+- Velocity data not available.
+{% endif %}
 
 ---
 *End of Report*

@@ -1,0 +1,160 @@
+{
+  "schema": {
+    "node_types": [
+      {
+        "id": "season",
+        "velocityConfig": {
+          "baseScore": 0,
+          "scoreMode": "fixed"
+        },
+        "properties": [
+          {
+            "id": "status",
+            "name": "Status",
+            "type": "select",
+            "options": [
+              {"id": "in-progress", "name": "In Progress"},
+              {"id": "planning", "name": "Planning"}
+            ],
+            "velocityConfig": {
+              "enabled": true,
+              "mode": "status",
+              "statusScores": {
+                "In Progress": 1,
+                "Planning": 0
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "episode",
+        "velocityConfig": {
+          "baseScore": 2,
+          "scoreMode": "inherit"
+        },
+        "properties": []
+      },
+      {
+        "id": "task",
+        "velocityConfig": {
+          "baseScore": 1,
+          "scoreMode": "inherit"
+        },
+        "properties": []
+      }
+    ]
+  },
+  "graph": {
+    "nodes": [
+      {
+        "id": "season-daily-driver",
+        "type": "season",
+        "parent_id": null,
+        "properties": {
+          "name": "Daily Driver",
+          "status": "in-progress"
+        }
+      },
+      {
+        "id": "episode-intro",
+        "type": "episode",
+        "parent_id": "season-daily-driver",
+        "properties": {
+          "name": "Intro"
+        }
+      },
+      {
+        "id": "episode-diagnostics",
+        "type": "episode",
+        "parent_id": "season-daily-driver",
+        "properties": {
+          "name": "Diagnostics"
+        }
+      },
+      {
+        "id": "task-intro",
+        "type": "task",
+        "parent_id": "episode-intro",
+        "properties": {
+          "name": "Intro Task"
+        }
+      },
+      {
+        "id": "task-diagnostics",
+        "type": "task",
+        "parent_id": "episode-diagnostics",
+        "properties": {
+          "name": "Diagnostics Task"
+        }
+      },
+      {
+        "id": "season-side-project",
+        "type": "season",
+        "parent_id": null,
+        "properties": {
+          "name": "Side Project",
+          "status": "planning"
+        }
+      },
+      {
+        "id": "episode-alpha",
+        "type": "episode",
+        "parent_id": "season-side-project",
+        "properties": {
+          "name": "Alpha"
+        }
+      },
+      {
+        "id": "episode-beta",
+        "type": "episode",
+        "parent_id": "season-side-project",
+        "properties": {
+          "name": "Beta"
+        }
+      },
+      {
+        "id": "task-beta",
+        "type": "task",
+        "parent_id": "episode-beta",
+        "properties": {
+          "name": "Beta Task"
+        }
+      }
+    ]
+  },
+  "blocking_relationships": [
+    {"blockingNodeId": "season-daily-driver", "blockedNodeId": "episode-intro"},
+    {"blockingNodeId": "season-daily-driver", "blockedNodeId": "episode-diagnostics"},
+    {"blockingNodeId": "episode-alpha", "blockedNodeId": "episode-beta"},
+    {"blockingNodeId": "episode-beta", "blockedNodeId": "task-beta"}
+  ],
+  "expectations": {
+    "season-daily-driver": {
+      "blocking_bonus": 6,
+      "total_velocity": 7
+    },
+    "episode-intro": {
+      "inherited_score": 1,
+      "blocking_penalty": 3,
+      "total_velocity": 0
+    },
+    "episode-diagnostics": {
+      "blocking_penalty": 3,
+      "total_velocity": 0
+    },
+    "episode-alpha": {
+      "blocking_bonus": 5,
+      "total_velocity": 7
+    },
+    "episode-beta": {
+      "blocking_bonus": 3,
+      "blocking_penalty": 2,
+      "total_velocity": 0
+    },
+    "task-beta": {
+      "blocking_penalty": 3,
+      "total_velocity": 0
+    }
+  }
+}

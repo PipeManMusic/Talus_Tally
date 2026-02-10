@@ -12,6 +12,8 @@ Tests all aspects of velocity calculations:
 
 import pytest
 from backend.core.velocity_engine import VelocityEngine, VelocityCalculation, ScoreMode
+import json
+import os
 
 
 @pytest.fixture
@@ -203,6 +205,36 @@ class TestBasicVelocityCalculations:
         
         assert calc.total_velocity == 0
         assert calc.base_score == 0
+
+
+def test_complex_blocking_fixture():
+    """Validate blocking bonuses with a complex parent-child fixture."""
+    base_path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    fixture_path = os.path.join(base_path, "tests", "fixtures", "velocity_complex.json")
+
+    with open(fixture_path, "r") as f:
+        fixture = json.load(f)
+
+    schema = fixture["schema"]
+    blocking_graph = {"relationships": fixture["blocking_relationships"]}
+
+    graph = {}
+    for node in fixture["graph"]["nodes"]:
+        graph[node["id"]] = {
+            "type": node["type"],
+            "parent_id": node.get("parent_id"),
+            "properties": node.get("properties", {})
+        }
+
+    engine = VelocityEngine(graph, schema, blocking_graph)
+
+    for node_id, expected in fixture["expectations"].items():
+        calc = engine.calculate_velocity(node_id)
+        for field, expected_value in expected.items():
+            actual_value = getattr(calc, field)
+            assert actual_value == expected_value, (
+                f"{node_id}.{field} expected {expected_value}, got {actual_value}"
+            )
 
 
 class TestInheritedScores:
@@ -704,6 +736,7 @@ class TestBlockingRelationships:
         calc_blocker = engine.calculate_velocity("task-1")
         assert calc_blocker.is_blocked is False
         assert calc_blocker.total_velocity == 2  # 1 (own) + 1 (blocked task)
+        assert calc_blocker.blocking_bonus == 1
     
     def test_cascading_blocking(self, basic_schema):
         """Test that blocking cascades to children of blocked nodes"""
@@ -789,6 +822,7 @@ class TestBlockingRelationships:
         calc_blocker = engine.calculate_velocity("blocker")
         # blocker gets: 1 (own) + 1 (blocked-1) + 1 (blocked-2) = 3
         assert calc_blocker.total_velocity == 3
+        assert calc_blocker.blocking_bonus == 2
         assert len(calc_blocker.blocks_node_ids) == 2
 
 

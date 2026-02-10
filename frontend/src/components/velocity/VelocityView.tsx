@@ -133,6 +133,20 @@ export function VelocityView({ sessionId, onNodeSelect }: VelocityViewProps) {
                       <div className="font-semibold text-fg-primary">+{node.numericalScore.toFixed(0)}</div>
                     </div>
                   </div>
+                  {(node.blockingBonus !== 0 || node.blockingPenalty !== 0) && (
+                    <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                      {node.blockingBonus !== 0 && (
+                        <div className="bg-bg-dark px-2 py-1 rounded text-fg-primary">
+                          Blocking Bonus: +{node.blockingBonus.toFixed(0)}
+                        </div>
+                      )}
+                      {node.blockingPenalty !== 0 && (
+                        <div className="bg-bg-dark px-2 py-1 rounded text-fg-primary">
+                          Blocking Penalty: {node.blockingPenalty.toFixed(0)}
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* Status Indicators */}
                   {(node.isBlocked || (node.blockedByNodes && node.blockedByNodes.length > 0)) && (

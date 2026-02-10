@@ -29,6 +29,7 @@ class VelocityCalculation:
     status_score: float = 0
     numerical_score: float = 0
     blocking_penalty: float = 0
+    blocking_bonus: float = 0
     total_velocity: float = 0
     is_blocked: bool = False
     blocked_by_nodes: List[str] = None
@@ -59,6 +60,7 @@ class VelocityEngine:
         self._velocity_cache: Dict[str, VelocityCalculation] = {}
         self._building: Set[str] = set()  # For cycle detection
         self._parent_map: Dict[str, str] = {}
+        self._in_progress_totals: Dict[str, float] = {}
         self._build_parent_map()
 
     def _normalize_id(self, node_id: Optional[object]) -> Optional[str]:
@@ -85,6 +87,7 @@ class VelocityEngine:
         """Calculate velocity for all nodes"""
         self._velocity_cache = {}
         self._building = set()
+        self._in_progress_totals = {}
         
         for node_id in self.nodes.keys():
             self.calculate_velocity(str(node_id))
@@ -158,6 +161,14 @@ class VelocityEngine:
         # 4. Calculate numerical multiplier scores
         calc.numerical_score = self._calculate_numerical_scores(node_id, node_type)
         
+        # Track the unblocked total so children can inherit during cycle detection.
+        self._in_progress_totals[node_id] = (
+            calc.base_score
+            + calc.inherited_score
+            + calc.status_score
+            + calc.numerical_score
+        )
+
         # 5. Check blocking status
         is_blocked = self._is_node_blocked(node_id)
         calc.is_blocked = is_blocked
@@ -166,17 +177,23 @@ class VelocityEngine:
         # 6. Apply blocking penalty - blocked nodes get zero
         if is_blocked:
             calc.blocking_penalty = calc.base_score + calc.inherited_score + calc.status_score + calc.numerical_score
-        
-        # 7. Calculate total (zero if blocked, otherwise sum)
+
+        # 7. Calculate bonus from blocked nodes (always tracked for breakdowns)
+        blocked_score = self._get_blocked_nodes_score(node_id)
+        calc.blocks_node_ids = self._get_blocked_node_ids(node_id)
+        calc.blocking_bonus = blocked_score
+
+        # 8. Calculate total (zero if blocked, otherwise sum)
         if is_blocked:
             calc.total_velocity = 0
         else:
-            calc.total_velocity = calc.base_score + calc.inherited_score + calc.status_score + calc.numerical_score
-            
-            # Add scores of blocked nodes to this node
-            blocked_score = self._get_blocked_nodes_score(node_id)
-            calc.blocks_node_ids = self._get_blocked_node_ids(node_id)
-            calc.total_velocity += blocked_score
+            calc.total_velocity = (
+                calc.base_score
+                + calc.inherited_score
+                + calc.status_score
+                + calc.numerical_score
+                + blocked_score
+            )
         
         # Debug log for nodes with positive totals or episodes
         if calc.total_velocity >= 0 or node_type == "episode":
@@ -187,6 +204,7 @@ class VelocityEngine:
             logger.info(f'[VelocityEngine] node={node_name} type={node_type} parent_id={parent_id} base={calc.base_score} inherited={calc.inherited_score} status={calc.status_score} numerical={calc.numerical_score} total={calc.total_velocity}')
         
         self._velocity_cache[node_id] = calc
+        self._in_progress_totals.pop(node_id, None)
         self._building.remove(node_id)
         
         return calc
@@ -232,8 +250,25 @@ class VelocityEngine:
         if not parent_id:
             return 0
 
+        if parent_id in self._building:
+            return self._in_progress_totals.get(parent_id, 0)
+
+        if parent_id in self._velocity_cache:
+            parent_calc = self._velocity_cache[parent_id]
+            return (
+                parent_calc.base_score
+                + parent_calc.inherited_score
+                + parent_calc.status_score
+                + parent_calc.numerical_score
+            )
+
         parent_calc = self.calculate_velocity(parent_id)
-        return parent_calc.total_velocity
+        return (
+            parent_calc.base_score
+            + parent_calc.inherited_score
+            + parent_calc.status_score
+            + parent_calc.numerical_score
+        )
     
     def _get_parent_id(self, node_id: str) -> Optional[str]:
         """Get parent node ID"""
@@ -362,8 +397,9 @@ class VelocityEngine:
         if "relationships" not in self.blocking_relationships:
             return False
         
+        node_key = self._normalize_id(node_id)
         for rel in self.blocking_relationships["relationships"]:
-            if rel["blockedNodeId"] == node_id:
+            if self._normalize_id(rel.get("blockedNodeId")) == node_key:
                 return True
         
         # Check if any ancestor node is blocked (cascading block)
@@ -375,7 +411,7 @@ class VelocityEngine:
             
             # Check if parent is blocked
             for rel in self.blocking_relationships["relationships"]:
-                if rel["blockedNodeId"] == parent_id:
+                if self._normalize_id(rel.get("blockedNodeId")) == self._normalize_id(parent_id):
                     # Parent is blocked, so children are also blocked
                     return True
             
@@ -391,9 +427,10 @@ class VelocityEngine:
         blocking = []
         
         # Direct blocking relationships
+        node_key = self._normalize_id(node_id)
         for rel in self.blocking_relationships["relationships"]:
-            if rel["blockedNodeId"] == node_id:
-                blocking.append(rel["blockingNodeId"])
+            if self._normalize_id(rel.get("blockedNodeId")) == node_key:
+                blocking.append(self._normalize_id(rel.get("blockingNodeId")))
         
         # Blocking via ancestor
         current = node_id
@@ -404,8 +441,8 @@ class VelocityEngine:
             
             # Check if parent is blocked
             for rel in self.blocking_relationships["relationships"]:
-                if rel["blockedNodeId"] == parent_id:
-                    blocking.append(rel["blockingNodeId"])
+                if self._normalize_id(rel.get("blockedNodeId")) == self._normalize_id(parent_id):
+                    blocking.append(self._normalize_id(rel.get("blockingNodeId")))
             
             current = parent_id
         
@@ -417,9 +454,10 @@ class VelocityEngine:
             return []
         
         blocked = []
+        node_key = self._normalize_id(node_id)
         for rel in self.blocking_relationships["relationships"]:
-            if rel["blockingNodeId"] == node_id:
-                blocked.append(rel["blockedNodeId"])
+            if self._normalize_id(rel.get("blockingNodeId")) == node_key:
+                blocked.append(self._normalize_id(rel.get("blockedNodeId")))
         
         return blocked
     
@@ -429,12 +467,14 @@ class VelocityEngine:
         
         for blocked_id in self._get_blocked_node_ids(node_id):
             blocked_calc = self.calculate_velocity(blocked_id)
-            # Add the blocked node's would-be score (ignoring the blocking penalty itself)
+            # Add the blocked node's would-be score (ignoring the blocking penalty itself).
+            # Include its blocking bonus so a chain of blockers still accrues full unpenalized value.
             blocked_score = (
-                blocked_calc.base_score +
-                blocked_calc.inherited_score +
-                blocked_calc.status_score +
-                blocked_calc.numerical_score
+                blocked_calc.base_score
+                + blocked_calc.inherited_score
+                + blocked_calc.status_score
+                + blocked_calc.numerical_score
+                + blocked_calc.blocking_bonus
             )
             score += blocked_score
         

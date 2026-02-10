@@ -28,6 +28,7 @@ export interface VelocityScore {
   statusScore: number;
   numericalScore: number;
   blockingPenalty: number;
+  blockingBonus: number;
   totalVelocity: number;
   isBlocked: boolean;
   blockedByNodes?: string[];
@@ -342,6 +343,12 @@ export function Inspector({
                   <div className="flex justify-between items-center">
                     <span>Numerical:</span>
                     <span className="text-fg-primary">{velocityScore.numericalScore}</span>
+                  </div>
+                )}
+                {velocityScore.blockingBonus !== 0 && (
+                  <div className="flex justify-between items-center">
+                    <span>Blocking Bonus:</span>
+                    <span className="text-fg-primary">{velocityScore.blockingBonus}</span>
                   </div>
                 )}
                 {velocityScore.blockingPenalty !== 0 && (

@@ -203,6 +203,7 @@ export interface VelocityScore {
   statusScore: number;
   numericalScore: number;
   blockingPenalty: number;
+  blockingBonus: number;
   totalVelocity: number;
   isBlocked: boolean;
   blockedByNodes?: string[];
