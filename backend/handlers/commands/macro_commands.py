@@ -165,4 +165,4 @@ class ImportNodesCommand(Command):
     def undo(self) -> None:
         for child_command, _ in reversed(self._child_commands):
             child_command.undo()
-        self.created_node_ids.clear()
+        # Keep created_node_ids intact so caller can verify they're removed from graph

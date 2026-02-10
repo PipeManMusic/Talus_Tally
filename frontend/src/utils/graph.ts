@@ -71,6 +71,13 @@ export function normalizeGraph(graphLike: any): Graph {
         
         visited.add(nodeId);
 
+        // Debug: Log what properties we're receiving
+        console.log(`[normalizeGraph] Node ${nodeId} (${nestedNode.blueprint_type_id}):`, {
+          name: nestedNode.name,
+          properties: nestedNode.properties,
+          allKeys: Object.keys(nestedNode)
+        });
+
         const node: Node = {
           id: nodeId,
           type: nestedNode.blueprint_type_id || 'unknown',
@@ -82,8 +89,15 @@ export function normalizeGraph(graphLike: any): Graph {
           indicator_id: nestedNode.indicator_id,
           indicator_set: nestedNode.indicator_set,
           icon_id: nestedNode.icon_id,
+          schema_shape: nestedNode.schema_shape,
+          schema_color: nestedNode.schema_color,
           allowed_children: nestedNode.allowed_children,
         };
+
+        console.log(`[normalizeGraph] Normalized node ${nodeId}:`, {
+          properties: node.properties,
+          propertyCount: Object.keys(node.properties).length
+        });
 
         nodes.push(node);
 

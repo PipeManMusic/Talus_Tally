@@ -123,6 +123,14 @@ def emit_node_deleted(session_id: str, node_id: str):
     }, room=session_id)
 
 
+def emit_node_updated(session_id: str, node_id: str):
+    """Emit when a node is updated (properties, blocking relationships, etc)."""
+    emit_event('node-updated', {
+        'session_id': session_id,
+        'node_id': node_id,
+    }, room=session_id)
+
+
 def emit_node_linked(session_id: str, parent_id: str, child_id: str):
     """Emit when a node is linked to another."""
     emit_event('node-linked', {

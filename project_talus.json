@@ -20,6 +20,8 @@
         "indicator_id": null,
         "indicator_set": null,
         "icon_id": "film",
+        "schema_shape": "hexagon",
+        "schema_color": "#6366f1",
         "allowed_children": [
           "inventory_root",
           "season",
@@ -47,6 +49,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#8b5cf6",
         "allowed_children": [
           "episode",
           "task"
@@ -68,6 +72,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "video-camera",
+        "schema_shape": "roundedSquare",
+        "schema_color": "#06b6d4",
         "allowed_children": [
           "task",
           "footage",
@@ -88,6 +94,8 @@
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#10b981",
         "allowed_children": [
           "uses_camera_gear"
         ]
@@ -105,6 +113,8 @@
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#10b981",
         "allowed_children": [
           "uses_camera_gear"
         ]
@@ -157,6 +167,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "video-camera",
+        "schema_shape": "roundedSquare",
+        "schema_color": "#06b6d4",
         "allowed_children": [
           "task",
           "footage",
@@ -180,6 +192,8 @@
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#10b981",
         "allowed_children": [
           "uses_camera_gear"
         ]
@@ -195,6 +209,8 @@
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#10b981",
         "allowed_children": [
           "uses_camera_gear"
         ]
@@ -210,6 +226,8 @@
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#10b981",
         "allowed_children": [
           "uses_camera_gear"
         ]
@@ -225,6 +243,8 @@
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#10b981",
         "allowed_children": [
           "uses_camera_gear"
         ]
@@ -240,6 +260,8 @@
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#10b981",
         "allowed_children": [
           "uses_camera_gear"
         ]
@@ -255,6 +277,8 @@
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#10b981",
         "allowed_children": [
           "uses_camera_gear"
         ]
@@ -270,6 +294,8 @@
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#10b981",
         "allowed_children": [
           "uses_camera_gear"
         ]
@@ -285,6 +311,8 @@
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#10b981",
         "allowed_children": [
           "uses_camera_gear"
         ]
@@ -300,6 +328,8 @@
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#10b981",
         "allowed_children": [
           "uses_camera_gear"
         ]
@@ -315,6 +345,8 @@
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#10b981",
         "allowed_children": [
           "uses_camera_gear"
         ]
@@ -330,6 +362,8 @@
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#10b981",
         "allowed_children": [
           "uses_camera_gear"
         ]
@@ -345,6 +379,8 @@
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#10b981",
         "allowed_children": [
           "uses_camera_gear"
         ]
@@ -360,6 +396,8 @@
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#10b981",
         "allowed_children": [
           "uses_camera_gear"
         ]
@@ -375,6 +413,8 @@
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#10b981",
         "allowed_children": [
           "uses_camera_gear"
         ]
@@ -390,6 +430,8 @@
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#10b981",
         "allowed_children": [
           "uses_camera_gear"
         ]
@@ -405,6 +447,8 @@
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#10b981",
         "allowed_children": [
           "uses_camera_gear"
         ]
@@ -420,6 +464,8 @@
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#10b981",
         "allowed_children": [
           "uses_camera_gear"
         ]
@@ -435,6 +481,8 @@
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#10b981",
         "allowed_children": [
           "uses_camera_gear"
         ]
@@ -450,6 +498,8 @@
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#10b981",
         "allowed_children": [
           "uses_camera_gear"
         ]
@@ -464,6 +514,8 @@
         "indicator_id": null,
         "indicator_set": null,
         "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#10b981",
         "allowed_children": [
           "uses_camera_gear"
         ]
@@ -480,6 +532,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "video-camera",
+        "schema_shape": "roundedSquare",
+        "schema_color": "#06b6d4",
         "allowed_children": [
           "task",
           "footage",
@@ -501,6 +555,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "video-camera",
+        "schema_shape": "roundedSquare",
+        "schema_color": "#06b6d4",
         "allowed_children": [
           "task",
           "footage",
@@ -522,6 +578,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "video-camera",
+        "schema_shape": "roundedSquare",
+        "schema_color": "#06b6d4",
         "allowed_children": [
           "task",
           "footage",
@@ -543,6 +601,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "video-camera",
+        "schema_shape": "roundedSquare",
+        "schema_color": "#06b6d4",
         "allowed_children": [
           "task",
           "footage",
@@ -564,6 +624,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "video-camera",
+        "schema_shape": "roundedSquare",
+        "schema_color": "#06b6d4",
         "allowed_children": [
           "task",
           "footage",
@@ -585,6 +647,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "video-camera",
+        "schema_shape": "roundedSquare",
+        "schema_color": "#06b6d4",
         "allowed_children": [
           "task",
           "footage",
@@ -606,6 +670,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "video-camera",
+        "schema_shape": "roundedSquare",
+        "schema_color": "#06b6d4",
         "allowed_children": [
           "task",
           "footage",
@@ -628,6 +694,8 @@
         "indicator_id": null,
         "indicator_set": null,
         "icon_id": "archive-box",
+        "schema_shape": "hexagon",
+        "schema_color": "#a78bfa",
         "allowed_children": [
           "camera_gear_inventory",
           "car_parts_inventory",
@@ -648,6 +716,8 @@
         "indicator_id": null,
         "indicator_set": null,
         "icon_id": "camera",
+        "schema_shape": "rounded",
+        "schema_color": "#60a5fa",
         "allowed_children": [
           "camera_gear_category"
         ]
@@ -668,6 +738,8 @@
         "indicator_id": null,
         "indicator_set": null,
         "icon_id": "camera",
+        "schema_shape": "roundedSquare",
+        "schema_color": "#3b82f6",
         "allowed_children": [
           "camera_gear_asset"
         ]
@@ -684,6 +756,8 @@
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "camera",
+        "schema_shape": "circle",
+        "schema_color": "#0ea5e9",
         "allowed_children": []
       },
       {
@@ -698,6 +772,8 @@
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "camera",
+        "schema_shape": "circle",
+        "schema_color": "#0ea5e9",
         "allowed_children": []
       },
       {
@@ -712,6 +788,8 @@
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "camera",
+        "schema_shape": "circle",
+        "schema_color": "#0ea5e9",
         "allowed_children": []
       },
       {
@@ -725,6 +803,8 @@
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "camera",
+        "schema_shape": "circle",
+        "schema_color": "#0ea5e9",
         "allowed_children": []
       },
       {
@@ -738,6 +818,8 @@
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "camera",
+        "schema_shape": "circle",
+        "schema_color": "#0ea5e9",
         "allowed_children": []
       },
       {
@@ -750,6 +832,8 @@
         "indicator_id": null,
         "indicator_set": null,
         "icon_id": "camera",
+        "schema_shape": "roundedSquare",
+        "schema_color": "#3b82f6",
         "allowed_children": [
           "camera_gear_asset"
         ]
@@ -764,6 +848,8 @@
         "indicator_id": null,
         "indicator_set": null,
         "icon_id": "camera",
+        "schema_shape": "roundedSquare",
+        "schema_color": "#3b82f6",
         "allowed_children": [
           "camera_gear_asset"
         ]
@@ -781,6 +867,8 @@
         "indicator_id": null,
         "indicator_set": null,
         "icon_id": "cog",
+        "schema_shape": "hexagon",
+        "schema_color": "#ef4444",
         "allowed_children": [
           "part_category"
         ]
@@ -795,6 +883,8 @@
         "indicator_id": null,
         "indicator_set": null,
         "icon_id": "cog",
+        "schema_shape": "rounded",
+        "schema_color": "#f87171",
         "allowed_children": [
           "part_asset"
         ]
@@ -911,6 +1001,8 @@
         "indicator_id": null,
         "indicator_set": null,
         "icon_id": "cog",
+        "schema_shape": "rounded",
+        "schema_color": "#f87171",
         "allowed_children": [
           "part_asset"
         ]
@@ -931,6 +1023,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -949,6 +1043,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -966,6 +1062,8 @@
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -983,6 +1081,8 @@
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1000,6 +1100,8 @@
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1017,6 +1119,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1034,6 +1138,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1052,6 +1158,8 @@
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1070,6 +1178,8 @@
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1088,6 +1198,8 @@
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1106,6 +1218,8 @@
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1123,6 +1237,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1141,6 +1257,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1159,6 +1277,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1177,6 +1297,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1194,6 +1316,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1212,6 +1336,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1229,6 +1355,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1246,6 +1374,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1263,6 +1393,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1280,6 +1412,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1297,6 +1431,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1315,6 +1451,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1332,6 +1470,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1350,6 +1490,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1367,6 +1509,8 @@
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1384,6 +1528,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1401,6 +1547,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1419,6 +1567,8 @@
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1437,6 +1587,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1455,6 +1607,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1472,6 +1626,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1490,6 +1646,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1507,6 +1665,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1525,6 +1685,8 @@
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1543,6 +1705,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1561,6 +1725,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1579,6 +1745,8 @@
         "indicator_id": "alert",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1597,6 +1765,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1615,6 +1785,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1633,6 +1805,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1651,6 +1825,8 @@
         "indicator_id": "alert",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1669,6 +1845,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1687,6 +1865,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1705,6 +1885,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1723,6 +1905,8 @@
         "indicator_id": "alert",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1741,6 +1925,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1759,6 +1945,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1777,6 +1965,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1794,6 +1984,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1812,6 +2004,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1830,6 +2024,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1848,6 +2044,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1866,6 +2064,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1884,6 +2084,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1902,6 +2104,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1920,6 +2124,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1938,6 +2144,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1956,6 +2164,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1974,6 +2184,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -1992,6 +2204,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2010,6 +2224,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2028,6 +2244,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2045,6 +2263,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2063,6 +2283,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2080,6 +2302,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2097,6 +2321,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2114,6 +2340,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2132,6 +2360,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2150,6 +2380,8 @@
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2168,6 +2400,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2186,6 +2420,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2204,6 +2440,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2222,6 +2460,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2240,6 +2480,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2258,6 +2500,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2276,6 +2520,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2294,6 +2540,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2312,6 +2560,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2330,6 +2580,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2348,6 +2600,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2366,6 +2620,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2383,6 +2639,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2400,6 +2658,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2418,6 +2678,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2436,6 +2698,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2453,6 +2717,8 @@
         "indicator_id": "alert",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2470,6 +2736,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2488,6 +2756,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2505,6 +2775,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2522,6 +2794,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2540,6 +2814,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2558,6 +2834,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2576,6 +2854,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2594,6 +2874,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2612,6 +2894,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2630,6 +2914,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2648,6 +2934,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2665,6 +2953,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2683,6 +2973,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2701,6 +2993,8 @@
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
         "allowed_children": []
       },
       {
@@ -2719,9 +3013,11 @@
           "c3b68e0f-aaaf-4d37-9a8c-469eef9e4149",
           "947eaf8e-2b46-4fa3-90b0-4d3b929de5c4"
         ],
-        "indicator_id": "empty",
+        "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#8b5cf6",
         "allowed_children": [
           "episode",
           "task"
@@ -2739,6 +3035,8 @@
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "video-camera",
+        "schema_shape": "roundedSquare",
+        "schema_color": "#06b6d4",
         "allowed_children": [
           "task",
           "footage",
@@ -2759,6 +3057,8 @@
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "video-camera",
+        "schema_shape": "roundedSquare",
+        "schema_color": "#06b6d4",
         "allowed_children": [
           "task",
           "footage",
@@ -2779,6 +3079,8 @@
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "video-camera",
+        "schema_shape": "roundedSquare",
+        "schema_color": "#06b6d4",
         "allowed_children": [
           "task",
           "footage",
@@ -2799,6 +3101,8 @@
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "video-camera",
+        "schema_shape": "roundedSquare",
+        "schema_color": "#06b6d4",
         "allowed_children": [
           "task",
           "footage",
@@ -2819,6 +3123,8 @@
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "video-camera",
+        "schema_shape": "roundedSquare",
+        "schema_color": "#06b6d4",
         "allowed_children": [
           "task",
           "footage",
@@ -2839,6 +3145,8 @@
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "video-camera",
+        "schema_shape": "roundedSquare",
+        "schema_color": "#06b6d4",
         "allowed_children": [
           "task",
           "footage",
@@ -2859,6 +3167,8 @@
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "video-camera",
+        "schema_shape": "roundedSquare",
+        "schema_color": "#06b6d4",
         "allowed_children": [
           "task",
           "footage",

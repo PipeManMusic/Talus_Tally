@@ -1,61 +1,63 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { AlertCircle, TrendingUp, Lock, Zap } from 'lucide-react';
 import { apiClient, type VelocityRanking, type VelocityScore } from '../../api/client';
+import { useWebSocket } from '../../hooks/useWebSocket';
 
 interface VelocityViewProps {
   sessionId: string | null;
+  nodes?: Record<string, any>;
+  onNodeSelect?: (nodeId: string | null) => void;
 }
 
-export function VelocityView({ sessionId }: VelocityViewProps) {
+export function VelocityView({ sessionId, onNodeSelect }: VelocityViewProps) {
   const [ranking, setRanking] = useState<(VelocityScore & { nodeName: string; nodeType: string })[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [refreshInterval, setRefreshInterval] = useState<NodeJS.Timeout | null>(null);
+  const refreshPendingRef = useRef(false);
+  const refreshingRef = useRef(false);
+
+  const fetchRanking = useCallback(async () => {
+    if (!sessionId) return;
+    if (refreshingRef.current) {
+      refreshPendingRef.current = true;
+      return;
+    }
+
+    refreshingRef.current = true;
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await apiClient.getVelocityRanking(sessionId);
+      setRanking(result.nodes);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load velocity ranking');
+      console.error('Error loading velocity ranking:', err);
+    } finally {
+      setLoading(false);
+      refreshingRef.current = false;
+      if (refreshPendingRef.current) {
+        refreshPendingRef.current = false;
+        fetchRanking();
+      }
+    }
+  }, [sessionId]);
 
   useEffect(() => {
-    if (!sessionId) return;
-
-    const fetchRanking = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const result = await apiClient.getVelocityRanking(sessionId);
-        setRanking(result.nodes);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load velocity ranking');
-        console.error('Error loading velocity ranking:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    // Load immediately
     fetchRanking();
+  }, [fetchRanking]);
 
-    // Auto-refresh every 5 seconds
-    const interval = setInterval(fetchRanking, 5000);
-    setRefreshInterval(interval);
-
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [sessionId]);
+  useWebSocket({
+    onNodeCreated: fetchRanking,
+    onNodeUpdated: fetchRanking,
+    onNodeDeleted: fetchRanking,
+  });
 
   if (!sessionId) {
     return (
-      <div className="flex flex-col h-full bg-bg-dark text-fg-primary">
-        <div className="border-b border-border px-6 py-4">
-          <div className="flex items-center gap-2">
-            <TrendingUp size={24} className="text-accent-primary" />
-            <h1 className="text-2xl font-display font-bold">Velocity</h1>
-          </div>
-          <p className="text-sm text-fg-secondary mt-1">Task prioritization by score</p>
-        </div>
-        <div className="flex-1 flex items-center justify-center text-fg-secondary">
-          <div className="text-center">
-            <div className="text-lg mb-2">No project loaded</div>
-            <div className="text-sm">Load a project to see velocity rankings</div>
-          </div>
+      <div className="flex-1 flex items-center justify-center text-fg-secondary bg-bg-dark">
+        <div className="text-center">
+          <div className="text-lg mb-2">No project loaded</div>
+          <div className="text-sm">Load a project to see velocity rankings</div>
         </div>
       </div>
     );
@@ -63,19 +65,6 @@ export function VelocityView({ sessionId }: VelocityViewProps) {
 
   return (
     <div className="flex flex-col h-full bg-bg-dark text-fg-primary">
-      {/* Header */}
-      <div className="border-b border-border px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <TrendingUp size={24} className="text-accent-primary" />
-            <h1 className="text-2xl font-display font-bold">Velocity</h1>
-          </div>
-        </div>
-        <p className="text-sm text-fg-secondary mt-1">
-          Tasks ranked by priority velocity score
-        </p>
-      </div>
-
       {/* Error Display */}
       {error && (
         <div className="px-6 py-3 bg-status-danger/10 border-b border-status-danger text-status-danger">
@@ -100,7 +89,8 @@ export function VelocityView({ sessionId }: VelocityViewProps) {
             {ranking.map((node, index) => (
               <div
                 key={node.nodeId}
-                className="border-b border-border hover:bg-bg-light transition-colors"
+                onClick={() => onNodeSelect?.(node.nodeId)}
+                className="border-b border-border hover:bg-bg-light transition-colors cursor-pointer"
               >
                 <div className="px-6 py-4">
                   {/* Rank and Title */}

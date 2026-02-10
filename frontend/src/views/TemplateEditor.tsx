@@ -11,6 +11,16 @@ interface Template {
   version: string;
   description: string;
   node_types: NodeType[];
+  blocking_view?: {
+    node_size?: {
+      base_width?: number;
+      base_height?: number;
+      max_depth?: number;
+      min_scale?: number;
+      max_scale?: number;
+      direction?: 'up' | 'down';
+    };
+  };
 }
 
 interface TemplateListItem {
@@ -44,6 +54,15 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [savedSuccessfully, setSavedSuccessfully] = useState(false);
   const [orphanInfo, setOrphanInfo] = useState<any>(null);
+
+  const defaultNodeSizeConfig = {
+    base_width: 160,
+    base_height: 100,
+    max_depth: 6,
+    min_scale: 0.7,
+    max_scale: 1.3,
+    direction: 'down' as const,
+  };
 
   // Load templates list
   useEffect(() => {
@@ -98,6 +117,9 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
       name: 'New Template',
       version: '0.1.0',
       description: 'A new template',
+      blocking_view: {
+        node_size: { ...defaultNodeSizeConfig },
+      },
       node_types: [
         {
           id: 'root',
@@ -214,6 +236,21 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
     });
   }, []);
 
+  const updateBlockingNodeSize = useCallback((updates: Partial<NonNullable<Template['blocking_view']>['node_size']>) => {
+    setSavedSuccessfully(false);
+    setCurrentTemplate(prev => {
+      if (!prev) return prev;
+      const node_size = { ...(prev.blocking_view?.node_size || {}), ...updates };
+      return {
+        ...prev,
+        blocking_view: {
+          ...(prev.blocking_view || {}),
+          node_size,
+        },
+      };
+    });
+  }, []);
+
   const handleNodeTypesChange = useCallback(async (nodeTypes: NodeType[]) => {
     updateCurrentTemplate({ node_types: nodeTypes });
   }, [updateCurrentTemplate]);
@@ -315,6 +352,8 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
   const orphanedNodesCount = orphanInfo?.total_orphaned_nodes ?? 0;
   const orphanedPropertiesCount = orphanInfo?.total_orphaned_properties ?? 0;
   const orphanedSessionsCount = orphanInfo?.orphaned_sessions?.length ?? 0;
+  const nodeSizeConfig = currentTemplate.blocking_view?.node_size || defaultNodeSizeConfig;
+  const isBlockingSizeEnabled = !!currentTemplate.blocking_view?.node_size;
 
   return (
     <div className="flex flex-col h-full bg-bg-dark">
@@ -495,6 +534,125 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
               />
             </div>
           </div>
+        </div>
+
+        {/* Blocking View Settings */}
+        <div className="bg-bg-dark border border-border rounded p-6 mb-6">
+          <h2 className="text-lg font-semibold text-fg-primary mb-4">Blocking View</h2>
+          <label className="flex items-center gap-2 text-sm text-fg-secondary mb-4">
+            <input
+              type="checkbox"
+              checked={isBlockingSizeEnabled}
+              onChange={(e) => {
+                if (e.target.checked) {
+                  updateCurrentTemplate({
+                    blocking_view: {
+                      node_size: { ...defaultNodeSizeConfig },
+                    },
+                  });
+                } else {
+                  updateCurrentTemplate({ blocking_view: undefined });
+                }
+              }}
+              className="rounded"
+            />
+            Enable size scaling by hierarchy depth
+          </label>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-fg-secondary mb-1">Base Width</label>
+              <input
+                type="number"
+                min={40}
+                step={1}
+                value={nodeSizeConfig.base_width ?? ''}
+                onChange={(e) => {
+                  const value = e.target.value === '' ? undefined : Number(e.target.value);
+                  updateBlockingNodeSize({ base_width: value });
+                }}
+                disabled={!isBlockingSizeEnabled}
+                className="w-full px-3 py-2 bg-bg-light border border-border rounded text-fg-primary"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-fg-secondary mb-1">Base Height</label>
+              <input
+                type="number"
+                min={30}
+                step={1}
+                value={nodeSizeConfig.base_height ?? ''}
+                onChange={(e) => {
+                  const value = e.target.value === '' ? undefined : Number(e.target.value);
+                  updateBlockingNodeSize({ base_height: value });
+                }}
+                disabled={!isBlockingSizeEnabled}
+                className="w-full px-3 py-2 bg-bg-light border border-border rounded text-fg-primary"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-fg-secondary mb-1">Min Scale</label>
+              <input
+                type="number"
+                min={0.1}
+                step={0.05}
+                value={nodeSizeConfig.min_scale ?? ''}
+                onChange={(e) => {
+                  const value = e.target.value === '' ? undefined : Number(e.target.value);
+                  updateBlockingNodeSize({ min_scale: value });
+                }}
+                disabled={!isBlockingSizeEnabled}
+                className="w-full px-3 py-2 bg-bg-light border border-border rounded text-fg-primary"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-fg-secondary mb-1">Max Scale</label>
+              <input
+                type="number"
+                min={0.1}
+                step={0.05}
+                value={nodeSizeConfig.max_scale ?? ''}
+                onChange={(e) => {
+                  const value = e.target.value === '' ? undefined : Number(e.target.value);
+                  updateBlockingNodeSize({ max_scale: value });
+                }}
+                disabled={!isBlockingSizeEnabled}
+                className="w-full px-3 py-2 bg-bg-light border border-border rounded text-fg-primary"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-fg-secondary mb-1">Max Depth</label>
+              <input
+                type="number"
+                min={1}
+                step={1}
+                value={nodeSizeConfig.max_depth ?? ''}
+                onChange={(e) => {
+                  const value = e.target.value === '' ? undefined : Number(e.target.value);
+                  updateBlockingNodeSize({ max_depth: value });
+                }}
+                disabled={!isBlockingSizeEnabled}
+                className="w-full px-3 py-2 bg-bg-light border border-border rounded text-fg-primary"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-fg-secondary mb-1">Direction</label>
+              <select
+                value={nodeSizeConfig.direction || 'down'}
+                onChange={(e) => {
+                  const value = e.target.value === 'up' ? 'up' : 'down';
+                  updateBlockingNodeSize({ direction: value });
+                }}
+                disabled={!isBlockingSizeEnabled}
+                className="w-full px-3 py-2 bg-bg-light border border-border rounded text-fg-primary"
+              >
+                <option value="down">Deeper = smaller</option>
+                <option value="up">Deeper = larger</option>
+              </select>
+            </div>
+          </div>
+          <p className="text-xs text-fg-secondary mt-3">
+            Sizes scale by depth from root in the blocking editor. Max Depth caps the effect.
+          </p>
         </div>
 
         {/* Node Types */}

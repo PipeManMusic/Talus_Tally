@@ -107,14 +107,18 @@ class IndicatorCatalog:
 class NodeTypeDef:
     """Definition of a node type from a blueprint."""
     
-    def __init__(self, id: str, label: str = None, name: str = None, allowed_children: List[str] = None, allowed_asset_types: List[str] = None, **kwargs):
+    def __init__(self, id: str, label: str = None, name: str = None, allowed_children: List[str] = None, allowed_asset_types: List[str] = None, properties: List[Dict[str, Any]] = None, **kwargs):
         self.id = id
         # Accept either 'label' or 'name', prefer 'label'
         self.name = label or name or id
         self.allowed_children = allowed_children or []
         self.allowed_asset_types = allowed_asset_types or []
+        self.properties = properties or []  # Preserve properties with their velocityConfigs
         self.has_time_log = kwargs.get('has_time_log', False)
         self._extra_props = kwargs
+        # Ensure properties is in _extra_props for backward compatibility
+        if properties is not None:
+            self._extra_props['properties'] = properties
 
 
 class Blueprint:

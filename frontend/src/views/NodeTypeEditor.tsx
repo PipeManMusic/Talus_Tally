@@ -3,13 +3,28 @@ import { Plus, Trash2, ChevronDown, ChevronUp, AlertCircle, Info } from 'lucide-
 import { apiClient, API_BASE_URL } from '../api/client';
 import type { IconCatalog, IndicatorsConfig, IndicatorTheme } from '../api/client';
 
+export interface VelocityNodeConfig {
+  baseScore?: number;
+  scoreMode?: 'inherit' | 'standalone';
+}
+
+export interface VelocityPropertyConfig {
+  enabled?: boolean;
+  mode?: 'multiplier' | 'status';
+  multiplierFactor?: number;
+  statusScores?: Record<string, number>;
+}
+
 export interface NodeType {
   id: string;
   label: string;
   allowed_children: string[];
   allowed_asset_types?: string[];
+  velocityConfig?: VelocityNodeConfig;
   properties: Property[];
   icon?: string;
+  shape?: string;
+  color?: string;
 }
 
 export interface Property {
@@ -20,6 +35,7 @@ export interface Property {
   markup_profile?: string;
   description?: string;
   indicator_set?: string;
+  velocityConfig?: VelocityPropertyConfig;
 }
 
 interface NodeTypeEditorProps {
@@ -213,6 +229,8 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
         },
       ],
       icon: undefined,
+      shape: undefined,
+      color: undefined,
     };
 
     setLoading(true);
@@ -607,6 +625,58 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
                   </div>
                 </div>
 
+                {/* Visual Style */}
+                <div>
+                  <label className="block text-sm text-fg-secondary mb-2">Visual Style</label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs text-fg-muted mb-1">Shape</label>
+                      <select
+                        value={nodeType.shape || ''}
+                        onChange={(e) => {
+                          const value = e.target.value || undefined;
+                          updateNodeType(nodeType.id, { shape: value });
+                        }}
+                        className="w-full px-3 py-2 bg-bg-light border border-border rounded text-fg-primary text-sm"
+                      >
+                        <option value="">Default</option>
+                        <option value="rounded">Rounded</option>
+                        <option value="roundedSquare">Rounded Square</option>
+                        <option value="circle">Circle</option>
+                        <option value="hexagon">Hexagon</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-fg-muted mb-1">Color</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={nodeType.color || ''}
+                          onChange={(e) => {
+                            const value = e.target.value.trim();
+                            updateNodeType(nodeType.id, { color: value || undefined });
+                          }}
+                          placeholder="#60a5fa"
+                          className="flex-1 px-3 py-2 bg-bg-light border border-border rounded text-fg-primary text-sm font-mono"
+                        />
+                        <div
+                          className="w-9 h-9 border border-border rounded bg-bg-light"
+                          style={{ backgroundColor: nodeType.color || '#1f2937' }}
+                          title={nodeType.color || 'No color set'}
+                        />
+                        <button
+                          onClick={() => updateNodeType(nodeType.id, { color: undefined })}
+                          className="px-2 py-1 text-xs text-fg-secondary hover:text-fg-primary hover:bg-bg-light rounded transition-colors"
+                          type="button"
+                        >
+                          Clear
+                        </button>
+                      </div>
+                      <p className="text-[11px] text-fg-muted mt-1">Use hex colors like #60a5fa. Leave empty for default.</p>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Allowed Children */}
                 <div>
                   <label className="block text-sm text-fg-secondary mb-2">Allowed Children</label>
@@ -672,9 +742,10 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
 
                 {/* Allowed Asset Types (for asset reference nodes) */}
                 <div>
-                  <label className="block text-sm text-fg-secondary mb-2">
+                  <label className="block text-sm text-fg-secondary mb-2 flex items-center gap-2">
                     Allowed Asset Types
-                    <span className="text-xs ml-2 text-fg-muted">(optional - filters asset picker)</span>
+                    <Info size={14} className="text-fg-muted cursor-help" title="Specify which asset node types can be added as children. E.g., 'uses_assets' accepts all assets, 'uses_asset_camera_gear' only accepts camera_gear_asset." />
+                    <span className="text-xs text-fg-muted">(optional - leave empty to allow all asset types)</span>
                   </label>
                   <div className="space-y-2">
                     {(nodeType.allowed_asset_types || []).map((assetType, idx) => (
@@ -733,6 +804,72 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
                     >
                       + Add Asset Type Filter
                     </button>
+                  </div>
+                </div>
+
+                {/* Velocity Configuration Section */}
+                <div className="mt-4 pt-4 border-t border-border">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-semibold text-fg-primary">Velocity Configuration</h4>
+                      <Info size={14} className="text-fg-muted cursor-help" title="Configure velocity scoring for prioritization. Leave blank to exclude this node type from velocity calculations." />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3 bg-bg-secondary/30 rounded p-3 mb-3">
+                    <div>
+                      <label className="block text-sm text-fg-secondary mb-1">
+                        Base Score
+                        <span className="text-xs ml-2 text-fg-muted">(initial velocity value, optional)</span>
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={nodeType.velocityConfig?.baseScore ?? ''}
+                        onChange={(e) => {
+                          const value = e.target.value ? parseInt(e.target.value, 10) : undefined;
+                          updateNodeType(nodeType.id, {
+                            velocityConfig: {
+                              ...nodeType.velocityConfig,
+                              baseScore: value,
+                            },
+                          });
+                        }}
+                        placeholder="e.g., 10"
+                        className="w-full px-3 py-2 bg-bg-light border border-border rounded text-fg-primary text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-fg-secondary mb-1">
+                        Score Mode
+                        <span className="text-xs ml-2 text-fg-muted">(how scores are inherited from parents)</span>
+                      </label>
+                      <select
+                        value={nodeType.velocityConfig?.scoreMode ?? ''}
+                        onChange={(e) => {
+                          const value = e.target.value || undefined;
+                          updateNodeType(nodeType.id, {
+                            velocityConfig: {
+                              ...nodeType.velocityConfig,
+                              scoreMode: value as 'inherit' | 'standalone' | undefined,
+                            },
+                          });
+                        }}
+                        className="w-full px-3 py-2 bg-bg-light border border-border rounded text-fg-primary text-sm"
+                      >
+                        <option value="">-- Not configured --</option>
+                        <option value="inherit">Inherit (accumulate from parents)</option>
+                        <option value="standalone">Standalone (independent score)</option>
+                      </select>
+                    </div>
+
+                    {!nodeType.velocityConfig?.baseScore && !nodeType.velocityConfig?.scoreMode && (
+                      <p className="text-xs text-fg-muted italic">
+                        ℹ️ This node type will be excluded from velocity calculations until at least one velocity setting is configured.
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -901,6 +1038,115 @@ const PropertyEditor = memo(function PropertyEditor({
               />
             </div>
           )}
+
+          {/* Velocity Configuration Section */}
+          <div className="border-t border-border/50 pt-3 mt-3">
+            <label className="text-xs text-fg-secondary mb-2 block flex items-center gap-1">
+              <input
+                type="checkbox"
+                checked={!!property.velocityConfig?.enabled}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    onUpdate({
+                      velocityConfig: {
+                        enabled: true,
+                        mode: 'multiplier',
+                      },
+                    });
+                  } else {
+                    onUpdate({ velocityConfig: undefined });
+                  }
+                }}
+                className="rounded"
+              />
+              Enable velocity configuration for this property
+            </label>
+
+            {property.velocityConfig?.enabled && (
+              <div className="space-y-2 bg-bg-dark/30 rounded p-2 mt-2">
+                <div>
+                  <label className="text-xs text-fg-secondary mb-1 block">
+                    Velocity Mode
+                    <span className="text-fg-muted text-[10px] ml-1">(how this property contributes to velocity)</span>
+                  </label>
+                  <select
+                    value={property.velocityConfig?.mode || 'multiplier'}
+                    onChange={(e) => {
+                      onUpdate({
+                        velocityConfig: {
+                          ...property.velocityConfig,
+                          mode: e.target.value as 'multiplier' | 'status',
+                        },
+                      });
+                    }}
+                    className="w-full px-2 py-1 bg-bg-light border border-border rounded text-fg-primary text-xs"
+                  >
+                    <option value="multiplier">Multiplier (numeric property)</option>
+                    <option value="status">Status (select property with scores)</option>
+                  </select>
+                </div>
+
+                {property.velocityConfig?.mode === 'multiplier' && (
+                  <div>
+                    <label className="text-xs text-fg-secondary mb-1 block">Multiplier Factor</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.5"
+                      value={property.velocityConfig?.multiplierFactor ?? 1}
+                      onChange={(e) => {
+                        onUpdate({
+                          velocityConfig: {
+                            ...property.velocityConfig,
+                            multiplierFactor: parseFloat(e.target.value) || 1,
+                          },
+                        });
+                      }}
+                      className="w-full px-2 py-1 bg-bg-light border border-border rounded text-fg-primary text-xs"
+                      placeholder="e.g., 5"
+                    />
+                    <p className="text-[10px] text-fg-muted mt-1">Property valor × multiplier = velocity contribution</p>
+                  </div>
+                )}
+
+                {property.velocityConfig?.mode === 'status' && (
+                  <div>
+                    <label className="text-xs text-fg-secondary mb-1 block">Status Value Scores</label>
+                    <p className="text-[10px] text-fg-muted mb-2">Define velocity points for each status option:</p>
+                    <div className="space-y-1 max-h-40 overflow-y-auto">
+                      {(property.options || []).map((option) => (
+                        <div key={option.name} className="flex items-center gap-2">
+                          <span className="text-xs flex-1 text-fg-secondary">{option.name}</span>
+                          <input
+                            type="number"
+                            value={property.velocityConfig?.statusScores?.[option.name] ?? 0}
+                            onChange={(e) => {
+                              const newScores = {
+                                ...(property.velocityConfig?.statusScores || {}),
+                                [option.name]: parseInt(e.target.value, 10) || 0,
+                              };
+                              onUpdate({
+                                velocityConfig: {
+                                  ...property.velocityConfig,
+                                  statusScores: newScores,
+                                },
+                              });
+                            }}
+                            className="w-16 px-1 py-1 bg-bg-light border border-border rounded text-fg-primary text-xs"
+                            placeholder="0"
+                          />
+                        </div>
+                      ))}
+                      {(!property.options || property.options.length === 0) && (
+                        <p className="text-[10px] text-fg-muted italic">Add options to this property first</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            )}
+          </div>
 
           {/* Select Options (for select type) */}
           {property.type === 'select' && (

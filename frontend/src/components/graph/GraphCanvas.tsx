@@ -51,6 +51,16 @@ export default function GraphCanvas({
   // Sync store nodes to React Flow nodes
   useEffect(() => {
     const nodeList = Object.values(storeNodes || {}) as any[];
+    console.log('[GraphCanvas] Syncing nodes. storeNodes count:', Object.keys(storeNodes || {}).length);
+    if (nodeList.length > 0) {
+      console.log('[GraphCanvas] First node:', {
+        id: nodeList[0].id,
+        type: nodeList[0].type,
+        schema_shape: nodeList[0].schema_shape,
+        schema_color: nodeList[0].schema_color,
+        has_properties: !!nodeList[0].properties,
+      });
+    }
     // Create a stable signature of all node data to trigger effect on any content change
     const nodeSignature = JSON.stringify(
       nodeList.map(n => ({
@@ -60,12 +70,20 @@ export default function GraphCanvas({
         status: n.properties?.status,
         type: n.type,
         name: n.properties?.name,
-        // Add more fields if needed for reactivity
+        schema_shape: n.schema_shape,
+        schema_color: n.schema_color,
       }))
     );
     Promise.all(
       nodeList.map(async (node) => {
         const nodeWithIndicator = await mapNodeIndicator(node);
+        console.log('[GraphCanvas] Node from mapNodeIndicator:', {
+          id: nodeWithIndicator.id,
+          schema_shape: nodeWithIndicator.schema_shape,
+          schema_color: nodeWithIndicator.schema_color,
+          type: nodeWithIndicator.type,
+          statusIndicatorSvg: nodeWithIndicator.statusIndicatorSvg ? 'has SVG' : 'no SVG',
+        });
         return {
           id: node.id,
           data: { label: node.properties?.name || node.type, nodeData: nodeWithIndicator },
@@ -79,7 +97,7 @@ export default function GraphCanvas({
       })
     ).then(setNodes);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedNodeId, setNodes]); // nodeSignature is implicitly tracked via storeNodes changes
+  }, [storeNodes, selectedNodeId, setNodes]);
 
   // Sync store edges to React Flow edges
   useEffect(() => {
@@ -96,11 +114,31 @@ export default function GraphCanvas({
   // Handle new connections (edges)
   const onConnect = useCallback(
     (connection: Connection) => {
-      if (connection.source && connection.target) {
-        setEdges((eds) => addEdge(connection, eds));
+      if (!connection.source || !connection.target) {
+        return;
       }
+
+      const sessionId = getSessionId();
+      if (!sessionId) {
+        console.warn('[GraphCanvas] No session, cannot link nodes via API');
+        return;
+      }
+
+      const edgeId = `${connection.source}-${connection.target}`;
+      setEdges((eds) => addEdge({ ...connection, id: edgeId }, eds));
+
+      apiClient
+        .executeCommand(sessionId, 'LinkNode', {
+          parent_id: connection.source,
+          child_id: connection.target,
+        })
+        .then((result) => applyGraphUpdate(result))
+        .catch((err) => {
+          console.error('Failed to link nodes via API:', err);
+          setEdges((eds) => eds.filter((edge) => edge.id !== edgeId));
+        });
     },
-    [setEdges]
+    [setEdges, getSessionId, applyGraphUpdate]
   );
 
   // Handle node selection

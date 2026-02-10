@@ -21,6 +21,7 @@ export function useWebSocket(callbacks: WebSocketCallbacks = {}) {
   }, [callbacks]);
 
   useEffect(() => {
+    const sessionId = localStorage.getItem('talus_tally_session_id');
     const newSocket = apiClient.connectSocket({
       onConnect: () => {
         setConnected(true);
@@ -33,6 +34,7 @@ export function useWebSocket(callbacks: WebSocketCallbacks = {}) {
         setConnected(false);
         callbacksRef.current.onDisconnect?.();
       },
+      sessionId,
     });
 
     setSocket(newSocket);

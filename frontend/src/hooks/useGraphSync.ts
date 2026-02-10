@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useWebSocket } from './useWebSocket';
 import { useGraphStore } from '@/store';
 
@@ -47,6 +47,17 @@ export function useGraphSync() {
     onConnect: handleConnect,
     onDisconnect: handleDisconnect,
   });
+
+  useEffect(() => {
+    if (!connected) {
+      return;
+    }
+
+    const sessionId = localStorage.getItem('talus_tally_session_id');
+    if (sessionId) {
+      emit('join_session', { session_id: sessionId });
+    }
+  }, [connected, emit]);
 
   // Emit node operations to other clients
   const broadcastNodeCreated = useCallback((node: any) => {

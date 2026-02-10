@@ -1,3 +1,11 @@
+blocking_view:
+  node_size:
+    base_height: 100
+    base_width: 200
+    direction: down
+    max_depth: 6
+    max_scale: 1.7
+    min_scale: 0.7
 description: Production workflow for YouTube channel and Restomod build with footage
   tracking and asset management.
 id: project_talus
@@ -8,6 +16,8 @@ node_types:
   - inventory_root
   - season
   - task
+  color: '#6366f1'
+  icon: film
   id: project_root
   label: Project
   properties:
@@ -32,29 +42,37 @@ node_types:
   - id: project_lead
     label: Project Lead
     type: text
+  shape: hexagon
+  velocityConfig:
+    baseScore: 0
 - allowed_asset_types: []
   allowed_children:
   - camera_gear_inventory
   - car_parts_inventory
   - tools_inventory
+  color: '#a78bfa'
   id: inventory_root
   label: Assets
   properties:
   - id: name
     label: Assets
     type: text
+  shape: hexagon
 - allowed_asset_types: []
   allowed_children:
   - camera_gear_category
+  color: '#60a5fa'
   id: camera_gear_inventory
   label: Camera Gear Inventory
   properties:
   - id: name
     label: Camera Gear Inventory
     type: text
+  shape: rounded
 - allowed_asset_types: []
   allowed_children:
   - camera_gear_asset
+  color: '#3b82f6'
   id: camera_gear_category
   label: Camera Gear Category
   properties:
@@ -62,8 +80,10 @@ node_types:
     id: name
     label: Category Name
     type: text
+  shape: roundedSquare
 - allowed_asset_types: []
   allowed_children: []
+  color: '#0ea5e9'
   id: camera_gear_asset
   label: Camera Gear
   properties:
@@ -98,9 +118,11 @@ node_types:
   - id: notes
     label: Notes
     type: text
+  shape: circle
 - allowed_asset_types: []
   allowed_children:
   - part_category
+  color: '#ef4444'
   icon: cog
   id: car_parts_inventory
   label: Car Parts Inventory
@@ -108,9 +130,11 @@ node_types:
   - id: name
     label: Car Parts Inventory
     type: text
+  shape: hexagon
 - allowed_asset_types: []
   allowed_children:
   - part_asset
+  color: '#f87171'
   icon: cog
   id: part_category
   label: Part Category
@@ -119,8 +143,10 @@ node_types:
     id: name
     label: Category Name
     type: text
+  shape: rounded
 - allowed_asset_types: []
   allowed_children: []
+  color: '#fb7185'
   icon: cog
   id: part_asset
   label: Car Part
@@ -150,24 +176,28 @@ node_types:
       name: Ordered
     - indicator_id: partial
       name: Arrived
-    - name: Installed
-      indicator_id: filled
+    - indicator_id: filled
+      name: Installed
     type: select
   - id: notes
     label: Notes
     type: text
+  shape: circle
 - allowed_asset_types: []
   allowed_children:
   - tool_category
+  color: '#84cc16'
   id: tools_inventory
   label: Tools Inventory
   properties:
   - id: name
     label: Tools Inventory
     type: text
+  shape: hexagon
 - allowed_asset_types: []
   allowed_children:
   - tool_asset
+  color: '#bfdbfe'
   id: tool_category
   label: Tool Category
   properties:
@@ -175,8 +205,10 @@ node_types:
     id: name
     label: Category Name
     type: text
+  shape: rounded
 - allowed_asset_types: []
   allowed_children: []
+  color: '#86efac'
   id: tool_asset
   label: Tool
   properties:
@@ -214,10 +246,12 @@ node_types:
   - id: notes
     label: Notes
     type: text
+  shape: circle
 - allowed_asset_types: []
   allowed_children:
   - episode
   - task
+  color: '#8b5cf6'
   icon: film
   id: season
   label: Season
@@ -232,13 +266,27 @@ node_types:
     indicator_set: status
     label: Status
     options:
-    - indicator_id: empty
+    - id: 7d8a9c3b-1234-5678-90ab-cdef12345678
+      indicator_id: empty
       name: Planning
-    - indicator_id: partial
+    - id: 5fbab80b-88a5-f00c-5f7e-1f5716193531
+      indicator_id: partial
       name: In Production
-    - indicator_id: filled
+    - id: 34423cc2-d2c5-c699-fa1c-605ca72ee331
+      indicator_id: filled
       name: Released
     type: select
+    velocityConfig:
+      enabled: true
+      mode: status
+      penaltyMode: false
+      statusScores:
+        In Production: 1
+        Planning: -1
+        Released: -1
+  shape: circle
+  velocityConfig:
+    penaltyScore: false
 - allowed_asset_types: []
   allowed_children:
   - task
@@ -247,6 +295,7 @@ node_types:
   - uses_camera_gear
   - uses_car_part
   - uses_tool
+  color: '#06b6d4'
   id: episode
   label: Episode
   properties:
@@ -275,10 +324,20 @@ node_types:
     - indicator_id: filled
       name: Uploaded
     type: select
+    velocityConfig:
+      enabled: true
+      mode: status
+      statusScores:
+        Planning: -1
+        Shooting: 1
+        Editing: 2
+        Uploaded: -1
+  shape: roundedSquare
 - allowed_asset_types:
   - camera_gear_asset
   allowed_children:
   - uses_camera_gear
+  color: '#10b981'
   icon: film
   id: footage
   label: Footage Clip
@@ -305,8 +364,10 @@ node_types:
     - indicator_id: filled
       name: Complete
     type: select
+  shape: circle
 - allowed_asset_types: []
   allowed_children: []
+  color: '#8b7355'
   id: location_scout
   label: Location Scout
   properties:
@@ -325,12 +386,14 @@ node_types:
   - id: scouted_date
     label: Scout Date
     type: date
+  shape: rounded
 - allowed_asset_types: []
   allowed_children:
   - asset_reference
   - uses_camera_gear
   - uses_car_part
   - uses_tool
+  color: '#f59e0b'
   has_time_log: true
   id: task
   label: Task
@@ -363,6 +426,7 @@ node_types:
   - id: notes
     label: Notes
     type: editor
+  shape: roundedSquare
 - allowed_asset_types:
   - camera_gear_asset
   allowed_children: []

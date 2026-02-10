@@ -12,6 +12,7 @@ from flask import Blueprint, jsonify, request, current_app
 from typing import Optional, Dict, Any
 from uuid import UUID
 import logging
+from backend.handlers.commands.velocity_commands import UpdateBlockingRelationshipCommand
 
 velocity_bp = Blueprint('velocity', __name__, url_prefix='/api/v1')
 logger = logging.getLogger(__name__)
@@ -41,11 +42,17 @@ def _convert_blueprint_to_schema(blueprint) -> Optional[Dict]:
             nt_dict = {
                 'id': node_type.id if hasattr(node_type, 'id') else str(node_type),
             }
-            # Extract velocityConfig if it exists
+            
+            # Extract node-level velocityConfig if it exists
             if hasattr(node_type, '_extra_props') and isinstance(node_type._extra_props, dict):
                 nt_dict['velocityConfig'] = node_type._extra_props.get('velocityConfig', {})
             elif hasattr(node_type, 'velocityConfig'):
                 nt_dict['velocityConfig'] = node_type.velocityConfig
+            
+            # Extract properties with their velocity configs
+            # Now NodeTypeDef preserves properties, so we can use them directly
+            if hasattr(node_type, 'properties') and node_type.properties:
+                nt_dict['properties'] = node_type.properties
             
             schema['node_types'].append(nt_dict)
         return schema
@@ -69,13 +76,43 @@ def _get_velocity_context(session_id: str):
     graph = session_data.get('graph')
     if not graph:
         return None, None, None
-    
+
     # Extract nodes dict from the graph object
     graph_nodes = graph.nodes if hasattr(graph, 'nodes') else {}
-    
-    # Get schema from session and convert if needed
-    blueprint = session_data.get('blueprint')
-    schema = _convert_blueprint_to_schema(blueprint)
+
+    schema = None
+
+    template_id = None
+    if hasattr(graph, 'template_id') and graph.template_id:
+        template_id = graph.template_id
+    elif session_data.get('template_id'):
+        template_id = session_data.get('template_id')
+
+    # Prefer session-cached velocity schema from reload-blueprint
+    velocity_schema = session_data.get('velocity_schema')
+    if isinstance(velocity_schema, dict) and velocity_schema.get('node_types'):
+        schema = velocity_schema
+
+    # Fall back to loading from disk to ensure option UUIDs and latest edits are applied
+    if schema is None:
+        if template_id:
+            try:
+                from backend.infra.schema_loader import SchemaLoader
+
+                loader = SchemaLoader()
+                blueprint = loader.load(f'{template_id}.yaml')
+                schema = _convert_blueprint_to_schema(blueprint)
+            except Exception as e:
+                logger.error(f'Error loading schema from template: {e}')
+                schema = None
+        else:
+            logger.warning('Velocity schema load skipped: no template_id available')
+
+    # Final fallback to the in-session blueprint
+    if schema is None:
+        blueprint = session_data.get('blueprint')
+        if blueprint:
+            schema = _convert_blueprint_to_schema(blueprint)
     
     # Get blocking relationships from session metadata
     blocking_relationships = session_data.get('blocking_relationships', [])
@@ -103,10 +140,13 @@ def get_velocity_ranking(session_id: str):
         graph_nodes, schema, blocking_graph = _get_velocity_context(session_id)
         
         if graph_nodes is None:
+            logger.debug(f'No graph found in session {session_id}')
             return jsonify({
                 'nodes': [],
                 'timestamp': int(__import__('time').time() * 1000),
             })
+        
+        logger.debug(f'Found {len(graph_nodes)} nodes in graph for session {session_id}')
         
         # Import and use velocity engine
         from backend.core.velocity_engine import VelocityEngine
@@ -114,10 +154,25 @@ def get_velocity_ranking(session_id: str):
         engine = VelocityEngine(graph_nodes, schema, blocking_graph)
         ranking = engine.get_ranking()
         
+        logger.debug(f'Velocity ranking calculated: {len(ranking)} nodes')
+        
         # Format response
         nodes = []
+        filtered_count = 0
         for node_id, calc in ranking:
+            if calc.total_velocity < 0:
+                filtered_count += 1
+                continue
+            
+            # Try both string and UUID keys (graph_nodes may use UUID objects as keys)
             node = graph_nodes.get(node_id, {})
+            if not node or node == {}:
+                try:
+                    from uuid import UUID
+                    node = graph_nodes.get(UUID(node_id), {})
+                except (ValueError, KeyError):
+                    node = {}
+            
             # Get node properties safely
             if hasattr(node, 'properties'):
                 node_name = node.properties.get('name', 'Unnamed')
@@ -140,6 +195,10 @@ def get_velocity_ranking(session_id: str):
                 'blockedByNodes': calc.blocked_by_nodes,
                 'blocksNodeIds': calc.blocks_node_ids,
             })
+        
+        logger.info(f'Velocity ranking: {len(ranking)} total, {filtered_count} filtered (negative), {len(nodes)} returned')
+        if len(nodes) > 0:
+            logger.info(f'Top 5 nodes: {[{n["nodeName"]: n["totalVelocity"]} for n in nodes[:5]]}')
         
         return jsonify({
             'nodes': nodes,
@@ -242,6 +301,10 @@ def update_blocking_relationship(session_id: str, node_id: str):
         graph = session_data.get('graph')
         if not graph:
             return jsonify({'error': 'No project loaded in session'}), 400
+
+        dispatcher = session_data.get('dispatcher')
+        if not dispatcher:
+            return jsonify({'error': 'Dispatcher not initialized for session'}), 400
         
         # Get nodes from graph
         nodes = graph.nodes if hasattr(graph, 'nodes') else {}
@@ -258,24 +321,31 @@ def update_blocking_relationship(session_id: str, node_id: str):
             session_data['blocking_relationships'] = []
         
         relationships = session_data['blocking_relationships']
-        
-        # Remove existing blocking for this node (compare as strings)
+
         node_id_str = str(node_uuid)
-        relationships[:] = [
-            rel for rel in relationships 
-            if rel.get('blockedNodeId') != node_id_str
-        ]
+        new_blocking_id_str = str(blocking_node_uuid) if blocking_node_uuid else None
+
+        command = UpdateBlockingRelationshipCommand(
+            blocked_node_id=node_id_str,
+            new_blocking_node_id=new_blocking_id_str,
+            relationships=relationships,
+            session_id=session_id,
+        )
+
+        dispatcher.execute(command)
         
-        # Add new relationship if blocking_node_id provided
+        # Emit node-updated event to trigger velocity recalculation in UI
+        from backend.api.broadcaster import emit_node_updated
+        emit_node_updated(session_id, node_id_str)
         if blocking_node_uuid:
-            relationships.append({
-                'blockedNodeId': node_id_str,
-                'blockingNodeId': str(blocking_node_uuid),
-            })
-        
+            # Also emit for the blocking node since its velocity may change
+            emit_node_updated(session_id, str(blocking_node_uuid))
+
         return jsonify({
             'success': True,
             'message': f'Blocking relationship updated for node {node_id}',
+            'undo_available': len(dispatcher.undo_stack) > 0,
+            'redo_available': len(dispatcher.redo_stack) > 0,
         })
     
     except Exception as e:

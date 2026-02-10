@@ -48,14 +48,16 @@ const DEBUG_TREE = process.env.NODE_ENV !== 'production';
 const RECENT_FILES_KEY = 'talus-tally:recent-files';
 import { useGraphStore } from './store';
 import { useGraphSync } from './hooks';
-import { apiClient, type Node, type Template, type Graph, type TemplateSchema, API_BASE_URL } from './api/client';
+import { apiClient, type Node, type Template, type Graph, type TemplateSchema, type VelocityScore, API_BASE_URL } from './api/client';
 import { normalizeGraph } from './utils/graph';
 import { validateTemplateSchema, safeExtractOptions } from './utils/templateValidation';
 
 function App() {
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
+  const [toolsSelectedNodeId, setToolsSelectedNodeId] = useState<string | null>(null);
   const [inspectorOpen, setInspectorOpen] = useState(true);
   const [activeView, setActiveView] = useState<ViewType>('graph');
+  const [activeToolsTab, setActiveToolsTab] = useState<'velocity' | 'blocking'>('velocity');
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isDirty, setIsDirty] = useState(false);  // Track dirty state
   const isDirtyRef = useRef(false);  // Ref to access current dirty state in callbacks
@@ -83,6 +85,13 @@ function App() {
   const [assetCategoryParentId, setAssetCategoryParentId] = useState<string | null>(null);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [templateSchema, setTemplateSchema] = useState<TemplateSchema | null>(null);
+  const [blockedByNodes, setBlockedByNodes] = useState<string[]>([]);
+  const [blocksNodes, setBlocksNodes] = useState<string[]>([]);
+  const [velocityScore, setVelocityScore] = useState<VelocityScore | null>(null);
+  const [blockingNodeCount, setBlockingNodeCount] = useState(0);
+  const [blockingEdgeCount, setBlockingEdgeCount] = useState(0);
+  const [blockingFitSignal, setBlockingFitSignal] = useState(0);
+  const [blockingGraphRefreshSignal, setBlockingGraphRefreshSignal] = useState(0);
   const [lastFilePath, setLastFilePath] = useState<string | null>(null);
   const [currentTemplateId, setCurrentTemplateId] = useState<string | null>(null);
   const [expandAllSignal, setExpandAllSignal] = useState(0);
@@ -453,6 +462,62 @@ function App() {
     }
   }, [selectedNode, storeNodes]);
 
+  const fetchBlockingRelationships = useCallback(async () => {
+    const currentlySelectedNode = activeView === 'graph' ? selectedNode : toolsSelectedNodeId;
+    if (!currentlySelectedNode || !sessionId) {
+      setBlockedByNodes([]);
+      setBlocksNodes([]);
+      return;
+    }
+
+    try {
+      const result = await apiClient.getBlockingGraph(sessionId);
+      const edges = result.relationships || [];
+
+      // Find nodes that block the selected node
+      const blocked_by = edges
+        .filter(e => e.blockedNodeId === currentlySelectedNode)
+        .map(e => e.blockingNodeId);
+
+      // Find nodes that the selected node blocks
+      const blocks = edges
+        .filter(e => e.blockingNodeId === currentlySelectedNode)
+        .map(e => e.blockedNodeId);
+
+      setBlockedByNodes(blocked_by);
+      setBlocksNodes(blocks);
+    } catch (error) {
+      console.error('Failed to fetch blocking relationships:', error);
+    }
+  }, [activeView, selectedNode, sessionId, toolsSelectedNodeId]);
+
+  // Fetch blocking relationships based on active view
+  useEffect(() => {
+    fetchBlockingRelationships();
+  }, [fetchBlockingRelationships]);
+
+  // Fetch velocity score for selected node
+  const fetchVelocity = useCallback(async () => {
+    const currentlySelectedNode = activeView === 'graph' ? selectedNode : toolsSelectedNodeId;
+    if (!currentlySelectedNode || !sessionId) {
+      setVelocityScore(null);
+      return;
+    }
+
+    try {
+      const score = await apiClient.getNodeVelocity(sessionId, currentlySelectedNode);
+      setVelocityScore(score);
+    } catch (error) {
+      console.error('Failed to fetch node velocity:', error);
+      setVelocityScore(null);
+    }
+  }, [activeView, selectedNode, sessionId, toolsSelectedNodeId]);
+
+  // Fetch velocity score when selected node changes
+  useEffect(() => {
+    fetchVelocity();
+  }, [fetchVelocity]);
+
   // Convert node properties to inspector format
   const getNodeProperties = useCallback((): NodeProperty[] => {
     if (!selectedNodeData || !templateSchema) {
@@ -583,6 +648,141 @@ function App() {
   // Memoize computed values for inspector
   const nodeProperties = useMemo(() => getNodeProperties(), [getNodeProperties]);
   const linkedAsset = useMemo(() => getLinkedAssetMetadata(), [getLinkedAssetMetadata]);
+
+  // Determine which node is active based on the current view
+  const currentSelectedNodeId = useMemo(() => {
+    return activeView === 'graph' ? selectedNode : toolsSelectedNodeId;
+  }, [activeView, selectedNode, toolsSelectedNodeId]);
+
+  const currentSelectedNodeData = useMemo(() => {
+    return currentSelectedNodeId ? storeNodes[currentSelectedNodeId] : null;
+  }, [currentSelectedNodeId, storeNodes]);
+
+  const currentNodeProperties = useMemo(() => {
+    if (!currentSelectedNodeData || !templateSchema) {
+      return [];
+    }
+
+    // Find the node type schema
+    const nodeTypeSchema = templateSchema.node_types.find(nt => nt.id === currentSelectedNodeData.type);
+    if (!nodeTypeSchema) {
+      return [];
+    }
+
+    // Start with name as the first editable property
+    const nameProperty: NodeProperty = {
+      id: 'name',
+      name: 'Name',
+      type: 'text',
+      value: currentSelectedNodeData.properties?.name || '',
+      required: true,
+    };
+
+    // Build properties from schema
+    const schemaProperties = nodeTypeSchema.properties.filter((prop) => prop.id !== 'name').map((prop) => {
+      let value = currentSelectedNodeData.properties?.[prop.id];
+      if (value === undefined && prop.id === 'name') {
+        value = currentSelectedNodeData.properties?.name || '';
+      }
+      let type: NodeProperty['type'] = 'text';
+      if (prop.type === 'number') type = 'number';
+      else if (prop.type === 'select') type = 'select';
+      else if (prop.type === 'textarea') type = 'textarea';
+      else if (prop.type === 'currency') type = 'currency';
+      else if (prop.type === 'date') type = 'date';
+      else if (prop.type === 'checkbox') type = 'checkbox';
+      else if (prop.type === 'editor') type = 'editor';
+      // Build options for select - use safe extraction to handle malformed data
+      let options = undefined;
+      if (prop.type === 'select') {
+        options = safeExtractOptions(prop);
+      }
+      
+      // Extract markup tokens if this is an editor field with markup_profile
+      let markupTokens = undefined;
+      if (prop.type === 'editor' && (prop as any).markup_tokens) {
+        markupTokens = (prop as any).markup_tokens;
+      }
+      
+      return {
+        id: prop.id,
+        name: prop.name,
+        type,
+        value: value ?? '',
+        options,
+        required: prop.required,
+        markupTokens,
+      };
+    });
+
+    return [nameProperty, ...schemaProperties];
+  }, [currentSelectedNodeData, templateSchema]);
+
+  // Get linked asset metadata for the currently selected node (works for both views)
+  const currentLinkedAsset = useMemo(() => {
+    if (!currentSelectedNodeData) return null;
+    if (!templateSchema) {
+      return null;
+    }
+
+    // Check if this node has an asset_id property (like asset_reference nodes)
+    const assetId = currentSelectedNodeData.properties?.asset_id;
+    if (!assetId) return null;
+
+    // Find the asset node in the store
+    const assetNode = storeNodes[assetId];
+    if (!assetNode) return null;
+
+    // Get the schema for the asset node type
+    const assetTypeSchema = templateSchema?.node_types?.find(nt => nt.id === assetNode.type);
+    if (!assetTypeSchema) {
+      return null;
+    }
+
+    // Build asset properties
+    const assetProperties = (assetTypeSchema.properties || []).map((prop) => {
+      let value = assetNode.properties?.[prop.id];
+      if (value === undefined && prop.id === 'name') {
+        value = assetNode.properties?.name || '';
+      }
+      let type: NodeProperty['type'] = 'text';
+      if (prop.type === 'number') type = 'number';
+      else if (prop.type === 'select') type = 'select';
+      else if (prop.type === 'textarea') type = 'textarea';
+      else if (prop.type === 'currency') type = 'currency';
+      else if (prop.type === 'date') type = 'date';
+      else if (prop.type === 'checkbox') type = 'checkbox';
+      else if (prop.type === 'editor') type = 'editor';
+      // Build options for select - use safe extraction to handle malformed data
+      let options = undefined;
+      if (prop.type === 'select') {
+        options = safeExtractOptions(prop);
+      }
+      
+      // Extract markup tokens if this is an editor field with markup_profile
+      let markupTokens = undefined;
+      if (prop.type === 'editor' && (prop as any).markup_tokens) {
+        markupTokens = (prop as any).markup_tokens;
+      }
+      
+      return {
+        id: prop.id,
+        name: prop.name,
+        type,
+        value: value ?? '',
+        options,
+        required: prop.required,
+        markupTokens,
+      };
+    });
+
+    return {
+      nodeId: assetNode.id,
+      nodeType: assetNode.type,
+      name: assetNode.properties?.name || 'Asset',
+      properties: assetProperties,
+    };
+  }, [currentSelectedNodeData, templateSchema, storeNodes]);
 
   const ensureSession = useCallback(async (): Promise<string> => {
     if (sessionIdRef.current) {
@@ -919,7 +1119,12 @@ function App() {
 
     try {
       console.log(`[File Open] Loading graph into session ${sid}...`);
-      const loadResult = await apiClient.loadGraphIntoSession(sid, normalizedGraph, templateId);
+      const loadResult = await apiClient.loadGraphIntoSession(
+        sid,
+        normalizedGraph,
+        templateId,
+        parsed.blocking_relationships || []
+      );
       console.log('✓ Graph loaded into backend session');
       finalGraph = normalizeGraph(loadResult.graph ?? loadResult);
       setCurrentTemplateId(templateId);
@@ -994,10 +1199,12 @@ function App() {
       console.log('✓ Undo executed:', result);
       const graph = normalizeGraph(result.graph ?? result);
       setCurrentGraph(graph);
+      await fetchBlockingRelationships();
+      setBlockingGraphRefreshSignal((prev) => prev + 1);
     } catch (err) {
       console.error('✗ Undo failed:', err);
     }
-  }, [normalizeGraph, sessionId, setCurrentGraph]);
+  }, [fetchBlockingRelationships, normalizeGraph, sessionId, setCurrentGraph]);
 
   const handleRedo = useCallback(async () => {
     if (!sessionId) return;
@@ -1006,14 +1213,36 @@ function App() {
       console.log('✓ Redo executed:', result);
       const graph = normalizeGraph(result.graph ?? result);
       setCurrentGraph(graph);
+      await fetchBlockingRelationships();
+      setBlockingGraphRefreshSignal((prev) => prev + 1);
     } catch (err) {
       console.error('✗ Redo failed:', err);
     }
-  }, [normalizeGraph, sessionId, setCurrentGraph]);
+  }, [fetchBlockingRelationships, normalizeGraph, sessionId, setCurrentGraph]);
 
   const toggleInspector = useCallback(() => {
     setInspectorOpen(prev => !prev);
   }, []);
+
+  const handleClearBlocks = useCallback(async (nodeId: string) => {
+    if (!sessionId) return;
+
+    try {
+      // Clear all blocks FROM this node (blocks it has)
+      for (const blockedId of blocksNodes) {
+        await apiClient.updateBlockingRelationship(sessionId, blockedId, null);
+      }
+
+      setBlockingGraphRefreshSignal((prev) => prev + 1);
+      await fetchBlockingRelationships();
+      await fetchVelocity(); // Refresh velocity since blocking affects scores
+      setIsDirty(true);
+      console.log(`✓ Cleared all blocks for node ${nodeId}`);
+    } catch (error) {
+      console.error('Failed to clear blocking relationships:', error);
+      alert('Failed to clear blocking relationships');
+    }
+  }, [blocksNodes, fetchBlockingRelationships, fetchVelocity, sessionId]);
 
   const handleExpandAll = useCallback(() => {
     setExpandAllSignal((prev) => prev + 1);
@@ -1021,6 +1250,15 @@ function App() {
 
   const handleCollapseAll = useCallback(() => {
     setCollapseAllSignal((prev) => prev + 1);
+  }, []);
+
+  const handleBlockingFitToView = useCallback(() => {
+    setBlockingFitSignal((prev) => prev + 1);
+  }, []);
+
+  const handleBlockingCountsChange = useCallback((nodeCount: number, edgeCount: number) => {
+    setBlockingNodeCount(nodeCount);
+    setBlockingEdgeCount(edgeCount);
   }, []);
 
   const handleCloseApp = useCallback(async () => {
@@ -1340,6 +1578,16 @@ function App() {
     const setupCloseHandler = async () => {
       console.log('[CLOSE HANDLER SETUP] Starting setup');
       try {
+        let attempts = 0;
+        while (!(window as any).__TAURI__ && !(window as any).__TAURI_INTERNALS__ && attempts < 50) {
+          await new Promise(resolve => setTimeout(resolve, 50));
+          attempts++;
+        }
+        if (!(window as any).__TAURI__ && !(window as any).__TAURI_INTERNALS__) {
+          console.log('[CLOSE HANDLER SETUP] Tauri not available, skipping close handler');
+          return;
+        }
+
         const { getCurrentWindow } = await import('@tauri-apps/api/window');
         const { listen } = await import('@tauri-apps/api/event');
         const appWindow = getCurrentWindow();
@@ -1610,20 +1858,26 @@ function App() {
       <Toolbar
         activeView={activeView}
         onViewChange={setActiveView}
+        activeToolsTab={activeToolsTab}
+        onToolsTabChange={setActiveToolsTab}
+        blockingNodeCount={blockingNodeCount}
+        blockingEdgeCount={blockingEdgeCount}
+        onBlockingFitToView={handleBlockingFitToView}
       />
 
       {/* Main Content - Conditional based on active view */}
-      {activeView === 'graph' ? (
-      <div className="flex-1 flex overflow-hidden">{/* Main Tree View */}
-        <main className="flex-1 bg-bg-dark border-r border-border overflow-auto p-4">
-          {treeNodes.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-fg-secondary">
-              <div className="text-lg mb-4">No project loaded</div>
-              <div className="text-sm">Use File → New Project to get started</div>
-            </div>
-          ) : (
-            <TreeView
-              nodes={treeNodes}
+      <div className="flex-1 flex overflow-hidden">
+        {activeView === 'graph' ? (
+          <div className="flex-1 overflow-hidden flex flex-col">{/* Main Tree View */}
+            <main className="flex-1 bg-bg-dark border-r border-border overflow-auto p-4">
+              {treeNodes.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-fg-secondary">
+                  <div className="text-lg mb-4">No project loaded</div>
+                  <div className="text-sm">Use File → New Project to get started</div>
+                </div>
+              ) : (
+                <TreeView
+                  nodes={treeNodes}
               onSelectNode={setSelectedNode}
               expandAllSignal={expandAllSignal}
               collapseAllSignal={collapseAllSignal}
@@ -1783,65 +2037,50 @@ function App() {
             />
           )}
         </main>
+          </div>
+        ) : (
+          /* Tools View */
+          <div className="flex-1 overflow-hidden">
+            <ToolsView 
+              sessionId={sessionId} 
+              nodes={storeNodes} 
+              onNodeSelect={setToolsSelectedNodeId}
+              activeTab={activeToolsTab}
+              onBlockingCountsChange={handleBlockingCountsChange}
+              onBlockingDirtyChange={setIsDirty}
+              blockingFitToViewSignal={blockingFitSignal}
+              blockingRefreshSignal={blockingGraphRefreshSignal}
+              blockingViewConfig={templateSchema?.blocking_view}
+              templateSchema={templateSchema}
+            />
+          </div>
+        )}
 
-        {/* Inspector Panel - Collapsible */}
+        {/* Inspector Panel - Collapsible - Unified across all views */}
         {inspectorOpen && (
           <aside className="w-80 h-full bg-bg-darker border-l border-border flex flex-col flex-shrink-0">
             <Inspector
-              nodeId={selectedNode || undefined}
-              nodeName={selectedNodeData?.properties?.name || selectedNode || undefined}
-              nodeType={selectedNodeData?.type || undefined}
-              properties={nodeProperties}
-              linkedAsset={linkedAsset}
-              orphanedProperties={selectedNodeData?.metadata?.orphaned_properties as Record<string, string | number> | undefined}
-              onOrphanedPropertyDelete={(propKey) => {
-                if (!selectedNodeData || !currentGraph) return;
-                
-                // Remove the orphaned property from metadata
-                const updatedMetadata = { ...selectedNodeData.metadata };
-                if (updatedMetadata.orphaned_properties) {
-                  delete updatedMetadata.orphaned_properties[propKey];
-                  
-                  // If no more orphaned properties, remove the object
-                  if (Object.keys(updatedMetadata.orphaned_properties).length === 0) {
-                    delete updatedMetadata.orphaned_properties;
-                  }
-                }
-                
-                // Update the node's metadata
-                const updatedNode: Node = {
-                  ...selectedNodeData,
-                  metadata: updatedMetadata
-                };
-                
-                // Update the graph
-                const updatedGraph: Graph = {
-                  id: currentGraph.id,
-                  nodes: currentGraph.nodes.map(n => 
-                    n.id === selectedNodeData.id ? updatedNode : n
-                  ),
-                  edges: currentGraph.edges
-                };
-                
-                setCurrentGraph(updatedGraph);
-                setIsDirty(true);
-                console.log(`✓ Deleted orphaned property: ${propKey}`);
-              }}
+              nodeId={currentSelectedNodeId || undefined}
+              nodeName={currentSelectedNodeData?.properties?.name || currentSelectedNodeId || undefined}
+              nodeType={currentSelectedNodeData?.type || undefined}
+              properties={currentNodeProperties}
+              linkedAsset={activeView === 'graph' && currentLinkedAsset ? currentLinkedAsset : undefined}
+              orphanedProperties={activeView === 'graph' ? currentSelectedNodeData?.metadata?.orphaned_properties as Record<string, string | number> | undefined : undefined}
               onPropertyChange={(propId, value) => {
-                if (!selectedNodeData) {
+                if (!currentSelectedNodeData) {
                   alert('No node selected');
                   return;
                 }
                 console.log('[onPropertyChange] Starting property update:', {
-                  nodeId: selectedNodeData.id,
+                  nodeId: currentSelectedNodeData.id,
                   propId,
-                  oldValue: selectedNodeData.properties?.[propId],
+                  oldValue: currentSelectedNodeData.properties?.[propId],
                   newValue: value
                 });
                 safeExecuteCommand('UpdateProperty', {
-                    node_id: selectedNodeData.id,
+                    node_id: currentSelectedNodeData.id,
                     property_id: propId,
-                    old_value: selectedNodeData.properties?.[propId],
+                    old_value: currentSelectedNodeData.properties?.[propId],
                     new_value: value,
                   })
                   .then((result) => {
@@ -1890,16 +2129,15 @@ function App() {
                     alert('Failed to update asset property');
                   });
               }}
+              blockedByNodes={blockedByNodes}
+              blocksNodes={blocksNodes}
+              nodes={storeNodes}
+              onClearBlocks={handleClearBlocks}
+              velocityScore={velocityScore || undefined}
             />
           </aside>
         )}
       </div>
-      ) : (
-        /* Tools View */
-        <div className="flex-1 overflow-hidden">
-          <ToolsView sessionId={sessionId} nodes={storeNodes} />
-        </div>
-      )}
 
       {/* New Project Dialog */}
       {showNewProjectDialog && (

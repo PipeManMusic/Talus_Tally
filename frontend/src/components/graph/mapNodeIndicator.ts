@@ -26,9 +26,14 @@ export async function mapNodeIndicator(node: any): Promise<any> {
       }
     }
   }
-  return {
+  const result = {
     ...node,
     statusIndicatorSvg,
     statusText,
   };
+  if (node.schema_shape || node.schema_color) {
+    console.log('[mapNodeIndicator] Node', node.id, 'has shape:', node.schema_shape, 'color:', node.schema_color);
+  }
+  return result;
 }
+

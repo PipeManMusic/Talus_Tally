@@ -42,6 +42,8 @@ export interface Node {
   statusIndicatorSvg?: string;
   statusText?: string;
   icon_id?: string;
+  schema_shape?: string;
+  schema_color?: string;
   allowed_children?: string[]; // From backend schema enrichment
   parent_id?: string;
   metadata?: {
@@ -101,6 +103,16 @@ export interface TemplateSchema {
   name: string;
   description: string;
   node_types: NodeTypeSchema[];
+  blocking_view?: {
+    node_size?: {
+      base_width?: number;
+      base_height?: number;
+      max_depth?: number;
+      min_scale?: number;
+      max_scale?: number;
+      direction?: 'up' | 'down';
+    };
+  };
 }
 
 export interface ProjectResponse {
@@ -569,11 +581,20 @@ export class APIClient {
     return response.json();
   }
 
-  async loadGraphIntoSession(sessionId: string, graph: any, templateId: string | null): Promise<any> {
+  async loadGraphIntoSession(
+    sessionId: string,
+    graph: any,
+    templateId: string | null,
+    blockingRelationships: Array<{ blockedNodeId: string; blockingNodeId: string }> = []
+  ): Promise<any> {
     const response = await fetch(`${this.baseUrl}/api/v1/sessions/${sessionId}/load-graph`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ graph, template_id: templateId }),
+      body: JSON.stringify({
+        graph,
+        template_id: templateId,
+        blocking_relationships: blockingRelationships,
+      }),
     });
     if (!response.ok) {
       throw new Error('Failed to load graph into session');
@@ -825,19 +846,10 @@ export class APIClient {
     blockedNodeId: string,
     blockingNodeId: string | null
   ): Promise<any> {
-    const response = await fetch(
-      `${this.baseUrl}/api/v1/sessions/${sessionId}/nodes/${blockedNodeId}/blocking`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ blocking_node_id: blockingNodeId }),
-      }
-    );
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || 'Failed to update blocking relationship');
-    }
-    return response.json();
+    return this.executeCommand(sessionId, 'UpdateBlockingRelationship', {
+      blocked_node_id: blockedNodeId,
+      blocking_node_id: blockingNodeId,
+    });
   }
 
   async getBlockingGraph(sessionId: string): Promise<{ relationships: BlockingRelationship[] }> {
@@ -856,6 +868,7 @@ export class APIClient {
     onNodeUpdated?: (data: any) => void;
     onNodeDeleted?: (data: any) => void;
     onDisconnect?: () => void;
+    sessionId?: string | null;
   }): Socket {
     // Reuse existing socket if already connected
     if (this.socket && this.socket.connected) {
@@ -867,22 +880,28 @@ export class APIClient {
       this.socket.disconnect();
     }
 
-    this.socket = io(SOCKET_URL);
+    this.socket = io(`${SOCKET_URL}/graph`, {
+      transports: ['polling'],
+      upgrade: false,
+    });
 
-    if (callbacks.onConnect) {
-      this.socket.on('connect', callbacks.onConnect);
-    }
+    this.socket.on('connect', () => {
+      if (callbacks.sessionId) {
+        this.socket?.emit('join_session', { session_id: callbacks.sessionId });
+      }
+      callbacks.onConnect?.();
+    });
 
     if (callbacks.onNodeCreated) {
-      this.socket.on('node:created', callbacks.onNodeCreated);
+      this.socket.on('node-created', callbacks.onNodeCreated);
     }
 
     if (callbacks.onNodeUpdated) {
-      this.socket.on('node:updated', callbacks.onNodeUpdated);
+      this.socket.on('node-updated', callbacks.onNodeUpdated);
     }
 
     if (callbacks.onNodeDeleted) {
-      this.socket.on('node:deleted', callbacks.onNodeDeleted);
+      this.socket.on('node-deleted', callbacks.onNodeDeleted);
     }
 
     if (callbacks.onDisconnect) {

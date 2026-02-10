@@ -69,6 +69,8 @@ interface ExtendedNode extends Omit<Node, 'indicator_id' | 'indicator_set'> {
   indicator_set?: string | number;
   statusIndicatorSvg?: string;
   statusText?: string;
+  schema_shape?: string;
+  schema_color?: string;
 }
 
 interface CustomNodeData {
@@ -87,7 +89,7 @@ export default function CustomNode({ data, selected }: NodeProps<CustomNodeData>
   
   // Debug log for indicator rendering
   if (nodeData) {
-    console.log('[CustomNode] Render', nodeData.id, 'indicator_id:', nodeData.indicator_id, 'indicator_set:', nodeData.indicator_set, 'status:', nodeData.properties?.status, 'SVG:', nodeData.statusIndicatorSvg ? nodeData.statusIndicatorSvg.slice(0, 40) + '...' : null, 'Text:', nodeData.statusText);
+    console.log('[CustomNode] Render', nodeData.id, 'indicator_id:', nodeData.indicator_id, 'indicator_set:', nodeData.indicator_set, 'status:', nodeData.properties?.status, 'SVG:', nodeData.statusIndicatorSvg ? nodeData.statusIndicatorSvg.slice(0, 40) + '...' : null, 'Text:', nodeData.statusText, 'schema_shape:', nodeData.schema_shape, 'schema_color:', nodeData.schema_color);
   }
 
   // Fetch theme styling
@@ -120,15 +122,37 @@ export default function CustomNode({ data, selected }: NodeProps<CustomNodeData>
     return colors[type] || colors.default;
   };
 
-  const bgColor = getNodeColor(nodeType);
+  // Get border radius based on shape
+  const getBorderRadius = (shape?: string) => {
+    const shapes: Record<string, string> = {
+      circle: '50%',
+      rounded: '16px',
+      roundedSquare: '12px',
+      hexagon: '8px',
+      default: '8px',
+    };
+    return shapes[shape || 'default'] || shapes.default;
+  };
+
+  const bgColor = nodeData.schema_color || getNodeColor(nodeType);
+  const borderRadius = getBorderRadius(nodeData.schema_shape);
+  
+  console.log('[CustomNode] Applying styles:', {
+    id: nodeData.id,
+    shape: nodeData.schema_shape,
+    color: nodeData.schema_color,
+    borderRadius,
+    bgColor,
+  });
 
   return (
     <div
       className={`custom-node ${selected ? 'selected' : ''}`}
+      data-shape={nodeData.schema_shape}
       style={{
         background: bgColor,
         border: selected ? '2px solid #e63946' : '2px solid #a8dadc',
-        borderRadius: '8px',
+        borderRadius,
         padding: '12px 8px',
         minWidth: '100px',
         color: '#f1faee',

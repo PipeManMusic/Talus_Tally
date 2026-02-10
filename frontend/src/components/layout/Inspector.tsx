@@ -21,6 +21,19 @@ export interface LinkedAssetMetadata {
   properties: NodeProperty[];
 }
 
+export interface VelocityScore {
+  nodeId: string;
+  baseScore: number;
+  inheritedScore: number;
+  statusScore: number;
+  numericalScore: number;
+  blockingPenalty: number;
+  totalVelocity: number;
+  isBlocked: boolean;
+  blockedByNodes?: string[];
+  blocksNodeIds?: string[];
+}
+
 interface InspectorProps {
   nodeId?: string;
   nodeName?: string;
@@ -31,6 +44,11 @@ interface InspectorProps {
   onLinkedAssetPropertyChange?: (propId: string, value: string | number) => void;
   orphanedProperties?: Record<string, string | number>;
   onOrphanedPropertyDelete?: (propKey: string) => void;
+  blockedByNodes?: string[];
+  blocksNodes?: string[];
+  nodes?: Record<string, any>;
+  onClearBlocks?: (nodeId: string) => void;
+  velocityScore?: VelocityScore;
 }
 
 export function Inspector({
@@ -43,6 +61,11 @@ export function Inspector({
   onLinkedAssetPropertyChange,
   orphanedProperties,
   onOrphanedPropertyDelete,
+  blockedByNodes = [],
+  blocksNodes = [],
+  nodes = {},
+  onClearBlocks,
+  velocityScore,
 }: InspectorProps) {
   const [editorState, setEditorState] = useState<{
     isOpen: boolean;
@@ -52,6 +75,14 @@ export function Inspector({
     isLinkedAsset: boolean;
     markupTokens?: MarkupToken[];
   }>({ isOpen: false, propId: '', propName: '', value: '', isLinkedAsset: false, markupTokens: [] });
+
+  const handlePropertyChange = (propId: string, value: string | number) => {
+    onPropertyChange?.(propId, value);
+  };
+
+  const handleLinkedAssetPropertyChange = (propId: string, value: string | number) => {
+    onLinkedAssetPropertyChange?.(propId, value);
+  };
 
   const openEditor = (
     propId: string, 
@@ -95,7 +126,7 @@ export function Inspector({
 
   return (
     <aside className="bg-bg-light border-l border-border flex-1 flex flex-col h-full overflow-hidden">
-      <div className="font-display text-sm border-b border-accent-primary pb-2 mb-3 px-3 pt-3 flex-shrink-0">
+      <div className="text-sm font-semibold border-b border-accent-primary pb-2 mb-3 px-3 pt-3 flex-shrink-0">
         Properties
       </div>
 
@@ -114,123 +145,227 @@ export function Inspector({
             {nodeId}
           </div>
         </div>
+
         {/* Properties */}
         <div className="space-y-3">
-        {properties.map((prop) => (
-          <div key={prop.id}>
-            {prop.type === 'text' && (
-              <Input
-                label={prop.name}
-                value={prop.value}
-                onChange={(e) => onPropertyChange?.(prop.id, e.target.value)}
-                required={prop.required}
-              />
-            )}
-            {prop.type === 'number' && (
-              <Input
-                label={prop.name}
-                type="number"
-                value={prop.value}
-                onChange={(e) =>
-                  onPropertyChange?.(prop.id, e.target.valueAsNumber)
-                }
-                required={prop.required}
-              />
-            )}
-            {prop.type === 'currency' && (
-              <CurrencyInput
-                label={prop.name}
-                value={prop.value}
-                onChange={(e) => onPropertyChange?.(prop.id, e.target.value)}
-                required={prop.required}
-              />
-            )}
-            {prop.type === 'date' && (
-              <Input
-                label={prop.name}
-                type="date"
-                value={prop.value}
-                onChange={(e) => onPropertyChange?.(prop.id, e.target.value)}
-                required={prop.required}
-              />
-            )}
-            {prop.type === 'select' && prop.options && (
-              <Select
-                label={prop.name}
-                value={String(prop.value)}
-                onChange={(e) => onPropertyChange?.(prop.id, e.target.value)}
-                options={prop.options}
-                required={prop.required}
-              />
-            )}
-            {prop.type === 'textarea' && (
-              <div>
-                <label className="block text-sm text-fg-secondary mb-1">
-                  {prop.name}
-                </label>
-                <textarea
-                  value={prop.value}
-                  onChange={(e) =>
-                    onPropertyChange?.(prop.id, e.target.value)
-                  }
-                  className="w-full bg-bg-dark text-fg-primary border border-border rounded-sm px-2 py-1 text-sm font-body focus:border-accent-primary focus:outline-none resize-none"
-                  rows={3}
+        {properties.map((prop) => {
+          const displayValue = prop.value;
+          return (
+            <div key={prop.id}>
+              {prop.type === 'text' && (
+                <Input
+                  label={prop.name}
+                  value={displayValue}
+                  onChange={(e) => handlePropertyChange(prop.id, e.target.value)}
                   required={prop.required}
                 />
-              </div>
-            )}
-            {prop.type === 'checkbox' && (
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id={`checkbox-${prop.id}`}
-                  checked={prop.value === 'true' || prop.value === 1 || prop.value === '1'}
+              )}
+              {prop.type === 'number' && (
+                <Input
+                  label={prop.name}
+                  type="number"
+                  value={displayValue}
                   onChange={(e) =>
-                    onPropertyChange?.(prop.id, e.target.checked ? 'true' : 'false')
+                    handlePropertyChange(prop.id, e.target.valueAsNumber)
                   }
-                  className="w-4 h-4 cursor-pointer accent-accent-primary"
+                  required={prop.required}
                 />
-                <label
-                  htmlFor={`checkbox-${prop.id}`}
-                  className="text-sm text-fg-secondary cursor-pointer"
-                >
-                  {prop.name}
-                </label>
+              )}
+              {prop.type === 'currency' && (
+                <CurrencyInput
+                  label={prop.name}
+                  value={displayValue}
+                  onChange={(e) => handlePropertyChange(prop.id, e.target.value)}
+                  required={prop.required}
+                />
+              )}
+              {prop.type === 'date' && (
+                <Input
+                  label={prop.name}
+                  type="date"
+                  value={displayValue}
+                  onChange={(e) => handlePropertyChange(prop.id, e.target.value)}
+                  required={prop.required}
+                />
+              )}
+              {prop.type === 'select' && prop.options && (
+                <Select
+                  label={prop.name}
+                  value={String(displayValue)}
+                  onChange={(e) => handlePropertyChange(prop.id, e.target.value)}
+                  options={prop.options}
+                  required={prop.required}
+                />
+              )}
+              {prop.type === 'textarea' && (
+                <div>
+                  <label className="block text-sm text-fg-secondary mb-1">
+                    {prop.name}
+                  </label>
+                  <textarea
+                    value={displayValue}
+                    onChange={(e) =>
+                      handlePropertyChange(prop.id, e.target.value)
+                    }
+                    className="w-full bg-bg-dark text-fg-primary border border-border rounded-sm px-2 py-1 text-sm font-body focus:border-accent-primary focus:outline-none resize-none"
+                    rows={3}
+                    required={prop.required}
+                  />
+                </div>
+              )}
+              {prop.type === 'checkbox' && (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id={`checkbox-${prop.id}`}
+                    checked={displayValue === 'true' || displayValue === 1 || displayValue === '1'}
+                    onChange={(e) =>
+                      handlePropertyChange(prop.id, e.target.checked ? 'true' : 'false')
+                    }
+                    className="w-4 h-4 cursor-pointer accent-accent-primary"
+                  />
+                  <label
+                    htmlFor={`checkbox-${prop.id}`}
+                    className="text-sm text-fg-secondary cursor-pointer"
+                  >
+                    {prop.name}
+                  </label>
+                </div>
+              )}
+              {prop.type === 'editor' && (
+                <div>
+                  <label className="block text-sm text-fg-secondary mb-1">
+                    {prop.name}
+                  </label>
+                  <div className="flex gap-2 items-center">
+                    <div className="flex-1 bg-bg-dark text-fg-primary border border-border rounded-sm px-2 py-1 text-sm truncate">
+                      {String(displayValue).substring(0, 50)}{String(displayValue).length > 50 ? '...' : ''}
+                    </div>
+                    <button
+                      onClick={() => openEditor(prop.id, prop.name, displayValue, false, prop.markupTokens || [])}
+                      className="px-3 py-1 bg-accent-primary text-fg-primary rounded hover:bg-accent-hover transition-colors text-sm font-semibold"
+                    >
+                      Edit
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+        </div>
+
+        {/* Blocking */}
+        {(blockedByNodes.length > 0 || blocksNodes.length > 0) && (
+          <div className="mt-6 pt-6 border-t border-border">
+            <div className="text-sm font-semibold text-fg-primary mb-2">
+              Blocking
+            </div>
+            {blockedByNodes.length > 0 && (
+              <div className="mb-3">
+                <div className="flex items-center justify-between mb-1">
+                  <div className="text-xs text-fg-secondary">
+                    Blocked By ({blockedByNodes.length})
+                  </div>
+                </div>
+                <ul className="space-y-1 text-sm text-fg-primary">
+                  {blockedByNodes.map((blockerId) => {
+                    const blocker = nodes[blockerId];
+                    const blockerName = blocker?.properties?.name || blockerId;
+                    return (
+                      <li key={blockerId} className="truncate" title={blockerName}>
+                        {blockerName}
+                      </li>
+                    );
+                  })}
+                </ul>
               </div>
             )}
-            {prop.type === 'editor' && (
-              <div>
-                <label className="block text-sm text-fg-secondary mb-1">
-                  {prop.name}
-                </label>
-                <div className="flex gap-2 items-center">
-                  <div className="flex-1 bg-bg-dark text-fg-primary border border-border rounded-sm px-2 py-1 text-sm truncate">
-                    {String(prop.value).substring(0, 50)}{String(prop.value).length > 50 ? '...' : ''}
+            {blocksNodes.length > 0 && (
+              <div className="mb-3">
+                <div className="flex items-center justify-between mb-1">
+                  <div className="text-xs text-fg-secondary">
+                    Blocks ({blocksNodes.length})
                   </div>
-                  <button
-                    onClick={() => openEditor(prop.id, prop.name, prop.value, false, prop.markupTokens || [])}
-                    className="px-3 py-1 bg-accent-primary text-fg-primary rounded hover:bg-accent-hover transition-colors text-sm font-semibold"
-                  >
-                    Edit
-                  </button>
                 </div>
+                <ul className="space-y-1 text-sm text-fg-primary mb-2">
+                  {blocksNodes.map((blockedId) => {
+                    const blocked = nodes[blockedId];
+                    const blockedName = blocked?.properties?.name || blockedId;
+                    return (
+                      <li key={blockedId} className="truncate" title={blockedName}>
+                        {blockedName}
+                      </li>
+                    );
+                  })}
+                </ul>
+                {onClearBlocks && nodeId && (
+                  <button
+                    onClick={() => onClearBlocks(nodeId)}
+                    className="text-xs px-2 py-1 bg-orange-500/20 text-orange-400 rounded border border-orange-500/50 hover:bg-orange-500/30 transition-colors"
+                  >
+                    Clear
+                  </button>
+                )}
               </div>
             )}
           </div>
-        ))}
-        </div>
+        )}
+
+        {/* Velocity Section */}
+        {velocityScore && (
+          <div className="mt-6 pt-6 border-t border-border">
+            <div className="text-sm font-semibold text-fg-primary mb-2">
+              Velocity
+            </div>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-fg-secondary">Total Score:</span>
+                <span className="text-sm font-semibold text-fg-primary">{velocityScore.totalVelocity}</span>
+              </div>
+              <div className="text-xs text-fg-secondary border-t border-border/50 pt-2 space-y-1">
+                <div className="flex justify-between items-center">
+                  <span>Base:</span>
+                  <span className="text-fg-primary">{velocityScore.baseScore}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>Inherited:</span>
+                  <span className="text-fg-primary">{velocityScore.inheritedScore}</span>
+                </div>
+                {velocityScore.statusScore !== 0 && (
+                  <div className="flex justify-between items-center">
+                    <span>Status:</span>
+                    <span className="text-fg-primary">{velocityScore.statusScore}</span>
+                  </div>
+                )}
+                {velocityScore.numericalScore !== 0 && (
+                  <div className="flex justify-between items-center">
+                    <span>Numerical:</span>
+                    <span className="text-fg-primary">{velocityScore.numericalScore}</span>
+                  </div>
+                )}
+                {velocityScore.blockingPenalty !== 0 && (
+                  <div className="flex justify-between items-center">
+                    <span>Blocking Penalty:</span>
+                    <span className="text-fg-primary">{velocityScore.blockingPenalty}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Orphaned Properties Section */}
         {orphanedProperties && Object.keys(orphanedProperties).length > 0 && (
           <div className="mt-6 pt-6 border-t border-border">
-            <div className="font-display text-sm border-b border-orange-500/50 pb-2 mb-3 text-orange-400 flex items-center gap-2">
+            <div className="text-sm font-semibold border-b border-orange-500/50 pb-2 mb-3 text-orange-400 flex items-center gap-2">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
               Orphaned Properties
             </div>
             <div className="mb-3 text-xs text-orange-300/80 bg-orange-500/10 border border-orange-500/30 rounded px-2 py-2">
-              These properties were removed from the template but their values are preserved. They are read-only and can be deleted.
+              These properties were removed from the template but their values are preserved. They are read-only.
             </div>
             <div className="space-y-3">
               {Object.entries(orphanedProperties).map(([key, value]) => (
@@ -240,13 +375,15 @@ export function Inspector({
                     <div className="flex-1 bg-bg-dark/50 text-fg-primary/70 border border-orange-500/30 rounded-sm px-2 py-1 text-sm">
                       {String(value)}
                     </div>
-                    <button
-                      onClick={() => onOrphanedPropertyDelete?.(key)}
-                      className="px-3 py-1 bg-status-danger/20 text-status-danger rounded hover:bg-status-danger/30 transition-colors text-sm font-semibold"
-                      title="Delete orphaned property"
-                    >
-                      Delete
-                    </button>
+                    {onOrphanedPropertyDelete && (
+                      <button
+                        onClick={() => onOrphanedPropertyDelete(key)}
+                        className="px-3 py-1 bg-status-danger/20 text-status-danger rounded hover:bg-status-danger/30 transition-colors text-sm font-semibold"
+                        title="Delete orphaned property"
+                      >
+                        Delete
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -257,7 +394,7 @@ export function Inspector({
         {/* Linked Asset Metadata Section */}
         {linkedAsset && (
           <div className="mt-6 pt-6 border-t border-border">
-            <div className="font-display text-sm border-b border-accent-success pb-2 mb-3 text-accent-success">
+            <div className="text-sm font-semibold border-b border-accent-success pb-2 mb-3 text-accent-success">
               Linked Asset: {linkedAsset.name}
             </div>
             <div className="mb-3">
@@ -273,108 +410,111 @@ export function Inspector({
               </div>
             </div>
             <div className="space-y-3">
-              {linkedAsset.properties.map((prop) => (
-                <div key={prop.id}>
-                  {prop.type === 'text' && (
-                    <Input
-                      label={prop.name}
-                      value={prop.value}
-                      onChange={(e) => onLinkedAssetPropertyChange?.(prop.id, e.target.value)}
-                      required={prop.required}
-                    />
-                  )}
-                  {prop.type === 'number' && (
-                    <Input
-                      label={prop.name}
-                      type="number"
-                      value={prop.value}
-                      onChange={(e) =>
-                        onLinkedAssetPropertyChange?.(prop.id, e.target.valueAsNumber)
-                      }
-                      required={prop.required}
-                    />
-                  )}
-                  {prop.type === 'currency' && (
-                    <CurrencyInput
-                      label={prop.name}
-                      value={prop.value}
-                      onChange={(e) => onLinkedAssetPropertyChange?.(prop.id, e.target.value)}
-                      required={prop.required}
-                    />
-                  )}
-                  {prop.type === 'date' && (
-                    <Input
-                      label={prop.name}
-                      type="date"
-                      value={prop.value}
-                      onChange={(e) => onLinkedAssetPropertyChange?.(prop.id, e.target.value)}
-                      required={prop.required}
-                    />
-                  )}
-                  {prop.type === 'select' && prop.options && (
-                    <Select
-                      label={prop.name}
-                      value={String(prop.value)}
-                      onChange={(e) => onLinkedAssetPropertyChange?.(prop.id, e.target.value)}
-                      options={prop.options}
-                      required={prop.required}
-                    />
-                  )}
-                  {prop.type === 'textarea' && (
-                    <div>
-                      <label className="block text-sm text-fg-secondary mb-1">
-                        {prop.name}
-                      </label>
-                      <textarea
-                        value={prop.value}
-                        onChange={(e) =>
-                          onLinkedAssetPropertyChange?.(prop.id, e.target.value)
-                        }
-                        className="w-full bg-bg-dark text-fg-primary border border-border rounded-sm px-2 py-1 text-sm font-body focus:border-accent-primary focus:outline-none resize-none"
-                        rows={3}
+              {linkedAsset.properties.map((prop) => {
+                const assetDisplayValue = prop.value;
+                return (
+                  <div key={prop.id}>
+                    {prop.type === 'text' && (
+                      <Input
+                        label={prop.name}
+                        value={assetDisplayValue}
+                        onChange={(e) => handleLinkedAssetPropertyChange(prop.id, e.target.value)}
                         required={prop.required}
                       />
-                    </div>
-                  )}
-                  {prop.type === 'checkbox' && (
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        id={`checkbox-asset-${prop.id}`}
-                        checked={prop.value === 'true' || prop.value === 1 || prop.value === '1'}
+                    )}
+                    {prop.type === 'number' && (
+                      <Input
+                        label={prop.name}
+                        type="number"
+                        value={assetDisplayValue}
                         onChange={(e) =>
-                          onLinkedAssetPropertyChange?.(prop.id, e.target.checked ? 'true' : 'false')
+                          handleLinkedAssetPropertyChange(prop.id, e.target.valueAsNumber)
                         }
-                        className="w-4 h-4 cursor-pointer accent-accent-primary"
+                        required={prop.required}
                       />
-                      <label
-                        htmlFor={`checkbox-asset-${prop.id}`}
-                        className="text-sm text-fg-secondary cursor-pointer"
-                      >
-                        {prop.name}
-                      </label>
-                    </div>
-                  )}
-                  {prop.type === 'editor' && (
-                    <div>
-                      <label className="block text-sm text-fg-secondary mb-1">
-                        {prop.name}
-                      </label>
-                      <div className="flex gap-2 items-center">
-                        <div className="flex-1 bg-bg-dark text-fg-primary border border-border rounded-sm px-2 py-1 text-sm truncate">
-                          {String(prop.value).substring(0, 50)}{String(prop.value).length > 50 ? '...' : ''}
-                        </div>
-                        <button
-                          onClick={() => openEditor(prop.id, prop.name, prop.value, true, prop.markupTokens || [])}
-                          className="px-3 py-1 bg-accent-primary text-fg-primary rounded hover:bg-accent-hover transition-colors text-sm font-semibold"
-                        >
-                          Edit
-                        </button>
+                    )}
+                    {prop.type === 'currency' && (
+                      <CurrencyInput
+                        label={prop.name}
+                        value={assetDisplayValue}
+                        onChange={(e) => handleLinkedAssetPropertyChange(prop.id, e.target.value)}
+                        required={prop.required}
+                      />
+                    )}
+                    {prop.type === 'date' && (
+                      <Input
+                        label={prop.name}
+                        type="date"
+                        value={assetDisplayValue}
+                        onChange={(e) => handleLinkedAssetPropertyChange(prop.id, e.target.value)}
+                        required={prop.required}
+                      />
+                    )}
+                    {prop.type === 'select' && prop.options && (
+                      <Select
+                        label={prop.name}
+                        value={String(assetDisplayValue)}
+                        onChange={(e) => handleLinkedAssetPropertyChange(prop.id, e.target.value)}
+                        options={prop.options}
+                        required={prop.required}
+                      />
+                    )}
+                    {prop.type === 'textarea' && (
+                      <div>
+                        <label className="block text-sm text-fg-secondary mb-1">
+                          {prop.name}
+                        </label>
+                        <textarea
+                          value={assetDisplayValue}
+                          onChange={(e) =>
+                            handleLinkedAssetPropertyChange(prop.id, e.target.value)
+                          }
+                          className="w-full bg-bg-dark text-fg-primary border border-border rounded-sm px-2 py-1 text-sm font-body focus:border-accent-primary focus:outline-none resize-none"
+                          rows={3}
+                          required={prop.required}
+                        />
                       </div>
-                    </div>
-                  )}
-                </div>
-              ))}
+                    )}
+                    {prop.type === 'checkbox' && (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          id={`checkbox-asset-${prop.id}`}
+                          checked={assetDisplayValue === 'true' || assetDisplayValue === 1 || assetDisplayValue === '1'}
+                          onChange={(e) =>
+                            handleLinkedAssetPropertyChange(prop.id, e.target.checked ? 'true' : 'false')
+                          }
+                          className="w-4 h-4 cursor-pointer accent-accent-primary"
+                        />
+                        <label
+                          htmlFor={`checkbox-asset-${prop.id}`}
+                          className="text-sm text-fg-secondary cursor-pointer"
+                        >
+                          {prop.name}
+                        </label>
+                      </div>
+                    )}
+                    {prop.type === 'editor' && (
+                      <div>
+                        <label className="block text-sm text-fg-secondary mb-1">
+                          {prop.name}
+                        </label>
+                        <div className="flex gap-2 items-center">
+                          <div className="flex-1 bg-bg-dark text-fg-primary border border-border rounded-sm px-2 py-1 text-sm truncate">
+                            {String(assetDisplayValue).substring(0, 50)}{String(assetDisplayValue).length > 50 ? '...' : ''}
+                          </div>
+                          <button
+                            onClick={() => openEditor(prop.id, prop.name, assetDisplayValue, true, prop.markupTokens || [])}
+                            className="px-3 py-1 bg-accent-primary text-fg-primary rounded hover:bg-accent-hover transition-colors text-sm font-semibold"
+                          >
+                            Edit
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

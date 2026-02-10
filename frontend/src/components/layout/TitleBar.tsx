@@ -13,7 +13,6 @@ export function TitleBar({
   isDirty = false,
   onClose,
 }: TitleBarProps) {
-  const appWindow = getCurrentWindow();
   const handleMinimize = async () => {
     try {
       await invoke('minimize_window');
@@ -52,6 +51,7 @@ export function TitleBar({
     const target = e.target as HTMLElement | null;
     if (target && target.closest('button')) return;
     try {
+      const appWindow = getCurrentWindow();
       await appWindow.startDragging();
     } catch (err) {
       console.warn('Failed to start dragging:', err);

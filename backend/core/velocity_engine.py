@@ -58,6 +58,28 @@ class VelocityEngine:
         self.blocking_relationships = blocking_graph or {"relationships": []}
         self._velocity_cache: Dict[str, VelocityCalculation] = {}
         self._building: Set[str] = set()  # For cycle detection
+        self._parent_map: Dict[str, str] = {}
+        self._build_parent_map()
+
+    def _normalize_id(self, node_id: Optional[object]) -> Optional[str]:
+        if node_id is None:
+            return None
+        return str(node_id)
+
+    def _build_parent_map(self) -> None:
+        """Build a child->parent map from node children arrays."""
+        self._parent_map = {}
+        for node_id, node in self.nodes.items():
+            if hasattr(node, 'children'):
+                children = node.children or []
+            else:
+                children = node.get("children") or []
+
+            parent_id = self._normalize_id(node_id)
+            for child_id in children:
+                child_key = self._normalize_id(child_id)
+                if child_key and child_key not in self._parent_map:
+                    self._parent_map[child_key] = parent_id
     
     def calculate_all_velocities(self) -> Dict[str, VelocityCalculation]:
         """Calculate velocity for all nodes"""
@@ -65,7 +87,7 @@ class VelocityEngine:
         self._building = set()
         
         for node_id in self.nodes.keys():
-            self.calculate_velocity(node_id)
+            self.calculate_velocity(str(node_id))
         
         return self._velocity_cache
     
@@ -80,6 +102,9 @@ class VelocityEngine:
         - Numerical field multipliers
         - Blocking relationships and penalties
         """
+        # Normalize node_id to string (graph may use UUID objects as keys)
+        node_id = str(node_id)
+        
         # Return cached if already calculated
         if node_id in self._velocity_cache:
             return self._velocity_cache[node_id]
@@ -90,7 +115,15 @@ class VelocityEngine:
         
         self._building.add(node_id)
         
+        # Try both string and UUID keys for node lookup
         node = self.nodes.get(node_id)
+        if not node:
+            # Try UUID key
+            try:
+                from uuid import UUID
+                node = self.nodes.get(UUID(node_id))
+            except (ValueError, KeyError):
+                pass
         if not node:
             self._building.remove(node_id)
             return VelocityCalculation(node_id=node_id)
@@ -104,13 +137,19 @@ class VelocityEngine:
         else:
             node_type = node.get("type")
         
-        velocity_config = self._get_velocity_config(node_type)
-        
-        if velocity_config and velocity_config.get("baseScore"):
-            calc.base_score = velocity_config["baseScore"]
+        node_level_config = self._get_node_level_velocity_config(node_type)
+        has_velocity_config = self._has_velocity_config(node_type)
+
+        if not has_velocity_config:
+            # Nodes without velocity config contribute a self value of -1
+            calc.base_score = -1
+        elif node_level_config and node_level_config.get("baseScore"):
+            calc.base_score = node_level_config["baseScore"]
         
         # 2. Calculate inherited score from parents
-        if velocity_config and velocity_config.get("scoreMode") == "inherit":
+        if not has_velocity_config:
+            calc.inherited_score = self._calculate_inherited_score(node_id)
+        elif not node_level_config or node_level_config.get("scoreMode") == "inherit":
             calc.inherited_score = self._calculate_inherited_score(node_id)
         
         # 3. Calculate status score
@@ -139,71 +178,78 @@ class VelocityEngine:
             calc.blocks_node_ids = self._get_blocked_node_ids(node_id)
             calc.total_velocity += blocked_score
         
+        # Debug log for nodes with positive totals or episodes
+        if calc.total_velocity >= 0 or node_type == "episode":
+            import logging
+            logger = logging.getLogger(__name__)
+            node_name = self._get_node_properties(node_id).get('name', 'unnamed')
+            parent_id = self._get_parent_id(node_id)
+            logger.info(f'[VelocityEngine] node={node_name} type={node_type} parent_id={parent_id} base={calc.base_score} inherited={calc.inherited_score} status={calc.status_score} numerical={calc.numerical_score} total={calc.total_velocity}')
+        
         self._velocity_cache[node_id] = calc
         self._building.remove(node_id)
         
         return calc
     
-    def _get_velocity_config(self, node_type: str) -> Optional[Dict]:
-        """Get velocity configuration for a node type from schema"""
+    def _get_node_level_velocity_config(self, node_type: str) -> Optional[Dict]:
+        """Get node-level velocity configuration for a node type from schema."""
         if not self.schema or "node_types" not in self.schema:
             return None
         
         for nt in self.schema["node_types"]:
             if nt["id"] == node_type:
-                return nt.get("velocityConfig", {})
+                return nt.get("velocityConfig")
         
         return None
     
-    def _has_velocity_config(self, node_id: str) -> bool:
-        """Check if a node has velocity configuration (is included in velocity system)"""
-        node = self.nodes.get(node_id)
-        if not node:
+    def _has_velocity_config(self, node_type: str) -> bool:
+        """Check if a node type has any velocity configuration (node or property level)."""
+        if not self.schema or "node_types" not in self.schema:
             return False
-        
-        # Get node type
-        if hasattr(node, 'blueprint_type_id'):
-            node_type = node.blueprint_type_id
-        else:
-            node_type = node.get("type")
-        
-        # Check if it has velocity config
-        velocity_config = self._get_velocity_config(node_type)
-        return velocity_config is not None and bool(velocity_config)
+
+        for nt in self.schema["node_types"]:
+            if nt["id"] != node_type:
+                continue
+
+            if nt.get("velocityConfig"):
+                return True
+
+            for prop in nt.get("properties", []):
+                velocity_config = prop.get("velocityConfig")
+                if velocity_config and velocity_config.get("enabled"):
+                    return True
+
+            return False
+
+        return False
     
     def _calculate_inherited_score(self, node_id: str) -> float:
-        """Sum base scores from all parent nodes"""
-        score = 0
-        current = node_id
-        
-        # Walk up the tree
-        for _ in range(100):  # Prevent infinite loops
-            parent_id = self._get_parent_id(current)
-            if not parent_id:
-                break
-            
-            parent = self.nodes.get(parent_id)
-            if not parent:
-                break
-            
-            # Handle both Node objects and dicts
-            if hasattr(parent, 'blueprint_type_id'):
-                parent_type = parent.blueprint_type_id
-            else:
-                parent_type = parent.get("type")
-            
-            parent_config = self._get_velocity_config(parent_type)
-            
-            if parent_config and parent_config.get("baseScore"):
-                score += parent_config["baseScore"]
-            
-            current = parent_id
-        
-        return score
+        """Return the immediate parent's total velocity.
+
+        This ensures child total = self value + parent total.
+        """
+        parent_id = self._get_parent_id(node_id)
+        if not parent_id:
+            return 0
+
+        parent_calc = self.calculate_velocity(parent_id)
+        return parent_calc.total_velocity
     
     def _get_parent_id(self, node_id: str) -> Optional[str]:
         """Get parent node ID"""
+        parent_id = self._parent_map.get(str(node_id))
+        if parent_id:
+            return parent_id
+
+        # Try both string and UUID keys for node lookup
         node = self.nodes.get(node_id)
+        if not node:
+            try:
+                from uuid import UUID
+                node = self.nodes.get(UUID(node_id))
+            except (ValueError, KeyError):
+                pass
+        
         if not node:
             return None
         
@@ -216,7 +262,15 @@ class VelocityEngine:
     
     def _get_node_properties(self, node_id: str) -> dict:
         """Get properties dict from a node (handles both Node objects and dicts)"""
+        # Try both string and UUID keys for node lookup
         node = self.nodes.get(node_id)
+        if not node:
+            try:
+                from uuid import UUID
+                node = self.nodes.get(UUID(node_id))
+            except (ValueError, KeyError):
+                pass
+        
         if not node:
             return {}
         
@@ -238,19 +292,25 @@ class VelocityEngine:
                 continue
             
             for prop in nt.get("properties", []):
-                if prop.get("type") != "status":
-                    continue
-                
-                prop_id = prop["id"]
+                prop_id = prop.get("id")
                 current_value = properties.get(prop_id)
-                
+
                 velocity_config = prop.get("velocityConfig")
                 if not velocity_config or not velocity_config.get("enabled"):
                     continue
-                
+
                 if velocity_config.get("mode") == "status":
                     status_scores = velocity_config.get("statusScores", {})
-                    return status_scores.get(current_value, 0)
+                    lookup_value = current_value
+
+                    # If select options are UUID-backed, resolve to option name for scoring.
+                    if current_value and prop.get("type") == "select":
+                        for option in prop.get("options", []):
+                            if isinstance(option, dict) and option.get("id") == current_value:
+                                lookup_value = option.get("name")
+                                break
+
+                    return status_scores.get(lookup_value, 0)
         
         return 0
     
@@ -381,14 +441,11 @@ class VelocityEngine:
         return score
     
     def get_ranking(self) -> List[Tuple[str, VelocityCalculation]]:
-        """Get all nodes with velocity config ranked by velocity (highest first)"""
+        """Get all nodes ranked by velocity (highest first). Nodes without velocity config contribute 0."""
         self.calculate_all_velocities()
         
-        ranked = []
-        for node_id, calc in self._velocity_cache.items():
-            # Only include nodes that have velocity configuration
-            if self._has_velocity_config(node_id):
-                ranked.append((node_id, calc))
+        # Include all nodes - those without velocity config simply have 0 velocity
+        ranked = list(self._velocity_cache.items())
         
         # Sort by total velocity descending
         ranked.sort(key=lambda x: x[1].total_velocity, reverse=True)

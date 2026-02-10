@@ -691,6 +691,24 @@ def reload_blueprint(session_id):
         loader = SchemaLoader()
         blueprint = loader.load(f'{template_id}.yaml')
         session_data['blueprint'] = blueprint
+
+        # Cache a velocity schema snapshot with option UUIDs for fast reuse
+        velocity_schema = {'node_types': []}
+        for node_type in blueprint.node_types:
+            nt_dict = {
+                'id': node_type.id if hasattr(node_type, 'id') else str(node_type),
+            }
+            if hasattr(node_type, '_extra_props') and isinstance(node_type._extra_props, dict):
+                nt_dict['velocityConfig'] = node_type._extra_props.get('velocityConfig', {})
+            elif hasattr(node_type, 'velocityConfig'):
+                nt_dict['velocityConfig'] = node_type.velocityConfig
+
+            if hasattr(node_type, 'properties') and node_type.properties:
+                nt_dict['properties'] = node_type.properties
+
+            velocity_schema['node_types'].append(nt_dict)
+
+        session_data['velocity_schema'] = velocity_schema
         
         logger.info(f"[API] Reloaded blueprint for session {session_id}, template_id={template_id}")
         _update_session_activity(session_id)
@@ -1729,6 +1747,7 @@ def load_graph_into_session(session_id):
         
         graph_data = data['graph']
         template_id = data.get('template_id')
+        blocking_relationships = data.get('blocking_relationships') or []
 
         # Create new graph from saved data
         from backend.core.graph import ProjectGraph
@@ -1868,6 +1887,7 @@ def load_graph_into_session(session_id):
         session_data['dispatcher'] = CommandDispatcher(graph, session_id=session_id)
         session_data['graph_service'] = GraphService(graph)
         session_data['current_project_id'] = str(uuid.uuid4())
+        session_data['blocking_relationships'] = blocking_relationships
         
         # Mark as dirty since it's a loaded state
         _mark_session_dirty(session_id)
@@ -1994,12 +2014,18 @@ def get_template_schema(template_id):
                 'properties': properties
             })
         
-        return jsonify({
+        response_payload = {
             'id': blueprint.id,
             'name': blueprint.name,
             'description': blueprint._extra_props.get('description', ''),
             'node_types': node_types
-        }), 200
+        }
+
+        blocking_view = blueprint._extra_props.get('blocking_view')
+        if isinstance(blocking_view, dict):
+            response_payload['blocking_view'] = blocking_view
+
+        return jsonify(response_payload), 200
         
     except FileNotFoundError:
         return jsonify({
@@ -2424,6 +2450,7 @@ def execute_command():
         try:
             # Import command classes
             from backend.handlers.commands.node_commands import CreateNodeCommand, DeleteNodeCommand, LinkNodeCommand, UpdatePropertyCommand, MoveNodeCommand, ReorderNodeCommand
+            from backend.handlers.commands.velocity_commands import UpdateBlockingRelationshipCommand
             from backend.handlers.commands.macro_commands import ApplyKitCommand
             from uuid import UUID
 
@@ -2438,6 +2465,7 @@ def execute_command():
                 'UpdateProperty': UpdatePropertyCommand,
                 'MoveNode': MoveNodeCommand,
                 'ReorderNode': ReorderNodeCommand,
+                'UpdateBlockingRelationship': UpdateBlockingRelationshipCommand,
                 'ApplyKit': ApplyKitCommand,
             }
 
@@ -2580,6 +2608,45 @@ def execute_command():
                             'message': str(e)
                         }
                     }), 400
+            elif command_type == 'UpdateBlockingRelationship':
+                blocked_node_id = command_data.get('blocked_node_id')
+                blocking_node_id = command_data.get('blocking_node_id')
+                if not blocked_node_id:
+                    return jsonify({
+                        'error': {
+                            'code': 'INVALID_COMMAND',
+                            'message': 'UpdateBlockingRelationship requires blocked_node_id'
+                        }
+                    }), 400
+
+                # Validate nodes exist in graph
+                nodes = graph.nodes if hasattr(graph, 'nodes') else {}
+                if blocked_node_id not in [str(node_id) for node_id in nodes.keys()]:
+                    return jsonify({
+                        'error': {
+                            'code': 'INVALID_COMMAND',
+                            'message': f'Blocked node {blocked_node_id} not found'
+                        }
+                    }), 404
+
+                if blocking_node_id and blocking_node_id not in [str(node_id) for node_id in nodes.keys()]:
+                    return jsonify({
+                        'error': {
+                            'code': 'INVALID_COMMAND',
+                            'message': f'Blocking node {blocking_node_id} not found'
+                        }
+                    }), 404
+
+                if 'blocking_relationships' not in session_data:
+                    session_data['blocking_relationships'] = []
+
+                command = UpdateBlockingRelationshipCommand(
+                    blocked_node_id=blocked_node_id,
+                    new_blocking_node_id=blocking_node_id,
+                    relationships=session_data['blocking_relationships'],
+                    session_id=session_id,
+                )
+                dispatcher.execute(command)
             elif command_type == 'ApplyKit':
                 target_id = command_data.get('target_id')
                 kit_root_id = command_data.get('kit_root_id')
@@ -2829,6 +2896,10 @@ def _serialize_graph(graph, blueprint=None):
         new_ancestry = ancestry + [node_id]
         
         print(f"[DEBUG][serialize_node] node={node} type(node)={type(node)}")
+        # Debug: Log node properties being serialized
+        print(f"[DEBUG][serialize_node] node_id={node_id} properties={node.properties}")
+        print(f"[DEBUG][serialize_node] properties keys: {list(node.properties.keys()) if hasattr(node.properties, 'keys') else 'not a dict'}")
+        
         # Get child nodes
         child_nodes = []
         for child_id in getattr(node, 'children', []):
@@ -2850,6 +2921,12 @@ def _serialize_graph(graph, blueprint=None):
         if blueprint:
             node_type_def = blueprint._node_type_map.get(node.blueprint_type_id)
             if node_type_def:
+                # Add schema shape and color for visual rendering
+                if 'shape' in node_type_def._extra_props:
+                    node_data['schema_shape'] = node_type_def._extra_props['shape']
+                if 'color' in node_type_def._extra_props:
+                    node_data['schema_color'] = node_type_def._extra_props['color']
+                
                 prop_defs = node_type_def._extra_props.get('properties', [])
                 property_markup = {}
                 for prop_def in prop_defs:

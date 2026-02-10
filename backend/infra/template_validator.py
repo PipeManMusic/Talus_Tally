@@ -151,6 +151,15 @@ class TemplateValidator:
                             errors.append(f"{path}.options: duplicate option name '{opt_name}'")
                         option_names.add(opt_name)
         
+        # Validate velocityConfig if present (optional)
+        if 'velocityConfig' in prop:
+            velocity_config = prop['velocityConfig']
+            if not isinstance(velocity_config, dict):
+                errors.append(f"{path}.velocityConfig: must be a dict, got {type(velocity_config).__name__}")
+            else:
+                # Validate velocityConfig structure
+                errors.extend(cls._validate_velocity_config(velocity_config, f"{path}.velocityConfig"))
+        
         return errors
     
     @classmethod
@@ -176,6 +185,75 @@ class TemplateValidator:
                 errors.append(f"{path}: dict option missing required field 'name'")
         else:
             errors.append(f"{path}: must be a string or dict, got {type(opt).__name__}")
+        
+        return errors
+    
+    @classmethod
+    def _validate_velocity_config(cls, velocity_config: Dict[str, Any], path: str) -> List[str]:
+        """Validate a velocityConfig definition (node-level or property-level).
+        
+        Args:
+            velocity_config: The velocityConfig data
+            path: The path to this config (for error messages)
+            
+        Returns:
+            List of error messages
+        """
+        errors = []
+        
+        if not isinstance(velocity_config, dict):
+            return errors  # Already checked by caller
+        
+        # Allowed fields for velocityConfig (all optional)
+        allowed_fields = {
+            'enabled', 'baseScore', 'scoreMode', 'penaltyScore', 'mode',
+            'statusScores', 'multiplierFactor', 'penaltyMode'
+        }
+        
+        # Validate field types
+        if 'enabled' in velocity_config:
+            if not isinstance(velocity_config['enabled'], bool):
+                errors.append(f"{path}.enabled: must be boolean, got {type(velocity_config['enabled']).__name__}")
+        
+        if 'baseScore' in velocity_config:
+            val = velocity_config['baseScore']
+            if not isinstance(val, (int, float)):
+                errors.append(f"{path}.baseScore: must be number, got {type(val).__name__}")
+            elif val < 0:
+                errors.append(f"{path}.baseScore: must be non-negative, got {val}")
+        
+        if 'scoreMode' in velocity_config:
+            mode = velocity_config['scoreMode']
+            if mode not in ['inherit', 'fixed']:
+                errors.append(f"{path}.scoreMode: must be 'inherit' or 'fixed', got '{mode}'")
+        
+        if 'penaltyScore' in velocity_config:
+            if not isinstance(velocity_config['penaltyScore'], (bool, int, float)):
+                errors.append(f"{path}.penaltyScore: must be boolean or number, got {type(velocity_config['penaltyScore']).__name__}")
+        
+        if 'mode' in velocity_config:
+            mode = velocity_config['mode']
+            if mode not in ['status', 'multiplier', 'inherit']:
+                errors.append(f"{path}.mode: must be 'status', 'multiplier', or 'inherit', got '{mode}'")
+        
+        if 'statusScores' in velocity_config:
+            status_scores = velocity_config['statusScores']
+            if not isinstance(status_scores, dict):
+                errors.append(f"{path}.statusScores: must be a dict, got {type(status_scores).__name__}")
+            else:
+                # Validate each status score value is numeric
+                for status_name, score_val in status_scores.items():
+                    if not isinstance(score_val, (int, float)):
+                        errors.append(f"{path}.statusScores['{status_name}']: must be number, got {type(score_val).__name__}")
+        
+        if 'multiplierFactor' in velocity_config:
+            factor = velocity_config['multiplierFactor']
+            if not isinstance(factor, (int, float)):
+                errors.append(f"{path}.multiplierFactor: must be number, got {type(factor).__name__}")
+        
+        if 'penaltyMode' in velocity_config:
+            if not isinstance(velocity_config['penaltyMode'], bool):
+                errors.append(f"{path}.penaltyMode: must be boolean, got {type(velocity_config['penaltyMode']).__name__}")
         
         return errors
     
