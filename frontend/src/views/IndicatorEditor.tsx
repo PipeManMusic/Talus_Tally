@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { ChevronLeft, AlertCircle } from 'lucide-react';
 import { apiClient, API_BASE_URL, type IndicatorSet } from '../api/client';
+import { ColorPicker } from '../components/ui/ColorPicker';
 import { TitleBar } from '../components/layout/TitleBar';
 
 export interface IndicatorEditorProps {
@@ -415,37 +416,11 @@ export function IndicatorEditor({ onClose }: IndicatorEditorProps) {
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
                       <label className="text-xs font-semibold text-fg-secondary">Indicator Color</label>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="color"
-                          value={indicatorColor}
-                          onChange={(e) => setIndicatorColor(e.target.value)}
-                          className="h-10 w-16 rounded border border-border bg-bg-light cursor-pointer"
-                        />
-                        <input
-                          type="text"
-                          value={indicatorColor}
-                          onChange={(e) => setIndicatorColor(e.target.value)}
-                          className="flex-1 rounded border border-border bg-bg-light px-3 py-2 text-xs text-fg-primary font-mono focus:outline-none focus:ring-2 focus:ring-accent-primary"
-                        />
-                      </div>
+                      <ColorPicker value={indicatorColor} onChange={setIndicatorColor} />
                     </div>
                     <div className="space-y-1">
                       <label className="text-xs font-semibold text-fg-secondary">Text Color</label>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="color"
-                          value={textColor}
-                          onChange={(e) => setTextColor(e.target.value)}
-                          className="h-10 w-16 rounded border border-border bg-bg-light cursor-pointer"
-                        />
-                        <input
-                          type="text"
-                          value={textColor}
-                          onChange={(e) => setTextColor(e.target.value)}
-                          className="flex-1 rounded border border-border bg-bg-light px-3 py-2 text-xs text-fg-primary font-mono focus:outline-none focus:ring-2 focus:ring-accent-primary"
-                        />
-                      </div>
+                      <ColorPicker value={textColor} onChange={setTextColor} />
                     </div>
                   </div>
 

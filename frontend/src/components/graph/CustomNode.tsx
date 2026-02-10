@@ -1,6 +1,5 @@
 import { Handle, Position, type NodeProps } from 'reactflow';
-import type { Node } from '@/api/client';
-import { useState, useEffect } from 'react';
+import type { Node, IndicatorTheme } from '@/api/client';
 
 // Helper function to recolor SVG fills and strokes with the blueprint color
 const recolorSvg = (svgString: string, color: string | undefined): string => {
@@ -71,6 +70,7 @@ interface ExtendedNode extends Omit<Node, 'indicator_id' | 'indicator_set'> {
   statusText?: string;
   schema_shape?: string;
   schema_color?: string;
+  indicator_theme?: IndicatorTheme;
 }
 
 interface CustomNodeData {
@@ -83,32 +83,15 @@ export default function CustomNode({ data, selected }: NodeProps<CustomNodeData>
   const nodeType = nodeData.type || 'node';
   const inputs = (nodeData.properties?.inputs || []) as Array<{name?: string}>;
   const outputs = (nodeData.properties?.outputs || []) as Array<{name?: string}>;
-  const [textColor, setTextColor] = useState<string | undefined>(undefined);
-  const [textStyle, setTextStyle] = useState<string | undefined>(undefined);
-  const [indicatorColor, setIndicatorColor] = useState<string | undefined>(undefined);
+  const indicatorTheme = nodeData.indicator_theme;
+  const textColor = indicatorTheme?.text_color;
+  const textStyle = indicatorTheme?.text_style;
+  const indicatorColor = indicatorTheme?.indicator_color;
   
   // Debug log for indicator rendering
   if (nodeData) {
     console.log('[CustomNode] Render', nodeData.id, 'indicator_id:', nodeData.indicator_id, 'indicator_set:', nodeData.indicator_set, 'status:', nodeData.properties?.status, 'SVG:', nodeData.statusIndicatorSvg ? nodeData.statusIndicatorSvg.slice(0, 40) + '...' : null, 'Text:', nodeData.statusText, 'schema_shape:', nodeData.schema_shape, 'schema_color:', nodeData.schema_color);
   }
-
-  // Fetch theme styling
-  useEffect(() => {
-    if (nodeData.indicator_id && nodeData.indicator_set) {
-      const indicatorSet = nodeData.indicator_set;
-      const indicatorId = nodeData.indicator_id;
-      fetch(`http://localhost:5000/api/v1/indicators/${indicatorSet}/${indicatorId}/theme`)
-        .then(res => res.json())
-        .then(theme => {
-          if (theme) {
-            setTextColor(theme.text_color);
-            setTextStyle(theme.text_style);
-            setIndicatorColor(theme.indicator_color);
-          }
-        })
-        .catch(err => console.warn('Failed to fetch theme:', err));
-    }
-  }, [nodeData.indicator_id, nodeData.indicator_set]);
 
   // Get color based on node type
   const getNodeColor = (type: string) => {

@@ -1,6 +1,7 @@
 import { useState, memo, useEffect, useRef } from 'react';
 import { Plus, Trash2, ChevronDown, ChevronUp, AlertCircle, Info } from 'lucide-react';
 import { apiClient, API_BASE_URL } from '../api/client';
+import { ColorPicker } from '../components/ui/ColorPicker';
 import type { IconCatalog, IndicatorsConfig, IndicatorTheme } from '../api/client';
 
 export interface VelocityNodeConfig {
@@ -649,20 +650,11 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
                     <div>
                       <label className="block text-xs text-fg-muted mb-1">Color</label>
                       <div className="flex items-center gap-2">
-                        <input
-                          type="text"
+                        <ColorPicker
                           value={nodeType.color || ''}
-                          onChange={(e) => {
-                            const value = e.target.value.trim();
-                            updateNodeType(nodeType.id, { color: value || undefined });
-                          }}
+                          onChange={(value) => updateNodeType(nodeType.id, { color: value || undefined })}
+                          allowEmpty
                           placeholder="#60a5fa"
-                          className="flex-1 px-3 py-2 bg-bg-light border border-border rounded text-fg-primary text-sm font-mono"
-                        />
-                        <div
-                          className="w-9 h-9 border border-border rounded bg-bg-light"
-                          style={{ backgroundColor: nodeType.color || '#1f2937' }}
-                          title={nodeType.color || 'No color set'}
                         />
                         <button
                           onClick={() => updateNodeType(nodeType.id, { color: undefined })}
@@ -744,7 +736,9 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
                 <div>
                   <label className="block text-sm text-fg-secondary mb-2 flex items-center gap-2">
                     Allowed Asset Types
-                    <Info size={14} className="text-fg-muted cursor-help" title="Specify which asset node types can be added as children. E.g., 'uses_assets' accepts all assets, 'uses_asset_camera_gear' only accepts camera_gear_asset." />
+                    <span title="Specify which asset node types can be added as children. E.g., 'uses_assets' accepts all assets, 'uses_asset_camera_gear' only accepts camera_gear_asset.">
+                      <Info size={14} className="text-fg-muted cursor-help" />
+                    </span>
                     <span className="text-xs text-fg-muted">(optional - leave empty to allow all asset types)</span>
                   </label>
                   <div className="space-y-2">
@@ -812,7 +806,9 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                       <h4 className="font-semibold text-fg-primary">Velocity Configuration</h4>
-                      <Info size={14} className="text-fg-muted cursor-help" title="Configure velocity scoring for prioritization. Leave blank to exclude this node type from velocity calculations." />
+                      <span title="Configure velocity scoring for prioritization. Leave blank to exclude this node type from velocity calculations.">
+                        <Info size={14} className="text-fg-muted cursor-help" />
+                      </span>
                     </div>
                   </div>
                   

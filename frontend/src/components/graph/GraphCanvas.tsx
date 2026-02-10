@@ -111,6 +111,21 @@ export default function GraphCanvas({
     setEdges(flowEdges);
   }, [currentGraph, setEdges]);
 
+  // Handle node selection
+  const handleNodeClick = useCallback(
+    (_event: React.MouseEvent, node: Node) => {
+      selectNode(node.id);
+    },
+    [selectNode]
+  );
+
+  const applyGraphUpdate = useCallback((result: any) => {
+    const graph = normalizeGraph(result.graph ?? result);
+    setCurrentGraph(graph);
+  }, [setCurrentGraph]);
+
+  const getSessionId = useCallback(() => localStorage.getItem('talus_tally_session_id'), []);
+
   // Handle new connections (edges)
   const onConnect = useCallback(
     (connection: Connection) => {
@@ -140,21 +155,6 @@ export default function GraphCanvas({
     },
     [setEdges, getSessionId, applyGraphUpdate]
   );
-
-  // Handle node selection
-  const handleNodeClick = useCallback(
-    (_event: React.MouseEvent, node: Node) => {
-      selectNode(node.id);
-    },
-    [selectNode]
-  );
-
-  const applyGraphUpdate = useCallback((result: any) => {
-    const graph = normalizeGraph(result.graph ?? result);
-    setCurrentGraph(graph);
-  }, [setCurrentGraph]);
-
-  const getSessionId = useCallback(() => localStorage.getItem('talus_tally_session_id'), []);
 
   // Handle node drag end
   const handleNodeDragStop = useCallback(
@@ -215,6 +215,15 @@ export default function GraphCanvas({
           return;
         }
         const selectedNodes = nodes.filter((n) => n.selected);
+        if (selectedNodes.length === 0) {
+          return;
+        }
+        const confirmMessage = selectedNodes.length === 1
+          ? 'Delete this node?'
+          : `Delete ${selectedNodes.length} nodes?`;
+        if (!window.confirm(confirmMessage)) {
+          return;
+        }
         selectedNodes.forEach((node) => {
           apiClient
             .executeCommand(sessionId, 'DeleteNode', {

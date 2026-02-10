@@ -79,3 +79,33 @@ body {
   width: var(--indicator-size);
   height: var(--indicator-size);
 }
+
+.tt-color-input {
+  -webkit-appearance: none;
+  appearance: none;
+  border: 1px solid var(--color-border-default);
+  background: var(--color-bg-light);
+  border-radius: 8px;
+  padding: 0;
+  cursor: pointer;
+}
+
+.tt-color-input:focus {
+  outline: none;
+  border-color: var(--color-border-focus);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-border-focus) 40%, transparent);
+}
+
+.tt-color-input::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+
+.tt-color-input::-webkit-color-swatch {
+  border: none;
+  border-radius: 6px;
+}
+
+.tt-color-input::-moz-color-swatch {
+  border: none;
+  border-radius: 6px;
+}

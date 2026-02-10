@@ -61,6 +61,7 @@
         "type": "episode",
         "properties": {
           "name": "Intro",
+          "description": "\nSCENE: Studio\nHOOK: Have you ever dreamed of buying an old car and turning it into your dream build? Well, in this video I'm going to show you how I intend to take a barely reliable 1988 Bronco II and turn it into my dream restomod.\nSIMPLE INTRO\nDANIEL\nHello everyone out in youtube land I'm Danile Worth and this is project Talus, a project to take a daily driver 80s car Ford would like to forget and turns it into a cutting edge resto mod. If you like cars, software, the 1980s or Dad jokes. You are in the right place.\nDANIEL\nNow why would a prefectly sane person do such a thing, they likely wouldn't? why's you bring that up? Now why would I do something like this......that's as a more compeling story. My first car an still deepes love on four wheels was a 1987 Ford Bronco II that given to me when I was 16.\nPICTURE OF THE 1987 BRONCO II\nDANIEL\n I owned and drove it till I had to sell it when we foreclosed on our house in 2008. We really did need the money to move and get another place. I dream about all the things I wanted to do to the truck and I just didn't have the money or the skill.\nDANIEL\nIt wasn't really on my mind to get get another Bronco II but I had a 1954 Ford F-100 project that I'd gotten from my Father and after 15 years of ownership, I handn't done a single thing with it. Sure, I planned many things but I really never did anything. About four years ago my Wife and I started a little hobby buisness renting cars on Turo, more on that later, and while ther are a lot of cool cars in the stable, I never really get to drive them because they are out on rentals.We ended up leasing a Nissan Arya as our vehicle that doesn't go out on rental before all the rebates ended and that's been fine but my wife doesn't like things blocking up the driveway that aren't useful. I had it at a storage lot but it got evicted by the city of Dacono. So my wife had a thought that if I sold the truck I could get a drivable Bronco II that we would own cash and could get it reliable we could share it when the lease for the Arya is up. My wife of 26 years remembers the original Bronco II and how much I loved it, and she's pretty pragmatic about tranportation, it just has to be reliable and safe.\nDANIEL\nAnd that my friends, is where her rationality ends and my crazy begins. When given an inch to do something I'm going to take a mile. So now, I've been planning this procect starting in November and didn't actually buy a vehicle till January. I've been pouring everything I have into making this project happen and I'm excited for you to follow along. So whithout further ado, let me introduce you to the Project Talus project truck.\nWALKAROUND OF THE TRUCK\nDANIEL\nI got the truck off a lovely lady on Facebook marketplace. What I know about it is that it was owned by her Uncle and her and her sister where planning to make it into a 4x4 trail rig but abandond the effort for reasions I don't know. She did mention that they had driven it to the mountains at least once. I have paperwork showing that there was an estimate for about $2600 dollars to fix a transmission leak, a rear differential leak, valve cover leak and a timing chain cover leak. They paid over $1000 to have the transmission pan leak and valve cover leaks addressed and did not approve the rest and that's reasonable to me. The amount cost of having a professional mechanic work on a truck that was sold to me for $3500 dollars is just not economical for most people. \n",
           "episode_number": 1,
           "status": "3094f28b-3fc3-2667-5ae1-933b041d78ed",
           "synopsis": "The who what where and why of Project Talus"
@@ -162,7 +163,11 @@
           "6c53b542-1a3e-43cf-a0de-6d1c74f0bd04",
           "c2504f1a-e609-4da9-b1ac-95c6540126ef",
           "269dbcbb-db3e-476c-bc14-9fd164af2b6c",
-          "106df4c1-205a-464f-871b-fab1be402549"
+          "106df4c1-205a-464f-871b-fab1be402549",
+          "dc5836c8-8853-445b-b476-70ae8a4e0d79",
+          "37bd34ac-e3e7-41d3-9de7-0510e48e157e",
+          "7cd43fa0-fe3c-4c1d-a6e1-6824fb6daed8",
+          "f08168c0-d944-4239-8d30-7bec18a18fe2"
         ],
         "indicator_id": "partial",
         "indicator_set": "status",
@@ -203,10 +208,10 @@
         "type": "footage",
         "properties": {
           "name": "Check Oil Level",
-          "prop_1770559115384": "835e3b27-866f-0294-1cac-b31b8cef5eb2"
+          "prop_1770559115384": "c91b7a3f-570a-0ec4-8e1b-76fd07d93d70"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "film",
         "schema_shape": "circle",
@@ -219,11 +224,11 @@
         "id": "b6bbe747-2f96-4774-8a3c-bdb3b65288cb",
         "type": "footage",
         "properties": {
-          "name": "Coolant Level",
-          "prop_1770559115384": "835e3b27-866f-0294-1cac-b31b8cef5eb2"
+          "name": "Check Coolant Level",
+          "prop_1770559115384": "c91b7a3f-570a-0ec4-8e1b-76fd07d93d70"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "film",
         "schema_shape": "circle",
@@ -236,11 +241,11 @@
         "id": "701f5718-88dd-400b-a3fb-c7413b14f359",
         "type": "footage",
         "properties": {
-          "name": "Transmission Fluid Level",
-          "prop_1770559115384": "835e3b27-866f-0294-1cac-b31b8cef5eb2"
+          "name": "Check Transmission Fluid Level",
+          "prop_1770559115384": "c91b7a3f-570a-0ec4-8e1b-76fd07d93d70"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "film",
         "schema_shape": "circle",
@@ -253,11 +258,11 @@
         "id": "8955a0d9-12be-44e9-8229-c942a43fa4e2",
         "type": "footage",
         "properties": {
-          "name": "Transfer Case Fluid Level",
-          "prop_1770559115384": "835e3b27-866f-0294-1cac-b31b8cef5eb2"
+          "name": "Check Transfer Case Fluid Level",
+          "prop_1770559115384": "c91b7a3f-570a-0ec4-8e1b-76fd07d93d70"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "film",
         "schema_shape": "circle",
@@ -270,11 +275,11 @@
         "id": "88f29f14-cda7-4921-867a-930c0ac4e14f",
         "type": "footage",
         "properties": {
-          "name": "Rear Axel Fluid Level",
-          "prop_1770559115384": "835e3b27-866f-0294-1cac-b31b8cef5eb2"
+          "name": "Check Rear Axel Fluid Level",
+          "prop_1770559115384": "c91b7a3f-570a-0ec4-8e1b-76fd07d93d70"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "film",
         "schema_shape": "circle",
@@ -287,11 +292,12 @@
         "id": "79d70133-7369-4936-ae37-3caea28dfad1",
         "type": "footage",
         "properties": {
-          "name": "Front Differencial Fluid Level",
-          "prop_1770559115384": "835e3b27-866f-0294-1cac-b31b8cef5eb2"
+          "name": "Check Front Differencial Fluid Level",
+          "filename": "",
+          "prop_1770559115384": "c91b7a3f-570a-0ec4-8e1b-76fd07d93d70"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "film",
         "schema_shape": "circle",
@@ -304,11 +310,11 @@
         "id": "96baf06a-829d-45a3-85dc-7e0b7355cd12",
         "type": "footage",
         "properties": {
-          "name": "Brake Fluid Level",
-          "prop_1770559115384": "835e3b27-866f-0294-1cac-b31b8cef5eb2"
+          "name": "Check Brake Fluid Level",
+          "prop_1770559115384": "c91b7a3f-570a-0ec4-8e1b-76fd07d93d70"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "film",
         "schema_shape": "circle",
@@ -321,11 +327,12 @@
         "id": "ce98ccbb-20e8-4342-83aa-2a3beee0baca",
         "type": "footage",
         "properties": {
-          "name": "Power Steering Fluid Level",
-          "prop_1770559115384": "835e3b27-866f-0294-1cac-b31b8cef5eb2"
+          "name": "Check Power Steering Fluid Level",
+          "filename": "",
+          "prop_1770559115384": "c91b7a3f-570a-0ec4-8e1b-76fd07d93d70"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "film",
         "schema_shape": "circle",
@@ -338,11 +345,11 @@
         "id": "198744f3-58fc-40e1-9c5a-120ade6c96bc",
         "type": "footage",
         "properties": {
-          "name": "Tire Pressure",
-          "prop_1770559115384": "835e3b27-866f-0294-1cac-b31b8cef5eb2"
+          "name": "Check Tire Pressure",
+          "prop_1770559115384": "c91b7a3f-570a-0ec4-8e1b-76fd07d93d70"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "film",
         "schema_shape": "circle",
@@ -355,11 +362,11 @@
         "id": "72700a15-614d-4990-954f-3f5880d78e4b",
         "type": "footage",
         "properties": {
-          "name": "Tire Tread Depth",
-          "prop_1770559115384": "835e3b27-866f-0294-1cac-b31b8cef5eb2"
+          "name": "CCheck Tire Tread Depth",
+          "prop_1770559115384": "c91b7a3f-570a-0ec4-8e1b-76fd07d93d70"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "film",
         "schema_shape": "circle",
@@ -372,11 +379,11 @@
         "id": "cb666fe0-8e9b-4096-9cf0-fba1169dbc76",
         "type": "footage",
         "properties": {
-          "name": "Tire Age",
-          "prop_1770559115384": "835e3b27-866f-0294-1cac-b31b8cef5eb2"
+          "name": "Check Tire Age",
+          "prop_1770559115384": "c91b7a3f-570a-0ec4-8e1b-76fd07d93d70"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "film",
         "schema_shape": "circle",
@@ -389,11 +396,11 @@
         "id": "1fc8206f-4ec6-4df0-a477-01f8a10fbe06",
         "type": "footage",
         "properties": {
-          "name": "Brake Pad Thickness",
-          "prop_1770559115384": "835e3b27-866f-0294-1cac-b31b8cef5eb2"
+          "name": "Check Brake Pad Thickness",
+          "prop_1770559115384": "c91b7a3f-570a-0ec4-8e1b-76fd07d93d70"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "film",
         "schema_shape": "circle",
@@ -406,11 +413,11 @@
         "id": "46e0ec93-c139-4e5c-bcf2-37b213b8731e",
         "type": "footage",
         "properties": {
-          "name": "Brake Fluid Corroson Test",
-          "prop_1770559115384": "835e3b27-866f-0294-1cac-b31b8cef5eb2"
+          "name": "Check Brake Fluid Corroson",
+          "prop_1770559115384": "c91b7a3f-570a-0ec4-8e1b-76fd07d93d70"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "film",
         "schema_shape": "circle",
@@ -423,11 +430,11 @@
         "id": "1917a858-0294-4561-95de-109d8828d1e4",
         "type": "footage",
         "properties": {
-          "name": "Brake Fluid Moisture Test",
-          "prop_1770559115384": "835e3b27-866f-0294-1cac-b31b8cef5eb2"
+          "name": "Check Brake Fluid Moisture",
+          "prop_1770559115384": "c91b7a3f-570a-0ec4-8e1b-76fd07d93d70"
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "film",
         "schema_shape": "circle",
@@ -508,11 +515,80 @@
         "id": "106df4c1-205a-464f-871b-fab1be402549",
         "type": "footage",
         "properties": {
-          "name": "Coolant Acidity"
+          "name": "Check Coolant Acidity",
+          "prop_1770559115384": "c91b7a3f-570a-0ec4-8e1b-76fd07d93d70"
         },
         "children": [],
-        "indicator_id": null,
-        "indicator_set": null,
+        "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#10b981",
+        "allowed_children": [
+          "uses_camera_gear"
+        ]
+      },
+      {
+        "id": "dc5836c8-8853-445b-b476-70ae8a4e0d79",
+        "type": "footage",
+        "properties": {
+          "name": "Check Coolant Specific Gravity",
+          "prop_1770559115384": "c91b7a3f-570a-0ec4-8e1b-76fd07d93d70"
+        },
+        "children": [],
+        "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#10b981",
+        "allowed_children": [
+          "uses_camera_gear"
+        ]
+      },
+      {
+        "id": "37bd34ac-e3e7-41d3-9de7-0510e48e157e",
+        "type": "footage",
+        "properties": {
+          "name": "Check Fuel Pressure",
+          "prop_1770559115384": "c91b7a3f-570a-0ec4-8e1b-76fd07d93d70"
+        },
+        "children": [],
+        "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#10b981",
+        "allowed_children": [
+          "uses_camera_gear"
+        ]
+      },
+      {
+        "id": "7cd43fa0-fe3c-4c1d-a6e1-6824fb6daed8",
+        "type": "footage",
+        "properties": {
+          "name": "Fuel Leak Down Test",
+          "prop_1770559115384": "c91b7a3f-570a-0ec4-8e1b-76fd07d93d70"
+        },
+        "children": [],
+        "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#10b981",
+        "allowed_children": [
+          "uses_camera_gear"
+        ]
+      },
+      {
+        "id": "f08168c0-d944-4239-8d30-7bec18a18fe2",
+        "type": "footage",
+        "properties": {
+          "name": "Check Computer Codes",
+          "prop_1770559115384": "c91b7a3f-570a-0ec4-8e1b-76fd07d93d70"
+        },
+        "children": [],
+        "indicator_id": "partial",
+        "indicator_set": "status",
         "icon_id": "film",
         "schema_shape": "circle",
         "schema_color": "#10b981",
@@ -689,7 +765,8 @@
         },
         "children": [
           "0f71cdf1-f7b1-4ce9-bf97-dc55b20eb208",
-          "82584abf-2b5c-45f1-80c7-34e9d508f69c"
+          "82584abf-2b5c-45f1-80c7-34e9d508f69c",
+          "141251af-850d-4868-a75a-16bd0afc90a6"
         ],
         "indicator_id": null,
         "indicator_set": null,
@@ -929,7 +1006,6 @@
           "e1727d65-3dd9-4335-8a5f-5b07eb87a98d",
           "b7b7bcb2-ca37-42ad-ac8c-3968ad0153b5",
           "6ff13947-eb04-4de0-b11a-26c32a53ae18",
-          "143f2a09-6fd8-4901-97b0-768a12aafe14",
           "91c66873-6260-4f38-ad86-44ac2ba8b0de",
           "a11c211d-633f-4790-8750-16b9342e9335",
           "32155103-0125-4a06-b227-9fdfe05e1be6",
@@ -984,7 +1060,6 @@
           "0e61ebbc-175d-42fd-9cb7-ec6969979329",
           "592dd22d-761d-4ac8-b956-70c9fa1464b3",
           "55aa78e7-1459-44b9-801e-b6e5fd550079",
-          "b00b8486-2025-430d-a153-0d35887676d4",
           "46ac75b4-057d-4bdc-a94a-c8f1c5154ec8",
           "1929617c-1720-4b9e-8041-fcde48f1cf04",
           "ddf7a11a-1c67-4b2d-9d50-c8f58d54c973",
@@ -1641,25 +1716,6 @@
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
           "unit_cost": "35.49"
-        },
-        "children": [],
-        "indicator_id": "partial",
-        "indicator_set": "status",
-        "icon_id": "cog",
-        "schema_shape": "circle",
-        "schema_color": "#fb7185",
-        "allowed_children": []
-      },
-      {
-        "id": "143f2a09-6fd8-4901-97b0-768a12aafe14",
-        "type": "part_asset",
-        "properties": {
-          "name": "Toolwiz Magnetic Camber Gauge",
-          "notes": "Order 113-3193159-3144240",
-          "quantity_on_hand": "1",
-          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
-          "supplier": "Amazon",
-          "unit_cost": "13.49"
         },
         "children": [],
         "indicator_id": "partial",
@@ -2741,26 +2797,6 @@
         "allowed_children": []
       },
       {
-        "id": "b00b8486-2025-430d-a153-0d35887676d4",
-        "type": "part_asset",
-        "properties": {
-          "name": "CTA Tools One-Man Brake Bleeder",
-          "notes": "Order 113-4340895-1946666",
-          "part_number": "1250",
-          "quantity_on_hand": "1",
-          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
-          "supplier": "Amazon",
-          "unit_cost": "9.30"
-        },
-        "children": [],
-        "indicator_id": "partial",
-        "indicator_set": "status",
-        "icon_id": "cog",
-        "schema_shape": "circle",
-        "schema_color": "#fb7185",
-        "allowed_children": []
-      },
-      {
         "id": "46ac75b4-057d-4bdc-a94a-c8f1c5154ec8",
         "type": "part_asset",
         "properties": {
@@ -2998,11 +3034,230 @@
         "allowed_children": []
       },
       {
+        "id": "141251af-850d-4868-a75a-16bd0afc90a6",
+        "type": "tools_inventory",
+        "properties": {
+          "name": "Tools Inventory"
+        },
+        "children": [
+          "b1fe1049-5d9e-44c4-8d25-31965d40995d"
+        ],
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": "cog",
+        "schema_shape": "hexagon",
+        "schema_color": "#84cc16",
+        "allowed_children": [
+          "tool_category"
+        ]
+      },
+      {
+        "id": "b1fe1049-5d9e-44c4-8d25-31965d40995d",
+        "type": "tool_category",
+        "properties": {
+          "name": "New"
+        },
+        "children": [
+          "1b7ac27b-401d-4645-a4d2-8670e8c07cce",
+          "98fc1da2-b9fb-4ad9-a0c0-477937617e32",
+          "299e943a-4526-4324-8e41-a50887eb9a1f",
+          "e15fdad8-0778-4ae6-abf6-0bfb6f097f3d",
+          "71ef8247-ce6f-43c7-a773-a366a775315e",
+          "cb1e7bdb-075b-4dd0-baf4-e44aefc84f64",
+          "a53d1f70-0f8c-4820-8234-f98862ccbcd4",
+          "585e0e4d-7ca6-4c17-b763-955be77e4a08",
+          "ebc8971f-98c3-4974-8066-e80cd4ee3d2c",
+          "66d7e8a8-8f0b-40b7-90c8-969aed42905f"
+        ],
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": "cog",
+        "schema_shape": "rounded",
+        "schema_color": "#bfdbfe",
+        "allowed_children": [
+          "tool_asset"
+        ]
+      },
+      {
+        "id": "1b7ac27b-401d-4645-a4d2-8670e8c07cce",
+        "type": "tool_asset",
+        "properties": {
+          "name": "Ultimate No Spill Coolant Funnel Kit",
+          "acquisition_cost": "16.99",
+          "notes": "Order 113-8203985-7070602",
+          "status": "bf46e370-d97f-5e46-df4d-dad388280546"
+        },
+        "children": [],
+        "indicator_id": "available",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#86efac",
+        "allowed_children": []
+      },
+      {
+        "id": "98fc1da2-b9fb-4ad9-a0c0-477937617e32",
+        "type": "tool_asset",
+        "properties": {
+          "name": "Toolwiz Magnetic Camber Gauge",
+          "acquisition_cost": "13.49",
+          "notes": "Order 113-3193159-3144240",
+          "status": "bf46e370-d97f-5e46-df4d-dad388280546"
+        },
+        "children": [],
+        "indicator_id": "available",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#86efac",
+        "allowed_children": []
+      },
+      {
+        "id": "299e943a-4526-4324-8e41-a50887eb9a1f",
+        "type": "tool_asset",
+        "properties": {
+          "name": "Performance Tool Lock Nut Socket",
+          "acquisition_cost": "13.84",
+          "make_model": "W1269",
+          "notes": "Order 113-8321077-1869806",
+          "status": "bf46e370-d97f-5e46-df4d-dad388280546"
+        },
+        "children": [],
+        "indicator_id": "available",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#86efac",
+        "allowed_children": []
+      },
+      {
+        "id": "e15fdad8-0778-4ae6-abf6-0bfb6f097f3d",
+        "type": "tool_asset",
+        "properties": {
+          "name": "Decibel Meter",
+          "acquisition_cost": "30",
+          "notes": "Order 113-8921857-3726624",
+          "status": "bf46e370-d97f-5e46-df4d-dad388280546"
+        },
+        "children": [],
+        "indicator_id": "available",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#86efac",
+        "allowed_children": []
+      },
+      {
+        "id": "71ef8247-ce6f-43c7-a773-a366a775315e",
+        "type": "tool_asset",
+        "properties": {
+          "name": "Espusta Brake Pad Gauge",
+          "acquisition_cost": "9.99",
+          "notes": "Order 113-6163034-9629866",
+          "status": "bf46e370-d97f-5e46-df4d-dad388280546"
+        },
+        "children": [],
+        "indicator_id": "available",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#86efac",
+        "allowed_children": []
+      },
+      {
+        "id": "cb1e7bdb-075b-4dd0-baf4-e44aefc84f64",
+        "type": "tool_asset",
+        "properties": {
+          "name": "AUTOOL Smoke Machine",
+          "acquisition_cost": "43.2",
+          "make_model": "SDT106",
+          "notes": "Order 113-4787138-6269046",
+          "status": "bf46e370-d97f-5e46-df4d-dad388280546"
+        },
+        "children": [],
+        "indicator_id": "available",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#86efac",
+        "allowed_children": []
+      },
+      {
+        "id": "a53d1f70-0f8c-4820-8234-f98862ccbcd4",
+        "type": "tool_asset",
+        "properties": {
+          "name": "Hose Pinch Off Pliers Set",
+          "acquisition_cost": "24.99",
+          "notes": "Order 113-4787138-6269046",
+          "status": "bf46e370-d97f-5e46-df4d-dad388280546"
+        },
+        "children": [],
+        "indicator_id": "available",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#86efac",
+        "allowed_children": []
+      },
+      {
+        "id": "585e0e4d-7ca6-4c17-b763-955be77e4a08",
+        "type": "tool_asset",
+        "properties": {
+          "name": "INNOVA Ford OBD1 Code Reader",
+          "acquisition_cost": "36.79",
+          "make_model": "3145",
+          "notes": "Order 113-4787138-6269046",
+          "status": "bf46e370-d97f-5e46-df4d-dad388280546"
+        },
+        "children": [],
+        "indicator_id": "available",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#86efac",
+        "allowed_children": []
+      },
+      {
+        "id": "ebc8971f-98c3-4974-8066-e80cd4ee3d2c",
+        "type": "tool_asset",
+        "properties": {
+          "name": "VEVOR Toe Alignment Plates",
+          "acquisition_cost": "35.9",
+          "notes": "Order 113-4340895-1946666",
+          "status": "bf46e370-d97f-5e46-df4d-dad388280546"
+        },
+        "children": [],
+        "indicator_id": "available",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#86efac",
+        "allowed_children": []
+      },
+      {
+        "id": "66d7e8a8-8f0b-40b7-90c8-969aed42905f",
+        "type": "tool_asset",
+        "properties": {
+          "name": "CTA Tools One-Man Brake Bleeder",
+          "acquisition_cost": "9.3",
+          "make_model": "1250",
+          "notes": "Order 113-4340895-1946666",
+          "status": "bf46e370-d97f-5e46-df4d-dad388280546"
+        },
+        "children": [],
+        "indicator_id": "available",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#86efac",
+        "allowed_children": []
+      },
+      {
         "id": "80050417-1151-4cae-8431-ac5e047f58e9",
         "type": "season",
         "properties": {
           "name": "Talus Software",
-          "status": "34423cc2-d2c5-c699-fa1c-605ca72ee331"
+          "status": "7d8a9c3b-1234-5678-90ab-cdef12345678"
         },
         "children": [
           "12054bd3-0528-42c7-b0da-282ebc1665e0",
@@ -3013,7 +3268,7 @@
           "c3b68e0f-aaaf-4d37-9a8c-469eef9e4149",
           "947eaf8e-2b46-4fa3-90b0-4d3b929de5c4"
         ],
-        "indicator_id": "filled",
+        "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "film",
         "schema_shape": "circle",
@@ -3185,14 +3440,42 @@
   "expanded_map": {
     "8f0b11a8-aea2-415b-938c-3633e816eff7": true,
     "063e0759-c0d2-4caf-b411-ed87e2f16637": true,
-    "58e9689c-0b7f-4325-8ebe-ca53944cf667": false,
+    "58e9689c-0b7f-4325-8ebe-ca53944cf667": true,
     "fb04ceae-e213-462b-805e-a94fead8b824": false,
     "0f71cdf1-f7b1-4ce9-bf97-dc55b20eb208": false,
     "be07bc50-f298-4e9b-a7b0-9c5b5e7db4c8": true,
     "80050417-1151-4cae-8431-ac5e047f58e9": false,
-    "89941716-6549-4335-9b87-7a9a5b544233": true,
+    "89941716-6549-4335-9b87-7a9a5b544233": false,
     "82584abf-2b5c-45f1-80c7-34e9d508f69c": true,
     "318d9929-d908-4319-b908-fbeba4a8e7ff": true,
-    "1fd92134-4784-464c-9962-da6806ec1c76": true
-  }
+    "1fd92134-4784-464c-9962-da6806ec1c76": true,
+    "141251af-850d-4868-a75a-16bd0afc90a6": true,
+    "b1fe1049-5d9e-44c4-8d25-31965d40995d": false
+  },
+  "blocking_relationships": [
+    {
+      "blockedNodeId": "154d79df-57be-4bc1-85b6-86d773974066",
+      "blockingNodeId": "89941716-6549-4335-9b87-7a9a5b544233"
+    },
+    {
+      "blockedNodeId": "1c00929d-a96f-42e3-9759-a66e91ae24bc",
+      "blockingNodeId": "89941716-6549-4335-9b87-7a9a5b544233"
+    },
+    {
+      "blockedNodeId": "6291ddc4-a5cc-42ed-8008-4c7c0a0d6b4c",
+      "blockingNodeId": "89941716-6549-4335-9b87-7a9a5b544233"
+    },
+    {
+      "blockedNodeId": "12c924fd-d375-49a4-ae43-7828f9cb73bd",
+      "blockingNodeId": "89941716-6549-4335-9b87-7a9a5b544233"
+    },
+    {
+      "blockedNodeId": "99ad04e7-9c4d-4168-8cc8-a001eab7783e",
+      "blockingNodeId": "89941716-6549-4335-9b87-7a9a5b544233"
+    },
+    {
+      "blockedNodeId": "c80dab8c-ab7d-4685-b260-fcbdcef5536b",
+      "blockingNodeId": "89941716-6549-4335-9b87-7a9a5b544233"
+    }
+  ]
 }

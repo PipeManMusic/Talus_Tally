@@ -34,6 +34,7 @@ import { AssetSelectDialog } from './components/dialogs/AssetSelectDialog';
 import { AssetCategoryDialog } from './components/dialogs/AssetCategoryDialog';
 import { SettingsDialog } from './components/dialogs/SettingsDialog';
 import { SaveConfirmDialog, type SaveAction } from './components/dialogs/SaveConfirmDialog';
+import { Modal } from './components/ui/Modal';
 import { ImportCsvDialog } from './components/dialogs/ImportCsvDialog';
 import { ExportDialog } from './components/dialogs/ExportDialog';
 import { TemplateEditor } from './views/TemplateEditor';
@@ -77,6 +78,7 @@ function App() {
   const [showSaveConfirmDialog, setShowSaveConfirmDialog] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [showExportDialog, setShowExportDialog] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<{ nodeIds: string[]; label: string } | null>(null);
   const pendingCloseActionRef = useRef<(() => Promise<void>) | null>(null);
   const [addChildParentId, setAddChildParentId] = useState<string | null>(null);
   const [addChildTitle, setAddChildTitle] = useState<string | undefined>(undefined);
@@ -87,6 +89,7 @@ function App() {
   const [templateSchema, setTemplateSchema] = useState<TemplateSchema | null>(null);
   const [blockedByNodes, setBlockedByNodes] = useState<string[]>([]);
   const [blocksNodes, setBlocksNodes] = useState<string[]>([]);
+  const [blockingRelationships, setBlockingRelationships] = useState<Array<{ blockedNodeId: string; blockingNodeId: string }>>([]);
   const [velocityScore, setVelocityScore] = useState<VelocityScore | null>(null);
   const [blockingNodeCount, setBlockingNodeCount] = useState(0);
   const [blockingEdgeCount, setBlockingEdgeCount] = useState(0);
@@ -473,6 +476,7 @@ function App() {
     try {
       const result = await apiClient.getBlockingGraph(sessionId);
       const edges = result.relationships || [];
+      setBlockingRelationships(edges);
 
       // Find nodes that block the selected node
       const blocked_by = edges
@@ -978,10 +982,20 @@ function App() {
       }
 
       const graph = currentGraph || { id: 'default', nodes: [], edges: [] };
+      let blocking = blockingRelationships;
+      if (sessionId) {
+        try {
+          const result = await apiClient.getBlockingGraph(sessionId);
+          blocking = result.relationships || [];
+        } catch (err) {
+          console.warn('Failed to refresh blocking relationships for save:', err);
+        }
+      }
       const payload = JSON.stringify({ 
         graph, 
         template_id: currentTemplateId,
-        expanded_map: expandedMap 
+        expanded_map: expandedMap,
+        blocking_relationships: blocking,
       }, null, 2);
 
       if (!lastFilePath) {
@@ -1014,7 +1028,7 @@ function App() {
       alert('Save failed.');
       return false;
     }
-  }, [currentGraph, lastFilePath, sessionId, currentTemplateId, expandedMap, recordRecentFile]);
+  }, [currentGraph, lastFilePath, sessionId, currentTemplateId, expandedMap, recordRecentFile, blockingRelationships]);
 
   const handleSaveAs = useCallback(async (): Promise<boolean> => {
     try {
@@ -1024,10 +1038,20 @@ function App() {
         return false;
       }
       const graph = currentGraph || { id: 'default', nodes: [], edges: [] };
+      let blocking = blockingRelationships;
+      if (sessionId) {
+        try {
+          const result = await apiClient.getBlockingGraph(sessionId);
+          blocking = result.relationships || [];
+        } catch (err) {
+          console.warn('Failed to refresh blocking relationships for save-as:', err);
+        }
+      }
       const payload = JSON.stringify({ 
         graph, 
         template_id: currentTemplateId,
-        expanded_map: expandedMap 
+        expanded_map: expandedMap,
+        blocking_relationships: blocking,
       }, null, 2);
       const { save } = await import('@tauri-apps/plugin-dialog');
       const filePath = await save({
@@ -1056,7 +1080,7 @@ function App() {
       alert('Save failed.');
       return false;
     }
-  }, [currentGraph, sessionId, currentTemplateId, expandedMap]);
+  }, [currentGraph, sessionId, currentTemplateId, expandedMap, blockingRelationships]);
 
   const handleOpenRecent = useCallback(async (filePath: string) => {
     console.log('📂 Opening recent file:', filePath);
@@ -1923,21 +1947,9 @@ function App() {
                   }
                   openAddChildDialog(nodeId, node.properties?.name, childTypeName, type);
                 } else if (action === 'delete') {
-                  if (confirm('Delete this node?')) {
-                    safeExecuteCommand('DeleteNode', {
-                        node_id: nodeId,
-                      })
-                      .then((result) => {
-                        const graph = normalizeGraph(result.graph ?? result);
-                        setCurrentGraph(graph);
-                        setIsDirty(result.is_dirty ?? true);  // Update dirty state from API
-                        console.log('✓ Node deleted via API');
-                      })
-                      .catch((err) => {
-                        console.error('Failed to delete node:', err);
-                        alert('Failed to delete node');
-                      });
-                  }
+                  const node = storeNodes[nodeId];
+                  const label = node?.properties?.name || node?.type || nodeId;
+                  setPendingDelete({ nodeIds: [nodeId], label });
                 } else if (action.startsWith('move:')) {
                   const newParentId = action.split(':')[1];
                   console.log(`Moving node ${nodeId} to new parent ${newParentId}`);
@@ -2261,6 +2273,52 @@ function App() {
           pendingCloseActionRef.current = null;
         }}
       />
+
+      <Modal
+        isOpen={!!pendingDelete}
+        onClose={() => setPendingDelete(null)}
+        title="Delete Node"
+        actions={
+          <>
+            <button
+              className="px-4 py-2 bg-bg-dark border border-border text-fg-primary rounded hover:bg-bg-light transition-colors"
+              onClick={() => setPendingDelete(null)}
+            >
+              Cancel
+            </button>
+            <button
+              className="px-4 py-2 bg-status-danger/20 text-status-danger rounded hover:bg-status-danger/30 transition-colors"
+              onClick={() => {
+                const target = pendingDelete;
+                if (!target) {
+                  return;
+                }
+                const nodeId = target.nodeIds[0];
+                safeExecuteCommand('DeleteNode', {
+                  node_id: nodeId,
+                })
+                  .then((result) => {
+                    const graph = normalizeGraph(result.graph ?? result);
+                    setCurrentGraph(graph);
+                    setIsDirty(result.is_dirty ?? true);
+                    console.log('✓ Node deleted via API');
+                  })
+                  .catch((err) => {
+                    console.error('Failed to delete node:', err);
+                    alert('Failed to delete node');
+                  })
+                  .finally(() => setPendingDelete(null));
+              }}
+            >
+              Delete
+            </button>
+          </>
+        }
+      >
+        <div className="text-sm text-fg-secondary">
+          Delete <span className="text-fg-primary font-semibold">{pendingDelete?.label}</span>? You can undo this action.
+        </div>
+      </Modal>
     </div>
       )}
   </ErrorBoundary>

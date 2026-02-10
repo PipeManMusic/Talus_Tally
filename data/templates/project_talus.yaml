@@ -231,7 +231,7 @@ node_types:
     indicator_set: status
     label: Status
     options:
-    - indicator_id: filled
+    - indicator_id: available
       name: Available
     - indicator_id: partial
       name: In Use
@@ -328,9 +328,9 @@ node_types:
       enabled: true
       mode: status
       statusScores:
+        Editing: 2
         Planning: -1
         Shooting: 1
-        Editing: 2
         Uploaded: -1
   shape: roundedSquare
 - allowed_asset_types:
@@ -361,9 +361,18 @@ node_types:
     options:
     - indicator_id: empty
       name: Planned
+    - indicator_id: partial
+      name: In Production
     - indicator_id: filled
       name: Complete
     type: select
+    velocityConfig:
+      enabled: true
+      mode: status
+      statusScores:
+        Complete: -1
+        In Production: 1
+        Planned: -1
   shape: circle
 - allowed_asset_types: []
   allowed_children: []

@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, type Dispatch, type SetStateAction, type D
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import { mapNodeIndicator } from '../graph/mapNodeIndicator';
 import { mapNodeIcon, subscribeToIconCache } from '../graph/mapNodeIcon';
-import { API_BASE_URL } from '../../api/client';
 import type { TreeNode } from '../../utils/treeUtils';
 
 // Helper to recolor SVG fills and strokes with the blueprint color
@@ -189,11 +188,9 @@ function TreeItem({
         if (!isMounted || !indicator) return;
         setIndicatorSvg(indicator.statusIndicatorSvg ?? (node as any).statusIndicatorSvg ?? undefined);
         setIndicatorText(indicator.statusText ?? (node as any).statusText ?? undefined);
-        if (indicator.indicatorColor || indicator.textColor || indicator.textStyle) {
-          setIndicatorColor(indicator.indicatorColor ?? undefined);
-          setTextColor(indicator.textColor ?? undefined);
-          setTextStyle(indicator.textStyle ?? undefined);
-        }
+        setIndicatorColor(indicator.indicatorColor ?? undefined);
+        setTextColor(indicator.textColor ?? indicator.indicatorColor ?? undefined);
+        setTextStyle(indicator.textStyle ?? undefined);
       })
       .catch((err) => {
         console.warn('[TreeView] Failed to load indicator SVG', indicatorId, err);
@@ -209,46 +206,11 @@ function TreeItem({
   }, [node.id, indicatorId, indicatorSet]);
 
   useEffect(() => {
-    let isMounted = true;
     if (!indicatorId || !indicatorSet) {
-      if (isMounted) {
-        setIndicatorColor(undefined);
-        setTextColor(undefined);
-        setTextStyle(undefined);
-      }
-      return () => {
-        isMounted = false;
-      };
+      setIndicatorColor(undefined);
+      setTextColor(undefined);
+      setTextStyle(undefined);
     }
-
-    const themeUrl = `${API_BASE_URL}/api/v1/indicators/${indicatorSet}/${indicatorId}/theme`;
-    fetch(themeUrl)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((theme) => {
-        if (!isMounted) return;
-        if (!theme) {
-          setIndicatorColor(undefined);
-          setTextColor(undefined);
-          setTextStyle(undefined);
-          return;
-        }
-
-        setIndicatorColor(theme.indicator_color ?? undefined);
-        setTextColor(theme.text_color ?? theme.indicator_color ?? undefined);
-        setTextStyle(theme.text_style ?? undefined);
-      })
-      .catch((err) => {
-        console.warn('[TreeView] Failed to load indicator theme', indicatorId, err);
-        if (isMounted) {
-          setIndicatorColor(undefined);
-          setTextColor(undefined);
-          setTextStyle(undefined);
-        }
-      });
-
-    return () => {
-      isMounted = false;
-    };
   }, [indicatorId, indicatorSet]);
 
   const hasChildren = Array.isArray(node.children) && node.children.length > 0;

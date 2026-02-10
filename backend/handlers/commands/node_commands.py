@@ -144,12 +144,19 @@ class DeleteNodeCommand(Command):
         self.node_id = node_id
         self.graph = graph
         self.deleted_node: Optional[Node] = None
+        self.parent_id: Optional[UUID] = None
+        self.parent_index: Optional[int] = None
         self.session_id = session_id
     
     def execute(self) -> None:
         """Execute the command by removing the node."""
         if self.graph:
             self.deleted_node = self.graph.get_node(self.node_id)
+            if self.deleted_node and self.deleted_node.parent_id:
+                self.parent_id = self.deleted_node.parent_id
+                parent = self.graph.get_node(self.parent_id)
+                if parent and self.node_id in parent.children:
+                    self.parent_index = parent.children.index(self.node_id)
             self.graph.remove_node(self.node_id)
             
             # Emit node-deleted event
@@ -160,6 +167,15 @@ class DeleteNodeCommand(Command):
         """Undo the command by restoring the node."""
         if self.deleted_node and self.graph:
             self.graph.add_node(self.deleted_node)
+            if self.parent_id:
+                parent = self.graph.get_node(self.parent_id)
+                if parent:
+                    if self.node_id in parent.children:
+                        return
+                    if self.parent_index is not None and self.parent_index <= len(parent.children):
+                        parent.children.insert(self.parent_index, self.node_id)
+                    else:
+                        parent.children.append(self.node_id)
 
 
 class LinkNodeCommand(Command):

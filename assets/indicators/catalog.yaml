@@ -26,6 +26,9 @@ indicator_sets:
     - id: Started
       file: status_partial.svg
       description: Started
+    - id: available
+      file: status_filled.svg
+      description: Avaiable
     style_guide: 'SVG Format:
 
       - 24x24 viewBox
@@ -66,3 +69,6 @@ indicator_sets:
       Started:
         indicator_color: '#26a269'
         text_color: '#33d17a'
+      available:
+        indicator_color: '#28a745'
+        text_color: '#28a745'

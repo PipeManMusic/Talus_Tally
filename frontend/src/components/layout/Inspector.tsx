@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Input } from '../ui/Input';
 import { Select } from '../ui/Select';
 import { CurrencyInput } from '../ui/CurrencyInput';
@@ -68,6 +68,8 @@ export function Inspector({
   onClearBlocks,
   velocityScore,
 }: InspectorProps) {
+  const [draftValues, setDraftValues] = useState<Record<string, string>>({});
+  const pendingCommits = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const [editorState, setEditorState] = useState<{
     isOpen: boolean;
     propId: string;
@@ -83,6 +85,33 @@ export function Inspector({
 
   const handleLinkedAssetPropertyChange = (propId: string, value: string | number) => {
     onLinkedAssetPropertyChange?.(propId, value);
+  };
+
+  useEffect(() => {
+    setDraftValues({});
+    Object.values(pendingCommits.current).forEach(clearTimeout);
+    pendingCommits.current = {};
+  }, [nodeId, linkedAsset?.nodeId]);
+
+  const makeDraftKey = (propId: string, isLinkedAsset: boolean) =>
+    `${isLinkedAsset ? 'asset' : 'node'}:${propId}`;
+
+  const commitDraftValue = (propId: string, value: string, isLinkedAsset: boolean) => {
+    if (isLinkedAsset) {
+      handleLinkedAssetPropertyChange(propId, value);
+    } else {
+      handlePropertyChange(propId, value);
+    }
+  };
+
+  const scheduleCommit = (key: string, propId: string, value: string, isLinkedAsset: boolean) => {
+    if (pendingCommits.current[key]) {
+      clearTimeout(pendingCommits.current[key]);
+    }
+    pendingCommits.current[key] = setTimeout(() => {
+      commitDraftValue(propId, value, isLinkedAsset);
+      delete pendingCommits.current[key];
+    }, 250);
   };
 
   const openEditor = (
@@ -151,13 +180,22 @@ export function Inspector({
         <div className="space-y-3">
         {properties.map((prop) => {
           const displayValue = prop.value;
+          const draftKey = makeDraftKey(prop.id, false);
+          const draftValue = draftValues[draftKey] ?? String(displayValue ?? '');
           return (
             <div key={prop.id}>
               {prop.type === 'text' && (
                 <Input
                   label={prop.name}
-                  value={displayValue}
-                  onChange={(e) => handlePropertyChange(prop.id, e.target.value)}
+                  value={draftValue}
+                  onChange={(e) => {
+                    const nextValue = e.target.value;
+                    setDraftValues((prev) => ({ ...prev, [draftKey]: nextValue }));
+                    scheduleCommit(draftKey, prop.id, nextValue, false);
+                  }}
+                  onBlur={(e) => {
+                    commitDraftValue(prop.id, e.target.value, false);
+                  }}
                   required={prop.required}
                 />
               )}
@@ -204,10 +242,15 @@ export function Inspector({
                     {prop.name}
                   </label>
                   <textarea
-                    value={displayValue}
-                    onChange={(e) =>
-                      handlePropertyChange(prop.id, e.target.value)
-                    }
+                    value={draftValue}
+                    onChange={(e) => {
+                      const nextValue = e.target.value;
+                      setDraftValues((prev) => ({ ...prev, [draftKey]: nextValue }));
+                      scheduleCommit(draftKey, prop.id, nextValue, false);
+                    }}
+                    onBlur={(e) => {
+                      commitDraftValue(prop.id, e.target.value, false);
+                    }}
                     className="w-full bg-bg-dark text-fg-primary border border-border rounded-sm px-2 py-1 text-sm font-body focus:border-accent-primary focus:outline-none resize-none"
                     rows={3}
                     required={prop.required}
@@ -419,13 +462,22 @@ export function Inspector({
             <div className="space-y-3">
               {linkedAsset.properties.map((prop) => {
                 const assetDisplayValue = prop.value;
+                const assetDraftKey = makeDraftKey(prop.id, true);
+                const assetDraftValue = draftValues[assetDraftKey] ?? String(assetDisplayValue ?? '');
                 return (
                   <div key={prop.id}>
                     {prop.type === 'text' && (
                       <Input
                         label={prop.name}
-                        value={assetDisplayValue}
-                        onChange={(e) => handleLinkedAssetPropertyChange(prop.id, e.target.value)}
+                        value={assetDraftValue}
+                        onChange={(e) => {
+                          const nextValue = e.target.value;
+                          setDraftValues((prev) => ({ ...prev, [assetDraftKey]: nextValue }));
+                          scheduleCommit(assetDraftKey, prop.id, nextValue, true);
+                        }}
+                        onBlur={(e) => {
+                          commitDraftValue(prop.id, e.target.value, true);
+                        }}
                         required={prop.required}
                       />
                     )}
@@ -472,10 +524,15 @@ export function Inspector({
                           {prop.name}
                         </label>
                         <textarea
-                          value={assetDisplayValue}
-                          onChange={(e) =>
-                            handleLinkedAssetPropertyChange(prop.id, e.target.value)
-                          }
+                          value={assetDraftValue}
+                          onChange={(e) => {
+                            const nextValue = e.target.value;
+                            setDraftValues((prev) => ({ ...prev, [assetDraftKey]: nextValue }));
+                            scheduleCommit(assetDraftKey, prop.id, nextValue, true);
+                          }}
+                          onBlur={(e) => {
+                            commitDraftValue(prop.id, e.target.value, true);
+                          }}
                           className="w-full bg-bg-dark text-fg-primary border border-border rounded-sm px-2 py-1 text-sm font-body focus:border-accent-primary focus:outline-none resize-none"
                           rows={3}
                           required={prop.required}

@@ -82,7 +82,22 @@ def create_app(config=None):
     # Initialize Socket.IO
     # Explicitly use threading mode for PyInstaller compatibility
     # Auto-detection fails in frozen executables
-    socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
+    env_origins = os.environ.get('TALUS_SOCKET_ORIGINS')
+    if env_origins:
+        cors_allowed_origins = [origin.strip() for origin in env_origins.split(',') if origin.strip()]
+    else:
+        cors_allowed_origins = [
+            'http://localhost:5173',
+            'http://127.0.0.1:5173',
+            'http://localhost:1420',
+            'http://127.0.0.1:1420',
+            'http://localhost:5000',
+            'http://127.0.0.1:5000',
+            'tauri://localhost',
+            'app://localhost',
+            'null',
+        ]
+    socketio = SocketIO(app, cors_allowed_origins=cors_allowed_origins, async_mode='threading')
     
     # Enable CORS for development with explicit configuration
     CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
