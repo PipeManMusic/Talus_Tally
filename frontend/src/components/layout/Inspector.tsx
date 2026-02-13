@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Input } from '../ui/Input';
 import { Select } from '../ui/Select';
 import { CurrencyInput } from '../ui/CurrencyInput';
-import { TextEditorModal, type MarkupToken } from '../ui/TextEditorModal';
+import { TemplateAwareEditor } from '../ui/TemplateAwareEditor';
+import type { MarkupToken } from '../../services/markupRenderService';
 
 export interface NodeProperty {
   id: string;
@@ -12,6 +13,7 @@ export interface NodeProperty {
   options?: Array<{ value: string; label: string }>;
   required?: boolean;
   markupTokens?: MarkupToken[];
+  markupProfile?: string;
 }
 
 export interface LinkedAssetMetadata {
@@ -76,8 +78,8 @@ export function Inspector({
     propName: string;
     value: string;
     isLinkedAsset: boolean;
-    markupTokens?: MarkupToken[];
-  }>({ isOpen: false, propId: '', propName: '', value: '', isLinkedAsset: false, markupTokens: [] });
+    markupProfile?: string;
+  }>({ isOpen: false, propId: '', propName: '', value: '', isLinkedAsset: false });
 
   const handlePropertyChange = (propId: string, value: string | number) => {
     onPropertyChange?.(propId, value);
@@ -119,20 +121,22 @@ export function Inspector({
     propName: string, 
     value: string | number, 
     isLinkedAsset = false,
-    markupTokens: MarkupToken[] = []
+    markupProfile?: string
   ) => {
+    console.log('[Inspector] Opening editor with:', { propId, propName, markupProfile });
     setEditorState({
       isOpen: true,
       propId,
       propName,
       value: String(value),
       isLinkedAsset,
-      markupTokens,
+      markupProfile,
     });
   };
 
   const closeEditor = () => {
-    setEditorState({ isOpen: false, propId: '', propName: '', value: '', isLinkedAsset: false, markupTokens: [] });
+    console.log('[Inspector] Closing editor');
+    setEditorState({ isOpen: false, propId: '', propName: '', value: '', isLinkedAsset: false, markupProfile: undefined });
   };
 
   const saveEditorContent = (newValue: string) => {
@@ -286,7 +290,7 @@ export function Inspector({
                       {String(displayValue).substring(0, 50)}{String(displayValue).length > 50 ? '...' : ''}
                     </div>
                     <button
-                      onClick={() => openEditor(prop.id, prop.name, displayValue, false, prop.markupTokens || [])}
+                      onClick={() => openEditor(prop.id, prop.name, displayValue, false, prop.markupProfile)}
                       className="px-3 py-1 bg-accent-primary text-fg-primary rounded hover:bg-accent-hover transition-colors text-sm font-semibold"
                     >
                       Edit
@@ -568,7 +572,7 @@ export function Inspector({
                             {String(assetDisplayValue).substring(0, 50)}{String(assetDisplayValue).length > 50 ? '...' : ''}
                           </div>
                           <button
-                            onClick={() => openEditor(prop.id, prop.name, assetDisplayValue, true, prop.markupTokens || [])}
+                            onClick={() => openEditor(prop.id, prop.name, assetDisplayValue, true, prop.markupProfile)}
                             className="px-3 py-1 bg-accent-primary text-fg-primary rounded hover:bg-accent-hover transition-colors text-sm font-semibold"
                           >
                             Edit
@@ -583,17 +587,20 @@ export function Inspector({
           </div>
         )}
         
-        {/* Text Editor Modal */}
-        <TextEditorModal
+        {/* Template-Aware Editor Modal */}
+        <TemplateAwareEditor
           isOpen={editorState.isOpen}
           title={editorState.propName}
           value={editorState.value}
+          propertyId={editorState.propId}
+          nodeId={nodeId || ''}
           onChange={(newValue) => {
             setEditorState({ ...editorState, value: newValue });
           }}
           onClose={closeEditor}
           onSave={saveEditorContent}
-          markupTokens={editorState.markupTokens}
+          template={undefined}
+          markupProfile={editorState.markupProfile}
         />
       </div>
     </aside>

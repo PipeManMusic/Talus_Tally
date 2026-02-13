@@ -1,0 +1,87 @@
+meta:
+  version: "1.0"
+  description: "Defines the structure for indicator sets used in UI status displays, progress tracking, and visual feedback. Indicators are grouped into sets (e.g., status, priority, health)."
+
+indicator:
+  description: "Individual indicator definition within a set"
+  required_fields:
+    - id: "required - unique identifier for the indicator within its set"
+    - file: "required - filename of the SVG file in the indicators directory"
+  optional_fields:
+    - description: "optional - human-readable description of what the indicator represents"
+    - default_color: "optional - default hex color code applied to indicator (#RRGGBB)"
+    - semantic_meaning: "optional - semantic meaning (e.g., 'success', 'warning', 'error', 'info')"
+
+indicator_set:
+  description: "A collection of related indicators (e.g., all status states, all priority levels)"
+  required_fields:
+    - id: "required - unique identifier for the indicator set"
+    - description: "required - description of the set's purpose"
+  optional_fields:
+    - indicators: "optional - array of indicator definitions"
+    - style_guide: "optional - SVG style guidelines for indicators in this set"
+      viewBox: "recommended SVG viewBox dimensions"
+      stroke_width: "recommended stroke width in pixels"
+      format: "stroke-based or fill-based rendering"
+    - default_theme: "optional - default color theme for all indicators"
+      [indicator_id]: "color mapping for specific indicator"
+        indicator_color: "hex color code for indicator appearance"
+        text_color: "hex color code for accompanying text"
+
+indicator_catalog:
+  description: "Complete indicator sets catalog"
+  required_fields:
+    - indicator_sets: "required - object containing all indicator set definitions"
+  optional_fields:
+    - meta: "optional - catalog metadata"
+      version: "catalog version"
+      last_updated: "ISO 8601 date of last update"
+
+predefined_sets:
+  status:
+    description: "Task/item completion status indicators"
+    indicators:
+      - empty: "Pending/not started"
+      - partial: "In progress/partially complete"
+      - filled: "Complete/done"
+      - alert: "Blocked/error state"
+  
+  priority:
+    description: "Priority level indicators"
+    indicators:
+      - low: "Low priority"
+      - medium: "Medium priority"
+      - high: "High priority"
+      - critical: "Critical/urgent"
+  
+  health:
+    description: "Health/condition indicators"
+    indicators:
+      - healthy: "Good condition"
+      - warning: "Needs attention"
+      - critical: "Failed/critical"
+  
+  presence:
+    description: "Presence status indicators"
+    indicators:
+      - offline: "Not active"
+      - idle: "Idle/away"
+      - online: "Active/present"
+
+usage:
+  node_indicators: "Indicators displayed on tree nodes for quick status understanding"
+  list_indicators: "Visual markers in lists and tables"
+  cards: "Status badges on content cards"
+  timeline: "Progress markers on timeline views"
+
+validation_rules:
+  - "indicator.id must match pattern: ^[a-z0-9]+(_[a-z0-9]+)*$ (snake_case)"
+  - "indicator.file must reference existing SVG file in assets/indicators/ directory"
+  - "indicator_set.id must be unique within the catalog"
+  - "hex colors must be valid format: #RRGGBB or #RGB"
+  - "SVG files should follow style guide: 24x24 viewBox, stroke-based, 2px stroke"
+
+theme_inheritance:
+  description: "Color themes can be defined at catalog, set, or indicator level"
+  cascade: "Indicator-level > Set-level > Catalog-level > Hardcoded defaults"
+  usage: "Allows application-wide theme changes while supporting set-specific overrides"

@@ -94,6 +94,17 @@ export interface NodeTypeSchema {
       name: string;
       indicator_id?: string;
     }>;
+    markup_profile?: string;
+    markup_tokens?: Array<{
+      id: string;
+      label: string;
+      prefix?: string;
+      pattern?: string;
+      [k: string]: any;
+    }>;
+    indicator_set?: string;
+    description?: string;
+    [k: string]: any;
   }>;
 }
 
@@ -126,6 +137,12 @@ export interface IconCatalog {
   file: string;
   description: string;
   url?: string;
+}
+
+export interface MarkupProfileListItem {
+  id: string;
+  label: string;
+  description?: string;
 }
 
 export interface IconFileUploadResponse {
@@ -355,6 +372,15 @@ export class APIClient {
       throw new Error(`Failed to fetch template schema: ${response.status} ${response.statusText}`);
     }
     return response.json();
+  }
+
+  async listMarkupProfiles(): Promise<MarkupProfileListItem[]> {
+    const response = await fetch(`${this.baseUrl}/api/v1/markups`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch markup profiles: ${response.status} ${response.statusText}`);
+    }
+    const data = await response.json();
+    return data.profiles || [];
   }
 
   // Config Management

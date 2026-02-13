@@ -1,0 +1,466 @@
+/**
+ * Template-Aware Editor Styles
+ * Professional dark theme with white editor area
+ */
+
+.tae-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.tae-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+}
+
+.tae-container {
+  position: relative;
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  width: 90%;
+  height: 90vh;
+  max-width: 1200px;
+  max-height: 800px;
+  color: #e0e0e0;
+  z-index: 1001;
+}
+
+/* Header */
+.tae-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #333;
+  background-color: #252525;
+}
+
+.tae-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #f0f0f0;
+}
+
+.tae-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #888;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.tae-close:hover {
+  color: #fff;
+}
+
+/* Toolbar */
+.tae-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: #222;
+  border-bottom: 1px solid #333;
+  overflow-x: auto;
+  flex-wrap: wrap;
+}
+
+.tae-toolbar-group {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.tae-toolbar-divider {
+  width: 1px;
+  height: 24px;
+  background-color: #444;
+  margin: 0 4px;
+}
+
+.tae-toolbar-spacer {
+  flex: 1;
+}
+
+/* Toolbar Buttons */
+.tae-btn {
+  background-color: #333;
+  border: 1px solid #444;
+  color: #d0d0d0;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  font-size: 14px;
+  min-height: 32px;
+}
+
+.tae-btn:hover:not(:disabled) {
+  background-color: #444;
+  border-color: #555;
+  color: #f0f0f0;
+}
+
+.tae-btn:active:not(:disabled) {
+  background-color: #0d7377;
+  border-color: #0d7377;
+}
+
+.tae-btn-active {
+  background-color: #0d7377;
+  border-color: #0d7377;
+  color: #ffffff;
+}
+
+.tae-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.tae-btn-sm {
+  padding: 4px 8px;
+  font-size: 12px;
+  min-height: 28px;
+  width: 28px;
+}
+
+/* Token buttons have text labels instead of icons */
+.tae-toolbar-group .tae-btn {
+  font-size: 12px;
+  padding: 6px 12px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Markup tag selector dropdown */
+.tae-markup-selector {
+  background-color: #333;
+  border: 1px solid #444;
+  color: #d0d0d0;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  transition: all 0.2s;
+}
+
+.tae-markup-selector:hover:not(:disabled) {
+  background-color: #444;
+  border-color: #555;
+}
+
+.tae-markup-selector:focus {
+  outline: none;
+  border-color: #0d7377;
+  box-shadow: 0 0 0 2px rgba(13, 115, 119, 0.2);
+}
+
+.tae-markup-selector:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #2a2a2a;
+}
+
+.tae-markup-selector option {
+  background-color: #333;
+  color: #d0d0d0;
+  padding: 6px;
+}
+
+/* Indent Controls */
+.tae-indent-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #aaa;
+  padding: 0 8px;
+}
+
+.tae-indent-level {
+  display: inline-block;
+  min-width: 20px;
+  text-align: center;
+  color: #0d7377;
+  font-weight: 600;
+}
+
+/* Save/Cancel Buttons */
+.tae-save-btn {
+  background-color: #0d7377;
+  border: 1px solid #0d7377;
+  color: white;
+  padding: 6px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.tae-save-btn:hover {
+  background-color: #14919b;
+  border-color: #14919b;
+}
+
+.tae-cancel-btn {
+  background-color: #444;
+  border: 1px solid #555;
+  color: #d0d0d0;
+  padding: 6px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.tae-cancel-btn:hover {
+  background-color: #555;
+  border-color: #666;
+  color: #f0f0f0;
+}
+
+/* Editor Area */
+.tae-editor-wrapper {
+  flex: 1;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+}
+
+.tae-render-layer {
+  flex: 1;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: auto;
+  padding: 12px 16px;
+  background-color: #000;
+  color: #ffffff;
+  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.6;
+  box-sizing: border-box;
+  z-index: 0;
+  display: none;
+}
+
+/* When render layer is used as overlay (formatted mode) */
+.tae-render-layer-overlay {
+  display: block;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.tae-render-layer.visible {
+  display: block;
+}
+
+.tae-rendered-content {
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  color: #ffffff;
+}
+
+.tae-spelling-error {
+  text-decoration: underline;
+  text-decoration-color: #ff4d4f;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+}
+
+.tae-tag-spacer {
+  display: inline-block;
+  width: calc(var(--prefix-len, 1) * 1ch);
+  height: 1.6em;
+  margin-right: 4px;
+  box-sizing: border-box;
+  vertical-align: baseline;
+}
+
+/* Bold formatting in render layer */
+.tae-rendered-content strong,
+.tae-rendered-content b {
+  font-weight: 700;
+  color: #ffffff;
+}
+
+/* Italic formatting in render layer */
+.tae-rendered-content em,
+.tae-rendered-content i {
+  font-style: italic;
+  color: #e0e0e0;
+}
+
+/* Underline formatting in render layer */
+.tae-rendered-content u {
+  text-decoration: underline;
+  text-decoration-color: #888;
+}
+
+/* Textarea */
+.tae-textarea {
+  flex: 1;
+  padding: 12px 16px;
+  background-color: #000;
+  border: none;
+  color: #ffffff;
+  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.6;
+  resize: none;
+  outline: none;
+  overflow: auto;
+  z-index: 2;
+  box-sizing: border-box;
+  position: relative;
+  /* Prevent font rendering changes */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Textarea in formatted mode: make background and text transparent */
+.tae-textarea[data-view-mode="formatted"] {
+  background-color: transparent;
+  color: transparent;
+  caret-color: #0d7377;
+}
+
+.tae-textarea::selection {
+  background-color: rgba(13, 115, 119, 0.5);
+  color: transparent;
+}
+
+.tae-textarea[data-view-mode="formatted"]::selection {
+  background-color: rgba(13, 115, 119, 0.7);
+  color: transparent;
+}
+
+.tae-textarea:focus {
+  outline: 1px solid #0d7377;
+}
+
+.tae-textarea[data-view-mode="formatted"]:focus {
+  outline: none;
+}
+
+/* Status Bar */
+.tae-status-bar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  padding: 8px 16px;
+  background-color: #1a1a1a;
+  border-top: 1px solid #333;
+  font-size: 12px;
+  color: #888;
+}
+
+.tae-spell-count {
+  color: #6b6b6b;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tae-spell-count.tae-spell-error {
+  color: #ff6b6b;
+}
+
+.tae-spell-count.tae-spell-ok {
+  color: #6bff6b;
+}
+
+/* Context Menu - for spell checking suggestions */
+.tae-context-menu {
+  position: fixed;
+  background-color: #2d2d2d;
+  border: 1px solid #444;
+  border-radius: 4px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  min-width: 180px;
+  z-index: 2000;
+  overflow: hidden;
+}
+
+.tae-context-word {
+  padding: 8px 12px;
+  font-weight: 600;
+  color: #f0f0f0;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tae-context-divider {
+  height: 1px;
+  background-color: #444;
+}
+
+.tae-context-item {
+  width: 100%;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  color: #d0d0d0;
+  text-align: left;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+  clear: both;
+}
+
+.tae-context-item:hover {
+  background-color: #0d7377;
+  color: #fff;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .tae-container {
+    width: 95%;
+    height: 95vh;
+    max-height: 90vh;
+  }
+
+  .tae-toolbar {
+    gap: 4px;
+  }
+
+  .tae-toolbar-divider {
+    display: none;
+  }
+
+  .tae-status-bar {
+    gap: 8px;
+  }
+}

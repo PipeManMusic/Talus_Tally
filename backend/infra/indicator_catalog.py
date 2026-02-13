@@ -12,6 +12,7 @@ from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, asdict, field
 from datetime import datetime
 import tempfile
+from backend.infra.schema_validator import SchemaValidator
 
 
 @dataclass
@@ -84,6 +85,11 @@ class IndicatorCatalogManager:
 
         with open(self.catalog_path, 'r') as f:
             data = yaml.safe_load(f) or {}
+
+        # Validate against indicator schema
+        errors = SchemaValidator.validate_indicator_catalog(data)
+        if errors:
+            raise ValueError(f"Indicator catalog validation failed:\n" + "\n".join(f"  - {e}" for e in errors))
 
         self._catalog = {}
         indicator_sets_data = data.get('indicator_sets', {})

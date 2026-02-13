@@ -1,40 +1,66 @@
 id: script_default
 label: Default Script
+description: "Default screenplay/script formatting inspired by Trelby. Tokens support formatting applied when inserted."
 tokens:
-  - id: scene
-    label: Scene
-    prefix: "SCENE:"
+  - id: "scene"
+    label: "Scene"
+    format_scope: "line"
+    format:
+      text_transform: "uppercase"
+      align: "center"
+      bold: true
+
   - id: hook
     label: Hook
-    prefix: "HOOK:"
+    format_scope: "line"      
+
   - id: visual
     label: Visual / B-Roll
-    prefix: "[VISUAL]"
+    format_scope: "line"
+    format:
+      text_transform: "uppercase"
+
   - id: audio
     label: Audio / SFX
-    prefix: "[AUDIO]"
+    format_scope: "line"
+    format:
+      text_transform: "uppercase"
+
   - id: text
     label: On-Screen Text
-    prefix: "[TEXT]"
+    format_scope: "line"
+
   - id: speaker
     label: Speaker
-    prefix: "SPEAKER:"
     pattern: '^(?P<name>[A-Z][A-Z0-9_ ]+):\s*(?P<text>.*)$'
+    format_scope: "line"
+    format:
+      text_transform: "uppercase"
+
   - id: action
     label: Action
-    prefix: "[ACTION]"
+    format_scope: "line"
+
   - id: payoff
     label: Retention Payoff
-    prefix: "PAYOFF:"
+    format_scope: "line"
+
   - id: loop
     label: Open Loop
-    prefix: "LOOP:"
+    format_scope: "line"
+
   - id: cta
     label: Call to Action
-    prefix: "CTA:"
+    format_scope: "line"
+    format:
+      text_transform: "uppercase"
+
   - id: part
     label: Inventory Part
-    prefix: "PART:"
+    format_scope: "line"
+    format:
+      text_transform: "uppercase"
+
   - id: note
     label: Note
-    prefix: "NOTE:"
+    format_scope: "line"

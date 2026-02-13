@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 import yaml
 from typing import Any, Dict, List, Optional
+from backend.infra.schema_validator import SchemaValidator
 
 
 class MarkupRegistry:
@@ -13,10 +14,17 @@ class MarkupRegistry:
         if base_dir is None:
             infra_dir = Path(__file__).resolve().parent
             project_root = infra_dir.parent.parent
-            candidates = [Path('/opt/talus_tally/data/markups')]
-            if hasattr(sys, '_MEIPASS'):
-                candidates.append(Path(sys._MEIPASS) / 'data' / 'markups')
-            candidates.append(project_root / 'data' / 'markups')
+            
+            # In development, always use project directory. In production, check /opt first.
+            is_development = os.environ.get('TALUS_ENV', 'development').lower() == 'development'
+            
+            if is_development:
+                candidates = [project_root / 'data' / 'markups']
+            else:
+                candidates = [Path('/opt/talus_tally/data/markups')]
+                if hasattr(sys, '_MEIPASS'):
+                    candidates.append(Path(sys._MEIPASS) / 'data' / 'markups')
+                candidates.append(project_root / 'data' / 'markups')
 
             selected = None
             for candidate in candidates:
@@ -24,7 +32,7 @@ class MarkupRegistry:
                     selected = candidate
                     break
             if selected is None:
-                selected = candidates[-1]
+                selected = candidates[0]
             base_dir = selected
         self.base_dir = str(base_dir)
         self._cache: Dict[str, Dict[str, Any]] = {}
@@ -47,8 +55,37 @@ class MarkupRegistry:
         if not isinstance(tokens, list):
             raise ValueError(f"Markup profile tokens must be a list: {profile_id}")
 
+        # Validate against markup schema
+        errors = SchemaValidator.validate_markup_profile(data)
+        if errors:
+            raise ValueError(f"Markup profile validation failed for '{profile_id}':\n" + "\n".join(f"  - {e}" for e in errors))
+
         self._cache[profile_id] = data
         return data
+
+    def list_profiles(self) -> List[Dict[str, str]]:
+        profiles: List[Dict[str, str]] = []
+        base_path = Path(self.base_dir)
+        if not base_path.exists():
+            return profiles
+
+        for file_path in sorted(base_path.glob('*.yaml')):
+            try:
+                with open(file_path, 'r') as f:
+                    data = yaml.safe_load(f) or {}
+                profile_id = data.get('id')
+                label = data.get('label') or profile_id
+                if not profile_id:
+                    continue
+                profiles.append({
+                    'id': profile_id,
+                    'label': label,
+                    'description': data.get('description', '') or ''
+                })
+            except Exception:
+                continue
+
+        return profiles
 
 
 class MarkupParser:

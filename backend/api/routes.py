@@ -319,6 +319,52 @@ def list_sessions():
 
 
 # ============================================================================
+# Markup Profiles
+# ============================================================================
+
+
+@api_bp.route('/markups', methods=['GET'])
+def list_markup_profiles():
+    """List available markup profiles."""
+    try:
+        from backend.infra.markup import MarkupRegistry
+        registry = MarkupRegistry()
+        profiles = registry.list_profiles()
+        return jsonify({'profiles': profiles}), 200
+    except Exception as e:
+        return jsonify({
+            'error': {
+                'code': 'LOAD_ERROR',
+                'message': f'Failed to list markup profiles: {str(e)}'
+            }
+        }), 500
+
+
+@api_bp.route('/markup/<profile_id>', methods=['GET'])
+def get_markup_profile(profile_id: str):
+    """Get a markup profile configuration by ID."""
+    try:
+        from backend.infra.markup import MarkupRegistry
+        registry = MarkupRegistry()
+        profile = registry.load_profile(profile_id)
+        return jsonify(profile), 200
+    except FileNotFoundError:
+        return jsonify({
+            'error': {
+                'code': 'NOT_FOUND',
+                'message': f'Markup profile not found: {profile_id}'
+            }
+        }), 404
+    except Exception as e:
+        return jsonify({
+            'error': {
+                'code': 'LOAD_ERROR',
+                'message': f'Failed to load markup profile: {str(e)}'
+            }
+        }), 500
+
+
+# ============================================================================
 # CSV Import
 # ============================================================================
 

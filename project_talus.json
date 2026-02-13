@@ -61,7 +61,7 @@
         "type": "episode",
         "properties": {
           "name": "Intro",
-          "description": "\nSCENE: Studio\nHOOK: Have you ever dreamed of buying an old car and turning it into your dream build? Well, in this video I'm going to show you how I intend to take a barely reliable 1988 Bronco II and turn it into my dream restomod.\nSIMPLE INTRO\nDANIEL\nHello everyone out in youtube land I'm Danile Worth and this is project Talus, a project to take a daily driver 80s car Ford would like to forget and turns it into a cutting edge resto mod. If you like cars, software, the 1980s or Dad jokes. You are in the right place.\nDANIEL\nNow why would a prefectly sane person do such a thing, they likely wouldn't? why's you bring that up? Now why would I do something like this......that's as a more compeling story. My first car an still deepes love on four wheels was a 1987 Ford Bronco II that given to me when I was 16.\nPICTURE OF THE 1987 BRONCO II\nDANIEL\n I owned and drove it till I had to sell it when we foreclosed on our house in 2008. We really did need the money to move and get another place. I dream about all the things I wanted to do to the truck and I just didn't have the money or the skill.\nDANIEL\nIt wasn't really on my mind to get get another Bronco II but I had a 1954 Ford F-100 project that I'd gotten from my Father and after 15 years of ownership, I handn't done a single thing with it. Sure, I planned many things but I really never did anything. About four years ago my Wife and I started a little hobby buisness renting cars on Turo, more on that later, and while ther are a lot of cool cars in the stable, I never really get to drive them because they are out on rentals.We ended up leasing a Nissan Arya as our vehicle that doesn't go out on rental before all the rebates ended and that's been fine but my wife doesn't like things blocking up the driveway that aren't useful. I had it at a storage lot but it got evicted by the city of Dacono. So my wife had a thought that if I sold the truck I could get a drivable Bronco II that we would own cash and could get it reliable we could share it when the lease for the Arya is up. My wife of 26 years remembers the original Bronco II and how much I loved it, and she's pretty pragmatic about tranportation, it just has to be reliable and safe.\nDANIEL\nAnd that my friends, is where her rationality ends and my crazy begins. When given an inch to do something I'm going to take a mile. So now, I've been planning this procect starting in November and didn't actually buy a vehicle till January. I've been pouring everything I have into making this project happen and I'm excited for you to follow along. So whithout further ado, let me introduce you to the Project Talus project truck.\nWALKAROUND OF THE TRUCK\nDANIEL\nI got the truck off a lovely lady on Facebook marketplace. What I know about it is that it was owned by her Uncle and her and her sister where planning to make it into a 4x4 trail rig but abandond the effort for reasions I don't know. She did mention that they had driven it to the mountains at least once. I have paperwork showing that there was an estimate for about $2600 dollars to fix a transmission leak, a rear differential leak, valve cover leak and a timing chain cover leak. They paid over $1000 to have the transmission pan leak and valve cover leaks addressed and did not approve the rest and that's reasonable to me. The amount cost of having a professional mechanic work on a truck that was sold to me for $3500 dollars is just not economical for most people. \n",
+          "description": "",
           "episode_number": 1,
           "status": "3094f28b-3fc3-2667-5ae1-933b041d78ed",
           "synopsis": "The who what where and why of Project Talus"
@@ -91,15 +91,32 @@
           "name": "Emisions",
           "prop_1770559115384": "c5707e0e-c9d6-3397-0b55-578878e04e81"
         },
-        "children": [],
+        "children": [
+          "ca1eaebb-9420-4282-9d5a-e5b24305f6fd"
+        ],
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "film",
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
-          "uses_camera_gear"
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
         ]
+      },
+      {
+        "id": "ca1eaebb-9420-4282-9d5a-e5b24305f6fd",
+        "type": "uses_camera_gear",
+        "properties": {
+          "name": "Pixel 8 Pro",
+          "asset_id": "49b3f657-b698-4e67-9fec-931979b34a7a"
+        },
+        "children": [],
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": "camera",
+        "allowed_children": []
       },
       {
         "id": "1fd92134-4784-464c-9962-da6806ec1c76",
@@ -117,7 +134,9 @@
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
-          "uses_camera_gear"
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
         ]
       },
       {
@@ -140,6 +159,7 @@
         "type": "episode",
         "properties": {
           "name": "Diagnostics",
+          "description": "[SCENE]Studio\n[HOOK]Have you ever wondered how to make sure your vintage car purchase is ready to be a reliable daily driver and won't leave you on the side of the road with a tow truck bill or worse? Then stay tuned for Project Talus\n[VISUAL]Intro clip\n",
           "episode_number": 2,
           "status": "3094f28b-3fc3-2667-5ae1-933b041d78ed"
         },
@@ -167,7 +187,12 @@
           "dc5836c8-8853-445b-b476-70ae8a4e0d79",
           "37bd34ac-e3e7-41d3-9de7-0510e48e157e",
           "7cd43fa0-fe3c-4c1d-a6e1-6824fb6daed8",
-          "f08168c0-d944-4239-8d30-7bec18a18fe2"
+          "f08168c0-d944-4239-8d30-7bec18a18fe2",
+          "af3e4d07-4505-494b-afb8-14957809617b",
+          "46c41a8b-c646-40f5-beff-313a9ac758de",
+          "30d94305-67ec-4e29-8e59-60d9beea5fed",
+          "4facc8ea-0e6c-474a-a682-e1648b641bda",
+          "e4750de5-a8eb-4525-8cf6-eb092af1a6b3"
         ],
         "indicator_id": "partial",
         "indicator_set": "status",
@@ -190,7 +215,7 @@
           "name": "Emission Test",
           "dropbox_link": "https://www.dropbox.com/scl/fi/47xa46zapqq91hvzqt7eu/DiagnosticsEmissions.mp4?rlkey=21ytv1y0ehhde5g3j12i4k720&st=1bc0o4qd&dl=0",
           "filename": "DiagnosticsEmisions.mp4",
-          "notes": "I was old I couldn't shoot by an employee, no signs where posted but I let it go.",
+          "notes": "I was told I couldn't shoot by an employee, no signs where posted but I let it go.",
           "prop_1770559115384": "c5707e0e-c9d6-3397-0b55-578878e04e81"
         },
         "children": [],
@@ -200,7 +225,9 @@
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
-          "uses_camera_gear"
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
         ]
       },
       {
@@ -208,6 +235,9 @@
         "type": "footage",
         "properties": {
           "name": "Check Oil Level",
+          "dropbox_link": "",
+          "filename": "",
+          "notes": "",
           "prop_1770559115384": "c91b7a3f-570a-0ec4-8e1b-76fd07d93d70"
         },
         "children": [],
@@ -217,7 +247,9 @@
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
-          "uses_camera_gear"
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
         ]
       },
       {
@@ -234,7 +266,9 @@
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
-          "uses_camera_gear"
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
         ]
       },
       {
@@ -251,7 +285,9 @@
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
-          "uses_camera_gear"
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
         ]
       },
       {
@@ -268,7 +304,9 @@
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
-          "uses_camera_gear"
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
         ]
       },
       {
@@ -285,7 +323,9 @@
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
-          "uses_camera_gear"
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
         ]
       },
       {
@@ -303,7 +343,9 @@
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
-          "uses_camera_gear"
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
         ]
       },
       {
@@ -320,7 +362,9 @@
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
-          "uses_camera_gear"
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
         ]
       },
       {
@@ -338,7 +382,9 @@
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
-          "uses_camera_gear"
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
         ]
       },
       {
@@ -355,14 +401,16 @@
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
-          "uses_camera_gear"
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
         ]
       },
       {
         "id": "72700a15-614d-4990-954f-3f5880d78e4b",
         "type": "footage",
         "properties": {
-          "name": "CCheck Tire Tread Depth",
+          "name": "Check Tire Tread Depth",
           "prop_1770559115384": "c91b7a3f-570a-0ec4-8e1b-76fd07d93d70"
         },
         "children": [],
@@ -372,7 +420,9 @@
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
-          "uses_camera_gear"
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
         ]
       },
       {
@@ -389,7 +439,9 @@
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
-          "uses_camera_gear"
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
         ]
       },
       {
@@ -406,7 +458,9 @@
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
-          "uses_camera_gear"
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
         ]
       },
       {
@@ -423,7 +477,9 @@
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
-          "uses_camera_gear"
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
         ]
       },
       {
@@ -440,7 +496,9 @@
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
-          "uses_camera_gear"
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
         ]
       },
       {
@@ -450,15 +508,32 @@
           "name": "Cabin Loudness Off",
           "prop_1770559115384": "c5707e0e-c9d6-3397-0b55-578878e04e81"
         },
-        "children": [],
+        "children": [
+          "6424bb32-c891-412a-9200-cac327a900bc"
+        ],
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "film",
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
-          "uses_camera_gear"
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
         ]
+      },
+      {
+        "id": "6424bb32-c891-412a-9200-cac327a900bc",
+        "type": "uses_tool",
+        "properties": {
+          "name": "Decibel Meter",
+          "asset_id": "e15fdad8-0778-4ae6-abf6-0bfb6f097f3d"
+        },
+        "children": [],
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": "cog",
+        "allowed_children": []
       },
       {
         "id": "6c53b542-1a3e-43cf-a0de-6d1c74f0bd04",
@@ -467,15 +542,31 @@
           "name": "Cabin Loudness Idle",
           "prop_1770559115384": "c5707e0e-c9d6-3397-0b55-578878e04e81"
         },
-        "children": [],
+        "children": [
+          "7ff846cb-6df0-4b4d-adcb-e8cb2bf3eff3"
+        ],
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "film",
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
-          "uses_camera_gear"
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
         ]
+      },
+      {
+        "id": "7ff846cb-6df0-4b4d-adcb-e8cb2bf3eff3",
+        "type": "uses_tool",
+        "properties": {
+          "name": "Decibel Meter"
+        },
+        "children": [],
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": "cog",
+        "allowed_children": []
       },
       {
         "id": "c2504f1a-e609-4da9-b1ac-95c6540126ef",
@@ -484,15 +575,31 @@
           "name": "Cabin Loudness Street",
           "prop_1770559115384": "c5707e0e-c9d6-3397-0b55-578878e04e81"
         },
-        "children": [],
+        "children": [
+          "8234e852-64ec-49de-bd35-f14454b2afb0"
+        ],
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "film",
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
-          "uses_camera_gear"
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
         ]
+      },
+      {
+        "id": "8234e852-64ec-49de-bd35-f14454b2afb0",
+        "type": "uses_tool",
+        "properties": {
+          "name": "Decibel Meter"
+        },
+        "children": [],
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": "cog",
+        "allowed_children": []
       },
       {
         "id": "269dbcbb-db3e-476c-bc14-9fd164af2b6c",
@@ -501,15 +608,31 @@
           "name": "Cabin Loudness Highway",
           "prop_1770559115384": "c5707e0e-c9d6-3397-0b55-578878e04e81"
         },
-        "children": [],
+        "children": [
+          "1a12d878-9c11-4cb9-a2a5-b41702dffbf5"
+        ],
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "film",
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
-          "uses_camera_gear"
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
         ]
+      },
+      {
+        "id": "1a12d878-9c11-4cb9-a2a5-b41702dffbf5",
+        "type": "uses_tool",
+        "properties": {
+          "name": "Decibel Meter"
+        },
+        "children": [],
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": "cog",
+        "allowed_children": []
       },
       {
         "id": "106df4c1-205a-464f-871b-fab1be402549",
@@ -525,7 +648,9 @@
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
-          "uses_camera_gear"
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
         ]
       },
       {
@@ -542,7 +667,9 @@
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
-          "uses_camera_gear"
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
         ]
       },
       {
@@ -559,7 +686,9 @@
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
-          "uses_camera_gear"
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
         ]
       },
       {
@@ -576,7 +705,9 @@
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
-          "uses_camera_gear"
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
         ]
       },
       {
@@ -593,7 +724,108 @@
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
-          "uses_camera_gear"
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
+        ]
+      },
+      {
+        "id": "af3e4d07-4505-494b-afb8-14957809617b",
+        "type": "footage",
+        "properties": {
+          "name": "Check Fuses",
+          "filename": "",
+          "prop_1770559115384": "c91b7a3f-570a-0ec4-8e1b-76fd07d93d70"
+        },
+        "children": [],
+        "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#10b981",
+        "allowed_children": [
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
+        ]
+      },
+      {
+        "id": "46c41a8b-c646-40f5-beff-313a9ac758de",
+        "type": "footage",
+        "properties": {
+          "name": "Check Engine Belts",
+          "prop_1770559115384": "c91b7a3f-570a-0ec4-8e1b-76fd07d93d70"
+        },
+        "children": [],
+        "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#10b981",
+        "allowed_children": [
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
+        ]
+      },
+      {
+        "id": "30d94305-67ec-4e29-8e59-60d9beea5fed",
+        "type": "footage",
+        "properties": {
+          "name": "Front Drive Shaft Check",
+          "prop_1770559115384": "c91b7a3f-570a-0ec4-8e1b-76fd07d93d70"
+        },
+        "children": [],
+        "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#10b981",
+        "allowed_children": [
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
+        ]
+      },
+      {
+        "id": "4facc8ea-0e6c-474a-a682-e1648b641bda",
+        "type": "footage",
+        "properties": {
+          "name": "Rear Drive Shaft Check",
+          "prop_1770559115384": "c91b7a3f-570a-0ec4-8e1b-76fd07d93d70"
+        },
+        "children": [],
+        "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#10b981",
+        "allowed_children": [
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
+        ]
+      },
+      {
+        "id": "e4750de5-a8eb-4525-8cf6-eb092af1a6b3",
+        "type": "footage",
+        "properties": {
+          "name": "0 - 60",
+          "dropbox_link": "",
+          "filename": "",
+          "notes": "",
+          "prop_1770559115384": "c5707e0e-c9d6-3397-0b55-578878e04e81"
+        },
+        "children": [],
+        "indicator_id": "filled",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#10b981",
+        "allowed_children": [
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
         ]
       },
       {
@@ -810,7 +1042,8 @@
           "9a789eb9-bd48-49f0-a8a9-95a47472dc39",
           "6ec434e2-ce7f-4ade-9d9e-7cbc8d5af636",
           "b1adc95d-e032-4b50-92be-a2491c7378e2",
-          "f0041e5f-6d84-419b-a831-8f878353250d"
+          "f0041e5f-6d84-419b-a831-8f878353250d",
+          "49b3f657-b698-4e67-9fec-931979b34a7a"
         ],
         "indicator_id": null,
         "indicator_set": null,
@@ -825,12 +1058,13 @@
         "id": "73915ba5-984d-409a-8405-fb30c07c8260",
         "type": "camera_gear_asset",
         "properties": {
-          "name": "Canon",
-          "model": "M50",
+          "name": "Canon M50",
+          "acquisition_cost": "403.9",
+          "model": "",
           "status": "c94096f7-4637-2728-1c2d-c3bf7e3ccb2d"
         },
         "children": [],
-        "indicator_id": "filled",
+        "indicator_id": "available",
         "indicator_set": "status",
         "icon_id": "camera",
         "schema_shape": "circle",
@@ -841,12 +1075,13 @@
         "id": "9a789eb9-bd48-49f0-a8a9-95a47472dc39",
         "type": "camera_gear_asset",
         "properties": {
-          "name": "Black Magic",
-          "model": "Production 4K",
+          "name": "Black Magic Production 4K",
+          "acquisition_cost": "808.21",
+          "model": "",
           "status": "c94096f7-4637-2728-1c2d-c3bf7e3ccb2d"
         },
         "children": [],
-        "indicator_id": "filled",
+        "indicator_id": "available",
         "indicator_set": "status",
         "icon_id": "camera",
         "schema_shape": "circle",
@@ -857,12 +1092,13 @@
         "id": "6ec434e2-ce7f-4ade-9d9e-7cbc8d5af636",
         "type": "camera_gear_asset",
         "properties": {
-          "name": "Canon",
-          "model": "5D Mk II",
+          "name": "Canon 5D Mk II",
+          "acquisition_cost": "394.16",
+          "model": "",
           "status": "c94096f7-4637-2728-1c2d-c3bf7e3ccb2d"
         },
         "children": [],
-        "indicator_id": "filled",
+        "indicator_id": "available",
         "indicator_set": "status",
         "icon_id": "camera",
         "schema_shape": "circle",
@@ -873,11 +1109,12 @@
         "id": "b1adc95d-e032-4b50-92be-a2491c7378e2",
         "type": "camera_gear_asset",
         "properties": {
-          "name": "Akaso V50 Elite",
+          "name": "Akaso V50 Elite 1",
+          "acquisition_cost": "151.89",
           "status": "c94096f7-4637-2728-1c2d-c3bf7e3ccb2d"
         },
         "children": [],
-        "indicator_id": "filled",
+        "indicator_id": "available",
         "indicator_set": "status",
         "icon_id": "camera",
         "schema_shape": "circle",
@@ -888,11 +1125,28 @@
         "id": "f0041e5f-6d84-419b-a831-8f878353250d",
         "type": "camera_gear_asset",
         "properties": {
-          "name": "Akaso V50 Elite",
+          "name": "Akaso V50 Elite 2",
+          "acquisition_cost": "151.89",
           "status": "c94096f7-4637-2728-1c2d-c3bf7e3ccb2d"
         },
         "children": [],
-        "indicator_id": "filled",
+        "indicator_id": "available",
+        "indicator_set": "status",
+        "icon_id": "camera",
+        "schema_shape": "circle",
+        "schema_color": "#0ea5e9",
+        "allowed_children": []
+      },
+      {
+        "id": "49b3f657-b698-4e67-9fec-931979b34a7a",
+        "type": "camera_gear_asset",
+        "properties": {
+          "name": "Pixel 8 Pro",
+          "acquisition_cost": "",
+          "status": "c94096f7-4637-2728-1c2d-c3bf7e3ccb2d"
+        },
+        "children": [],
+        "indicator_id": "available",
         "indicator_set": "status",
         "icon_id": "camera",
         "schema_shape": "circle",
@@ -3442,15 +3696,20 @@
     "063e0759-c0d2-4caf-b411-ed87e2f16637": true,
     "58e9689c-0b7f-4325-8ebe-ca53944cf667": true,
     "fb04ceae-e213-462b-805e-a94fead8b824": false,
-    "0f71cdf1-f7b1-4ce9-bf97-dc55b20eb208": false,
+    "0f71cdf1-f7b1-4ce9-bf97-dc55b20eb208": true,
     "be07bc50-f298-4e9b-a7b0-9c5b5e7db4c8": true,
     "80050417-1151-4cae-8431-ac5e047f58e9": false,
-    "89941716-6549-4335-9b87-7a9a5b544233": false,
+    "89941716-6549-4335-9b87-7a9a5b544233": true,
     "82584abf-2b5c-45f1-80c7-34e9d508f69c": true,
-    "318d9929-d908-4319-b908-fbeba4a8e7ff": true,
-    "1fd92134-4784-464c-9962-da6806ec1c76": true,
+    "318d9929-d908-4319-b908-fbeba4a8e7ff": false,
+    "1fd92134-4784-464c-9962-da6806ec1c76": false,
     "141251af-850d-4868-a75a-16bd0afc90a6": true,
-    "b1fe1049-5d9e-44c4-8d25-31965d40995d": false
+    "b1fe1049-5d9e-44c4-8d25-31965d40995d": false,
+    "820342f7-a2d4-4ba8-a069-71464831e660": true,
+    "e09f39d3-4ed6-4c54-8ce0-0dd198618941": false,
+    "6c53b542-1a3e-43cf-a0de-6d1c74f0bd04": false,
+    "c2504f1a-e609-4da9-b1ac-95c6540126ef": false,
+    "269dbcbb-db3e-476c-bc14-9fd164af2b6c": false
   },
   "blocking_relationships": [
     {

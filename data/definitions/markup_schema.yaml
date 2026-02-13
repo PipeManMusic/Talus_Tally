@@ -1,0 +1,69 @@
+meta:
+  version: "1.0"
+  description: "Defines the structure for markup token templates used in text editors (e.g., screenplay, technical documentation, creative writing)."
+
+markup_token:
+  description: "Defines a markup token for editor templates"
+  required_fields:
+    - id: "required - unique token identifier within the profile"
+    - label: "required - display name for token button in UI"
+    - prefix: "required - text prefix/marker inserted when token is applied"
+  optional_fields:
+    - pattern: "optional - regex pattern for parsing existing formatted text"
+    - format_scope: "optional - scope where formatting applies ('line' applies to entire line, 'prefix' applies only to prefix, unset means no auto-formatting)"
+    - format: "optional - formatting rules object to apply when token is inserted"
+      text_transform: "optional - text case transformation: 'uppercase', 'lowercase', 'capitalize', or 'none'"
+      bold: "optional - boolean, applies markdown ** markers"
+      italic: "optional - boolean, applies markdown * markers"
+      underline: "optional - boolean, applies markdown __ markers"
+      align: "optional - text alignment: 'left', 'center', 'right'"
+      font_size: "optional - CSS font-size value (e.g., '14px', '1.2em')"
+      color: "optional - hex color code for text (e.g., '#FF5733')"
+      background_color: "optional - hex color code for background"
+
+markup_profile:
+  description: "A collection of markup tokens defining an editor template"
+  required_fields:
+    - id: "required - unique profile identifier for this template"
+    - label: "required - display name for template (e.g., 'Screenplay', 'Technical Documentation')"
+  optional_fields:
+    - description: "optional - description of the markup profile's purpose and use case"
+    - tokens: "optional - array of markup_token definitions"
+    - default_transform: "optional - default text transformation applied to all tokens ('uppercase', 'lowercase', 'capitalize', 'none')"
+
+examples:
+  screenplay:
+    description: "Screenplay formatting with uppercase scene headings, action, character names"
+    tokens:
+      - id: "scene"
+        label: "Scene"
+        prefix: "SCENE:"
+        format_scope: "line"
+        format:
+          text_transform: "uppercase"
+      - id: "action"
+        label: "Action"
+        prefix: "- "
+        format: {}
+      - id: "character"
+        label: "Character"
+        prefix: "CHAR: "
+        format_scope: "prefix"
+        format:
+          text_transform: "uppercase"
+
+  technical_doc:
+    description: "Technical documentation with warnings, code blocks, parameters"
+    tokens:
+      - id: "warning"
+        label: "Warning"
+        prefix: "⚠️ "
+        format:
+          color: "#FF6B6B"
+          bold: true
+      - id: "code"
+        label: "Code"
+        prefix: "`"
+        format:
+          font_size: "0.9em"
+          background_color: "#F0F0F0"

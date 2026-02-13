@@ -112,6 +112,7 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
   const [indicatorsConfig, setIndicatorsConfig] = useState<IndicatorsConfig | null>(null);
   const [iconSvgCache, setIconSvgCache] = useState<Record<string, string>>({});
   const [indicatorSvgCache, setIndicatorSvgCache] = useState<Record<string, string>>({});
+  const [markupProfiles, setMarkupProfiles] = useState<Array<{ id: string; label: string }>>([]);
   const deletingRef = useRef<boolean>(false);
 
   // Merge props with pending optimistic updates for display
@@ -136,6 +137,20 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
     };
 
     loadConfigs();
+  }, []);
+
+  useEffect(() => {
+    const loadMarkupProfiles = async () => {
+      try {
+        const profiles = await apiClient.listMarkupProfiles();
+        setMarkupProfiles(profiles.map((profile) => ({ id: profile.id, label: profile.label || profile.id })));
+      } catch (error) {
+        console.error('Failed to load markup profiles:', error);
+        setMarkupProfiles([]);
+      }
+    };
+
+    loadMarkupProfiles();
   }, []);
 
   // Fetch SVG content for an icon
@@ -903,6 +918,7 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
                           indicatorsConfig={indicatorsConfig}
                           indicatorSvgCache={indicatorSvgCache}
                           fetchIndicatorSvg={fetchIndicatorSvg}
+                          markupProfiles={markupProfiles}
                         />
                       ))}
                     </div>
@@ -929,6 +945,7 @@ const PropertyEditor = memo(function PropertyEditor({
   indicatorsConfig,
   indicatorSvgCache,
   fetchIndicatorSvg,
+  markupProfiles,
 }: {
   property: Property;
   onUpdate: (updates: Partial<Property>) => void;
@@ -938,7 +955,14 @@ const PropertyEditor = memo(function PropertyEditor({
   indicatorsConfig: IndicatorsConfig | null;
   indicatorSvgCache: Record<string, string>;
   fetchIndicatorSvg: (indicatorId: string, url?: string) => Promise<void>;
+  markupProfiles: Array<{ id: string; label: string }>;
 }) {
+  useEffect(() => {
+    if (property.type === 'markup') {
+      onUpdate({ type: 'editor' });
+    }
+  }, [property.type, onUpdate]);
+
   return (
     <div className="bg-bg-light/50 border border-border/50 rounded overflow-hidden">
       {/* Property Header */}
@@ -995,7 +1019,7 @@ const PropertyEditor = memo(function PropertyEditor({
           <div>
             <label className="text-xs text-fg-secondary mb-1 block">Type</label>
             <select
-              value={property.type}
+              value={property.type === 'markup' ? 'editor' : property.type}
               onChange={(e) => onUpdate({ type: e.target.value })}
               className="w-full px-2 py-1 bg-bg-light border border-border rounded text-fg-primary text-sm"
             >
@@ -1005,7 +1029,7 @@ const PropertyEditor = memo(function PropertyEditor({
               <option value="boolean">Boolean</option>
               <option value="select">Select</option>
               <option value="asset">Asset</option>
-              <option value="markup">Markup</option>
+              <option value="editor">Editor</option>
             </select>
           </div>
 
@@ -1021,17 +1045,32 @@ const PropertyEditor = memo(function PropertyEditor({
             />
           </div>
 
-          {/* Markup Profile (for markup type) */}
-          {property.type === 'markup' && (
+          {/* Markup Profile (for editor type) */}
+          {(property.type === 'editor' || property.type === 'markup') && (
             <div>
-              <label className="text-xs text-fg-secondary mb-1 block">Markup Profile (optional)</label>
-              <input
-                type="text"
-                value={property.markup_profile || ''}
-                onChange={(e) => onUpdate({ markup_profile: e.target.value || undefined })}
-                className="w-full px-2 py-1 bg-bg-light border border-border rounded text-fg-primary text-sm"
-                placeholder="e.g., script_default"
-              />
+              <label className="text-xs text-fg-secondary mb-1 block">Editor Template (optional)</label>
+              {markupProfiles.length > 0 ? (
+                <select
+                  value={property.markup_profile || ''}
+                  onChange={(e) => onUpdate({ markup_profile: e.target.value || undefined })}
+                  className="w-full px-2 py-1 bg-bg-light border border-border rounded text-fg-primary text-sm"
+                >
+                  <option value="">None</option>
+                  {markupProfiles.map((profile) => (
+                    <option key={profile.id} value={profile.id}>
+                      {profile.label}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  value={property.markup_profile || ''}
+                  onChange={(e) => onUpdate({ markup_profile: e.target.value || undefined })}
+                  className="w-full px-2 py-1 bg-bg-light border border-border rounded text-fg-primary text-sm"
+                  placeholder="e.g., script_default"
+                />
+              )}
             </div>
           )}
 

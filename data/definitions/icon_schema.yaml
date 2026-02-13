@@ -1,0 +1,53 @@
+meta:
+  version: "1.0"
+  description: "Defines the structure for icon catalog validation. Icons are organized by id, linked to SVG files, and used throughout the application for UI elements."
+
+icon:
+  description: "Individual icon definition"
+  required_fields:
+    - id: "required - unique identifier for the icon (used in templates and code)"
+    - file: "required - filename of the SVG file in the icons directory"
+  optional_fields:
+    - description: "optional - human-readable description of what the icon represents"
+    - category: "optional - category for organization (e.g., 'navigation', 'status', 'action')"
+    - tags: "optional - array of tags for searching and filtering"
+    - variants: "optional - array of related variant icon ids"
+
+icon_catalog:
+  description: "Complete icon catalog for the application"
+  required_fields:
+    - icons: "required - array of icon definitions"
+  optional_fields:
+    - meta: "optional - metadata about the catalog"
+      total_icons: "optional - count of icons in catalog"
+      last_updated: "optional - ISO 8601 date of last update"
+      source: "optional - source of icons (e.g., 'Heroicons', 'custom')"
+    - categories: "optional - available icon categories for grouping"
+      navigation: "Icons for navigation and direction"
+      status: "Icons for status indicators and states"
+      action: "Icons for user actions and interactions"
+      media: "Icons for media files and entertainment"
+      document: "Icons for documents and file types"
+      object: "Icons for physical objects and devices"
+      social: "Icons for social media and sharing"
+      utility: "Icons for utility functions and settings"
+
+usage:
+  template_icons: "Icons referenced in project blueprints and templates"
+  example: |
+    Footage node with video-camera icon:
+    ```yaml
+    node_types:
+      - id: footage
+        icon_id: video-camera
+    ```
+  
+  ui_components: "Icons used in toolbar buttons, menus, and indicators"
+  example: |
+    "Close" button using x-mark icon
+
+validation_rules:
+  - "icon.id must match pattern: ^[a-z0-9]+(-[a-z0-9]+)*$ (kebab-case)"
+  - "icon.file must reference existing SVG file in assets/icons/ directory"
+  - "icon.id should be unique within the catalog"
+  - "SVG files should follow style guide: 24x24 viewBox, stroke-based, 2px stroke"

@@ -283,6 +283,7 @@ function App() {
           } catch (err) {
             console.warn('Saved session invalid, creating new session:', err);
             localStorage.removeItem('talus_tally_session_id');
+            localStorage.removeItem('sessionId');
           }
         }
         
@@ -291,6 +292,7 @@ function App() {
         const sid = session.session_id || session.id || 'unknown';
         setSessionId(sid);
         localStorage.setItem('talus_tally_session_id', sid);
+        localStorage.setItem('sessionId', sid);
         console.log('✓ Session created:', sid);
         setIsAppInitialized(true);
         setIsInitialConnection(false);
@@ -534,6 +536,12 @@ function App() {
       return [];
     }
 
+    console.log('[App] Node type schema properties:', nodeTypeSchema.properties?.map((p: any) => ({ 
+      id: p.id, 
+      type: p.type,
+      markup_profile: (p as any).markup_profile 
+    })));
+
     // Start with name as the first editable property
     const nameProperty: NodeProperty = {
       id: 'name',
@@ -563,10 +571,26 @@ function App() {
         options = safeExtractOptions(prop);
       }
       
-      // Extract markup tokens if this is an editor field with markup_profile
+      // Extract markup profile and tokens if this is an editor field
       let markupTokens = undefined;
-      if (prop.type === 'editor' && (prop as any).markup_tokens) {
-        markupTokens = (prop as any).markup_tokens;
+      let markupProfile = undefined;
+      if (prop.type === 'editor') {
+        if ((prop as any).markup_tokens) {
+          markupTokens = (prop as any).markup_tokens;
+        }
+        if ((prop as any).markup_profile) {
+          markupProfile = (prop as any).markup_profile;
+        }
+      }
+
+      if (prop.id === 'description') {
+        console.log('[App] Building description property:', {
+          propId: prop.id,
+          propType: type,
+          hasMarkupProfile: !!markupProfile,
+          markupProfile,
+          rawProp: (prop as any).markup_profile,
+        });
       }
       
       return {
@@ -577,6 +601,7 @@ function App() {
         options,
         required: prop.required,
         markupTokens,
+        markupProfile,
       };
     });
 
@@ -624,10 +649,16 @@ function App() {
         options = safeExtractOptions(prop);
       }
       
-      // Extract markup tokens if this is an editor field with markup_profile
+      // Extract markup tokens and profile if this is an editor field
       let markupTokens = undefined;
-      if (prop.type === 'editor' && (prop as any).markup_tokens) {
-        markupTokens = (prop as any).markup_tokens;
+      let markupProfile = undefined;
+      if (prop.type === 'editor') {
+        if ((prop as any).markup_tokens) {
+          markupTokens = (prop as any).markup_tokens;
+        }
+        if ((prop as any).markup_profile) {
+          markupProfile = (prop as any).markup_profile;
+        }
       }
       
       return {
@@ -638,6 +669,7 @@ function App() {
         options,
         required: prop.required,
         markupTokens,
+        markupProfile,
       };
     });
 
@@ -702,10 +734,16 @@ function App() {
         options = safeExtractOptions(prop);
       }
       
-      // Extract markup tokens if this is an editor field with markup_profile
+      // Extract markup tokens and profile if this is an editor field
       let markupTokens = undefined;
-      if (prop.type === 'editor' && (prop as any).markup_tokens) {
-        markupTokens = (prop as any).markup_tokens;
+      let markupProfile = undefined;
+      if (prop.type === 'editor') {
+        if ((prop as any).markup_tokens) {
+          markupTokens = (prop as any).markup_tokens;
+        }
+        if ((prop as any).markup_profile) {
+          markupProfile = (prop as any).markup_profile;
+        }
       }
       
       return {
@@ -716,6 +754,7 @@ function App() {
         options,
         required: prop.required,
         markupTokens,
+        markupProfile,
       };
     });
 
@@ -763,10 +802,16 @@ function App() {
         options = safeExtractOptions(prop);
       }
       
-      // Extract markup tokens if this is an editor field with markup_profile
+      // Extract markup tokens and profile if this is an editor field
       let markupTokens = undefined;
-      if (prop.type === 'editor' && (prop as any).markup_tokens) {
-        markupTokens = (prop as any).markup_tokens;
+      let markupProfile = undefined;
+      if (prop.type === 'editor') {
+        if ((prop as any).markup_tokens) {
+          markupTokens = (prop as any).markup_tokens;
+        }
+        if ((prop as any).markup_profile) {
+          markupProfile = (prop as any).markup_profile;
+        }
       }
       
       return {
@@ -777,6 +822,7 @@ function App() {
         options,
         required: prop.required,
         markupTokens,
+        markupProfile,
       };
     });
 
@@ -806,6 +852,7 @@ function App() {
     console.log(`[Session] Created new session: ${sid}`);
     setSessionId(sid);
     localStorage.setItem('talus_tally_session_id', sid);
+    localStorage.setItem('sessionId', sid);
     return sid;
   }, []);
 
@@ -842,6 +889,7 @@ function App() {
           console.log(`[Recovery] Created new session: ${newSid}`);
           setSessionId(newSid);
           localStorage.setItem('talus_tally_session_id', newSid);
+          localStorage.setItem('sessionId', newSid);
           
           await restoreGraphToSession(newSid);
           
@@ -944,6 +992,7 @@ function App() {
       setCurrentTemplateId(templateId);
       setLastFilePath(null);  // New project has no file path yet
       localStorage.setItem('talus_tally_session_id', newSessionId);
+      localStorage.setItem('sessionId', newSessionId);
       setCurrentGraph(graph);
       setShowNewProjectDialog(false);
       setIsDirty(false);  // New project is clean
@@ -1132,6 +1181,7 @@ function App() {
         console.log(`[File Open] Created new session for file: ${sid}`);
         setSessionId(sid);
         localStorage.setItem('talus_tally_session_id', sid);
+        localStorage.setItem('sessionId', sid);
       }
     } else {
       const newSession = await apiClient.createSession();
@@ -1139,6 +1189,7 @@ function App() {
       console.log(`[File Open] Created new session for file: ${sid}`);
       setSessionId(sid);
       localStorage.setItem('talus_tally_session_id', sid);
+      localStorage.setItem('sessionId', sid);
     }
 
     try {

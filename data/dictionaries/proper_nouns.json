@@ -1,0 +1,24 @@
+{
+  "proper_nouns": [
+    "John", "Jane", "Michael", "Sarah", "David", "Emma", "James", "Jessica", "Robert", "Lisa",
+    "William", "Mary", "Richard", "Patricia", "Joseph", "Jennifer", "Thomas", "Linda", "Charles", "Barbara",
+    "London", "Paris", "New York", "Tokyo", "Berlin", "Moscow", "Sydney", "Toronto", "Dublin", "Madrid",
+    "United States", "United Kingdom", "France", "Germany", "Japan", "China", "India", "Brazil", "Australia", "Canada",
+    "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday",
+    "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December",
+    "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December",
+    "Microsoft", "Apple", "Google", "Amazon", "Facebook", "Tesla", "Netflix", "Adobe", "Oracle", "IBM",
+    "Harvard", "Yale", "Princeton", "Stanford", "MIT", "Oxford", "Cambridge", "Berkeley", "Caltech", "Cornell",
+    "English", "Spanish", "French", "German", "Italian", "Portuguese", "Russian", "Japanese", "Chinese", "Arabic",
+    "Christianity", "Islam", "Judaism", "Buddhism", "Hinduism", "Sikhism", "Taoism", "Shinto",
+    "Tom", "Jerry", "Mickey", "Minnie", "Donald", "Goofy", "Elmer", "Bugs", "Daffy", "Porky",
+    "Bronco", "Denver", "Colorado", "Talus", "Tally",
+    "Peter", "Paul", "Mark", "Luke", "Matthew", "Andrew", "Philip", "Bartholomew", "Thomas", "James",
+    "George", "Washington", "Lincoln", "Roosevelt", "Kennedy", "Reagan", "Clinton", "Obama", "Bush", "Trump",
+    "Rome", "Cairo", "Istanbul", "Bangkok", "Singapore", "Dubai", "Barcelona", "Venice", "Amsterdam", "Vienna",
+    "Shakespeare", "Dante", "Cervantes", "Goethe", "Tolstoy", "Dostoevsky", "Austen", "Brontë", "Dickens", "Milton",
+    "Einstein", "Newton", "Darwin", "Galileo", "Hawking", "Feynman", "Curie", "Planck", "Tesla", "Faraday",
+    "Beethoven", "Mozart", "Bach", "Wagner", "Brahms", "Chopin", "Liszt", "Debussy", "Stravinsky", "Bernstein",
+    "Picasso", "Van Gogh", "Da Vinci", "Michelangelo", "Rembrandt", "Warhol", "Dali", "Monet", "Pollock", "Kandinsky"
+  ]
+}

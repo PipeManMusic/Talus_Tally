@@ -1,6 +1,6 @@
 meta:
   version: "1.0"
-  description: "Defines the allowed structure for User Blueprints."
+  description: "Defines the allowed structure for project templates and node blueprints."
 
 property_types:
   - id: "text"
@@ -40,6 +40,7 @@ property_types:
           description: "UUID for stable reference; auto-generated if not provided"
 
 node_types:
+  description: "Defines node types used in project templates"
   required_fields:
     - id: "required - unique identifier for the node type"
     - label: "required - display name for the node type"

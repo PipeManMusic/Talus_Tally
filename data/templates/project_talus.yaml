@@ -106,7 +106,7 @@ node_types:
     indicator_set: status
     label: Status
     options:
-    - indicator_id: filled
+    - indicator_id: available
       name: Available
     - indicator_id: partial
       name: In Use
@@ -337,6 +337,8 @@ node_types:
   - camera_gear_asset
   allowed_children:
   - uses_camera_gear
+  - uses_car_part
+  - uses_tool
   color: '#10b981'
   icon: film
   id: footage
@@ -354,7 +356,7 @@ node_types:
     type: text
   - id: notes
     label: Shoot Notes
-    type: text
+    type: editor
   - id: prop_1770559115384
     indicator_set: status
     label: Status
@@ -370,7 +372,7 @@ node_types:
       enabled: true
       mode: status
       statusScores:
-        Complete: -1
+        Complete: -2
         In Production: 1
         Planned: -1
   shape: circle
@@ -490,6 +492,9 @@ node_types:
   - id: quantity
     label: Quantity Needed
     type: number
+  velocityConfig:
+    baseScore: -1
+    scoreMode: standalone
 - allowed_asset_types: []
   allowed_children: []
   id: asset_reference
@@ -508,4 +513,4 @@ node_types:
     label: Quantity Needed
     type: number
 uuid: 574ecd39-bad3-4e44-b6e4-247d00cc5eca
-version: 0.2.0
+version: 0.2.1

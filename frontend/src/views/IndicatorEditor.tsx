@@ -316,7 +316,15 @@ export function IndicatorEditor({ onClose }: IndicatorEditorProps) {
       </div>
 
       {formOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          onClick={(e) => {
+            // Close only if clicking the overlay background, not the modal content
+            if (e.target === e.currentTarget) {
+              closeForm();
+            }
+          }}
+        >
           <div className="w-full max-w-2xl rounded border border-border bg-bg-dark max-h-96 overflow-y-auto">
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
               <h2 className="text-lg font-semibold text-fg-primary">

@@ -1,0 +1,89 @@
+name: "Word Processor"
+description: "Basic word processor with formatting, lists, and spell checking"
+version: "1.0.0"
+
+# Feature configuration
+features:
+  spell_check: true
+  undo_redo: true
+  
+# Text formatting options
+formatting:
+  bold:
+    label: "Bold"
+    prefix: "**"
+    format_scope: "inline"
+    format:
+      bold: true
+  
+  italic:
+    label: "Italic"
+    prefix: "*"
+    format_scope: "inline"
+    format:
+      italic: true
+  
+  underline:
+    label: "Underline"
+    prefix: "__"
+    format_scope: "inline"
+    format:
+      underline: true
+
+# List styles
+lists:
+  bullet:
+    label: "Bullet List"
+    prefix: "- "
+    format_scope: "line"
+  
+  numbered:
+    label: "Numbered List"
+    prefix: "1. "
+    format_scope: "line"
+
+# Indentation
+indentation:
+  enabled: true
+  tab_size: 2
+  max_levels: 5
+
+# Template syntax rules for rendering
+tokens:
+  - id: "bold"
+    label: "Bold"
+    prefix: "**"
+    format_scope: "inline"
+    format:
+      bold: true
+      color: "#000000"
+  
+  - id: "italic"
+    label: "Italic"
+    prefix: "*"
+    format_scope: "inline"
+    format:
+      italic: true
+      color: "#000000"
+  
+  - id: "underline"
+    label: "Underline"
+    prefix: "__"
+    format_scope: "inline"
+    format:
+      underline: true
+      color: "#000000"
+  
+  - id: "bullet"
+    label: "Bullet"
+    prefix: "- "
+    format_scope: "line"
+    format:
+      color: "#000000"
+  
+  - id: "numbered"
+    label: "Numbered"
+    prefix: "1. "
+    format_scope: "line"
+    format:
+      color: "#000000"

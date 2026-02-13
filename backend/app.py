@@ -85,6 +85,9 @@ def create_app(config=None):
     env_origins = os.environ.get('TALUS_SOCKET_ORIGINS')
     if env_origins:
         cors_allowed_origins = [origin.strip() for origin in env_origins.split(',') if origin.strip()]
+    elif not is_production:
+        # Allow any dev origin so Vite can change ports without breaking Socket.IO.
+        cors_allowed_origins = '*'
     else:
         cors_allowed_origins = [
             'http://localhost:5173',
@@ -182,6 +185,10 @@ def create_app(config=None):
     # Register velocity routes
     from backend.api.velocity_routes import velocity_bp
     app.register_blueprint(velocity_bp)
+    
+    # Register text editor routes
+    from backend.api.text_editor_routes import text_editor_bp
+    app.register_blueprint(text_editor_bp)
     
     # Register WebSocket namespace for /graph
     from backend.api.socketio_handlers import GraphNamespace

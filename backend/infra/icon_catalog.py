@@ -2,6 +2,7 @@ import os
 from typing import Any, Dict, List, Optional
 
 import yaml
+from backend.infra.schema_validator import SchemaValidator
 
 
 class IconCatalog:
@@ -16,6 +17,11 @@ class IconCatalog:
         """Load icon catalog metadata and resolve its directory."""
         with open(filepath, 'r', encoding='utf-8') as f:
             data = yaml.safe_load(f)
+
+        # Validate against icon schema
+        errors = SchemaValidator.validate_icon_catalog(data)
+        if errors:
+            raise ValueError(f"Icon catalog validation failed:\n" + "\n".join(f"  - {e}" for e in errors))
 
         icons_list = data.get('icons', []) or []
         icons_map: Dict[str, Dict[str, Any]] = {}
