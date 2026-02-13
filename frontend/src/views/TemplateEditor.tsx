@@ -261,84 +261,84 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
       <div className="flex flex-col h-full bg-bg-dark">
         <TitleBar />
         <div className="flex flex-col h-full overflow-hidden flex-1 bg-bg-light">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={onClose}
-              className="p-1 hover:bg-bg-dark rounded transition-colors"
-              title="Close"
-            >
-              <ChevronLeft size={24} className="text-fg-primary" />
-            </button>
-            <h1 className="text-2xl font-display font-bold text-fg-primary">Template Editor</h1>
-          </div>
-          <button
-            onClick={handleCreateNewTemplate}
-            className="flex items-center gap-2 px-4 py-2 bg-accent-primary text-fg-primary rounded hover:bg-accent-hover transition-colors font-semibold"
-          >
-            <Plus size={20} />
-            New Template
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-auto p-6">
-          {error && (
-            <div className="mb-4 p-4 bg-status-danger/10 border border-status-danger rounded flex items-start gap-3">
-              <AlertCircle size={20} className="text-status-danger flex-shrink-0 mt-0.5" />
-              <div>
-                <h3 className="font-semibold text-status-danger">Error</h3>
-                <p className="text-sm text-status-danger/80">{error}</p>
-              </div>
-            </div>
-          )}
-
-          {loading ? (
-            <div className="flex items-center justify-center h-64">
-              <div className="text-fg-secondary">Loading templates...</div>
-            </div>
-          ) : templates.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-64 text-center">
-              <p className="text-lg text-fg-secondary mb-4">No templates found</p>
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 border-b border-border">
+            <div className="flex items-center gap-3">
               <button
-                onClick={handleCreateNewTemplate}
-                className="px-4 py-2 bg-accent-primary text-fg-primary rounded hover:bg-accent-hover transition-colors font-semibold"
+                onClick={onClose}
+                className="p-1 hover:bg-bg-dark rounded transition-colors"
+                title="Close"
               >
-                Create the first template
+                <ChevronLeft size={24} className="text-fg-primary" />
               </button>
+              <h1 className="text-2xl font-display font-bold text-fg-primary">Template Editor</h1>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {templates.map(template => (
-                <div
-                  key={template.id}
-                  onClick={() => handleOpenTemplate(template.id)}
-                  className="p-4 bg-bg-dark border border-border rounded hover:border-accent-primary cursor-pointer transition-colors group"
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-semibold text-fg-primary group-hover:text-accent-primary transition-colors">
-                      {template.name}
-                    </h3>
-                    <span className="px-2 py-1 bg-accent-primary/10 text-accent-primary text-xs rounded font-mono">
-                      v{template.version}
-                    </span>
-                  </div>
-                  <p className="text-sm text-fg-secondary mb-3">{template.description}</p>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleOpenTemplate(template.id);
-                    }}
-                    className="text-sm px-3 py-1 bg-accent-primary/20 text-accent-primary rounded hover:bg-accent-primary/30 transition-colors"
-                  >
-                    Edit
-                  </button>
+            <button
+              onClick={handleCreateNewTemplate}
+              className="flex items-center gap-2 px-3 py-2 bg-accent-primary text-bg-dark rounded hover:opacity-90 transition-opacity font-semibold"
+            >
+              <Plus size={18} />
+              New Template
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 overflow-auto p-6">
+            {error && (
+              <div className="mb-4 p-4 bg-status-danger/10 border border-status-danger rounded flex items-start gap-3">
+                <AlertCircle size={20} className="text-status-danger flex-shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="font-semibold text-status-danger">Error</h3>
+                  <p className="text-sm text-status-danger/80">{error}</p>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+              </div>
+            )}
+
+            {loading ? (
+              <div className="flex items-center justify-center h-64">
+                <div className="text-fg-secondary">Loading templates...</div>
+              </div>
+            ) : templates.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-64 text-center">
+                <p className="text-lg text-fg-secondary mb-4">No templates found</p>
+                <button
+                  onClick={handleCreateNewTemplate}
+                  className="px-4 py-2 bg-accent-primary text-bg-dark rounded hover:opacity-90 transition-opacity font-semibold"
+                >
+                  Create the first template
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {templates.map(template => (
+                  <div
+                    key={template.id}
+                    className="p-0 border border-border rounded bg-bg-dark hover:border-accent-primary cursor-pointer transition-colors group flex flex-col h-full"
+                    onClick={() => handleOpenTemplate(template.id)}
+                  >
+                    <div className="flex-1 p-4 flex flex-col">
+                      <h2 className="text-lg font-semibold text-fg-primary mb-1 font-mono">{template.id}</h2>
+                      <p className="text-sm text-fg-secondary">{template.name}</p>
+                      {template.description && (
+                        <p className="text-xs text-fg-secondary mt-1">{template.description}</p>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between px-4 pb-4 pt-2">
+                      <span className="px-2 py-1 bg-accent-primary/10 text-accent-primary text-xs rounded font-mono inline-block">
+                        v{template.version}
+                      </span>
+                      <button
+                        onClick={e => { e.stopPropagation(); handleOpenTemplate(template.id); }}
+                        className="px-2 py-1 text-xs font-semibold border border-border rounded hover:border-accent-primary transition-colors"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     );

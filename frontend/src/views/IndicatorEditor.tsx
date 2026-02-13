@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { ChevronLeft, AlertCircle } from 'lucide-react';
+import { ChevronLeft, AlertCircle, Plus } from 'lucide-react';
 import { apiClient, API_BASE_URL, type IndicatorSet } from '../api/client';
 import { ColorPicker } from '../components/ui/ColorPicker';
 import { TitleBar } from '../components/layout/TitleBar';
@@ -221,6 +221,16 @@ export function IndicatorEditor({ onClose }: IndicatorEditorProps) {
             </button>
             <h1 className="text-2xl font-display font-bold text-fg-primary">Indicator Editor</h1>
           </div>
+          {/* New Indicator button at top, opens create for first set if available */}
+          {Object.keys(indicatorSets).length > 0 && (
+            <button
+              onClick={() => openCreateForm(Object.keys(indicatorSets)[0])}
+              className="flex items-center gap-2 px-3 py-2 bg-accent-primary text-bg-dark rounded hover:opacity-90 transition-opacity font-semibold"
+            >
+              <Plus size={18} />
+              New Indicator
+            </button>
+          )}
         </div>
 
         {/* Content */}
@@ -249,19 +259,13 @@ export function IndicatorEditor({ onClose }: IndicatorEditorProps) {
                 <div key={setId} className="border border-border rounded">
                   {/* Set Header */}
                   <div className="px-6 py-4 border-b border-border bg-bg-dark">
-                    <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-4">
                       <div>
                         <h2 className="text-lg font-semibold text-fg-primary mb-1 font-mono">{setId}</h2>
                         {set.description && (
                           <p className="text-sm text-fg-secondary">{set.description}</p>
                         )}
                       </div>
-                      <button
-                        onClick={() => openCreateForm(setId)}
-                        className="px-3 py-1.5 text-sm font-semibold bg-accent-primary text-bg-dark rounded hover:opacity-90 transition-opacity"
-                      >
-                        New Indicator
-                      </button>
                     </div>
                   </div>
 

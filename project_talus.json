@@ -218,7 +218,9 @@
           "notes": "I was told I couldn't shoot by an employee, no signs where posted but I let it go.",
           "prop_1770559115384": "c5707e0e-c9d6-3397-0b55-578878e04e81"
         },
-        "children": [],
+        "children": [
+          "3a294d0a-1e83-4fb2-8a3a-602548b43aea"
+        ],
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "film",
@@ -229,6 +231,18 @@
           "uses_car_part",
           "uses_tool"
         ]
+      },
+      {
+        "id": "3a294d0a-1e83-4fb2-8a3a-602548b43aea",
+        "type": "uses_camera_gear",
+        "properties": {
+          "name": "Pixel 8 Pro"
+        },
+        "children": [],
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": "camera",
+        "allowed_children": []
       },
       {
         "id": "2e79852a-2689-4c55-86fc-3551e38b6f11",
@@ -3709,7 +3723,8 @@
     "e09f39d3-4ed6-4c54-8ce0-0dd198618941": false,
     "6c53b542-1a3e-43cf-a0de-6d1c74f0bd04": false,
     "c2504f1a-e609-4da9-b1ac-95c6540126ef": false,
-    "269dbcbb-db3e-476c-bc14-9fd164af2b6c": false
+    "269dbcbb-db3e-476c-bc14-9fd164af2b6c": false,
+    "9b6d26d8-9ac0-4846-b10c-c667d221d941": true
   },
   "blocking_relationships": [
     {

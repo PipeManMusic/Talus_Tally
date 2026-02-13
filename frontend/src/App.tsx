@@ -39,6 +39,7 @@ import { ImportCsvDialog } from './components/dialogs/ImportCsvDialog';
 import { ExportDialog } from './components/dialogs/ExportDialog';
 import { TemplateEditor } from './views/TemplateEditor';
 import { IndicatorEditor } from './views/IndicatorEditor';
+import { MarkupEditor } from './views/MarkupEditor';
 import { IconEditor } from './views/IconEditor';
 import { ToolsView } from './views/ToolsView';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -74,6 +75,7 @@ function App() {
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [showTemplateEditor, setShowTemplateEditor] = useState(false);
   const [showIndicatorEditor, setShowIndicatorEditor] = useState(false);
+  const [showMarkupEditor, setShowMarkupEditor] = useState(false);
   const [showIconEditor, setShowIconEditor] = useState(false);
   const [showSaveConfirmDialog, setShowSaveConfirmDialog] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
@@ -1892,6 +1894,7 @@ function App() {
       { label: '---', onClick: () => {} },
       { label: 'Template Editor', onClick: () => setShowTemplateEditor(true) },
       { label: 'Indicator Editor', onClick: () => setShowIndicatorEditor(true) },
+      { label: 'Markup Editor', onClick: () => setShowMarkupEditor(true) },
       { label: 'Icon Editor', onClick: () => setShowIconEditor(true) },
       { label: '---', onClick: () => {} },
       { label: 'Settings', onClick: () => setShowSettingsDialog(true) },
@@ -2304,6 +2307,13 @@ function App() {
       {showIndicatorEditor && (
         <div className="absolute inset-0 bg-bg-dark z-50">
           <IndicatorEditor onClose={() => setShowIndicatorEditor(false)} />
+        </div>
+      )}
+
+      {/* Markup Editor View */}
+      {showMarkupEditor && (
+        <div className="absolute inset-0 bg-bg-dark z-50">
+          <MarkupEditor onClose={() => setShowMarkupEditor(false)} />
         </div>
       )}
 

@@ -83,9 +83,11 @@ class SchemaValidator:
         
         # Optional format_scope
         if 'format_scope' in token:
-            valid_scopes = ['line', 'prefix']
+            valid_scopes = ['line', 'prefix', 'inline']
             if token['format_scope'] not in valid_scopes:
-                errors.append(f"{prefix}.format_scope: must be 'line' or 'prefix', got '{token['format_scope']}'")
+                errors.append(
+                    f"{prefix}.format_scope: must be one of {valid_scopes}, got '{token['format_scope']}'"
+                )
         
         # Optional format rules
         if 'format' in token:

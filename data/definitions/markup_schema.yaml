@@ -10,7 +10,7 @@ markup_token:
     - prefix: "required - text prefix/marker inserted when token is applied"
   optional_fields:
     - pattern: "optional - regex pattern for parsing existing formatted text"
-    - format_scope: "optional - scope where formatting applies ('line' applies to entire line, 'prefix' applies only to prefix, unset means no auto-formatting)"
+    - format_scope: "optional - scope where formatting applies ('line' applies to entire line, 'prefix' applies only to prefix, 'inline' applies to wrapped selection, unset means no auto-formatting)"
     - format: "optional - formatting rules object to apply when token is inserted"
       text_transform: "optional - text case transformation: 'uppercase', 'lowercase', 'capitalize', or 'none'"
       bold: "optional - boolean, applies markdown ** markers"

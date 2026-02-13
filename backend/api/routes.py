@@ -364,6 +364,109 @@ def get_markup_profile(profile_id: str):
         }), 500
 
 
+@api_bp.route('/markup', methods=['POST'])
+def create_markup_profile():
+    """Create a new markup profile."""
+    try:
+        from backend.infra.markup import MarkupRegistry
+        payload = request.get_json() or {}
+        registry = MarkupRegistry()
+        profile = registry.save_profile(payload, overwrite=False)
+        return jsonify(profile), 201
+    except FileExistsError as e:
+        return jsonify({
+            'error': {
+                'code': 'ALREADY_EXISTS',
+                'message': str(e)
+            }
+        }), 409
+    except ValueError as e:
+        return jsonify({
+            'error': {
+                'code': 'VALIDATION_ERROR',
+                'message': str(e)
+            }
+        }), 400
+    except Exception as e:
+        return jsonify({
+            'error': {
+                'code': 'SAVE_ERROR',
+                'message': f'Failed to create markup profile: {str(e)}'
+            }
+        }), 500
+
+
+@api_bp.route('/markup/<profile_id>', methods=['PUT'])
+def update_markup_profile(profile_id: str):
+    """Update an existing markup profile."""
+    try:
+        from backend.infra.markup import MarkupRegistry
+        payload = request.get_json() or {}
+        if payload.get('id') and payload.get('id') != profile_id:
+            return jsonify({
+                'error': {
+                    'code': 'ID_MISMATCH',
+                    'message': 'Payload id must match profile id in URL'
+                }
+            }), 400
+        payload['id'] = profile_id
+        registry = MarkupRegistry()
+        profile = registry.save_profile(payload, overwrite=True)
+        return jsonify(profile), 200
+    except FileNotFoundError:
+        return jsonify({
+            'error': {
+                'code': 'NOT_FOUND',
+                'message': f'Markup profile not found: {profile_id}'
+            }
+        }), 404
+    except ValueError as e:
+        return jsonify({
+            'error': {
+                'code': 'VALIDATION_ERROR',
+                'message': str(e)
+            }
+        }), 400
+    except Exception as e:
+        return jsonify({
+            'error': {
+                'code': 'SAVE_ERROR',
+                'message': f'Failed to update markup profile: {str(e)}'
+            }
+        }), 500
+
+
+@api_bp.route('/markup/<profile_id>', methods=['DELETE'])
+def delete_markup_profile(profile_id: str):
+    """Delete a markup profile."""
+    try:
+        from backend.infra.markup import MarkupRegistry
+        registry = MarkupRegistry()
+        registry.delete_profile(profile_id)
+        return jsonify({'status': 'ok'}), 200
+    except FileNotFoundError:
+        return jsonify({
+            'error': {
+                'code': 'NOT_FOUND',
+                'message': f'Markup profile not found: {profile_id}'
+            }
+        }), 404
+    except ValueError as e:
+        return jsonify({
+            'error': {
+                'code': 'VALIDATION_ERROR',
+                'message': str(e)
+            }
+        }), 400
+    except Exception as e:
+        return jsonify({
+            'error': {
+                'code': 'DELETE_ERROR',
+                'message': f'Failed to delete markup profile: {str(e)}'
+            }
+        }), 500
+
+
 # ============================================================================
 # CSV Import
 # ============================================================================

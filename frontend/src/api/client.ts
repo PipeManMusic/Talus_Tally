@@ -145,6 +145,37 @@ export interface MarkupProfileListItem {
   description?: string;
 }
 
+export interface MarkupTokenFormat {
+  text_transform?: 'uppercase' | 'lowercase' | 'capitalize' | 'none';
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  align?: 'left' | 'center' | 'right';
+  font_size?: string;
+  color?: string;
+  background_color?: string;
+}
+
+export interface MarkupToken {
+  id: string;
+  label: string;
+  prefix?: string;
+  pattern?: string;
+  format_scope?: 'line' | 'prefix' | 'inline';
+  format?: MarkupTokenFormat;
+}
+
+export interface MarkupProfile {
+  id: string;
+  label: string;
+  description?: string;
+  tokens?: MarkupToken[];
+  features?: Record<string, any>;
+  formatting?: Record<string, any>;
+  lists?: Record<string, any>;
+  indentation?: Record<string, any>;
+}
+
 export interface IconFileUploadResponse {
   file: string;
 }
@@ -381,6 +412,47 @@ export class APIClient {
     }
     const data = await response.json();
     return data.profiles || [];
+  }
+
+  async getMarkupProfile(profileId: string): Promise<MarkupProfile> {
+    const response = await fetch(`${this.baseUrl}/api/v1/markup/${profileId}`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch markup profile: ${response.status} ${response.statusText}`);
+    }
+    return response.json();
+  }
+
+  async createMarkupProfile(profile: MarkupProfile): Promise<MarkupProfile> {
+    const response = await fetch(`${this.baseUrl}/api/v1/markup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(profile),
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to create markup profile: ${response.status} ${response.statusText}`);
+    }
+    return response.json();
+  }
+
+  async updateMarkupProfile(profileId: string, profile: MarkupProfile): Promise<MarkupProfile> {
+    const response = await fetch(`${this.baseUrl}/api/v1/markup/${profileId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(profile),
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to update markup profile: ${response.status} ${response.statusText}`);
+    }
+    return response.json();
+  }
+
+  async deleteMarkupProfile(profileId: string): Promise<void> {
+    const response = await fetch(`${this.baseUrl}/api/v1/markup/${profileId}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to delete markup profile: ${response.status} ${response.statusText}`);
+    }
   }
 
   // Config Management

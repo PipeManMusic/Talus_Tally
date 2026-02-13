@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { ChevronLeft, AlertCircle } from 'lucide-react';
+import { ChevronLeft, AlertCircle, Plus } from 'lucide-react';
 import { apiClient, API_BASE_URL, type IconCatalog } from '../api/client';
 import { TitleBar } from '../components/layout/TitleBar';
 
@@ -164,8 +164,9 @@ export function IconEditor({ onClose }: IconEditorProps) {
           </div>
           <button
             onClick={openCreateForm}
-            className="px-3 py-1.5 text-sm font-semibold bg-accent-primary text-bg-dark rounded hover:opacity-90 transition-opacity"
+            className="flex items-center gap-2 px-3 py-2 bg-accent-primary text-bg-dark rounded hover:opacity-90 transition-opacity font-semibold"
           >
+            <Plus size={18} />
             New Icon
           </button>
         </div>

@@ -56,6 +56,9 @@ class MarkupRegistry:
             raise ValueError(f"Markup profile tokens must be a list: {profile_id}")
 
         # Validate against markup schema
+        if 'tokens' not in data:
+            data['tokens'] = []
+
         errors = SchemaValidator.validate_markup_profile(data)
         if errors:
             raise ValueError(f"Markup profile validation failed for '{profile_id}':\n" + "\n".join(f"  - {e}" for e in errors))
@@ -86,6 +89,46 @@ class MarkupRegistry:
                 continue
 
         return profiles
+
+    def save_profile(self, data: Dict[str, Any], overwrite: bool = True) -> Dict[str, Any]:
+        profile_id = data.get('id')
+        if not isinstance(profile_id, str) or not profile_id.strip():
+            raise ValueError('Markup profile id is required')
+        profile_id = profile_id.strip()
+        if not re.match(r'^[a-zA-Z0-9_-]+$', profile_id):
+            raise ValueError(f"Invalid markup profile id '{profile_id}'")
+
+        file_path = os.path.join(self.base_dir, f"{profile_id}.yaml")
+        if os.path.exists(file_path) and not overwrite:
+            raise FileExistsError(f"Markup profile already exists: {profile_id}")
+        if overwrite and not os.path.exists(file_path):
+            raise FileNotFoundError(f"Markup profile not found: {profile_id}")
+
+        errors = SchemaValidator.validate_markup_profile(data)
+        if errors:
+            raise ValueError(
+                f"Markup profile validation failed for '{profile_id}':\n" +
+                "\n".join(f"  - {e}" for e in errors)
+            )
+
+        os.makedirs(self.base_dir, exist_ok=True)
+        with open(file_path, 'w') as f:
+            yaml.safe_dump(data, f, sort_keys=False)
+
+        self._cache[profile_id] = data
+        return data
+
+    def delete_profile(self, profile_id: str) -> None:
+        if not isinstance(profile_id, str) or not profile_id.strip():
+            raise ValueError('Markup profile id is required')
+        profile_id = profile_id.strip()
+
+        file_path = os.path.join(self.base_dir, f"{profile_id}.yaml")
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"Markup profile not found: {profile_id}")
+
+        os.remove(file_path)
+        self._cache.pop(profile_id, None)
 
 
 class MarkupParser:
