@@ -163,6 +163,10 @@ node_types:
   - id: unit_cost
     label: Unit Cost
     type: currency
+    velocityConfig:
+      enabled: true
+      mode: multiplier
+      multiplierFactor: -0.01
   - id: quantity_on_hand
     label: Quantity On Hand
     type: number
@@ -179,6 +183,14 @@ node_types:
     - indicator_id: filled
       name: Installed
     type: select
+    velocityConfig:
+      enabled: true
+      mode: status
+      statusScores:
+        Arrived: 2
+        Installed: -1
+        Ordered: 1
+        Wishlist: -1
   - id: notes
     label: Notes
     type: text
@@ -240,6 +252,14 @@ node_types:
     - indicator_id: empty
       name: Retired
     type: select
+    velocityConfig:
+      enabled: true
+      mode: status
+      statusScores:
+        Available: 0
+        Maintenance: 2
+        Retired: 0
+        In Use: 1
   - id: last_service_date
     label: Last Service Date
     type: date
@@ -247,6 +267,8 @@ node_types:
     label: Notes
     type: text
   shape: circle
+  velocityConfig:
+    scoreMode: inherit
 - allowed_asset_types: []
   allowed_children:
   - episode

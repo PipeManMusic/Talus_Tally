@@ -40,6 +40,13 @@ class VelocityCalculation:
             self.blocked_by_nodes = []
         if self.blocks_node_ids is None:
             self.blocks_node_ids = []
+        # Limit all float fields to two decimal places
+        for attr in [
+            'base_score', 'inherited_score', 'status_score', 'numerical_score',
+            'blocking_penalty', 'blocking_bonus', 'total_velocity']:
+            val = getattr(self, attr, None)
+            if isinstance(val, float):
+                setattr(self, attr, round(val, 2))
 
 
 class VelocityEngine:
@@ -362,7 +369,7 @@ class VelocityEngine:
                 continue
             
             for prop in nt.get("properties", []):
-                if prop.get("type") not in ["number", "numeric"]:
+                if prop.get("type") not in ["number", "numeric", "currency"]:
                     continue
                 
                 velocity_config = prop.get("velocityConfig")
@@ -374,7 +381,12 @@ class VelocityEngine:
                 
                 prop_id = prop["id"]
                 value = properties.get(prop_id, 0)
-                
+                # Accept int, float, or numeric string for currency
+                if isinstance(value, str):
+                    try:
+                        value = float(value.replace("$", "").replace(",", "").strip())
+                    except Exception:
+                        continue
                 if not isinstance(value, (int, float)):
                     continue
                 
