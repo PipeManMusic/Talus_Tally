@@ -19,6 +19,7 @@ A modern, WebSocket-enabled project management system built on Flask and Socket.
 - Python 3.10+
 - pip or conda
 
+
 ### Installation
 
 ```bash
@@ -33,13 +34,41 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### Running the Application
+## 🖥️ Development Environment & Tauri Desktop App (Debian/Ubuntu)
+
+### 1. System Dependencies
 
 ```bash
-# Start the Flask server with WebSocket support
-python run_app.py
+# Install Node.js (v18+ recommended)
+sudo apt update
+sudo apt install -y nodejs npm
 
-# Server will be available at http://localhost:5000
+# Install Rust (required for Tauri)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+# Follow prompts, then restart your shell or run:
+source $HOME/.cargo/env
+
+# Install additional build tools
+sudo apt install -y libwebkit2gtk-4.0-dev build-essential curl wget libssl-dev libgtk-3-dev squashfs-tools
+```
+
+### 2. Frontend & Tauri Setup
+
+```bash
+cd frontend
+
+# Install JS dependencies
+npm install
+
+# Install Tauri CLI globally (if not already)
+npm install -g @tauri-apps/cli
+
+# Run the Tauri desktop app in dev mode
+npm run desktop:dev
+```
+
+- The app will open as a native desktop window.
+- For production build: `npm run desktop:build`
 ```
 
 ### Running Tests

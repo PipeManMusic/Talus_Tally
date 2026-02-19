@@ -994,15 +994,24 @@ const PropertyEditor = memo(function PropertyEditor({
       {isExpanded && (
         <div className="border-t border-border/50 p-3 space-y-3 bg-bg-dark/30">
           {/* Property ID */}
-          <div>
-            <label className="text-xs text-fg-secondary mb-1 block">ID</label>
-            <input
-              type="text"
-              value={property.id}
-              onChange={(e) => onUpdate({ id: e.target.value })}
-              className="w-full px-2 py-1 bg-bg-light border border-border rounded text-fg-primary text-sm font-mono"
-            />
-          </div>
+            <div>
+              <label className="text-xs text-fg-secondary mb-1 block">ID</label>
+              {property.indicator_set === 'status' ? (
+                <input
+                  type="text"
+                  value="status"
+                  disabled
+                  className="w-full px-2 py-1 bg-bg-light border border-border rounded text-fg-primary text-sm font-mono opacity-70 cursor-not-allowed"
+                />
+              ) : (
+                <input
+                  type="text"
+                  value={property.id}
+                  onChange={(e) => onUpdate({ id: e.target.value })}
+                  className="w-full px-2 py-1 bg-bg-light border border-border rounded text-fg-primary text-sm font-mono"
+                />
+              )}
+            </div>
 
           {/* Property Label */}
           <div>

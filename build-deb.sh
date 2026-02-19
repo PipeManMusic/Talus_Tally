@@ -36,7 +36,7 @@ cd "$PROJECT_ROOT"
 
 # Configuration
 PYTHON_BIN="${PYTHON_BIN:-python3}"
-VERSION="0.1.1"
+VERSION="0.1.2"
 ARCH="amd64"
 PACKAGE_DIR="talus-tally_${VERSION}_${ARCH}"
 
@@ -249,7 +249,7 @@ echo "🧹 Cleaning up other build artifacts and caches..."
 rm -rf build/
 rm -rf frontend/.pytest_cache/
 rm -rf .pytest_cache/
-rm -rf talus-tally_0.1.0_amd64/
+rm -rf talus-tally_0.1.2_amd64/
 echo "✅ Other build artifacts and caches removed."
 
 echo "   Package: ${PACKAGE_DIR}.deb"

@@ -257,9 +257,9 @@ node_types:
       mode: status
       statusScores:
         Available: 0
+        In Use: 1
         Maintenance: 2
         Retired: 0
-        In Use: 1
   - id: last_service_date
     label: Last Service Date
     type: date
@@ -379,7 +379,7 @@ node_types:
   - id: notes
     label: Shoot Notes
     type: editor
-  - id: prop_1770559115384
+  - id: status
     indicator_set: status
     label: Status
     options:

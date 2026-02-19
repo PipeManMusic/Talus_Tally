@@ -3,6 +3,7 @@
 
 import os
 from PyInstaller.utils.hooks import collect_data_files, collect_submodules
+import spellchecker
 
 block_cipher = None
 
@@ -18,6 +19,11 @@ datas += [('data', 'data'), ('assets', 'assets')]
 # Include frontend static files if built
 if os.path.exists('frontend/dist'):
     datas += [('frontend/dist', 'frontend/dist')]
+
+# Add spellchecker resources (entire directory)
+spellchecker_resources = os.path.join(os.path.dirname(spellchecker.__file__), 'resources')
+if os.path.exists(spellchecker_resources):
+    datas.append((spellchecker_resources, 'spellchecker/resources'))
 
 a = Analysis(
     ['backend/__main__.py'],
