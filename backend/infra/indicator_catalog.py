@@ -5,6 +5,7 @@ Layer 2: Business Logic for indicator set management.
 Handles creation, reading, updating, and deletion of indicators with YAML persistence.
 """
 
+
 import yaml
 import os
 from pathlib import Path
@@ -13,6 +14,7 @@ from dataclasses import dataclass, asdict, field
 from datetime import datetime
 import tempfile
 from backend.infra.schema_validator import SchemaValidator
+from backend.infra.user_data_dir import get_user_indicators_dir
 
 
 @dataclass
@@ -60,13 +62,16 @@ class IndicatorSet:
 class IndicatorCatalogManager:
     """Manages indicator catalog CRUD operations with file persistence."""
 
-    def __init__(self, catalog_path: str):
+    def __init__(self, catalog_path: str = None):
         """
-        Initialize manager for indicator catalog.
+        Initialize manager for indicator catalog. Defaults to user indicators dir.
 
         Args:
-            catalog_path: Path to catalog.yaml file
+            catalog_path: Path to catalog.yaml file (optional)
         """
+        if catalog_path is None:
+            user_dir = get_user_indicators_dir()
+            catalog_path = user_dir / "catalog.yaml"
         self.catalog_path = Path(catalog_path)
         self._catalog: Optional[Dict[str, IndicatorSet]] = None
 

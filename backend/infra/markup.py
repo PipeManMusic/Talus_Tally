@@ -1,3 +1,4 @@
+
 import os
 import re
 import sys
@@ -5,44 +6,35 @@ from pathlib import Path
 import yaml
 from typing import Any, Dict, List, Optional
 from backend.infra.schema_validator import SchemaValidator
+from backend.infra.user_data_dir import get_user_markups_dir
 
 
 class MarkupRegistry:
     """Loads and caches markup profiles from YAML files."""
 
     def __init__(self, base_dir: Optional[str] = None):
+        # Always use user data dir for user-created markups
         if base_dir is None:
-            infra_dir = Path(__file__).resolve().parent
-            project_root = infra_dir.parent.parent
-            
-            # In development, always use project directory. In production, check /opt first.
-            is_development = os.environ.get('TALUS_ENV', 'development').lower() == 'development'
-            
-            if is_development:
-                candidates = [project_root / 'data' / 'markups']
-            else:
-                candidates = [Path('/opt/talus_tally/data/markups')]
-                if hasattr(sys, '_MEIPASS'):
-                    candidates.append(Path(sys._MEIPASS) / 'data' / 'markups')
-                candidates.append(project_root / 'data' / 'markups')
-
-            selected = None
-            for candidate in candidates:
-                if candidate.exists():
-                    selected = candidate
-                    break
-            if selected is None:
-                selected = candidates[0]
-            base_dir = selected
+            base_dir = get_user_markups_dir()
         self.base_dir = str(base_dir)
         self._cache: Dict[str, Dict[str, Any]] = {}
 
     def load_profile(self, profile_id: str) -> Dict[str, Any]:
+        """
+        Load a markup profile by id, prioritizing user data dir, falling back to system/repo.
+        """
+        from backend.infra.user_data_dir import get_user_markups_dir
         if profile_id in self._cache:
             return self._cache[profile_id]
 
-        file_path = os.path.join(self.base_dir, f"{profile_id}.yaml")
-        if not os.path.exists(file_path):
+        user_path = Path(get_user_markups_dir()) / f"{profile_id}.yaml"
+        sys_path = Path(self.base_dir) / f"{profile_id}.yaml"
+        file_path = None
+        if user_path.exists():
+            file_path = user_path
+        elif sys_path.exists():
+            file_path = sys_path
+        else:
             raise FileNotFoundError(f"Markup profile not found: {profile_id}")
 
         with open(file_path, 'r') as f:
@@ -67,27 +59,50 @@ class MarkupRegistry:
         return data
 
     def list_profiles(self) -> List[Dict[str, str]]:
-        profiles: List[Dict[str, str]] = []
-        base_path = Path(self.base_dir)
-        if not base_path.exists():
-            return profiles
-
-        for file_path in sorted(base_path.glob('*.yaml')):
-            try:
-                with open(file_path, 'r') as f:
-                    data = yaml.safe_load(f) or {}
-                profile_id = data.get('id')
-                label = data.get('label') or profile_id
-                if not profile_id:
+        """
+        List all markup profiles, merging user and system/repo markups (user wins on id conflict).
+        """
+        from backend.infra.user_data_dir import get_user_markups_dir
+        seen = set()
+        profiles = []
+        user_dir = Path(get_user_markups_dir())
+        sys_dir = Path(self.base_dir)
+        # User markups
+        if user_dir.exists():
+            for file_path in sorted(user_dir.glob('*.yaml')):
+                try:
+                    with open(file_path, 'r') as f:
+                        data = yaml.safe_load(f) or {}
+                    profile_id = data.get('id')
+                    label = data.get('label') or profile_id
+                    if not profile_id:
+                        continue
+                    profiles.append({
+                        'id': profile_id,
+                        'label': label,
+                        'description': data.get('description', '') or ''
+                    })
+                    seen.add(profile_id)
+                except Exception:
                     continue
-                profiles.append({
-                    'id': profile_id,
-                    'label': label,
-                    'description': data.get('description', '') or ''
-                })
-            except Exception:
-                continue
-
+        # System/repo markups
+        if sys_dir.exists():
+            for file_path in sorted(sys_dir.glob('*.yaml')):
+                try:
+                    with open(file_path, 'r') as f:
+                        data = yaml.safe_load(f) or {}
+                    profile_id = data.get('id')
+                    label = data.get('label') or profile_id
+                    if not profile_id or profile_id in seen:
+                        continue
+                    profiles.append({
+                        'id': profile_id,
+                        'label': label,
+                        'description': data.get('description', '') or ''
+                    })
+                    seen.add(profile_id)
+                except Exception:
+                    continue
         return profiles
 
     def save_profile(self, data: Dict[str, Any], overwrite: bool = True) -> Dict[str, Any]:

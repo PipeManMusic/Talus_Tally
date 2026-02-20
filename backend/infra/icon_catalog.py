@@ -1,8 +1,9 @@
+
 import os
 from typing import Any, Dict, List, Optional
-
 import yaml
 from backend.infra.schema_validator import SchemaValidator
+from backend.infra.user_data_dir import get_user_icons_dir
 
 
 class IconCatalog:
@@ -13,8 +14,11 @@ class IconCatalog:
         self.catalog_dir = catalog_dir
 
     @classmethod
-    def load(cls, filepath: str) -> "IconCatalog":
-        """Load icon catalog metadata and resolve its directory."""
+    def load(cls, filepath: str = None) -> "IconCatalog":
+        """Load icon catalog metadata and resolve its directory. Defaults to user icons dir."""
+        if filepath is None:
+            user_dir = get_user_icons_dir()
+            filepath = user_dir / "catalog.yaml"
         with open(filepath, 'r', encoding='utf-8') as f:
             data = yaml.safe_load(f)
 

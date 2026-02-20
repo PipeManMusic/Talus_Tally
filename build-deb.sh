@@ -46,6 +46,7 @@ echo "  Architecture: $ARCH"
 echo "  Python: $PYTHON_BIN"
 echo ""
 
+
 # Step 1: Build frontend
 echo "📦 Step 1/4: Building React frontend..."
 cd frontend
@@ -53,6 +54,9 @@ npm ci  # Install all dependencies (including dev) needed for build
 npm run build
 cd ..
 echo "✅ Frontend built to frontend/dist"
+
+# Ensure correct icon is used for Tauri build
+cp assets/icons/TalusTallyIcon.png frontend/src-tauri/icons/icon.png
 
 # Step 1.5: Build Tauri desktop app
 echo "📦 Step 1.5/4: Building Tauri desktop app..."
@@ -178,14 +182,20 @@ chmod +x "$PACKAGE_DIR/usr/bin/talus-tally"
 
 chmod +x "$PACKAGE_DIR/usr/bin/talus-tally"
 
-# Create desktop entry
-mkdir -p "$PACKAGE_DIR/usr/share/applications"
-mkdir -p "$PACKAGE_DIR/usr/share/icons/hicolor/256x256/apps"
 
-# Copy icon if it exists
-if [ -f "assets/icons/TalusTallyIcon.png" ]; then
-    cp "assets/icons/TalusTallyIcon.png" "$PACKAGE_DIR/usr/share/icons/hicolor/256x256/apps/talus-tally.png"
-fi
+# Create desktop entry and install icon in multiple sizes for best compatibility
+mkdir -p "$PACKAGE_DIR/usr/share/applications"
+for size in 48 64 128 256; do
+    mkdir -p "$PACKAGE_DIR/usr/share/icons/hicolor/${size}x${size}/apps"
+    if [ -f "assets/icons/TalusTallyIcon.png" ]; then
+        # Use ImageMagick to resize if available, else just copy
+        if command -v convert >/dev/null 2>&1; then
+            convert "assets/icons/TalusTallyIcon.png" -resize ${size}x${size} "$PACKAGE_DIR/usr/share/icons/hicolor/${size}x${size}/apps/talus-tally.png"
+        else
+            cp "assets/icons/TalusTallyIcon.png" "$PACKAGE_DIR/usr/share/icons/hicolor/${size}x${size}/apps/talus-tally.png"
+        fi
+    fi
+done
 
 cat > "$PACKAGE_DIR/usr/share/applications/talus-tally.desktop" << 'DESKTOP'
 [Desktop Entry]
@@ -219,7 +229,11 @@ cat > "$PACKAGE_DIR/DEBIAN/postinst" << 'POSTINST'
 #!/bin/bash
 chmod +x /opt/talus-tally/talus-tally-backend
 chmod +x /usr/bin/talus-tally
+# Fix permissions for assets so app can read them
+chmod -R a+rw /opt/talus_tally/assets
+# Refresh desktop and icon caches
 update-desktop-database || true
+gtk-update-icon-cache /usr/share/icons/hicolor || true
 POSTINST
 chmod +x "$PACKAGE_DIR/DEBIAN/postinst"
 

@@ -66,6 +66,7 @@ socketio = None
 
 
 def create_app(config=None):
+    # ...existing code...
     """
     Create and configure Flask application with Socket.IO.
     

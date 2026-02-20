@@ -28,5 +28,13 @@ override_dh_auto_install:
 	# Copy desktop entry
 	cp debian/talus-tally.desktop debian/talus-tally/usr/share/applications/
 	
-	# Copy icon
-	install -m 644 assets/icons/TalusTallyIcon.png debian/talus-tally/usr/share/icons/hicolor/256x256/apps/talus-tally.png
+	# Copy icon for launcher and taskbar
+	install -m 644 frontend/src-tauri/icons/icon.png debian/talus-tally/usr/share/icons/hicolor/256x256/apps/talus-tally.png
+	install -m 644 frontend/src-tauri/icons/icon.png debian/talus-tally/usr/share/pixmaps/talus-tally.png
+
+	# Copy icon install script for postinst
+	mkdir -p debian/talus-tally/opt/talus_tally/scripts
+	cp scripts/install_talus_tally_icon.sh debian/talus-tally/opt/talus_tally/scripts/
+
+	# Copy TalusTallyIcon.png for icon install script
+	install -m 644 assets/icons/TalusTallyIcon.png debian/talus-tally/opt/talus_tally/frontend/src-tauri/icons/TalusTallyIcon.png

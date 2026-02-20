@@ -3,6 +3,15 @@ Entry point for running backend as a module: python -m backend
 """
 import sys
 import os
+
+# Ensure user data dir is populated with defaults on first run
+try:
+    from backend.infra.first_run_copy import ensure_user_data_populated
+    ensure_user_data_populated()
+except Exception as e:
+    import logging
+    logging.warning(f"[Startup] Failed to copy default templates/assets to user data dir: {e}")
+
 from backend.app import create_app
 
 if __name__ == '__main__':

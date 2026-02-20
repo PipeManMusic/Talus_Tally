@@ -1,3 +1,26 @@
+# 📂 User Data Directory (XDG-compliant)
+
+Talus Tally now stores all user-created templates, icons, indicators, and markup profiles in a user-writable data directory, following the XDG Base Directory Specification:
+
+- **Linux:** `${XDG_DATA_HOME:-$HOME/.local/share}/talus_tally/`
+    - Templates: `.../talus_tally/templates/`
+    - Icons: `.../talus_tally/icons/`
+    - Indicators: `.../talus_tally/indicators/`
+    - Markups: `.../talus_tally/markups/`
+
+**How it works:**
+- When saving, the backend always writes to the user data directory.
+- When loading, the backend merges user and system templates/icons/indicators/markups, with user data taking priority if IDs conflict.
+- System and repo-provided templates remain available as read-only fallbacks.
+
+**Migration:**
+If you have existing templates or assets in the old system locations, copy them to your user data directory to make them editable.
+
+**Why:**
+- This ensures all user-created content is always writable, portable, and never blocked by system permissions.
+- Follows best practices for Linux desktop apps and works in multi-user environments.
+
+See also: [backend/infra/user_data_dir.py](backend/infra/user_data_dir.py)
 # Talus Tally - Real-Time Project Management System
 
 A modern, WebSocket-enabled project management system built on Flask and Socket.IO, providing real-time collaboration features for managing complex project hierarchies.
@@ -36,6 +59,7 @@ pip install -r requirements.txt
 
 ## 🖥️ Development Environment & Tauri Desktop App (Debian/Ubuntu)
 
+
 ### 1. System Dependencies
 
 ```bash
@@ -48,9 +72,15 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 # Follow prompts, then restart your shell or run:
 source $HOME/.cargo/env
 
+# Enable universe repo (Ubuntu only, required for libwebkit2gtk-4.0-dev)
+sudo apt install -y software-properties-common
+sudo add-apt-repository universe
+sudo apt update
+
 # Install additional build tools
 sudo apt install -y libwebkit2gtk-4.0-dev build-essential curl wget libssl-dev libgtk-3-dev squashfs-tools
 ```
+
 
 ### 2. Frontend & Tauri Setup
 
@@ -60,8 +90,16 @@ cd frontend
 # Install JS dependencies
 npm install
 
+sudo npm install -g @tauri-apps/cli
+
 # Install Tauri CLI globally (if not already)
-npm install -g @tauri-apps/cli
+# Note: You may need to run this command with sudo to avoid permission errors:
+sudo npm install -g @tauri-apps/cli
+
+# You only need to copy the app icon once unless you update it.
+
+# Copy app icon for Tauri build
+cp ../assets/icons/TalusTallyIcon.png src-tauri/icons/TalusTallyIcon.png
 
 # Run the Tauri desktop app in dev mode
 npm run desktop:dev
@@ -69,6 +107,7 @@ npm run desktop:dev
 
 - The app will open as a native desktop window.
 - For production build: `npm run desktop:build`
+- Custom app icon will be used if TalusTallyIcon.png is present in src-tauri/icons/ and referenced in tauri.conf.json.
 ```
 
 ### Running Tests

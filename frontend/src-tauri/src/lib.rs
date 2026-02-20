@@ -23,10 +23,10 @@ pub fn run() {
         )?;
       }
 
+
       // Start Python backend on app launch
       let app_handle = app.handle().clone();
       let backend_process_setup = backend_process_clone.clone();
-      
       std::thread::spawn(move || {
         start_backend(backend_process_setup, app_handle);
       });

@@ -1,0 +1,14 @@
+#!/bin/bash
+# Post-install script for Talus Tally .deb
+# Ensures icon is installed for both launcher and taskbar
+
+set -e
+
+SCRIPT_DIR="$(dirname "$0")"
+
+# Run icon install script
+if [ -f "/opt/talus_tally/scripts/install_talus_tally_icon.sh" ]; then
+    bash /opt/talus_tally/scripts/install_talus_tally_icon.sh
+fi
+
+exit 0
