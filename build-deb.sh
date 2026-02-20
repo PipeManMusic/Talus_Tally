@@ -223,6 +223,7 @@ Description: Graph-based project management and data visualization
 Homepage: https://github.com/talus-tally/talus-tally
 Depends: libcurl4, libssl3
 CONTROL
+StartupWMClass=talus-tally
 
 # Create postinst script for permissions
 cat > "$PACKAGE_DIR/DEBIAN/postinst" << 'POSTINST'
@@ -250,12 +251,17 @@ echo "🔍 Package contents:"
 dpkg-deb -c "${PACKAGE_DIR}.deb" 2>/dev/null | head -20 || true
 echo "..."
 
+# Refresh icon cache for hicolor theme
+gtk-update-icon-cache -f -t /usr/share/icons/hicolor || true
 echo ""
 echo "✨ Build complete!"
 
 # Step 5: Clean up Tauri build artifacts
 echo "🧹 Cleaning up Tauri build artifacts..."
 rm -rf frontend/src-tauri/target frontend/src-tauri/target/debug frontend/src-tauri/target/release
+# Copy icon to pixmaps as fallback
+mkdir -p "$PACKAGE_DIR/usr/share/pixmaps"
+cp assets/icons/TalusTallyIcon.png "$PACKAGE_DIR/usr/share/pixmaps/talus-tally.png"
 echo "✅ Tauri build artifacts removed."
 
 # Step 6: Clean up other build artifacts and caches

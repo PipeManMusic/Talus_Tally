@@ -1,3 +1,30 @@
+# Talus Tally
+
+Talus Tally is a graph-based project management application designed to visualize, organize, and accelerate complex workflows. It combines intuitive graph interfaces with robust backend automation for teams and individuals.
+
+## Quick Start
+
+To build and package Talus Tally for Ubuntu, run:
+
+```
+./build-deb.sh
+```
+
+This will generate a `.deb` package for easy installation.
+
+## Documentation
+
+- [Development Guide](docs/development/DEV_ENVIRONMENT.md)
+- [Frontend Quick Start](docs/development/FRONTEND_QUICK_START.md)
+- [Architecture Overview](docs/architecture/VELOCITY_SYSTEM_DESIGN.md)
+- [Backend Formatting](docs/architecture/BACKEND_FORMATTING_ARCHITECTURE.md)
+- [API Contract](docs/api/API_CONTRACT.md)
+- [Component Library Guide](docs/guides/COMPONENT_LIBRARY_GUIDE.md)
+- [Integration Guide](docs/guides/INTEGRATION_GUIDE.md)
+- [Archive & Roadmaps](docs/archive/)
+
+For more guides and technical references, see the `docs/` directory.
+
 # 📂 User Data Directory (XDG-compliant)
 
 Talus Tally now stores all user-created templates, icons, indicators, and markup profiles in a user-writable data directory, following the XDG Base Directory Specification:

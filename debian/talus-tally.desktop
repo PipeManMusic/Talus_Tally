@@ -5,4 +5,5 @@ Comment=Project Management Application
 Exec=/usr/bin/talus-tally
 Icon=talus-tally
 Categories=Utility;
+StartupWMClass=talus-tally
 Terminal=false
