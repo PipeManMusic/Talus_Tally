@@ -195,9 +195,27 @@ from uuid import UUID
 import os
 import re
 
+
 logger = logging.getLogger(__name__)
 
 api_bp = Blueprint('api', __name__, url_prefix='/api/v1')
+
+# ==========================================================================
+# Meta Schema Endpoint
+# ==========================================================================
+from backend.core.template_service import TemplateService
+
+@api_bp.route('/templates/meta-schema', methods=['GET'])
+def get_meta_schema():
+    """Return the meta_schema.yaml as JSON for schema-driven UI."""
+    service = TemplateService()
+    try:
+        schema = service.get_meta_schema()
+        return jsonify(schema), 200
+    except FileNotFoundError:
+        return jsonify({'error': 'meta_schema.yaml not found'}), 404
+    except Exception as e:
+        return jsonify({'error': f'Failed to load meta schema: {str(e)}'}), 500
 
 # Global state: map session_id -> (project_manager, graph_service, dispatcher)
 _sessions = {}

@@ -1,3 +1,16 @@
+// ...existing code...
+// MetaSchema type for meta_schema.yaml
+export interface MetaSchema {
+  property_types: Array<{
+    id: string;
+    description?: string;
+    [key: string]: any;
+  }>;
+  [key: string]: any;
+}
+
+// ...existing code...
+
 export interface Template {
   id: string;
   uuid?: string;
@@ -269,6 +282,14 @@ export interface VelocityRanking {
 }
 
 export class APIClient {
+    // Fetch meta_schema.yaml from backend
+    async getMetaSchema(): Promise<MetaSchema> {
+      const response = await fetch(`${this.baseUrl}/api/v1/templates/meta-schema`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch meta schema');
+      }
+      return response.json();
+    }
   private baseUrl: string;
   private socket: Socket | null = null;
 

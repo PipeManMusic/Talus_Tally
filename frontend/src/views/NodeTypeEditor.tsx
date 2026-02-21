@@ -3,6 +3,7 @@ import { Plus, Trash2, ChevronDown, ChevronUp, AlertCircle, Info } from 'lucide-
 import { apiClient, API_BASE_URL } from '../api/client';
 import { ColorPicker } from '../components/ui/ColorPicker';
 import type { IconCatalog, IndicatorsConfig, IndicatorTheme } from '../api/client';
+import type { MetaSchema } from '../api/client';
 
 export interface VelocityNodeConfig {
   baseScore?: number;
@@ -510,6 +511,14 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
     });
   };
 
+  const [metaSchema, setMetaSchema] = useState<MetaSchema | null>(null);
+
+  useEffect(() => {
+    apiClient.getMetaSchema()
+      .then(setMetaSchema)
+      .catch(() => setMetaSchema(null));
+  }, []);
+
   return (
     <div className="space-y-4">
       {/* Info Panel - Orphaned Nodes */}
@@ -919,6 +928,7 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
                           indicatorSvgCache={indicatorSvgCache}
                           fetchIndicatorSvg={fetchIndicatorSvg}
                           markupProfiles={markupProfiles}
+                          metaSchema={metaSchema}
                         />
                       ))}
                     </div>
@@ -946,6 +956,7 @@ const PropertyEditor = memo(function PropertyEditor({
   indicatorSvgCache,
   fetchIndicatorSvg,
   markupProfiles,
+  metaSchema,
 }: {
   property: Property;
   onUpdate: (updates: Partial<Property>) => void;
@@ -956,6 +967,7 @@ const PropertyEditor = memo(function PropertyEditor({
   indicatorSvgCache: Record<string, string>;
   fetchIndicatorSvg: (indicatorId: string, url?: string) => Promise<void>;
   markupProfiles: Array<{ id: string; label: string }>;
+  metaSchema: MetaSchema | null;
 }) {
   useEffect(() => {
     if (property.type === 'markup') {
@@ -994,24 +1006,24 @@ const PropertyEditor = memo(function PropertyEditor({
       {isExpanded && (
         <div className="border-t border-border/50 p-3 space-y-3 bg-bg-dark/30">
           {/* Property ID */}
-            <div>
-              <label className="text-xs text-fg-secondary mb-1 block">ID</label>
-              {property.indicator_set === 'status' ? (
-                <input
-                  type="text"
-                  value="status"
-                  disabled
-                  className="w-full px-2 py-1 bg-bg-light border border-border rounded text-fg-primary text-sm font-mono opacity-70 cursor-not-allowed"
-                />
-              ) : (
-                <input
-                  type="text"
-                  value={property.id}
-                  onChange={(e) => onUpdate({ id: e.target.value })}
-                  className="w-full px-2 py-1 bg-bg-light border border-border rounded text-fg-primary text-sm font-mono"
-                />
-              )}
-            </div>
+          <div>
+            <label className="text-xs text-fg-secondary mb-1 block">ID</label>
+            {property.indicator_set === 'status' ? (
+              <input
+                type="text"
+                value="status"
+                disabled
+                className="w-full px-2 py-1 bg-bg-light border border-border rounded text-fg-primary text-sm font-mono opacity-70 cursor-not-allowed"
+              />
+            ) : (
+              <input
+                type="text"
+                value={property.id}
+                onChange={(e) => onUpdate({ id: e.target.value })}
+                className="w-full px-2 py-1 bg-bg-light border border-border rounded text-fg-primary text-sm font-mono"
+              />
+            )}
+          </div>
 
           {/* Property Label */}
           <div>
@@ -1032,13 +1044,11 @@ const PropertyEditor = memo(function PropertyEditor({
               onChange={(e) => onUpdate({ type: e.target.value })}
               className="w-full px-2 py-1 bg-bg-light border border-border rounded text-fg-primary text-sm"
             >
-              <option value="text">Text</option>
-              <option value="textarea">Textarea</option>
-              <option value="number">Number</option>
-              <option value="boolean">Boolean</option>
-              <option value="select">Select</option>
-              <option value="asset">Asset</option>
-              <option value="editor">Editor</option>
+              {metaSchema?.property_types?.map((pt: { id: string; description?: string }) => (
+                <option key={pt.id} value={pt.id}>
+                  {pt.description ? `${pt.id} - ${pt.description}` : pt.id}
+                </option>
+              ))}
             </select>
           </div>
 

@@ -1509,7 +1509,9 @@
         "properties": {
           "name": "Junk Yard"
         },
-        "children": [],
+        "children": [
+          "c639f7c5-a900-42d8-92c1-b052c4af2807"
+        ],
         "indicator_id": null,
         "indicator_set": null,
         "icon_id": "cog",
@@ -1518,6 +1520,24 @@
         "allowed_children": [
           "part_asset"
         ]
+      },
+      {
+        "id": "c639f7c5-a900-42d8-92c1-b052c4af2807",
+        "type": "part_asset",
+        "properties": {
+          "name": "Dana 35",
+          "notes": "",
+          "part_number": "",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": ""
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
+        "allowed_children": []
       },
       {
         "id": "318d9929-d908-4319-b908-fbeba4a8e7ff",
@@ -4625,18 +4645,18 @@
   "template_id": "project_talus",
   "expanded_map": {
     "8f0b11a8-aea2-415b-938c-3633e816eff7": true,
-    "063e0759-c0d2-4caf-b411-ed87e2f16637": true,
+    "063e0759-c0d2-4caf-b411-ed87e2f16637": false,
     "58e9689c-0b7f-4325-8ebe-ca53944cf667": true,
-    "fb04ceae-e213-462b-805e-a94fead8b824": false,
+    "fb04ceae-e213-462b-805e-a94fead8b824": true,
     "0f71cdf1-f7b1-4ce9-bf97-dc55b20eb208": true,
     "be07bc50-f298-4e9b-a7b0-9c5b5e7db4c8": false,
     "80050417-1151-4cae-8431-ac5e047f58e9": false,
     "89941716-6549-4335-9b87-7a9a5b544233": true,
-    "82584abf-2b5c-45f1-80c7-34e9d508f69c": false,
-    "318d9929-d908-4319-b908-fbeba4a8e7ff": true,
+    "82584abf-2b5c-45f1-80c7-34e9d508f69c": true,
+    "318d9929-d908-4319-b908-fbeba4a8e7ff": false,
     "1fd92134-4784-464c-9962-da6806ec1c76": false,
     "141251af-850d-4868-a75a-16bd0afc90a6": true,
-    "b1fe1049-5d9e-44c4-8d25-31965d40995d": true,
+    "b1fe1049-5d9e-44c4-8d25-31965d40995d": false,
     "820342f7-a2d4-4ba8-a069-71464831e660": true,
     "e09f39d3-4ed6-4c54-8ce0-0dd198618941": false,
     "6c53b542-1a3e-43cf-a0de-6d1c74f0bd04": false,
@@ -4645,13 +4665,13 @@
     "9b6d26d8-9ac0-4846-b10c-c667d221d941": true,
     "e4750de5-a8eb-4525-8cf6-eb092af1a6b3": true,
     "ad566f5f-67f3-49b9-8f04-550a709c2460": false,
-    "a5dc3b1e-7511-465f-ac9a-be44698bd43f": true,
+    "a5dc3b1e-7511-465f-ac9a-be44698bd43f": false,
     "d83d81ec-5a38-4a2c-a27e-90256b02daa8": true,
     "3472fd21-b7dc-4476-a727-df51f70c46b1": false,
     "45efb876-0980-4c3d-8e0d-468566297868": false,
     "59d1eb52-1551-4e2a-a8db-7ea8a11d012a": false,
     "1ab4d600-e346-4d04-8980-4612fd36496d": false,
-    "8af04d53-d82f-4a6c-970b-3701c4b1d90f": true,
+    "8af04d53-d82f-4a6c-970b-3701c4b1d90f": false,
     "ae724518-ae43-4bef-805d-0ea9e8bce488": false,
     "f1700f82-f825-4fa3-b39a-a0243e7671ae": true,
     "1c00929d-a96f-42e3-9759-a66e91ae24bc": true,
@@ -4661,7 +4681,8 @@
     "0b36282f-9b5b-4eea-b79b-35d730e0135f": false,
     "78cbaba6-697c-4dec-b72d-04c633b73686": false,
     "faca8529-d909-4632-a805-1d1d9b6db60d": false,
-    "d8e270bb-73ef-404c-8468-19684b043d45": false
+    "d8e270bb-73ef-404c-8468-19684b043d45": false,
+    "05943ed2-50fa-4169-aade-ba55965950fb": true
   },
   "blocking_relationships": [
     {
