@@ -206,6 +206,7 @@ Icon=talus-tally
 Terminal=false
 Type=Application
 Categories=Utility;
+StartupWMClass=talus-tally-app
 DESKTOP
 
 # Copy or create icon (if exists)
@@ -223,8 +224,6 @@ Description: Graph-based project management and data visualization
 Homepage: https://github.com/talus-tally/talus-tally
 Depends: libcurl4, libssl3
 CONTROL
-StartupWMClass=talus-tally
-
 # Create postinst script for permissions
 cat > "$PACKAGE_DIR/DEBIAN/postinst" << 'POSTINST'
 #!/bin/bash
