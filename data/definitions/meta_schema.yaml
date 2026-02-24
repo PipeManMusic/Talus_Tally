@@ -62,3 +62,12 @@ capabilities:
   - id: "inventory"
   - id: "media"
   - id: "time_tracking"
+
+# Node Classes for schema-driven Base Type selector
+node_classes:
+  - id: "standard"
+    name: "Standard Node"
+  - id: "asset"
+    name: "Asset Node"
+  - id: "media"
+    name: "Media Node"

@@ -1,30 +1,65 @@
-"""
-Copy default templates/assets from /opt/talus_tally to user data dir on first run.
-"""
-import os
+"""Seed user data directories with default templates, icons, indicators, and markups."""
 import shutil
 from pathlib import Path
-from backend.infra.user_data_dir import get_user_templates_dir, get_user_icons_dir, get_user_indicators_dir, get_user_markups_dir
+from backend.infra.user_data_dir import (
+    get_user_icons_dir,
+    get_user_indicators_dir,
+    get_user_markups_dir,
+    get_user_templates_dir,
+)
 
-def copy_if_empty(user_dir: Path, system_dir: Path):
-    if not user_dir.exists() or not any(user_dir.iterdir()):
-        if system_dir.exists():
-            for item in system_dir.iterdir():
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+SYSTEM_ROOT = Path('/opt/talus_tally')
+
+
+def copy_if_empty(user_dir: Path, source_dirs):
+    """Copy data from the first existing source directory into user_dir if empty."""
+    if user_dir.exists() and any(user_dir.iterdir()):
+        return
+
+    for source in source_dirs:
+        if source.exists():
+            for item in source.iterdir():
                 dest = user_dir / item.name
                 if item.is_file():
                     shutil.copy2(item, dest)
                 elif item.is_dir():
                     shutil.copytree(item, dest, dirs_exist_ok=True)
+            break
 
 
 def ensure_user_data_populated():
-    # Map user/system dirs for all asset types
+    # Map user dirs to candidate source directories (system install first, then repo)
     mappings = [
-        (get_user_templates_dir(), Path('/opt/talus_tally/data/templates')),
-        (get_user_icons_dir(), Path('/opt/talus_tally/data/icons')),
-        (get_user_indicators_dir(), Path('/opt/talus_tally/data/indicators')),
-        (get_user_markups_dir(), Path('/opt/talus_tally/data/markups')),
+        (
+            get_user_templates_dir(),
+            [
+                SYSTEM_ROOT / 'data' / 'templates',
+                PROJECT_ROOT / 'data' / 'templates',
+            ],
+        ),
+        (
+            get_user_icons_dir(),
+            [
+                SYSTEM_ROOT / 'assets' / 'icons',
+                PROJECT_ROOT / 'assets' / 'icons',
+            ],
+        ),
+        (
+            get_user_indicators_dir(),
+            [
+                SYSTEM_ROOT / 'assets' / 'indicators',
+                PROJECT_ROOT / 'assets' / 'indicators',
+            ],
+        ),
+        (
+            get_user_markups_dir(),
+            [
+                SYSTEM_ROOT / 'data' / 'markups',
+                PROJECT_ROOT / 'data' / 'markups',
+            ],
+        ),
     ]
-    for user_dir, system_dir in mappings:
+    for user_dir, sources in mappings:
         user_dir.mkdir(parents=True, exist_ok=True)
-        copy_if_empty(user_dir, system_dir)
+        copy_if_empty(user_dir, sources)

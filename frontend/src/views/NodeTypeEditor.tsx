@@ -27,6 +27,7 @@ export interface NodeType {
   icon?: string;
   shape?: string;
   color?: string;
+  base_type?: string; // Added for Node Class selector
 }
 
 export interface Property {
@@ -611,6 +612,20 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
                     onChange={(e) => updateNodeType(nodeType.id, { label: e.target.value })}
                     className="w-full px-3 py-2 bg-bg-light border border-border rounded text-fg-primary"
                   />
+                </div>
+
+                {/* Base Type Selector */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-fg-secondary mb-1">Base Type</label>
+                  <select
+                    value={nodeType.base_type || 'standard'}
+                    onChange={(e) => updateNodeType(nodeType.id, { base_type: e.target.value })}
+                    className="w-full px-3 py-2 bg-bg-light border border-border rounded-md text-fg-primary"
+                  >
+                    {metaSchema?.node_classes?.map((nc: { id: string; name: string }) => (
+                      <option key={nc.id} value={nc.id}>{nc.name}</option>
+                    ))}
+                  </select>
                 </div>
 
                 {/* Icon (optional) */}
