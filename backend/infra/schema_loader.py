@@ -8,6 +8,10 @@ from typing import List, Dict, Any, Optional
 from backend.infra.icon_catalog import IconCatalog
 from backend.infra.template_validator import TemplateValidator, TemplateValidationError
 from backend.infra.template_persistence import get_templates_directory
+from backend.infra.user_data_dir import (
+    get_user_icons_dir,
+    get_user_indicators_dir,
+)
 
 
 def _generate_stable_uuid(namespace: str, name: str) -> str:
@@ -217,6 +221,16 @@ class SchemaLoader:
 
         catalog_path = None
         icon_catalog_path = None
+
+        # Prefer user-managed catalogs so edits live outside the install prefix
+        user_indicator_catalog = get_user_indicators_dir() / 'catalog.yaml'
+        if user_indicator_catalog.exists():
+            catalog_path = user_indicator_catalog
+
+        user_icon_catalog = get_user_icons_dir() / 'catalog.yaml'
+        if user_icon_catalog.exists():
+            icon_catalog_path = user_icon_catalog
+
         for root in asset_roots:
             candidate_catalog = root / 'assets' / 'indicators' / 'catalog.yaml'
             candidate_icon = root / 'assets' / 'icons' / 'catalog.yaml'

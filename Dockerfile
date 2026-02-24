@@ -35,17 +35,18 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y --no-install-recommends nodejs \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Rust with pre-built toolchain (faster than building from source)
-# Use 1.85.0+ to support edition2024 feature for Tauri dependencies
+# Create non-root builder user and workspace mountpoint
+RUN useradd -m builder
+RUN mkdir -p /build && chown -R builder:builder /build
+USER builder
+WORKDIR /build
+# Install Rust inside the builder user's home for proper permissions
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
-ENV PATH="/root/.cargo/bin:${PATH}"
+ENV PATH="/home/builder/.cargo/bin:${PATH}"
 # Set PKG_CONFIG_PATH to include system libraries for Tauri builds
 ENV PKG_CONFIG_PATH="/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig"
 # Pre-download common Rust dependencies for faster builds
 RUN cargo install cargo-watch --locked 2>/dev/null || true
-
-# Set working directory and environment variables for build optimization
-WORKDIR /build
 ENV PYTHON_BIN=python3
 ENV CARGO_PROFILE_RELEASE_OPT_LEVEL=3
 ENV CARGO_PROFILE_RELEASE_LTO=true

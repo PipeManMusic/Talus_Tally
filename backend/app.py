@@ -101,7 +101,26 @@ def create_app(config=None):
             'app://localhost',
             'null',
         ]
-    socketio = SocketIO(app, cors_allowed_origins=cors_allowed_origins, async_mode='threading')
+    preferred_async_modes = []
+    env_async = os.environ.get('TALUS_SOCKET_ASYNC_MODE')
+    if env_async:
+        preferred_async_modes.append(env_async.strip())
+    preferred_async_modes.extend(['threading', 'eventlet', 'gevent', None])
+
+    socketio_init_error = None
+    socketio = None
+    for mode in preferred_async_modes:
+        try:
+            socketio = SocketIO(app, cors_allowed_origins=cors_allowed_origins, async_mode=mode)
+            logger.info(f"Socket.IO async mode initialized: {socketio.async_mode}")
+            break
+        except ValueError as exc:
+            socketio_init_error = exc
+            logger.warning(f"Async mode '{mode}' not available: {exc}")
+            continue
+
+    if socketio is None:
+        raise RuntimeError(f"Failed to initialize Socket.IO with preferred async modes: {socketio_init_error}")
     
     # Enable CORS for development with explicit configuration
     CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)

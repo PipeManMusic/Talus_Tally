@@ -2,6 +2,11 @@ from pathlib import Path
 import sys
 import os
 
+from backend.infra.user_data_dir import (
+    get_user_icons_dir,
+    get_user_indicators_dir,
+)
+
 def _resolve_assets_subpath(*parts: str, prefer_writable: bool = False) -> Path:
     """Resolve an assets subpath with environment-aware path preference.
     
@@ -1036,30 +1041,40 @@ def get_indicator_theme(set_id, indicator_id):
 # Indicator Catalog Management (CRUD)
 # ============================================================================
 
-def _get_indicator_catalog_path():
-    """Get the path to the indicator catalog file for management endpoints."""
-    # Allow override via environment variable
-    if os.environ.get('INDICATOR_CATALOG_PATH'):
-        return os.environ.get('INDICATOR_CATALOG_PATH')
-    
-    # Use unified resolver with write preference
-    return str(_resolve_assets_subpath('assets', 'indicators', 'catalog.yaml', prefer_writable=True))
+def _get_indicator_catalog_path(*, prefer_writable: bool = False):
+    """Get the path to the indicator catalog file."""
+    override = os.environ.get('INDICATOR_CATALOG_PATH')
+    if override:
+        return override
+    user_catalog = get_user_indicators_dir() / 'catalog.yaml'
+    if prefer_writable or user_catalog.exists():
+        return str(user_catalog)
+    return str(
+        _resolve_assets_subpath(
+            'assets', 'indicators', 'catalog.yaml', prefer_writable=False
+        )
+    )
 
 
-def _get_icon_catalog_path():
-    """Get the path to the icon catalog file for management endpoints."""
-    # Allow override via environment variable
-    if os.environ.get('ICON_CATALOG_PATH'):
-        return os.environ.get('ICON_CATALOG_PATH')
-
-    # Use unified resolver with write preference
-    return str(_resolve_assets_subpath('assets', 'icons', 'catalog.yaml', prefer_writable=True))
+def _get_icon_catalog_path(*, prefer_writable: bool = False):
+    """Get the path to the icon catalog file."""
+    override = os.environ.get('ICON_CATALOG_PATH')
+    if override:
+        return override
+    user_catalog = get_user_icons_dir() / 'catalog.yaml'
+    if prefer_writable or user_catalog.exists():
+        return str(user_catalog)
+    return str(
+        _resolve_assets_subpath(
+            'assets', 'icons', 'catalog.yaml', prefer_writable=False
+        )
+    )
 
 
 def _load_icon_catalog():
     import yaml
 
-    catalog_path = Path(_get_icon_catalog_path())
+    catalog_path = Path(_get_icon_catalog_path(prefer_writable=True))
     if not catalog_path.exists():
         return catalog_path, {'icons': []}
 
@@ -1093,7 +1108,7 @@ def list_indicators(set_id):
     try:
         from backend.handlers.indicator_handler import IndicatorHandler, IndicatorSetNotFoundError
 
-        handler = IndicatorHandler(_get_indicator_catalog_path())
+        handler = IndicatorHandler(_get_indicator_catalog_path(prefer_writable=True))
         indicators = handler.list_indicators(set_id)
 
         return jsonify({
@@ -1129,7 +1144,7 @@ def get_single_indicator(set_id, indicator_id):
             IndicatorSetNotFoundError,
         )
 
-        handler = IndicatorHandler(_get_indicator_catalog_path())
+        handler = IndicatorHandler(_get_indicator_catalog_path(prefer_writable=True))
         indicator = handler.get_indicator(set_id, indicator_id)
 
         return jsonify(indicator), 200
@@ -1181,7 +1196,7 @@ def create_indicator(set_id):
                 }
             }), 400
 
-        handler = IndicatorHandler(_get_indicator_catalog_path())
+        handler = IndicatorHandler(_get_indicator_catalog_path(prefer_writable=True))
         indicator = handler.create_indicator(
             set_id=set_id,
             indicator_id=data['indicator_id'],
@@ -1238,7 +1253,7 @@ def update_indicator(set_id, indicator_id):
                 }
             }), 400
 
-        handler = IndicatorHandler(_get_indicator_catalog_path())
+        handler = IndicatorHandler(_get_indicator_catalog_path(prefer_writable=True))
         indicator = handler.update_indicator(
             set_id=set_id,
             indicator_id=indicator_id,
@@ -1314,7 +1329,7 @@ def upload_indicator_file(set_id, indicator_id):
                 }
             }), 400
 
-        catalog_path = _get_indicator_catalog_path()
+        catalog_path = _get_indicator_catalog_path(prefer_writable=True)
         indicators_dir = os.path.dirname(catalog_path)
         os.makedirs(indicators_dir, exist_ok=True)
 
@@ -1350,7 +1365,7 @@ def delete_indicator(set_id, indicator_id):
             IndicatorSetNotFoundError,
         )
 
-        handler = IndicatorHandler(_get_indicator_catalog_path())
+        handler = IndicatorHandler(_get_indicator_catalog_path(prefer_writable=True))
         handler.delete_indicator(set_id, indicator_id)
         handler.save()
 
@@ -1397,7 +1412,7 @@ def set_indicator_theme(set_id, indicator_id):
                 }
             }), 400
 
-        handler = IndicatorHandler(_get_indicator_catalog_path())
+        handler = IndicatorHandler(_get_indicator_catalog_path(prefer_writable=True))
         result = handler.set_indicator_theme(set_id, indicator_id, data)
         handler.save()
 
@@ -1675,7 +1690,7 @@ def upload_icon_file(icon_id: str):
                 }
             }), 400
 
-        catalog_path = Path(_get_icon_catalog_path())
+        catalog_path = Path(_get_icon_catalog_path(prefer_writable=True))
         icons_dir = catalog_path.parent
         icons_dir.mkdir(parents=True, exist_ok=True)
 

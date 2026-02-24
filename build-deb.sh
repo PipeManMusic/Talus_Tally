@@ -39,6 +39,8 @@ PYTHON_BIN="${PYTHON_BIN:-python3}"
 VERSION="0.1.2"
 ARCH="amd64"
 PACKAGE_DIR="talus-tally_${VERSION}_${ARCH}"
+BACKEND_DIST_DIR="dist/talus-tally"
+BACKEND_BINARY_SRC="$BACKEND_DIST_DIR/talus-tally"
 
 echo "📋 Build Configuration:"
 echo "  Version: $VERSION"
@@ -70,10 +72,12 @@ cd ..
 
 # Step 2: Build backend
 echo "📦 Step 2/4: Building Python backend with PyInstaller..."
+# Remove previous PyInstaller outputs to avoid stale artifacts between runs
+rm -rf build dist
 "$PYTHON_BIN" -m pip install -q -r requirements.txt
 "$PYTHON_BIN" -m pip install -q "pyinstaller>=6.0.0"
 "$PYTHON_BIN" -m PyInstaller --clean talus-tally.spec
-echo "✅ Backend binary created at dist/talus-tally-backend"
+echo "✅ Backend binary created at $BACKEND_BINARY_SRC"
 
 # Step 3: Create .deb package structure
 echo "📦 Step 3/4: Creating .deb package structure..."
@@ -87,8 +91,19 @@ mkdir -p "$PACKAGE_DIR/opt/talus-tally"
 mkdir -p "$PACKAGE_DIR/opt/talus_tally"
 
 # Copy backend binary
-cp dist/talus-tally-backend "$PACKAGE_DIR/opt/talus-tally/"
+if [ ! -f "$BACKEND_BINARY_SRC" ]; then
+    echo "❌ Backend binary not found at $BACKEND_BINARY_SRC"
+    exit 1
+fi
+cp "$BACKEND_BINARY_SRC" "$PACKAGE_DIR/opt/talus-tally/talus-tally-backend"
 chmod +x "$PACKAGE_DIR/opt/talus-tally/talus-tally-backend"
+# Copy bundled Python runtime (_internal) needed by PyInstaller
+if [ -d "$BACKEND_DIST_DIR/_internal" ]; then
+    cp -r "$BACKEND_DIST_DIR/_internal" "$PACKAGE_DIR/opt/talus-tally/"
+else
+    echo "❌ PyInstaller runtime folder missing at $BACKEND_DIST_DIR/_internal"
+    exit 1
+fi
 
 # Copy frontend static files
 cp -r frontend/dist "$PACKAGE_DIR/opt/talus-tally/"

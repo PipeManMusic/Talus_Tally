@@ -25,12 +25,15 @@ jobs:
           - os: ubuntu-latest
             target: linux
             artifact: talus-tally-linux
+            tauri_bundles: deb
           - os: macos-latest
             target: macos
             artifact: talus-tally-macos
+            tauri_bundles: dmg
           - os: windows-latest
             target: windows
             artifact: talus-tally-windows
+            tauri_bundles: nsis
 
     steps:
       - name: Checkout repository
@@ -87,7 +90,25 @@ jobs:
 
       - name: Build Tauri shell
         working-directory: frontend
-        run: npx tauri build --bundles none
+        run: |
+          bundles=""
+          case "${{ matrix.target }}" in
+            linux)
+              bundles="deb"
+              ;;
+            macos)
+              bundles="dmg"
+              ;;
+            windows)
+              bundles="nsis"
+              ;;
+          esac
+
+          if [[ -n "${bundles}" ]]; then
+            npx tauri build --ci --bundles "${bundles}"
+          else
+            npx tauri build --ci
+          fi
 
       - name: Package artifacts
         id: package

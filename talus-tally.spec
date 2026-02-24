@@ -1,101 +1,51 @@
 # -*- mode: python ; coding: utf-8 -*-
-# PyInstaller spec file for Talus Tally backend
 
-import os
 from PyInstaller.utils.hooks import collect_data_files, collect_submodules
-import spellchecker
 
-block_cipher = None
 
-# Collect all backend modules
-backend_modules = collect_submodules('backend')
+async_driver_hiddenimports = []
+async_driver_hiddenimports += collect_submodules('engineio.async_drivers')
+spellchecker_datas = collect_data_files('spellchecker', include_py_files=False)
 
-# Collect data files (templates, assets, frontend dist, etc)
-datas = []
-datas += collect_data_files('flask_socketio')
-datas += collect_data_files('socketio')
-datas += collect_data_files('engineio')
-datas += [('data', 'data'), ('assets', 'assets')]
-# Include frontend static files if built
-if os.path.exists('frontend/dist'):
-    datas += [('frontend/dist', 'frontend/dist')]
-
-# Add spellchecker resources (entire directory)
-spellchecker_resources = os.path.join(os.path.dirname(spellchecker.__file__), 'resources')
-if os.path.exists(spellchecker_resources):
-    datas.append((spellchecker_resources, 'spellchecker/resources'))
 
 a = Analysis(
-    ['backend/__main__.py'],
-    pathex=[],
+    ['backend/app.py'],
+    pathex=['backend'],
     binaries=[],
-    datas=datas,
-    hiddenimports=backend_modules + [
-        'flask',
-        'flask_cors',
-        'flask_socketio',
-        'socketio',
-        'engineio',
-        'engineio.async_drivers.threading',
-        'engineio.async_drivers.eventlet',
-        'eventlet',
-        'eventlet.green',
-        'eventlet.greenthread',
-        'eventlet.wsgi',
-        'dns',
-        'dns.resolver',
-        'greenlet',
-        'simple_websocket',
-        'wsproto',
-        'h11',
-        'yaml',
-        'backend.api.routes',
-        'backend.api.socketio_handlers',
-        'backend.api.broadcaster',
-        'backend.api.graph_service',
-        'backend.api.session',
-        'backend.api.project_manager',
-        'backend.core.graph',
-        'backend.core.node',
-        'backend.handlers.dispatcher',
-        'backend.handlers.command',
-        'backend.handlers.commands.node_commands',
-        'backend.handlers.commands.macro_commands',
-        'backend.infra.schema_loader',
-        'backend.infra.persistence',
-        'backend.infra.icon_catalog',
-        'backend.infra.logging',
-    ],
+    datas=spellchecker_datas,
+    hiddenimports=async_driver_hiddenimports,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
     excludes=[],
-    win_no_prefer_redirects=False,
-    win_private_assemblies=False,
-    cipher=block_cipher,
     noarchive=False,
+    optimize=0,
 )
-
-pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+pyz = PYZ(a.pure)
 
 exe = EXE(
     pyz,
     a.scripts,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
     [],
+    exclude_binaries=True,
     name='talus-tally-backend',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    upx_exclude=[],
-    runtime_tmpdir=None,
     console=True,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+)
+coll = COLLECT(
+    exe,
+    a.binaries,
+    a.datas,
+    strip=False,
+    upx=True,
+    upx_exclude=[],
+    name='talus-tally-backend',
 )
