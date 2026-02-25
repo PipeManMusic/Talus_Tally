@@ -128,8 +128,19 @@ jobs:
             EXT=".exe"
           fi
 
-          cp "${BACKEND_PATH}" "${ARTIFACT_ROOT}/talus-tally-backend${EXT}"
-          cp "${TAURI_PATH}" "${ARTIFACT_ROOT}/talus-tally${EXT}"
+          copy_build_output() {
+            local source_path="$1"
+            local dest_path="$2"
+
+            if [[ -d "${source_path}" ]]; then
+              cp -r "${source_path}" "${dest_path}"
+            else
+              cp "${source_path}" "${dest_path}"
+            fi
+          }
+
+          copy_build_output "${BACKEND_PATH}" "${ARTIFACT_ROOT}/talus-tally-backend${EXT}"
+          copy_build_output "${TAURI_PATH}" "${ARTIFACT_ROOT}/talus-tally${EXT}"
           cp -r frontend/dist "${ARTIFACT_ROOT}/frontend-dist"
 
           TAG_OR_SHA="${GITHUB_REF_NAME:-${GITHUB_SHA}}"

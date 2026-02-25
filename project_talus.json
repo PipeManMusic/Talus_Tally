@@ -209,7 +209,9 @@
           "d463a2d2-3051-44a0-9450-e2e052d395fa",
           "3dd5add5-9a42-4f24-b0b6-bc0176e7d24f",
           "aa2be0f9-9346-46ee-9761-68688522d219",
-          "71945aab-7b63-43ce-8acd-5bf331688fc9"
+          "71945aab-7b63-43ce-8acd-5bf331688fc9",
+          "f527e3cb-0fc6-418d-891a-7f59d0049543",
+          "a7b6e320-f290-47bf-9be9-ae455233e893"
         ],
         "indicator_id": "partial",
         "indicator_set": "status",
@@ -1017,6 +1019,44 @@
         "type": "footage",
         "properties": {
           "name": "Check Base Timing",
+          "status": "73af3b66-1e07-98eb-09a3-6403a771929a"
+        },
+        "children": [],
+        "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#10b981",
+        "allowed_children": [
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
+        ]
+      },
+      {
+        "id": "f527e3cb-0fc6-418d-891a-7f59d0049543",
+        "type": "footage",
+        "properties": {
+          "name": "Test Battery",
+          "status": "73af3b66-1e07-98eb-09a3-6403a771929a"
+        },
+        "children": [],
+        "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#10b981",
+        "allowed_children": [
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
+        ]
+      },
+      {
+        "id": "a7b6e320-f290-47bf-9be9-ae455233e893",
+        "type": "footage",
+        "properties": {
+          "name": "Test Alternator",
           "status": "73af3b66-1e07-98eb-09a3-6403a771929a"
         },
         "children": [],
@@ -5167,13 +5207,13 @@
   "template_id": "project_talus",
   "expanded_map": {
     "8f0b11a8-aea2-415b-938c-3633e816eff7": true,
-    "063e0759-c0d2-4caf-b411-ed87e2f16637": false,
+    "063e0759-c0d2-4caf-b411-ed87e2f16637": true,
     "58e9689c-0b7f-4325-8ebe-ca53944cf667": false,
     "fb04ceae-e213-462b-805e-a94fead8b824": true,
     "0f71cdf1-f7b1-4ce9-bf97-dc55b20eb208": true,
     "be07bc50-f298-4e9b-a7b0-9c5b5e7db4c8": false,
     "80050417-1151-4cae-8431-ac5e047f58e9": false,
-    "89941716-6549-4335-9b87-7a9a5b544233": false,
+    "89941716-6549-4335-9b87-7a9a5b544233": true,
     "82584abf-2b5c-45f1-80c7-34e9d508f69c": true,
     "318d9929-d908-4319-b908-fbeba4a8e7ff": false,
     "1fd92134-4784-464c-9962-da6806ec1c76": false,
