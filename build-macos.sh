@@ -23,6 +23,18 @@ ensure_icon() {
   fi
 }
 
+stage_backend_bundle() {
+  local backend_src="dist/talus-tally-backend"
+  local backend_dest="frontend/dist/talus-tally-backend"
+  if [[ ! -d "$backend_src" ]]; then
+    echo "❌ Backend bundle missing at $backend_src" >&2
+    exit 1
+  fi
+  mkdir -p "$(dirname "$backend_dest")"
+  rm -rf "$backend_dest"
+  cp -a "$backend_src" "$backend_dest"
+}
+
 log "Building Talus Tally macOS installer"
 
 log "Step 1/4: Building frontend"
@@ -38,6 +50,7 @@ rm -rf build dist
 $PYTHON_BIN -m pip install -r requirements.txt
 $PYTHON_BIN -m pip install "pyinstaller>=6.0.0"
 $PYTHON_BIN -m PyInstaller --clean talus-tally.spec
+stage_backend_bundle
 
 log "Step 3/4: Bundling Tauri app"
 pushd frontend >/dev/null

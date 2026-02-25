@@ -5,7 +5,7 @@
 set -e
 
 # Check if running inside Docker
-if [ ! -f /.dockerenv ]; then
+if [ "${SKIP_DOCKER:-0}" != "1" ] && [ ! -f /.dockerenv ]; then
     if ! command -v docker &> /dev/null; then
         echo "❌ Docker not found. To guarantee GLIBC compatibility, builds must run in Docker."
         echo "   Install Docker: sudo apt install docker.io"
@@ -21,7 +21,14 @@ if [ ! -f /.dockerenv ]; then
     docker buildx build --load -t talus-tally-builder .
 
     # Run this script inside Docker
+    DOCKER_USER_FLAGS=()
+    if [ "${CI:-}" = "true" ]; then
+        echo "🤖 CI detected - running container as root to avoid bind mount permission issues."
+        DOCKER_USER_FLAGS+=(--user 0:0)
+    fi
+
     exec docker run --rm \
+        "${DOCKER_USER_FLAGS[@]}" \
         -v "$(pwd):/build" \
         -w /build \
         talus-tally-builder \
@@ -33,6 +40,10 @@ echo "🔨 Building Talus Tally..."
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$PROJECT_ROOT"
+
+# Allow npm to retain elevated privileges when running inside Docker; otherwise
+# it downgrades to nobody and cannot write to the bind-mounted workspace.
+export npm_config_unsafe_perm=true
 
 # Configuration
 PYTHON_BIN="${PYTHON_BIN:-python3}"
