@@ -30,6 +30,21 @@ function Copy-Icon {
   }
 }
 
+function Stage-BackendBundle {
+  $backendSrc = Join-Path $ScriptRoot 'dist/talus-tally-backend'
+  if (-not (Test-Path $backendSrc)) {
+    throw "Backend bundle missing at $backendSrc"
+  }
+
+  $backendDest = Join-Path $ScriptRoot 'frontend/dist/talus-tally-backend'
+  $backendParent = Split-Path $backendDest -Parent
+  New-Item -ItemType Directory -Force -Path $backendParent | Out-Null
+  if (Test-Path $backendDest) {
+    Remove-Item -Recurse -Force $backendDest
+  }
+  Copy-Item -Path $backendSrc -Destination $backendDest -Recurse -Force
+}
+
 Invoke-Step 'Building frontend' {
   Push-Location 'frontend'
   & $npmBin ci
@@ -44,6 +59,10 @@ Invoke-Step 'Building backend via PyInstaller' {
   & $pythonBin -m pip install -r requirements.txt
   & $pythonBin -m pip install "pyinstaller>=6.0.0"
   & $pythonBin -m PyInstaller --clean talus-tally.spec
+}
+
+Invoke-Step 'Staging backend resources for Tauri' {
+  Stage-BackendBundle
 }
 
 Invoke-Step 'Bundling Tauri app' {
