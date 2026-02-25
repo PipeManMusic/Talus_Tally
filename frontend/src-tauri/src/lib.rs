@@ -2,7 +2,7 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Child};
 use std::net::TcpStream;
 use std::sync::{Arc, Mutex};
-use tauri::Emitter;
+use tauri::{Emitter, Manager};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -56,7 +56,7 @@ pub fn run() {
 
   struct BackendState(Arc<Mutex<Option<Child>>>);
 
-fn start_backend(backend_process: Arc<Mutex<Option<Child>>>, _app_handle: tauri::AppHandle) {
+fn start_backend(backend_process: Arc<Mutex<Option<Child>>>, app_handle: tauri::AppHandle) {
   // Kill any existing backend process first to ensure clean state
   println!("Checking for existing backend processes...");
   #[cfg(target_os = "linux")]
@@ -93,7 +93,7 @@ fn start_backend(backend_process: Arc<Mutex<Option<Child>>>, _app_handle: tauri:
   std::thread::sleep(std::time::Duration::from_millis(1000));
 
   // Determine project root - handle both development and installed locations
-  let project_root = determine_project_root();
+  let project_root = determine_project_root(Some(&app_handle));
 
   let packaged_backend = project_root.join("talus-tally-backend");
   let venv_python = project_root.join(".venv/bin/python3");
@@ -142,7 +142,15 @@ fn start_backend(backend_process: Arc<Mutex<Option<Child>>>, _app_handle: tauri:
   }
 }
 
-fn determine_project_root() -> PathBuf {
+fn determine_project_root(app_handle: Option<&tauri::AppHandle>) -> PathBuf {
+  if let Some(handle) = app_handle {
+    if let Some(resource_dir) = handle.path_resolver().resource_dir() {
+      if resource_dir.join("talus-tally-backend").exists() {
+        return resource_dir;
+      }
+    }
+  }
+
   if let Ok(exe_path) = std::env::current_exe() {
     let exe_dir = exe_path.parent().unwrap_or_else(|| Path::new("."));
 

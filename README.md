@@ -4,13 +4,13 @@ Talus Tally is a graph-based project management application designed to visualiz
 
 ## Quick Start
 
-To build and package Talus Tally for Ubuntu, run:
+Talus Tally ships with platform-specific build scripts so local and CI builds produce identical installers.
 
-```
-./build-deb.sh
-```
+- **Ubuntu/Debian:** `./build-deb.sh`
+- **macOS:** `./build-macos.sh`
+- **Windows:** `pwsh ./build-windows.ps1`
 
-This will generate a `.deb` package for easy installation.
+Each script installs dependencies (Node, backend bundle, Tauri shell), copies runtime assets, and emits a one-click installer inside `build/<platform>/` (Linux outputs a `.deb` beside the script).
 
 ## Documentation
 
