@@ -39,18 +39,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install system dependencies (Linux)
-        if: matrix.target == 'linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libwebkit2gtk-4.1-dev \
-            libgtk-3-dev \
-            libayatana-appindicator3-dev \
-            librsvg2-dev \
-            patchelf \
-            pkg-config
-
       - name: Install system dependencies (macOS)
         if: matrix.target == 'macos'
         run: |
@@ -58,6 +46,7 @@ jobs:
           brew install create-dmg
 
       - name: Setup Node.js
+        if: matrix.target != 'linux'
         uses: actions/setup-node@v4
         with:
           node-version: "20"
@@ -65,6 +54,7 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Setup Python
+        if: matrix.target != 'linux'
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -72,86 +62,42 @@ jobs:
           cache-dependency-path: requirements.txt
 
       - name: Setup Rust toolchain
+        if: matrix.target != 'linux'
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Install frontend dependencies
-        working-directory: frontend
-        run: npm ci
+      - name: Build Linux installer
+        if: matrix.target == 'linux'
+        run: bash build-deb.sh
 
-      - name: Build frontend bundle
-        working-directory: frontend
-        run: npm run build
+      - name: Build macOS installer
+        if: matrix.target == 'macos'
+        run: bash build-macos.sh
 
-      - name: Install Python dependencies
-        run: pip install -r requirements.txt pyinstaller
+      - name: Build Windows installer
+        if: matrix.target == 'windows'
+        shell: pwsh
+        run: ./build-windows.ps1
 
-      - name: Build backend executable
-        run: python -m PyInstaller --clean talus-tally.spec
-
-      - name: Build Tauri shell
-        working-directory: frontend
-        run: |
-          bundles=""
-          case "${{ matrix.target }}" in
-            linux)
-              bundles="deb"
-              ;;
-            macos)
-              bundles="dmg"
-              ;;
-            windows)
-              bundles="nsis"
-              ;;
-          esac
-
-          if [[ -n "${bundles}" ]]; then
-            npx tauri build --ci --bundles "${bundles}"
-          else
-            npx tauri build --ci
-          fi
-
-      - name: Package artifacts
-        id: package
-        run: |
-          set -euo pipefail
-
-          ARTIFACT_ROOT="build/${{ matrix.target }}"
-          mkdir -p "${ARTIFACT_ROOT}"
-
-          BACKEND_PATH="dist/talus-tally-backend"
-          BACKEND_DEST="${ARTIFACT_ROOT}/talus-tally-backend"
-          TAURI_PATH="frontend/src-tauri/target/release/app"
-          TAURI_DEST="${ARTIFACT_ROOT}/talus-tally"
-
-          if [[ "${{ matrix.target }}" == "windows" ]]; then
-            TAURI_PATH="${TAURI_PATH}.exe"
-            TAURI_DEST="${TAURI_DEST}.exe"
-          fi
-
-          copy_build_output() {
-            local source_path="$1"
-            local dest_path="$2"
-
-            if [[ -d "${source_path}" ]]; then
-              cp -r "${source_path}" "${dest_path}"
-            else
-              cp "${source_path}" "${dest_path}"
-            fi
-          }
-
-          copy_build_output "${BACKEND_PATH}" "${BACKEND_DEST}"
-          copy_build_output "${TAURI_PATH}" "${TAURI_DEST}"
-          cp -r frontend/dist "${ARTIFACT_ROOT}/frontend-dist"
-
-          TAG_OR_SHA="${GITHUB_REF_NAME:-${GITHUB_SHA}}"
-          ARCHIVE="talus-tally-${{ matrix.target }}-${TAG_OR_SHA}.tar.gz"
-          tar -czf "${ARCHIVE}" -C "${ARTIFACT_ROOT}" .
-
-          echo "archive=${ARCHIVE}" >> "$GITHUB_OUTPUT"
-
-      - name: Upload packaged artifact
+      - name: Upload Linux artifact
+        if: matrix.target == 'linux'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact }}
-          path: ${{ steps.package.outputs.archive }}
+          path: talus-tally_*_amd64.deb
+          if-no-files-found: error
+
+      - name: Upload macOS artifact
+        if: matrix.target == 'macos'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: build/macos/*.dmg
+          if-no-files-found: error
+
+      - name: Upload Windows artifact
+        if: matrix.target == 'windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: build/windows/*.exe
           if-no-files-found: error

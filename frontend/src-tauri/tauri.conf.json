@@ -27,6 +27,11 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "resources": [
+      "../dist/talus-tally-backend",
+      "../assets",
+      "../data"
+    ],
     "icon": [
       "icons/icon.png",
       "icons/icon.icns",
