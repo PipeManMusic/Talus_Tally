@@ -76,11 +76,7 @@ cp assets/icons/TalusTallyIcon.png frontend/src-tauri/icons/icon.png
 # Step 1.5: Build Tauri desktop app
 echo "📦 Step 1.5/4: Building Tauri desktop app..."
 cd frontend
-if npx tauri build --no-bundle; then
-    echo "✅ Tauri app built"
-else
-    echo "⚠️  Tauri build failed - will use web browser fallback"
-fi
+npx tauri build --no-bundle
 cd ..
 
 # Step 2: Build backend
@@ -133,7 +129,8 @@ cp -r assets/* "$ASSETS_TARGET/" 2>/dev/null || true
 ln -s ../talus_tally/data "$PACKAGE_DIR/opt/talus-tally/data"
 ln -s ../talus_tally/assets "$PACKAGE_DIR/opt/talus-tally/assets"
 
-# Copy Tauri binary if it exists
+# Copy Tauri binary and fail clearly if missing to avoid unusable installer
+TAURI_BINARY_FOUND=0
 for tauri_binary in \
     frontend/src-tauri/target/release/talus-tally \
     frontend/src-tauri/target/release/app; do
@@ -141,9 +138,15 @@ for tauri_binary in \
         cp "$tauri_binary" "$PACKAGE_DIR/opt/talus-tally/talus-tally-app"
         chmod +x "$PACKAGE_DIR/opt/talus-tally/talus-tally-app"
         echo "✅ Copied Tauri binary"
+        TAURI_BINARY_FOUND=1
         break
     fi
 done
+
+if [ $TAURI_BINARY_FOUND -ne 1 ]; then
+    echo "❌ Tauri desktop binary missing; ensure 'npx tauri build' succeeds before packaging." >&2
+    exit 1
+fi
 
 # Create launcher script
 cat > "$PACKAGE_DIR/usr/bin/talus-tally" << 'LAUNCHER'
