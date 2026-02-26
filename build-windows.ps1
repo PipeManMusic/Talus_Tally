@@ -36,13 +36,21 @@ function Stage-BackendBundle {
     throw "Backend bundle missing at $backendSrc"
   }
 
-  $backendDest = Join-Path $ScriptRoot 'frontend/dist/talus-tally-backend'
-  $backendParent = Split-Path $backendDest -Parent
-  New-Item -ItemType Directory -Force -Path $backendParent | Out-Null
-  if (Test-Path $backendDest) {
-    Remove-Item -Recurse -Force $backendDest
+  $resourcesRoot = Join-Path $ScriptRoot 'frontend/src-tauri/resources'
+  $backendDest = Join-Path $resourcesRoot 'talus-tally-backend'
+  $assetsDest = Join-Path $resourcesRoot 'assets'
+  $dataDest = Join-Path $resourcesRoot 'data'
+
+  New-Item -ItemType Directory -Force -Path $resourcesRoot | Out-Null
+  foreach ($dest in @($backendDest, $assetsDest, $dataDest)) {
+    if (Test-Path $dest) {
+      Remove-Item -Recurse -Force $dest
+    }
   }
+
   Copy-Item -Path $backendSrc -Destination $backendDest -Recurse -Force
+  Copy-Item -Path (Join-Path $ScriptRoot 'assets') -Destination $assetsDest -Recurse -Force
+  Copy-Item -Path (Join-Path $ScriptRoot 'data') -Destination $dataDest -Recurse -Force
 }
 
 function Remove-TauriTarget {

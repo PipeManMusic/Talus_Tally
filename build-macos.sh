@@ -25,14 +25,21 @@ ensure_icon() {
 
 stage_backend_bundle() {
   local backend_src="dist/talus-tally-backend"
-  local backend_dest="frontend/dist/talus-tally-backend"
+  local resources_root="frontend/src-tauri/resources"
+  local backend_dest="$resources_root/talus-tally-backend"
+  local assets_dest="$resources_root/assets"
+  local data_dest="$resources_root/data"
+
   if [[ ! -d "$backend_src" ]]; then
     echo "❌ Backend bundle missing at $backend_src" >&2
     exit 1
   fi
-  mkdir -p "$(dirname "$backend_dest")"
-  rm -rf "$backend_dest"
+
+  mkdir -p "$resources_root"
+  rm -rf "$backend_dest" "$assets_dest" "$data_dest"
   cp -a "$backend_src" "$backend_dest"
+  cp -a assets "$assets_dest"
+  cp -a data "$data_dest"
 }
 
 clean_tauri_target() {

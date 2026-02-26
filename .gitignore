@@ -35,3 +35,4 @@ talus-tally_*/
 
 # Frontend build artifacts
 /frontend/dist/
+/frontend/src-tauri/resources/
