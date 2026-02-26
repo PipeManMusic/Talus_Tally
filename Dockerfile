@@ -38,11 +38,13 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
 # Create non-root builder user and workspace mountpoint
 RUN useradd -m builder
 RUN mkdir -p /build && chown -R builder:builder /build
+ENV CARGO_HOME="/home/builder/.cargo"
+ENV RUSTUP_HOME="/home/builder/.rustup"
+ENV PATH="${CARGO_HOME}/bin:${PATH}"
 USER builder
 WORKDIR /build
 # Install Rust inside the builder user's home for proper permissions
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
-ENV PATH="/home/builder/.cargo/bin:${PATH}"
 # Set PKG_CONFIG_PATH to include system libraries for Tauri builds
 ENV PKG_CONFIG_PATH="/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig"
 # Pre-download common Rust dependencies for faster builds
