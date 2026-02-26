@@ -23,7 +23,10 @@ if [ "${SKIP_DOCKER:-0}" != "1" ] && [ ! -f /.dockerenv ]; then
     # Run this script inside Docker
     DOCKER_USER_FLAGS=()
     if [ "${CI:-}" = "true" ]; then
-        echo "🤖 CI detected - running container with default builder user (permissions handled via npm_config_unsafe_perm)."
+        echo "🤖 CI detected - running container as root to avoid bind mount permission issues."
+        DOCKER_USER_FLAGS=("--user" "0:0")
+    else
+        echo "👷 Local build detected - using builder user inside the container."
     fi
 
     exec docker run --rm \
