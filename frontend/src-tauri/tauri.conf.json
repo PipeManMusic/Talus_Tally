@@ -28,9 +28,9 @@
     "active": true,
     "targets": "all",
     "resources": [
-      "../../dist/talus-tally-backend",
-      "../../assets",
-      "../../data"
+      "resources/talus-tally-backend",
+      "resources/assets",
+      "resources/data"
     ],
     "icon": [
       "icons/icon.png",

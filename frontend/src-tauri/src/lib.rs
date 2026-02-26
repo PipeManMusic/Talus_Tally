@@ -1,3 +1,4 @@
+use std::collections::VecDeque;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Child};
 use std::net::TcpStream;
@@ -85,9 +86,11 @@ fn start_backend(backend_process: Arc<Mutex<Option<Child>>>, app_handle: tauri::
   #[cfg(target_os = "windows")]
   {
     for image in ["python.exe", "talus-tally-backend.exe"] {
-      let _ = Command::new("taskkill")
+      let mut taskkill_cmd = Command::new("taskkill");
+      taskkill_cmd
         .args(&["/F", "/IM", image])
-        .output();
+        .creation_flags(0x08000000);
+      let _ = taskkill_cmd.output();
     }
     println!("✓ Killed any existing backend processes");
   }
@@ -184,21 +187,59 @@ fn determine_project_root(app_handle: Option<&tauri::AppHandle>) -> PathBuf {
 }
 
 fn find_packaged_backend(project_root: &Path) -> Option<PathBuf> {
-  let nested_dir = project_root.join("talus-tally-backend");
-  let candidates = [
-    project_root.join("talus-tally-backend"),
-    project_root.join("talus-tally-backend.exe"),
-    nested_dir.join("talus-tally-backend"),
-    nested_dir.join("talus-tally-backend.exe"),
-  ];
+  if let Some(found) = search_backend_binary(project_root, 0) {
+    return Some(found);
+  }
 
-  for candidate in candidates.iter() {
-    if candidate.is_file() {
-      return Some(candidate.to_path_buf());
+  search_backend_binary(project_root, 5)
+}
+
+fn search_backend_binary(start: &Path, max_depth: usize) -> Option<PathBuf> {
+  let mut queue: VecDeque<(PathBuf, usize)> = VecDeque::new();
+  queue.push_back((start.to_path_buf(), 0));
+
+  while let Some((dir, depth)) = queue.pop_front() {
+    if depth > max_depth {
+      continue;
+    }
+
+    let entries = match std::fs::read_dir(&dir) {
+      Ok(entries) => entries,
+      Err(_) => continue,
+    };
+
+    for entry in entries.flatten() {
+      let path = entry.path();
+      if path.is_file() && is_backend_binary(&path) {
+        return Some(path);
+      }
+      if path.is_dir() {
+        queue.push_back((path, depth + 1));
+      }
     }
   }
 
   None
+}
+
+fn is_backend_binary(path: &Path) -> bool {
+  match path.file_name().and_then(|name| name.to_str()) {
+    Some(name) => matches_backend_filename(name),
+    None => false,
+  }
+}
+
+fn matches_backend_filename(name: &str) -> bool {
+  #[cfg(target_os = "windows")]
+  {
+    name.eq_ignore_ascii_case("talus-tally-backend.exe")
+      || name.eq_ignore_ascii_case("talus_tally_backend.exe")
+  }
+
+  #[cfg(not(target_os = "windows"))]
+  {
+    name == "talus-tally-backend" || name == "talus_tally_backend"
+  }
 }
 
 #[tauri::command]
