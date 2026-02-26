@@ -144,7 +144,7 @@ fn start_backend(backend_process: Arc<Mutex<Option<Child>>>, app_handle: tauri::
 
 fn determine_project_root(app_handle: Option<&tauri::AppHandle>) -> PathBuf {
   if let Some(handle) = app_handle {
-    if let Some(resource_dir) = handle.path_resolver().resource_dir() {
+    if let Ok(resource_dir) = handle.path().resource_dir() {
       if resource_dir.join("talus-tally-backend").exists() {
         return resource_dir;
       }

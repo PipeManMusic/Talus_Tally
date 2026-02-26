@@ -23,8 +23,7 @@ if [ "${SKIP_DOCKER:-0}" != "1" ] && [ ! -f /.dockerenv ]; then
     # Run this script inside Docker
     DOCKER_USER_FLAGS=()
     if [ "${CI:-}" = "true" ]; then
-        echo "🤖 CI detected - running container as root to avoid bind mount permission issues."
-        DOCKER_USER_FLAGS+=(--user 0:0)
+        echo "🤖 CI detected - running container with default builder user (permissions handled via npm_config_unsafe_perm)."
     fi
 
     exec docker run --rm \
@@ -50,8 +49,8 @@ PYTHON_BIN="${PYTHON_BIN:-python3}"
 VERSION="0.1.2"
 ARCH="amd64"
 PACKAGE_DIR="talus-tally_${VERSION}_${ARCH}"
-BACKEND_DIST_DIR="dist/talus-tally"
-BACKEND_BINARY_SRC="$BACKEND_DIST_DIR/talus-tally"
+BACKEND_DIST_DIR="dist/talus-tally-backend"
+BACKEND_BINARY_SRC="$BACKEND_DIST_DIR/talus-tally-backend"
 
 echo "📋 Build Configuration:"
 echo "  Version: $VERSION"
