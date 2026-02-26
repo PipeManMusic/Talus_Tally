@@ -4,6 +4,9 @@ use std::net::TcpStream;
 use std::sync::{Arc, Mutex};
 use tauri::{Emitter, Manager};
 
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   let backend_process: Arc<Mutex<Option<Child>>> = Arc::new(Mutex::new(None));
@@ -95,18 +98,26 @@ fn start_backend(backend_process: Arc<Mutex<Option<Child>>>, app_handle: tauri::
   // Determine project root - handle both development and installed locations
   let project_root = determine_project_root(Some(&app_handle));
 
-  let packaged_backend = project_root.join("talus-tally-backend");
+  let packaged_backend = find_packaged_backend(&project_root);
   let venv_python = project_root.join(".venv/bin/python3");
 
-  let spawn_result = if packaged_backend.exists() {
+  let spawn_result = if let Some(binary_path) = packaged_backend {
     println!(
       "✓ Starting packaged backend binary at {}",
-      packaged_backend.display()
+      binary_path.display()
     );
-    Command::new(&packaged_backend)
+    let mut command = Command::new(&binary_path);
+    command
       .env("TALUS_DAEMON", "1")
-      .current_dir(&project_root)
-      .spawn()
+      .current_dir(&project_root);
+
+    #[cfg(target_os = "windows")]
+    {
+      // CREATE_NO_WINDOW avoids flashing an empty console window
+      command.creation_flags(0x08000000);
+    }
+
+    command.spawn()
   } else if venv_python.exists() {
     println!(
       "✓ Starting backend via virtualenv Python at {}",
@@ -145,7 +156,7 @@ fn start_backend(backend_process: Arc<Mutex<Option<Child>>>, app_handle: tauri::
 fn determine_project_root(app_handle: Option<&tauri::AppHandle>) -> PathBuf {
   if let Some(handle) = app_handle {
     if let Ok(resource_dir) = handle.path().resource_dir() {
-      if resource_dir.join("talus-tally-backend").exists() {
+      if find_packaged_backend(&resource_dir).is_some() {
         return resource_dir;
       }
     }
@@ -170,6 +181,24 @@ fn determine_project_root(app_handle: Option<&tauri::AppHandle>) -> PathBuf {
 
   // Fallback to current working directory or '.'
   std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."))
+}
+
+fn find_packaged_backend(project_root: &Path) -> Option<PathBuf> {
+  let nested_dir = project_root.join("talus-tally-backend");
+  let candidates = [
+    project_root.join("talus-tally-backend"),
+    project_root.join("talus-tally-backend.exe"),
+    nested_dir.join("talus-tally-backend"),
+    nested_dir.join("talus-tally-backend.exe"),
+  ];
+
+  for candidate in candidates.iter() {
+    if candidate.is_file() {
+      return Some(candidate.to_path_buf());
+    }
+  }
+
+  None
 }
 
 #[tauri::command]
