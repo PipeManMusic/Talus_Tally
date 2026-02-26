@@ -45,10 +45,30 @@ function Stage-BackendBundle {
   Copy-Item -Path $backendSrc -Destination $backendDest -Recurse -Force
 }
 
+function Remove-TauriTarget {
+  $targetDir = Join-Path $ScriptRoot 'frontend/src-tauri/target'
+  if (Test-Path $targetDir) {
+    Remove-Item -Path $targetDir -Recurse -Force
+  }
+}
+
+function Invoke-Native {
+  param(
+    [string]$Command,
+    [string[]]$Arguments
+  )
+
+  & $Command @Arguments
+  if ($LASTEXITCODE -ne 0) {
+    $argumentText = if ($Arguments -and $Arguments.Count -gt 0) { ' ' + ($Arguments -join ' ') } else { '' }
+    throw "Command '$Command$argumentText' failed with exit code $LASTEXITCODE"
+  }
+}
+
 Invoke-Step 'Building frontend' {
   Push-Location 'frontend'
-  & $npmBin ci
-  & $npmBin run build
+  Invoke-Native $npmBin @('ci')
+  Invoke-Native $npmBin @('run', 'build')
   Pop-Location
 }
 
@@ -56,9 +76,9 @@ Copy-Icon
 
 Invoke-Step 'Building backend via PyInstaller' {
   Remove-Item -Recurse -Force build, dist -ErrorAction SilentlyContinue
-  & $pythonBin -m pip install -r requirements.txt
-  & $pythonBin -m pip install "pyinstaller>=6.0.0"
-  & $pythonBin -m PyInstaller --clean talus-tally.spec
+  Invoke-Native $pythonBin @('-m', 'pip', 'install', '-r', 'requirements.txt')
+  Invoke-Native $pythonBin @('-m', 'pip', 'install', 'pyinstaller>=6.0.0')
+  Invoke-Native $pythonBin @('-m', 'PyInstaller', '--clean', 'talus-tally.spec')
 }
 
 Invoke-Step 'Staging backend resources for Tauri' {
@@ -66,8 +86,9 @@ Invoke-Step 'Staging backend resources for Tauri' {
 }
 
 Invoke-Step 'Bundling Tauri app' {
+  Remove-TauriTarget
   Push-Location 'frontend'
-  npx tauri build --bundles nsis
+  Invoke-Native 'npx' @('tauri', 'build', '--bundles', 'nsis')
   Pop-Location
 }
 

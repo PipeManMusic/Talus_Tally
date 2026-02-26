@@ -35,6 +35,13 @@ stage_backend_bundle() {
   cp -a "$backend_src" "$backend_dest"
 }
 
+clean_tauri_target() {
+  local target_dir="frontend/src-tauri/target"
+  if [[ -d "$target_dir" ]]; then
+    rm -rf "$target_dir"
+  fi
+}
+
 log "Building Talus Tally macOS installer"
 
 log "Step 1/4: Building frontend"
@@ -53,6 +60,7 @@ $PYTHON_BIN -m PyInstaller --clean talus-tally.spec
 stage_backend_bundle
 
 log "Step 3/4: Bundling Tauri app"
+clean_tauri_target
 pushd frontend >/dev/null
 npx tauri build --bundles "$TAURI_BUNDLES"
 popd >/dev/null
