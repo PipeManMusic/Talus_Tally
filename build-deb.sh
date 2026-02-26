@@ -22,7 +22,7 @@ if [ "${SKIP_DOCKER:-0}" != "1" ] && [ ! -f /.dockerenv ]; then
 
     # Run this script inside Docker
     DOCKER_USER_FLAGS=()
-    if [ "${CI:-}" = "true" ]; then
+    if [ -n "${CI:-}" ] || [ -n "${GITHUB_ACTIONS:-}" ]; then
         echo "🤖 CI detected - running container as root to avoid bind mount permission issues."
         DOCKER_USER_FLAGS=("--user" "0:0")
     else
