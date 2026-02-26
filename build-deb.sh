@@ -63,7 +63,7 @@ echo ""
 
 
 # Step 1: Build frontend
-echo "📦 Step 1/4: Building React frontend..."
+echo "📦 Step 1/5: Building React frontend..."
 cd frontend
 npm ci  # Install all dependencies (including dev) needed for build
 npm run build
@@ -73,14 +73,8 @@ echo "✅ Frontend built to frontend/dist"
 # Ensure correct icon is used for Tauri build
 cp assets/icons/TalusTallyIcon.png frontend/src-tauri/icons/icon.png
 
-# Step 1.5: Build Tauri desktop app
-echo "📦 Step 1.5/4: Building Tauri desktop app..."
-cd frontend
-npx tauri build --no-bundle
-cd ..
-
 # Step 2: Build backend
-echo "📦 Step 2/4: Building Python backend with PyInstaller..."
+echo "📦 Step 2/5: Building Python backend with PyInstaller..."
 # Remove previous PyInstaller outputs to avoid stale artifacts between runs
 rm -rf build dist
 "$PYTHON_BIN" -m pip install -q -r requirements.txt
@@ -88,8 +82,18 @@ rm -rf build dist
 "$PYTHON_BIN" -m PyInstaller --clean talus-tally.spec
 echo "✅ Backend binary created at $BACKEND_BINARY_SRC"
 
-# Step 3: Create .deb package structure
-echo "📦 Step 3/4: Creating .deb package structure..."
+# Step 3: Build Tauri desktop app (requires backend bundle to embed resources)
+echo "📦 Step 3/5: Building Tauri desktop app..."
+if [ ! -d "$BACKEND_DIST_DIR" ]; then
+    echo "❌ Backend bundle missing at $BACKEND_DIST_DIR; PyInstaller step must succeed before bundling Tauri." >&2
+    exit 1
+fi
+cd frontend
+npx tauri build --no-bundle
+cd ..
+
+# Step 4: Create .deb package structure
+echo "📦 Step 4/5: Creating .deb package structure..."
 
 rm -rf "$PACKAGE_DIR"
 mkdir -p "$PACKAGE_DIR/DEBIAN"
@@ -270,8 +274,8 @@ chmod +x "$PACKAGE_DIR/DEBIAN/postinst"
 
 echo "✅ Package structure created"
 
-# Step 4: Build .deb file
-echo "📦 Step 4/4: Building .deb package..."
+# Step 5: Build .deb file
+echo "📦 Step 5/5: Building .deb package..."
 dpkg-deb --build "$PACKAGE_DIR"
 echo "✅ Package created: ${PACKAGE_DIR}.deb"
 
