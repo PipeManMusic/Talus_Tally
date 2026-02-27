@@ -1,7 +1,8 @@
 import { test, expect } from '@playwright/test';
-import { createNewProject } from './utils';
+import { createNewProject, resetE2ETemplateFixture } from './utils';
 
 test('tree view displays node labels and status indicators', async ({ page }) => {
+  await resetE2ETemplateFixture();
       // Log all network requests for debugging
       // Log all network requests for debugging (project and add-child)
       page.on('request', request => {
@@ -42,7 +43,9 @@ test('tree view displays node labels and status indicators', async ({ page }) =>
   await page.screenshot({ path: 'after-add-child-btn.png', fullPage: true });
 
   // Wait for the flyout and log all visible child type options
-  const flyoutOptions = page.locator('button', { hasText: /^Add / });
+  const flyout = page.locator('[data-testid="add-child-flyout"]');
+  await expect(flyout).toBeVisible({ timeout: 5000 });
+  const flyoutOptions = flyout.locator('[data-testid="add-child-flyout-option"]');
   await expect(flyoutOptions.first()).toBeVisible({ timeout: 5000 });
   const flyoutCount = await flyoutOptions.count();
   const flyoutLabels = [];
@@ -53,12 +56,11 @@ test('tree view displays node labels and status indicators', async ({ page }) =>
   await page.screenshot({ path: 'after-flyout.png', fullPage: true });
 
   // Assert that "Add Phase" is present (root node allowed child)
-  const phaseIdx = flyoutLabels.findIndex(label => label && /Add\s+Phase/i.test(label));
-  if (phaseIdx === -1) {
+  const addPhaseOption = flyoutOptions.filter({ hasText: /Add\s+Phase/i }).first();
+  if (await addPhaseOption.count() === 0) {
     throw new Error('"Add Phase" option not found in flyout. Options: ' + JSON.stringify(flyoutLabels));
   }
-  // Click the "Add Phase" option
-  await flyoutOptions.nth(phaseIdx).click();
+  await addPhaseOption.click();
   await page.screenshot({ path: 'after-add-phase-flyout.png', fullPage: true });
 
   // Wait up to 10s for Add Child dialog to appear, robust to placeholder variations
@@ -170,12 +172,16 @@ test('tree view displays node labels and status indicators', async ({ page }) =>
     await logTreeIndicators();
     throw new Error('Child Node found but not clickable. See TREE HTML and indicator log above.');
   }
-  // Find the status property dropdown
-  const statusDropdown = page.getByLabel(/Status/i);
-  await statusDropdown.click();
-  // Select a new status
-  const statusOption = page.getByRole('option').nth(1); // pick a non-default status
-  await statusOption.click();
+  // Find the status property dropdown (label + select pairing)
+  const statusFieldContainer = page.locator('label', { hasText: /Status/i }).first().locator('..');
+  const statusDropdown = statusFieldContainer.locator('select').first();
+  await expect(statusDropdown).toBeVisible({ timeout: 5000 });
+  // Select a non-default status option
+  const options = await statusDropdown.locator('option').all();
+  if (options.length < 2) {
+    throw new Error('Expected at least two status options to be present.');
+  }
+  await statusDropdown.selectOption({ index: 1 });
 
   // Assert that the status indicator SVG or text is rendered in the tree
   const svgIndicator = childTreeItem.locator('.status-indicator-svg');

@@ -519,6 +519,7 @@ function TreeItem({
                   top: (addButtonRef.current?.getBoundingClientRect().bottom ?? 0) + window.scrollY,
                 }}
                 onMouseLeave={() => setShowFlyout(false)}
+                data-testid="add-child-flyout"
               >
                 {standardTypes.map((type: string) => (
                   <button
@@ -529,6 +530,7 @@ function TreeItem({
                       setShowFlyout(false);
                       handleMenuAction(`add:${type}`);
                     }}
+                    data-testid="add-child-flyout-option"
                   >
                     ➕ Add {resolveTypeLabel(type)}
                   </button>
@@ -541,6 +543,7 @@ function TreeItem({
                       setShowFlyout(false);
                       handleMenuAction('add-asset-category');
                     }}
+                    data-testid="add-child-flyout-option"
                   >
                     ➕ Add Asset Category
                   </button>

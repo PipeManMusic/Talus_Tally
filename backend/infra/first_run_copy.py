@@ -13,19 +13,24 @@ SYSTEM_ROOT = Path('/opt/talus_tally')
 
 
 def copy_if_empty(user_dir: Path, source_dirs):
-    """Copy data from the first existing source directory into user_dir if empty."""
-    if user_dir.exists() and any(user_dir.iterdir()):
-        return
+    """Seed user_dir with files from the first existing source, preserving user edits."""
+
+    def copy_from_source(source: Path, skip_existing: bool):
+        for item in source.iterdir():
+            dest = user_dir / item.name
+            if skip_existing and dest.exists():
+                continue
+            if item.is_file():
+                shutil.copy2(item, dest)
+            elif item.is_dir():
+                shutil.copytree(item, dest, dirs_exist_ok=True)
+
+    user_dir.mkdir(parents=True, exist_ok=True)
+    has_existing_content = any(user_dir.iterdir())
 
     for source in source_dirs:
         if source.exists():
-            for item in source.iterdir():
-                dest = user_dir / item.name
-                if item.is_file():
-                    shutil.copy2(item, dest)
-                elif item.is_dir():
-                    shutil.copytree(item, dest, dirs_exist_ok=True)
-            break
+            copy_from_source(source, skip_existing=has_existing_content)
 
 
 def ensure_user_data_populated():

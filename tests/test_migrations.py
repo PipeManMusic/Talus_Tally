@@ -47,12 +47,8 @@ def test_simple_node_migration():
     print(f"  Messages: {messages}")
     print(f"  Graph version after: {graph.template_version}")
     
-    if success:
-        print("  ✓ PASSED: Migration completed successfully")
-        return True
-    else:
-        print("  ✗ FAILED: Migration failed")
-        return False
+    assert success, f"Migration failed: {messages}"
+    print("  ✓ PASSED: Migration completed successfully")
 
 
 def test_structural_migration():
@@ -102,61 +98,37 @@ def test_structural_migration():
     print(f"    Migration success: {success}")
     print(f"    Nodes: {len(graph.nodes)}")
     
-    if success and len(graph.nodes) >= 4:  # project_root, inventory_root, camera_gear, car_part
-        inventory_root = None
-        for node in graph.nodes.values():
-            if node.blueprint_type_id == 'inventory_root':
-                inventory_root = node
-                break
-        
-        if inventory_root:
-            print(f"    inventory_root found! Children: {len(inventory_root.children)}")
-            print(f"    project_root children: {len(project_root.children)}")
-            
-            # Check if camera_gear and car_part are now children of inventory_root
-            camera_moved = inventory_root.id in [camera_gear.parent_id] if inventory_root else False
-            car_moved = inventory_root.id in [car_part.parent_id] if inventory_root else False
-            
-            print(f"\n  Messages:")
-            for msg in messages:
-                print(f"    {msg}")
-            
-            print("\n  ✓ PASSED: Structural migration completed")
-            return True
-        else:
-            print("  ✗ FAILED: inventory_root not created")
-            return False
-    else:
-        print(f"  ✗ FAILED: Migration failed or wrong node count")
-        print(f"  Messages:")
-        for msg in messages:
-            print(f"    {msg}")
-        return False
+    assert success, f"Migration failed: {messages}"
+    assert len(graph.nodes) >= 4, "Expected project_root, inventory_root, and asset nodes after migration"
+
+    inventory_root = next((node for node in graph.nodes.values() if node.blueprint_type_id == 'inventory_root'), None)
+    assert inventory_root is not None, "inventory_root not created"
+
+    camera_moved = camera_gear.parent_id == inventory_root.id
+    car_moved = car_part.parent_id == inventory_root.id
+    assert camera_moved and car_moved, "Assets were not re-parented under inventory_root"
+
+    print(f"    inventory_root found! Children: {len(inventory_root.children)}")
+    print(f"    project_root children: {len(project_root.children)}")
+    print("\n  Messages:")
+    for msg in messages:
+        print(f"    {msg}")
+    print("\n  ✓ PASSED: Structural migration completed")
 
 
 def test_migration_path_finding():
     """Test that multi-step migration paths are found correctly."""
     print("\n[TEST] Migration path finding")
     
-    try:
-        registry = get_migration_registry()
-        # Get path from 0.1.0 to 0.2.0
-        path = registry.get_migration_path('0.1.0', '0.2.0')
-        
-        print(f"  Found {len(path)} migration(s) in path:")
-        for i, migration in enumerate(path):
-            print(f"    {i+1}. {migration.from_version} -> {migration.to_version}")
-        
-        if len(path) > 0:
-            print("\n  ✓ PASSED: Migration path found")
-            return True
-        else:
-            print("\n  ✗ FAILED: No migrations in path")
-            return False
-            
-    except Exception as e:
-        print(f"  ✗ FAILED: {e}")
-        return False
+    registry = get_migration_registry()
+    path = registry.get_migration_path('0.1.0', '0.2.0')
+
+    print(f"  Found {len(path)} migration(s) in path:")
+    for i, migration in enumerate(path):
+        print(f"    {i+1}. {migration.from_version} -> {migration.to_version}")
+
+    assert len(path) > 0, "No migrations found between 0.1.0 and 0.2.0"
+    print("\n  ✓ PASSED: Migration path found")
 
 
 def test_cycle_detection_in_graph():

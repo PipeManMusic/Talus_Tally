@@ -1,0 +1,70 @@
+id: e2e_smoketest
+version: '1.0'
+name: E2E Test Template
+description: Minimal template with predictable node types for automated E2E coverage.
+node_types:
+- id: e2e_root
+  label: Test Project
+  icon: layers
+  allowed_children:
+  - e2e_phase
+  properties:
+  - id: name
+    label: Project Name
+    type: text
+  - id: objective
+    label: Objective
+    type: text
+- id: e2e_phase
+  label: Phase
+  icon: flag
+  allowed_children:
+  - e2e_task
+  properties:
+  - id: name
+    label: Phase Name
+    type: text
+  - id: status
+    label: Status
+    type: select
+    indicator_set: status
+    options:
+    - name: Planned
+      indicator_id: empty
+    - name: In Progress
+      indicator_id: partial
+    - name: Complete
+      indicator_id: filled
+- id: e2e_task
+  label: Task
+  icon: check-circle
+  allowed_children: []
+  properties:
+  - id: name
+    label: Task Name
+    type: text
+  - id: status
+    label: Status
+    type: select
+    indicator_set: status
+    options:
+    - name: Not Started
+      indicator_id: empty
+    - name: Active
+      indicator_id: partial
+    - name: Done
+      indicator_id: filled
+  - id: notes
+    label: Notes
+    type: text
+- id: e2e_note
+  label: Archive Note
+  icon: sticky-note
+  allowed_children: []
+  properties:
+  - id: title
+    label: Note Title
+    type: text
+  - id: body
+    label: Details
+    type: text

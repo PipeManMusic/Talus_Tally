@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useId } from 'react';
 import type { Template } from '../../api/client';
 
 interface NewProjectDialogProps {
@@ -18,6 +18,7 @@ export function NewProjectDialog({
 }: NewProjectDialogProps) {
   const [selectedTemplate, setSelectedTemplate] = useState<string>(templates[0]?.id || '');
   const [projectName, setProjectName] = useState('New Project');
+  const headingId = useId();
 
   const handleConfirm = () => {
     if (!selectedTemplate || !projectName.trim()) {
@@ -29,8 +30,13 @@ export function NewProjectDialog({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-bg-light border border-border rounded-lg shadow-lg p-6 w-96">
-        <h2 className="font-display text-lg font-bold text-fg-primary mb-4">{title}</h2>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={headingId}
+        className="bg-bg-light border border-border rounded-lg shadow-lg p-6 w-96"
+      >
+        <h2 id={headingId} className="font-display text-lg font-bold text-fg-primary mb-4">{title}</h2>
 
         <div className="space-y-4">
           <div>

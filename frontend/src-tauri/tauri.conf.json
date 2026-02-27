@@ -5,7 +5,7 @@
   "identifier": "com.talus.tally",
   "build": {
     "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "npm run build",
+    "beforeBuildCommand": "npm run build && npm run stage:resources",
     "devUrl": "http://localhost:5173",
     "frontendDist": "../dist"
   },
@@ -36,6 +36,12 @@
       "icons/icon.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "category": "Utility",
+    "linux": {
+      "deb": {
+        "depends": ["libcurl4", "libssl3"]
+      }
+    }
   }
 }

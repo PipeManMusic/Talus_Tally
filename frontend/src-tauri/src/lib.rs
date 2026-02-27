@@ -1,4 +1,3 @@
-use std::collections::VecDeque;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Child};
 use std::net::TcpStream;
@@ -101,7 +100,7 @@ fn start_backend(backend_process: Arc<Mutex<Option<Child>>>, app_handle: tauri::
   // Determine project root - handle both development and installed locations
   let project_root = determine_project_root(Some(&app_handle));
 
-  let packaged_backend = find_packaged_backend(&project_root);
+  let packaged_backend = find_packaged_backend(Some(&app_handle), &project_root);
   let venv_python = project_root.join(".venv/bin/python3");
 
   let spawn_result = if let Some(binary_path) = packaged_backend {
@@ -112,7 +111,7 @@ fn start_backend(backend_process: Arc<Mutex<Option<Child>>>, app_handle: tauri::
     let mut command = Command::new(&binary_path);
     command
       .env("TALUS_DAEMON", "1")
-      .current_dir(&project_root);
+      .current_dir(binary_path.parent().unwrap_or(&project_root));
 
     #[cfg(target_os = "windows")]
     {
@@ -159,7 +158,10 @@ fn start_backend(backend_process: Arc<Mutex<Option<Child>>>, app_handle: tauri::
 fn determine_project_root(app_handle: Option<&tauri::AppHandle>) -> PathBuf {
   if let Some(handle) = app_handle {
     if let Ok(resource_dir) = handle.path().resource_dir() {
-      if find_packaged_backend(&resource_dir).is_some() {
+      let resource_backend = resource_dir
+        .join("talus-tally-backend")
+        .join(backend_binary_name());
+      if resource_backend.exists() {
         return resource_dir;
       }
     }
@@ -186,59 +188,49 @@ fn determine_project_root(app_handle: Option<&tauri::AppHandle>) -> PathBuf {
   std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."))
 }
 
-fn find_packaged_backend(project_root: &Path) -> Option<PathBuf> {
-  if let Some(found) = search_backend_binary(project_root, 0) {
-    return Some(found);
+fn find_packaged_backend(app_handle: Option<&tauri::AppHandle>, project_root: &Path) -> Option<PathBuf> {
+  if let Some(handle) = app_handle {
+    if let Some(path) = backend_from_resource_dir(handle) {
+      return Some(path);
+    }
   }
 
-  search_backend_binary(project_root, 5)
-}
+  let dev_candidate = project_root
+    .join("frontend")
+    .join("src-tauri")
+    .join("resources")
+    .join("talus-tally-backend")
+    .join(backend_binary_name());
 
-fn search_backend_binary(start: &Path, max_depth: usize) -> Option<PathBuf> {
-  let mut queue: VecDeque<(PathBuf, usize)> = VecDeque::new();
-  queue.push_back((start.to_path_buf(), 0));
-
-  while let Some((dir, depth)) = queue.pop_front() {
-    if depth > max_depth {
-      continue;
-    }
-
-    let entries = match std::fs::read_dir(&dir) {
-      Ok(entries) => entries,
-      Err(_) => continue,
-    };
-
-    for entry in entries.flatten() {
-      let path = entry.path();
-      if path.is_file() && is_backend_binary(&path) {
-        return Some(path);
-      }
-      if path.is_dir() {
-        queue.push_back((path, depth + 1));
-      }
-    }
+  if dev_candidate.exists() {
+    return Some(dev_candidate);
   }
 
   None
 }
 
-fn is_backend_binary(path: &Path) -> bool {
-  match path.file_name().and_then(|name| name.to_str()) {
-    Some(name) => matches_backend_filename(name),
-    None => false,
+fn backend_from_resource_dir(handle: &tauri::AppHandle) -> Option<PathBuf> {
+  let resource_dir = handle.path().resource_dir().ok()?;
+  let candidate = resource_dir
+    .join("talus-tally-backend")
+    .join(backend_binary_name());
+
+  if candidate.exists() {
+    Some(candidate)
+  } else {
+    None
   }
 }
 
-fn matches_backend_filename(name: &str) -> bool {
+fn backend_binary_name() -> &'static str {
   #[cfg(target_os = "windows")]
   {
-    name.eq_ignore_ascii_case("talus-tally-backend.exe")
-      || name.eq_ignore_ascii_case("talus_tally_backend.exe")
+    "talus-tally-backend.exe"
   }
 
   #[cfg(not(target_os = "windows"))]
   {
-    name == "talus-tally-backend" || name == "talus_tally_backend"
+    "talus-tally-backend"
   }
 }
 
