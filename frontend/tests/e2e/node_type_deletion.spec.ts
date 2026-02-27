@@ -1,37 +1,46 @@
 import { test, expect } from '@playwright/test';
+import { openTemplateEditor, E2E_TEMPLATE_NAME, resetE2ETemplateFixture } from './utils';
 
 // Assumes backend and frontend are running locally
 
 test('Node type deletion persists to backend', async ({ page }) => {
-  // Go to template editor
-  await page.goto('http://localhost:5173/templates/editor');
+  await resetE2ETemplateFixture();
+  await page.goto('/');
+  await openTemplateEditor(page);
 
-  // Select template (e.g., Project Talus)
-  await page.click('text=Project Talus');
+  const templateCard = page.getByText(E2E_TEMPLATE_NAME, { exact: true }).first();
+  await expect(templateCard).toBeVisible({ timeout: 10000 });
+  await templateCard.click();
 
-  // Wait for node types to load
-  await expect(page.locator('text=Node Types')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Node Types', exact: true })).toBeVisible({ timeout: 10000 });
 
-  // Find node type to delete (e.g., Camera Gear Inventory)
-  const nodeTypeSelector = 'text=Camera Gear Inventory';
-  await expect(page.locator(nodeTypeSelector)).toBeVisible();
+  const deleteButtons = page.locator('button[title="Delete node type"]');
+  const buttonCount = await deleteButtons.count();
+  if (buttonCount <= 1) {
+    throw new Error('Expected at least two node types to be present before deletion test.');
+  }
 
-  // Click delete button for node type
-  await page.click(`${nodeTypeSelector} >> xpath=../..//button[@title="Delete node type"]`);
+  const targetButton = deleteButtons.nth(buttonCount - 1);
+  const nodeTypeLabel = (await targetButton.evaluate((btn) => {
+    const heading = btn.parentElement?.querySelector('h3');
+    return heading?.textContent?.trim() || '';
+  })) || '';
+  if (!nodeTypeLabel) {
+    throw new Error('Unable to determine node type label for deletion target.');
+  }
 
-  // Confirm deletion in dialog
-  await page.once('dialog', dialog => dialog.accept());
+  await targetButton.scrollIntoViewIfNeeded();
+  await Promise.all([
+    page.waitForEvent('dialog').then((dialog) => dialog.accept()),
+    targetButton.click(),
+  ]);
 
-  // Wait for node type to disappear
-  await expect(page.locator(nodeTypeSelector)).toHaveCount(0);
+  await page.locator('button:has-text("Save")').first().click();
 
-  // Save template
-  await page.click('button:has-text("Save")');
-
-  // Reload template
   await page.reload();
-  await page.click('text=Project Talus');
+  await openTemplateEditor(page);
+  await page.getByText(E2E_TEMPLATE_NAME, { exact: true }).first().click();
+  await expect(page.getByRole('heading', { name: 'Node Types', exact: true })).toBeVisible({ timeout: 10000 });
 
-  // Verify node type is still deleted
-  await expect(page.locator(nodeTypeSelector)).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: nodeTypeLabel, exact: true })).toHaveCount(0);
 });

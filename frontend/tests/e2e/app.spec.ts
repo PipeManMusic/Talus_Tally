@@ -1,11 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { createNewProject } from './utils';
+import { createNewProject, openNewProjectDialog } from './utils';
 
-test('toolbar New button opens the New Project dialog', async ({ page }) => {
+test('File menu New Project opens the dialog', async ({ page }) => {
   await page.goto('/');
-  const newProjectButton = page.locator('button[title="New"]');
-  await expect(newProjectButton).toBeVisible({ timeout: 10000 });
-  await newProjectButton.click();
+  await openNewProjectDialog(page);
   const dialogHeading = page.getByRole('heading', { name: /New Project/i });
   await expect(dialogHeading).toBeVisible({ timeout: 10000 });
   await expect(page.getByRole('button', { name: /^Create$/i })).toBeVisible();

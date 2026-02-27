@@ -77,16 +77,33 @@ class SchemaValidator:
         elif not isinstance(token['label'], str) or not token['label'].strip():
             errors.append(f"{prefix}.label: must be non-empty string")
         
-        # Optional prefix - will be injected on frontend if not present
-        if 'prefix' in token and not isinstance(token['prefix'], str):
-            errors.append(f"{prefix}.prefix: must be string")
+        prefix_value = token.get('prefix')
+        has_prefix = False
+        if prefix_value is not None:
+            if not isinstance(prefix_value, str):
+                errors.append(f"{prefix}.prefix: must be string")
+            else:
+                has_prefix = True
+        else:
+            errors.append(f"{prefix}: missing required field 'prefix'")
+
+        pattern_value = token.get('pattern')
+        has_pattern = False
+        if pattern_value is not None:
+            if not isinstance(pattern_value, str) or not pattern_value.strip():
+                errors.append(f"{prefix}.pattern: must be non-empty string if provided")
+            else:
+                has_pattern = True
+
+        if not has_prefix and not has_pattern:
+            errors.append(f"{prefix}: missing required field 'prefix' (or provide 'pattern')")
         
         # Optional format_scope
         if 'format_scope' in token:
-            valid_scopes = ['line', 'prefix', 'inline']
+            valid_scopes = ['line', 'prefix']
             if token['format_scope'] not in valid_scopes:
                 errors.append(
-                    f"{prefix}.format_scope: must be one of {valid_scopes}, got '{token['format_scope']}'"
+                    f"{prefix}.format_scope: must be 'line' or 'prefix'"
                 )
         
         # Optional format rules

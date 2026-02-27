@@ -12,6 +12,8 @@ Talus Tally ships with platform-specific build scripts so local and CI builds pr
 
 Each script installs dependencies (Node, backend bundle, Tauri shell), copies runtime assets, and emits a one-click installer inside `build/<platform>/` (Linux outputs a `.deb` beside the script).
 
+The backend bundle plus shared assets/data are staged automatically via `scripts/prepare_tauri_resources.py`, which runs whenever `npm run stage:resources` (or any `tauri build`) executes.
+
 ## Documentation
 
 - [Development Guide](docs/development/DEV_ENVIRONMENT.md)
@@ -133,7 +135,7 @@ npm run desktop:dev
 ```
 
 - The app will open as a native desktop window.
-- For production build: `npm run desktop:build`
+- For production build: `npm run desktop:build` (this command runs the backend bundler and resource staging automatically via `npm run stage:resources`).
 - Custom app icon will be used if TalusTallyIcon.png is present in src-tauri/icons/ and referenced in tauri.conf.json.
 ```
 

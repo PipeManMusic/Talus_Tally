@@ -2220,14 +2220,6 @@ function App() {
         <DebugPanel treeNodes={treeNodes} expandedMap={expandedMap} logs={debugLogs} />
       )}
 
-      {/* New Project Dialog */}
-      {showNewProjectDialog && (
-        <NewProjectDialog
-          templates={templates}
-          onConfirm={handleCreateProject}
-          onCancel={() => setShowNewProjectDialog(false)}
-        />
-      )}
       {/* Add Child Dialog */}
       {showAddChildDialog && (
         <AddChildDialog

@@ -30,36 +30,6 @@ function Copy-Icon {
   }
 }
 
-function Stage-BackendBundle {
-  $backendSrc = Join-Path $ScriptRoot 'dist/talus-tally-backend'
-  if (-not (Test-Path $backendSrc)) {
-    throw "Backend bundle missing at $backendSrc"
-  }
-
-  $resourcesRoot = Join-Path $ScriptRoot 'frontend/src-tauri/resources'
-  $backendDest = Join-Path $resourcesRoot 'talus-tally-backend'
-  $assetsDest = Join-Path $resourcesRoot 'assets'
-  $dataDest = Join-Path $resourcesRoot 'data'
-
-  New-Item -ItemType Directory -Force -Path $resourcesRoot | Out-Null
-  foreach ($dest in @($backendDest, $assetsDest, $dataDest)) {
-    if (Test-Path $dest) {
-      Remove-Item -Recurse -Force $dest
-    }
-  }
-
-  Copy-Item -Path $backendSrc -Destination $backendDest -Recurse -Force
-  Copy-Item -Path (Join-Path $ScriptRoot 'assets') -Destination $assetsDest -Recurse -Force
-  Copy-Item -Path (Join-Path $ScriptRoot 'data') -Destination $dataDest -Recurse -Force
-}
-
-function Remove-TauriTarget {
-  $targetDir = Join-Path $ScriptRoot 'frontend/src-tauri/target'
-  if (Test-Path $targetDir) {
-    Remove-Item -Path $targetDir -Recurse -Force
-  }
-}
-
 function Invoke-Native {
   param(
     [string]$Command,
@@ -73,28 +43,15 @@ function Invoke-Native {
   }
 }
 
-Invoke-Step 'Building frontend' {
+Invoke-Step 'Installing frontend dependencies' {
   Push-Location 'frontend'
   Invoke-Native $npmBin @('ci')
-  Invoke-Native $npmBin @('run', 'build')
   Pop-Location
 }
 
 Copy-Icon
 
-Invoke-Step 'Building backend via PyInstaller' {
-  Remove-Item -Recurse -Force build, dist -ErrorAction SilentlyContinue
-  Invoke-Native $pythonBin @('-m', 'pip', 'install', '-r', 'requirements.txt')
-  Invoke-Native $pythonBin @('-m', 'pip', 'install', 'pyinstaller>=6.0.0')
-  Invoke-Native $pythonBin @('-m', 'PyInstaller', '--clean', 'talus-tally.spec')
-}
-
-Invoke-Step 'Staging backend resources for Tauri' {
-  Stage-BackendBundle
-}
-
 Invoke-Step 'Bundling Tauri app' {
-  Remove-TauriTarget
   Push-Location 'frontend'
   Invoke-Native 'npx' @('tauri', 'build', '--bundles', 'nsis')
   Pop-Location

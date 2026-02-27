@@ -2,7 +2,7 @@
 # Script to build Talus Tally standalone .deb package
 # Automates: frontend build, backend build, packaging
 
-set -e
+set -euo pipefail
 
 # Check if running inside Docker
 if [ "${SKIP_DOCKER:-0}" != "1" ] && [ ! -f /.dockerenv ]; then
@@ -47,271 +47,28 @@ cd "$PROJECT_ROOT"
 # it downgrades to nobody and cannot write to the bind-mounted workspace.
 export npm_config_unsafe_perm=true
 
-# Configuration
-PYTHON_BIN="${PYTHON_BIN:-python3}"
-VERSION="0.1.3"
-ARCH="amd64"
-PACKAGE_DIR="talus-tally_${VERSION}_${ARCH}"
-BACKEND_DIST_DIR="dist/talus-tally-backend"
-BACKEND_BINARY_SRC="$BACKEND_DIST_DIR/talus-tally-backend"
-
-echo "📋 Build Configuration:"
-echo "  Version: $VERSION"
-echo "  Architecture: $ARCH"
-echo "  Python: $PYTHON_BIN"
-echo ""
-
-
-# Step 1: Build frontend
-echo "📦 Step 1/5: Building React frontend..."
-cd frontend
-npm ci  # Install all dependencies (including dev) needed for build
-npm run build
-cd ..
-echo "✅ Frontend built to frontend/dist"
+echo "📦 Step 1/3: Installing frontend dependencies"
+pushd frontend >/dev/null
+npm ci
+popd >/dev/null
 
 # Ensure correct icon is used for Tauri build
-cp assets/icons/TalusTallyIcon.png frontend/src-tauri/icons/icon.png
-
-# Step 2: Build backend
-echo "📦 Step 2/5: Building Python backend with PyInstaller..."
-# Remove previous PyInstaller outputs to avoid stale artifacts between runs
-rm -rf build dist
-"$PYTHON_BIN" -m pip install -q -r requirements.txt
-"$PYTHON_BIN" -m pip install -q "pyinstaller>=6.0.0"
-"$PYTHON_BIN" -m PyInstaller --clean talus-tally.spec
-echo "✅ Backend binary created at $BACKEND_BINARY_SRC"
-
-# Step 3: Build Tauri desktop app (requires backend bundle to embed resources)
-echo "📦 Step 3/5: Building Tauri desktop app..."
-if [ ! -d "$BACKEND_DIST_DIR" ]; then
-    echo "❌ Backend bundle missing at $BACKEND_DIST_DIR; PyInstaller step must succeed before bundling Tauri." >&2
-    exit 1
+if [ -f assets/icons/TalusTallyIcon.png ]; then
+    cp assets/icons/TalusTallyIcon.png frontend/src-tauri/icons/icon.png
 fi
-cd frontend
-npx tauri build --no-bundle
-cd ..
 
-# Step 4: Create .deb package structure
-echo "📦 Step 4/5: Creating .deb package structure..."
+echo "📦 Step 2/3: Bundling with Tauri (deb)"
+pushd frontend >/dev/null
+npx tauri build --bundles deb
+popd >/dev/null
 
-rm -rf "$PACKAGE_DIR"
-mkdir -p "$PACKAGE_DIR/DEBIAN"
-mkdir -p "$PACKAGE_DIR/usr/bin"
-mkdir -p "$PACKAGE_DIR/usr/share/applications"
-mkdir -p "$PACKAGE_DIR/usr/share/icons/hicolor/256x256/apps"
-mkdir -p "$PACKAGE_DIR/opt/talus-tally"
-mkdir -p "$PACKAGE_DIR/opt/talus_tally"
-
-# Copy backend binary
-if [ ! -f "$BACKEND_BINARY_SRC" ]; then
-    echo "❌ Backend binary not found at $BACKEND_BINARY_SRC"
-    exit 1
-fi
-cp "$BACKEND_BINARY_SRC" "$PACKAGE_DIR/opt/talus-tally/talus-tally-backend"
-chmod +x "$PACKAGE_DIR/opt/talus-tally/talus-tally-backend"
-# Copy bundled Python runtime (_internal) needed by PyInstaller
-if [ -d "$BACKEND_DIST_DIR/_internal" ]; then
-    cp -r "$BACKEND_DIST_DIR/_internal" "$PACKAGE_DIR/opt/talus-tally/"
-else
-    echo "❌ PyInstaller runtime folder missing at $BACKEND_DIST_DIR/_internal"
+echo "📦 Step 3/3: Collecting .deb artifact"
+DEB_SOURCE=$(ls -t frontend/src-tauri/target/release/bundle/deb/*.deb 2>/dev/null | head -n 1 || true)
+if [ -z "$DEB_SOURCE" ]; then
+    echo "❌ No .deb artifact found. Check Tauri build output for errors." >&2
     exit 1
 fi
 
-# Copy frontend static files
-cp -r frontend/dist "$PACKAGE_DIR/opt/talus-tally/"
-
-# Copy data files and assets (templates, indicators, etc)
-echo "📁 Copying application data and assets..."
-DATA_TARGET="$PACKAGE_DIR/opt/talus_tally/data"
-ASSETS_TARGET="$PACKAGE_DIR/opt/talus_tally/assets"
-mkdir -p "$DATA_TARGET" "$ASSETS_TARGET"
-cp -r data/* "$DATA_TARGET/" 2>/dev/null || true
-cp -r assets/* "$ASSETS_TARGET/" 2>/dev/null || true
-
-# Provide legacy path compatibility via symlinks
-ln -s ../talus_tally/data "$PACKAGE_DIR/opt/talus-tally/data"
-ln -s ../talus_tally/assets "$PACKAGE_DIR/opt/talus-tally/assets"
-
-# Copy Tauri binary and fail clearly if missing to avoid unusable installer
-TAURI_BINARY_FOUND=0
-for tauri_binary in \
-    frontend/src-tauri/target/release/talus-tally \
-    frontend/src-tauri/target/release/app; do
-    if [ -f "$tauri_binary" ]; then
-        cp "$tauri_binary" "$PACKAGE_DIR/opt/talus-tally/talus-tally-app"
-        chmod +x "$PACKAGE_DIR/opt/talus-tally/talus-tally-app"
-        echo "✅ Copied Tauri binary"
-        TAURI_BINARY_FOUND=1
-        break
-    fi
-done
-
-if [ $TAURI_BINARY_FOUND -ne 1 ]; then
-    echo "❌ Tauri desktop binary missing; ensure 'npx tauri build' succeeds before packaging." >&2
-    exit 1
-fi
-
-# Create launcher script
-cat > "$PACKAGE_DIR/usr/bin/talus-tally" << 'LAUNCHER'
-#!/bin/bash
-# Talus Tally Desktop Launcher
-# Starts backend in background, launches Tauri app, cleans up on exit
-
-LOG_FILE="/tmp/talus-tally.log"
-
-echo "[$(date)] Starting Talus Tally backend" >> "$LOG_FILE"
-
-# Start backend in background
-/opt/talus-tally/talus-tally-backend >> "$LOG_FILE" 2>&1 &
-BACKEND_PID=$!
-
-# Ensure backend PID is cleaned up on exit
-cleanup() {
-    if kill -0 $BACKEND_PID 2>/dev/null; then
-        kill $BACKEND_PID 2>/dev/null || true
-    fi
-    wait $BACKEND_PID 2>/dev/null || true
-}
-trap cleanup EXIT
-
-# Detect when backend is ready
-READY=0
-for i in {1..60}; do
-    if ! kill -0 $BACKEND_PID 2>/dev/null; then
-        echo "Talus Tally backend exited unexpectedly. See $LOG_FILE for details." >&2
-        tail -n 40 "$LOG_FILE" >&2
-        exit 1
-    fi
-
-    if command -v curl >/dev/null 2>&1 && \
-       curl -sf http://127.0.0.1:5000/ >/dev/null 2>&1; then
-        READY=1
-        break
-    fi
-
-    sleep 0.5
-done
-
-if [ $READY -ne 1 ]; then
-    echo "Talus Tally backend did not become ready. See $LOG_FILE for details." >&2
-    tail -n 40 "$LOG_FILE" >&2
-    exit 1
-fi
-
-# Launch Tauri app if available
-if [ -f /opt/talus-tally/talus-tally-app ]; then
-    exec /opt/talus-tally/talus-tally-app
-fi
-
-# Otherwise open in browser if possible
-if command -v xdg-open &> /dev/null; then
-    echo "Talus Tally desktop binary missing; falling back to browser." >&2
-    xdg-open http://127.0.0.1:5000/ >/dev/null 2>&1
-fi
-
-# Keep backend running for browser mode
-wait $BACKEND_PID
-LAUNCHER
-chmod +x "$PACKAGE_DIR/usr/bin/talus-tally"
-
-chmod +x "$PACKAGE_DIR/usr/bin/talus-tally"
-
-
-# Create desktop entry and install icon in multiple sizes for best compatibility
-mkdir -p "$PACKAGE_DIR/usr/share/applications"
-for size in 48 64 128 256; do
-    mkdir -p "$PACKAGE_DIR/usr/share/icons/hicolor/${size}x${size}/apps"
-    if [ -f "assets/icons/TalusTallyIcon.png" ]; then
-        # Use ImageMagick to resize if available, else just copy
-        if command -v convert >/dev/null 2>&1; then
-            convert "assets/icons/TalusTallyIcon.png" -resize ${size}x${size} "$PACKAGE_DIR/usr/share/icons/hicolor/${size}x${size}/apps/talus-tally.png"
-        else
-            cp "assets/icons/TalusTallyIcon.png" "$PACKAGE_DIR/usr/share/icons/hicolor/${size}x${size}/apps/talus-tally.png"
-        fi
-    fi
-done
-
-cat > "$PACKAGE_DIR/usr/share/applications/talus-tally.desktop" << 'DESKTOP'
-[Desktop Entry]
-Name=Talus Tally
-Comment=Graph-based project management
-Exec=talus-tally
-Icon=talus-tally
-Terminal=false
-Type=Application
-Categories=Utility;
-StartupWMClass=talus-tally-app
-DESKTOP
-
-# Copy or create icon (if exists)
-if [ -f "assets/icons/TalusTallyIcon.png" ]; then
-    cp "assets/icons/TalusTallyIcon.png" "$PACKAGE_DIR/usr/share/icons/hicolor/256x256/apps/talus-tally.png"
-fi
-
-# Create control file
-cat > "$PACKAGE_DIR/DEBIAN/control" << CONTROL
-Package: talus-tally
-Version: ${VERSION}
-Architecture: ${ARCH}
-Maintainer: Talus Tally <support@talustown.com>
-Description: Graph-based project management and data visualization
-Homepage: https://github.com/talus-tally/talus-tally
-Depends: libcurl4, libssl3
-CONTROL
-# Create postinst script for permissions
-cat > "$PACKAGE_DIR/DEBIAN/postinst" << 'POSTINST'
-#!/bin/bash
-chmod +x /opt/talus-tally/talus-tally-backend
-chmod +x /usr/bin/talus-tally
-# Fix permissions for assets so app can read them
-chmod -R a+rw /opt/talus_tally/assets
-# Refresh desktop and icon caches
-update-desktop-database || true
-gtk-update-icon-cache /usr/share/icons/hicolor || true
-POSTINST
-chmod +x "$PACKAGE_DIR/DEBIAN/postinst"
-
-echo "✅ Package structure created"
-
-# Step 5: Build .deb file
-echo "📦 Step 5/5: Building .deb package..."
-dpkg-deb --build "$PACKAGE_DIR"
-echo "✅ Package created: ${PACKAGE_DIR}.deb"
-
-# Verify the package
-echo ""
-echo "🔍 Package contents:"
-dpkg-deb -c "${PACKAGE_DIR}.deb" 2>/dev/null | head -20 || true
-echo "..."
-
-# Refresh icon cache for hicolor theme
-gtk-update-icon-cache -f -t /usr/share/icons/hicolor || true
-echo ""
-echo "✨ Build complete!"
-
-# Step 5: Clean up Tauri build artifacts
-echo "🧹 Cleaning up Tauri build artifacts..."
-rm -rf frontend/src-tauri/target frontend/src-tauri/target/debug frontend/src-tauri/target/release
-# Copy icon to pixmaps as fallback
-mkdir -p "$PACKAGE_DIR/usr/share/pixmaps"
-cp assets/icons/TalusTallyIcon.png "$PACKAGE_DIR/usr/share/pixmaps/talus-tally.png"
-echo "✅ Tauri build artifacts removed."
-
-# Step 6: Clean up other build artifacts and caches
-echo "🧹 Cleaning up other build artifacts and caches..."
-rm -rf build/
-rm -rf frontend/.pytest_cache/
-rm -rf .pytest_cache/
-rm -rf talus-tally_0.1.3_amd64/
-echo "✅ Other build artifacts and caches removed."
-
-echo "   Package: ${PACKAGE_DIR}.deb"
-echo ""
-echo "To install locally (testing):"
-echo "   sudo apt install ./${PACKAGE_DIR}.deb"
-echo ""
-echo "To run:"
-echo "   talus-tally"
-echo ""
+cp "$DEB_SOURCE" .
+echo "✅ Debian package copied to $(basename "$DEB_SOURCE")"
 
