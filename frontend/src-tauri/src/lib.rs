@@ -1,3 +1,5 @@
+use std::fs::OpenOptions;
+use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Child};
 use std::net::TcpStream;
@@ -6,6 +8,51 @@ use tauri::{Emitter, Manager};
 
 #[cfg(target_os = "windows")]
 use std::os::windows::process::CommandExt;
+
+/// Return a path for a diagnostic log file.
+/// On Windows: %LOCALAPPDATA%/com.talus.tally/backend-launch.log
+/// On Linux:   $XDG_DATA_HOME/com.talus.tally/backend-launch.log  (or ~/.local/share/...)
+/// On macOS:   ~/Library/Application Support/com.talus.tally/backend-launch.log
+fn diagnostic_log_path() -> Option<PathBuf> {
+  let base = if cfg!(target_os = "windows") {
+    std::env::var("LOCALAPPDATA").ok().map(PathBuf::from)
+  } else if cfg!(target_os = "macos") {
+    dirs_next().map(|h| h.join("Library").join("Application Support"))
+  } else {
+    std::env::var("XDG_DATA_HOME")
+      .ok()
+      .map(PathBuf::from)
+      .or_else(|| dirs_next().map(|h| h.join(".local").join("share")))
+  };
+  base.map(|b| b.join("com.talus.tally").join("backend-launch.log"))
+}
+
+/// Simple home-dir helper (avoids adding a crate dependency).
+fn dirs_next() -> Option<PathBuf> {
+  std::env::var("HOME")
+    .or_else(|_| std::env::var("USERPROFILE"))
+    .ok()
+    .map(PathBuf::from)
+}
+
+/// Append a timestamped line to the diagnostic log file.
+fn diag(msg: &str) {
+  // Always print to stdout/stderr for dev builds
+  println!("[diag] {}", msg);
+
+  if let Some(log_path) = diagnostic_log_path() {
+    if let Some(parent) = log_path.parent() {
+      let _ = std::fs::create_dir_all(parent);
+    }
+    if let Ok(mut f) = OpenOptions::new().create(true).append(true).open(&log_path) {
+      let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0);
+      let _ = writeln!(f, "[{}] {}", now, msg);
+    }
+  }
+}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -60,8 +107,10 @@ pub fn run() {
   struct BackendState(Arc<Mutex<Option<Child>>>);
 
 fn start_backend(backend_process: Arc<Mutex<Option<Child>>>, app_handle: tauri::AppHandle) {
+  diag("=== Backend launch sequence starting ===");
+
   // Kill any existing backend process first to ensure clean state
-  println!("Checking for existing backend processes...");
+  diag("Checking for existing backend processes...");
   #[cfg(target_os = "linux")]
   {
     for pattern in ["python.*backend.app", "talus-tally-backend"] {
@@ -69,7 +118,7 @@ fn start_backend(backend_process: Arc<Mutex<Option<Child>>>, app_handle: tauri::
         .args(&["-f", pattern])
         .output();
     }
-    println!("✓ Killed any existing backend processes");
+    diag("Killed any existing backend processes (Linux)");
   }
 
   #[cfg(target_os = "macos")]
@@ -79,7 +128,7 @@ fn start_backend(backend_process: Arc<Mutex<Option<Child>>>, app_handle: tauri::
         .args(&["-f", pattern])
         .output();
     }
-    println!("✓ Killed any existing backend processes");
+    diag("Killed any existing backend processes (macOS)");
   }
 
   #[cfg(target_os = "windows")]
@@ -91,7 +140,7 @@ fn start_backend(backend_process: Arc<Mutex<Option<Child>>>, app_handle: tauri::
         .creation_flags(0x08000000);
       let _ = taskkill_cmd.output();
     }
-    println!("✓ Killed any existing backend processes");
+    diag("Killed any existing backend processes (Windows)");
   }
 
   // Wait for port to be released
@@ -99,19 +148,28 @@ fn start_backend(backend_process: Arc<Mutex<Option<Child>>>, app_handle: tauri::
 
   // Determine project root - handle both development and installed locations
   let project_root = determine_project_root(Some(&app_handle));
+  diag(&format!("Project root: {}", project_root.display()));
 
   let packaged_backend = find_packaged_backend(Some(&app_handle), &project_root);
-  let venv_python = project_root.join(".venv/bin/python3");
+  diag(&format!("Packaged backend: {:?}", packaged_backend.as_ref().map(|p| p.display().to_string())));
+
+  // Platform-aware venv python path
+  let venv_python = if cfg!(target_os = "windows") {
+    project_root.join(".venv").join("Scripts").join("python.exe")
+  } else {
+    project_root.join(".venv").join("bin").join("python3")
+  };
+  diag(&format!("Venv python candidate: {} (exists={})", venv_python.display(), venv_python.exists()));
 
   let spawn_result = if let Some(binary_path) = packaged_backend {
-    println!(
-      "✓ Starting packaged backend binary at {}",
-      binary_path.display()
-    );
+    diag(&format!("Starting packaged backend binary at {}", binary_path.display()));
+    let working_dir = binary_path.parent().unwrap_or(&project_root);
+    diag(&format!("Working directory: {}", working_dir.display()));
+
     let mut command = Command::new(&binary_path);
     command
       .env("TALUS_DAEMON", "1")
-      .current_dir(binary_path.parent().unwrap_or(&project_root));
+      .current_dir(working_dir);
 
     #[cfg(target_os = "windows")]
     {
@@ -121,18 +179,17 @@ fn start_backend(backend_process: Arc<Mutex<Option<Child>>>, app_handle: tauri::
 
     command.spawn()
   } else if venv_python.exists() {
-    println!(
-      "✓ Starting backend via virtualenv Python at {}",
-      venv_python.display()
-    );
+    diag(&format!("Starting backend via virtualenv Python at {}", venv_python.display()));
     Command::new(&venv_python)
       .args(["-m", "backend.app"])
       .env("TALUS_DAEMON", "1")
       .current_dir(&project_root)
       .spawn()
   } else {
-    println!("⚠️  Virtualenv not found, falling back to system python3");
-    Command::new("python3")
+    // Platform-aware system python fallback
+    let python_cmd = if cfg!(target_os = "windows") { "python" } else { "python3" };
+    diag(&format!("Virtualenv not found, falling back to system {}", python_cmd));
+    Command::new(python_cmd)
       .args(["-m", "backend.app"])
       .env("TALUS_DAEMON", "1")
       .current_dir(&project_root)
@@ -143,14 +200,13 @@ fn start_backend(backend_process: Arc<Mutex<Option<Child>>>, app_handle: tauri::
     Ok(child) => {
       if let Ok(mut proc) = backend_process.lock() {
         *proc = Some(child);
-        println!("✓ Backend started successfully");
+        diag("Backend started successfully");
       }
     }
     Err(e) => {
-      eprintln!("✗ Failed to start Python backend: {}", e);
-      eprintln!("Project root: {:?}", project_root);
-      eprintln!("Venv python: {:?}", venv_python);
-      eprintln!("Make sure you have Python installed and .venv activated");
+      diag(&format!("FAILED to start Python backend: {}", e));
+      diag(&format!("  Project root: {}", project_root.display()));
+      diag(&format!("  Venv python: {} (exists={})", venv_python.display(), venv_python.exists()));
     }
   }
 }
@@ -158,19 +214,26 @@ fn start_backend(backend_process: Arc<Mutex<Option<Child>>>, app_handle: tauri::
 fn determine_project_root(app_handle: Option<&tauri::AppHandle>) -> PathBuf {
   if let Some(handle) = app_handle {
     if let Ok(resource_dir) = handle.path().resource_dir() {
-      let resource_backend = resource_dir
-        .join("talus-tally-backend")
-        .join(backend_binary_name());
-      if resource_backend.exists() {
-        return resource_dir;
+      diag(&format!("resource_dir() = {}", resource_dir.display()));
+
+      // Check both possible layouts:
+      //   1. resource_dir/talus-tally-backend/<binary>        (flat)
+      //   2. resource_dir/resources/talus-tally-backend/<binary>  (Tauri preserves config path)
+      for sub in ["talus-tally-backend", "resources/talus-tally-backend"] {
+        let candidate = resource_dir.join(sub).join(backend_binary_name());
+        diag(&format!("  project_root probe: {} (exists={})", candidate.display(), candidate.exists()));
+        if candidate.exists() {
+          return resource_dir.clone();
+        }
       }
     }
   }
 
   if let Ok(exe_path) = std::env::current_exe() {
     let exe_dir = exe_path.parent().unwrap_or_else(|| Path::new("."));
+    diag(&format!("exe_dir = {}", exe_dir.display()));
 
-    // Installed package layout
+    // Installed package layout (Linux deb)
     if exe_dir.starts_with("/opt/talus-tally") {
       return PathBuf::from("/opt/talus-tally");
     }
@@ -185,7 +248,9 @@ fn determine_project_root(app_handle: Option<&tauri::AppHandle>) -> PathBuf {
   }
 
   // Fallback to current working directory or '.'
-  std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."))
+  let fallback = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
+  diag(&format!("project_root fallback = {}", fallback.display()));
+  fallback
 }
 
 fn find_packaged_backend(app_handle: Option<&tauri::AppHandle>, project_root: &Path) -> Option<PathBuf> {
@@ -211,15 +276,28 @@ fn find_packaged_backend(app_handle: Option<&tauri::AppHandle>, project_root: &P
 
 fn backend_from_resource_dir(handle: &tauri::AppHandle) -> Option<PathBuf> {
   let resource_dir = handle.path().resource_dir().ok()?;
-  let candidate = resource_dir
-    .join("talus-tally-backend")
-    .join(backend_binary_name());
+  diag(&format!("backend_from_resource_dir: resource_dir = {}", resource_dir.display()));
 
-  if candidate.exists() {
-    Some(candidate)
-  } else {
-    None
+  // Tauri may place bundled resources at either:
+  //   resource_dir/talus-tally-backend/<binary>                (flat – resources dir IS resource_dir)
+  //   resource_dir/resources/talus-tally-backend/<binary>      (Tauri preserves the config path prefix)
+  for sub in ["talus-tally-backend", "resources/talus-tally-backend"] {
+    let candidate = resource_dir.join(sub).join(backend_binary_name());
+    diag(&format!("  probe: {} (exists={})", candidate.display(), candidate.exists()));
+    if candidate.exists() {
+      return Some(candidate);
+    }
   }
+
+  // Also try directly inside resource_dir (single-file PyInstaller builds)
+  let flat_candidate = resource_dir.join(backend_binary_name());
+  diag(&format!("  probe (flat): {} (exists={})", flat_candidate.display(), flat_candidate.exists()));
+  if flat_candidate.exists() {
+    return Some(flat_candidate);
+  }
+
+  diag("  No packaged backend found in resource_dir");
+  None
 }
 
 fn backend_binary_name() -> &'static str {
