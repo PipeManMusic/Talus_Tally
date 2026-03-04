@@ -133,7 +133,7 @@ function App() {
   const [backendError, setBackendError] = useState<string | null>(null);
   const [isInitialConnection, setIsInitialConnection] = useState(true);
   const initialLoadStartRef = useRef<number>(Date.now());
-  const INITIAL_LOADING_MS = 15000;
+  const INITIAL_LOADING_MS = 30000;
   const { nodes: storeNodes, currentGraph, setCurrentGraph } = useGraphStore();
   
   // Enable real-time WebSocket synchronization
