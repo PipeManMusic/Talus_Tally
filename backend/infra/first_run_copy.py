@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 SYSTEM_ROOT = Path('/opt/talus_tally')
+SYSTEM_ROOT_DEB = Path('/usr/lib/Talus Tally')
 
 
 def _get_bundled_resource_root() -> Path | None:
@@ -66,10 +67,11 @@ def ensure_user_data_populated():
     # Discover the Tauri-bundled resources root (if running as a packaged binary)
     bundled_root = _get_bundled_resource_root()
 
-    # Build candidate source directories: system install → bundled → repo checkout
+    # Build candidate source directories: system install → Tauri deb → bundled → repo checkout
     def _sources(*relative_parts):
         candidates = [
             SYSTEM_ROOT.joinpath(*relative_parts),
+            SYSTEM_ROOT_DEB.joinpath('resources', *relative_parts),
         ]
         if bundled_root:
             candidates.append(bundled_root.joinpath(*relative_parts))
