@@ -233,9 +233,11 @@ fn determine_project_root(app_handle: Option<&tauri::AppHandle>) -> PathBuf {
     let exe_dir = exe_path.parent().unwrap_or_else(|| Path::new("."));
     diag(&format!("exe_dir = {}", exe_dir.display()));
 
-    // Installed package layout (Linux deb)
-    if exe_dir.starts_with("/opt/talus-tally") {
-      return PathBuf::from("/opt/talus-tally");
+    // Installed package layout (Linux deb: /usr/lib/Talus Tally/ or legacy /opt/talus-tally/)
+    for prefix in ["/usr/lib/Talus Tally", "/opt/talus-tally"] {
+      if exe_dir.starts_with(prefix) {
+        return PathBuf::from(prefix);
+      }
     }
 
     // Search upwards for the repo root (contains backend folder)
