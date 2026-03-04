@@ -69,6 +69,9 @@ if [ -z "$DEB_SOURCE" ]; then
     exit 1
 fi
 
-cp "$DEB_SOURCE" .
-echo "✅ Debian package copied to $(basename "$DEB_SOURCE")"
+# Normalize filename: lowercase + hyphens (Tauri uses productName which may have spaces)
+DEB_BASENAME=$(basename "$DEB_SOURCE")
+DEB_NORMALIZED=$(echo "$DEB_BASENAME" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
+cp "$DEB_SOURCE" "./$DEB_NORMALIZED"
+echo "✅ Debian package copied to $DEB_NORMALIZED"
 
