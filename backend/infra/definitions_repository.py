@@ -11,12 +11,31 @@ logger = logging.getLogger("DefinitionsRepository")
 
 def _user_definitions_dir() -> Path:
     """Return the user data overrides directory without forcing files to exist."""
-    xdg_home = os.environ.get('XDG_DATA_HOME')
-    if xdg_home:
-        base = Path(xdg_home)
+    if sys.platform == 'win32':
+        local = os.environ.get('LOCALAPPDATA')
+        base = Path(local) if local else Path.home() / 'AppData' / 'Local'
+    elif sys.platform == 'darwin':
+        base = Path.home() / 'Library' / 'Application Support'
     else:
-        base = Path.home() / '.local' / 'share'
+        xdg_home = os.environ.get('XDG_DATA_HOME')
+        base = Path(xdg_home) if xdg_home else Path.home() / '.local' / 'share'
     return base / 'talus_tally' / 'definitions'
+
+
+def _tauri_resource_candidate() -> Path | None:
+    """Locate meta_schema.yaml inside the Tauri-bundled resources directory.
+
+    Layout: <install>/resources/talus-tally-backend/<binary>
+            <install>/resources/data/definitions/meta_schema.yaml
+    """
+    if not (getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS')):
+        return None
+    exe = Path(sys.executable).resolve()
+    for ancestor in [exe.parent.parent, exe.parent]:
+        candidate = ancestor / 'data' / 'definitions' / 'meta_schema.yaml'
+        if candidate.is_file():
+            return candidate
+    return None
 
 def _collect_meta_schema_candidates() -> List[Path]:
     """Build ordered list of possible meta_schema.yaml locations."""
@@ -35,9 +54,15 @@ def _collect_meta_schema_candidates() -> List[Path]:
 
     repo_root = Path(__file__).resolve().parent.parent.parent
     repo_candidate = repo_root / 'data' / 'definitions' / 'meta_schema.yaml'
+
+    # Tauri-bundled resource (Windows / macOS / Linux AppImage)
+    tauri_candidate = _tauri_resource_candidate()
+
     production_candidates = [
         Path('/opt/talus_tally/data/definitions/meta_schema.yaml'),
         Path('/opt/talus-tally/data/definitions/meta_schema.yaml'),
+        # Deb package system install
+        Path('/usr/lib/Talus Tally/resources/data/definitions/meta_schema.yaml'),
     ]
     pyinstaller_candidate = None
     if hasattr(sys, '_MEIPASS'):
@@ -48,15 +73,23 @@ def _collect_meta_schema_candidates() -> List[Path]:
 
     if env_mode == 'development' or (env_mode == 'auto' and not is_frozen):
         ordered_roots = [repo_candidate] + production_candidates
+        if tauri_candidate:
+            ordered_roots.append(tauri_candidate)
         if pyinstaller_candidate:
             ordered_roots.append(pyinstaller_candidate)
     elif env_mode == 'production' or (env_mode == 'auto' and is_frozen):
-        ordered_roots = production_candidates[:]
+        ordered_roots = []
+        if tauri_candidate:
+            ordered_roots.append(tauri_candidate)
+        ordered_roots.extend(production_candidates)
         if pyinstaller_candidate:
             ordered_roots.append(pyinstaller_candidate)
         ordered_roots.append(repo_candidate)
     else:
-        ordered_roots = production_candidates[:]
+        ordered_roots = []
+        if tauri_candidate:
+            ordered_roots.append(tauri_candidate)
+        ordered_roots.extend(production_candidates)
         if pyinstaller_candidate:
             ordered_roots.append(pyinstaller_candidate)
         ordered_roots.append(repo_candidate)
