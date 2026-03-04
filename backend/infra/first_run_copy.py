@@ -8,8 +8,37 @@ from backend.infra.user_data_dir import (
     get_user_templates_dir,
 )
 
+import sys
+import logging
+
+logger = logging.getLogger(__name__)
+
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 SYSTEM_ROOT = Path('/opt/talus_tally')
+
+
+def _get_bundled_resource_root() -> Path | None:
+    """Locate the Tauri-bundled resources directory.
+
+    In a Tauri NSIS / deb / dmg install the layout is:
+        <install_dir>/resources/talus-tally-backend/<binary>
+        <install_dir>/resources/data/{templates,markups,...}
+        <install_dir>/resources/assets/{icons,indicators,...}
+
+    So from the running binary we walk up to find a sibling `data/`
+    or `assets/` directory.
+    """
+    if not (getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS')):
+        return None  # Not a PyInstaller build
+
+    exe = Path(sys.executable).resolve()
+    # exe is inside resources/talus-tally-backend/
+    # Try: exe.parent.parent  → resources/
+    for ancestor in [exe.parent.parent, exe.parent]:
+        if (ancestor / 'data' / 'templates').is_dir():
+            logger.info(f"[first_run_copy] Found bundled resources at {ancestor}")
+            return ancestor
+    return None
 
 
 def copy_if_empty(user_dir: Path, source_dirs):
@@ -34,37 +63,26 @@ def copy_if_empty(user_dir: Path, source_dirs):
 
 
 def ensure_user_data_populated():
-    # Map user dirs to candidate source directories (system install first, then repo)
+    # Discover the Tauri-bundled resources root (if running as a packaged binary)
+    bundled_root = _get_bundled_resource_root()
+
+    # Build candidate source directories: system install → bundled → repo checkout
+    def _sources(*relative_parts):
+        candidates = [
+            SYSTEM_ROOT.joinpath(*relative_parts),
+        ]
+        if bundled_root:
+            candidates.append(bundled_root.joinpath(*relative_parts))
+        candidates.append(PROJECT_ROOT.joinpath(*relative_parts))
+        return candidates
+
     mappings = [
-        (
-            get_user_templates_dir(),
-            [
-                SYSTEM_ROOT / 'data' / 'templates',
-                PROJECT_ROOT / 'data' / 'templates',
-            ],
-        ),
-        (
-            get_user_icons_dir(),
-            [
-                SYSTEM_ROOT / 'assets' / 'icons',
-                PROJECT_ROOT / 'assets' / 'icons',
-            ],
-        ),
-        (
-            get_user_indicators_dir(),
-            [
-                SYSTEM_ROOT / 'assets' / 'indicators',
-                PROJECT_ROOT / 'assets' / 'indicators',
-            ],
-        ),
-        (
-            get_user_markups_dir(),
-            [
-                SYSTEM_ROOT / 'data' / 'markups',
-                PROJECT_ROOT / 'data' / 'markups',
-            ],
-        ),
+        (get_user_templates_dir(), _sources('data', 'templates')),
+        (get_user_icons_dir(),     _sources('assets', 'icons')),
+        (get_user_indicators_dir(), _sources('assets', 'indicators')),
+        (get_user_markups_dir(),   _sources('data', 'markups')),
     ]
     for user_dir, sources in mappings:
         user_dir.mkdir(parents=True, exist_ok=True)
+        logger.info(f"[first_run_copy] Seeding {user_dir} from candidates: {[str(s) for s in sources]}")
         copy_if_empty(user_dir, sources)

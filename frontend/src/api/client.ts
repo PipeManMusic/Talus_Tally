@@ -298,7 +298,7 @@ export class APIClient {
   }
 
   // Check backend readiness (especially for Tauri)
-  async waitForBackend(maxRetries: number = 30, retryDelayMs: number = 200): Promise<boolean> {
+  async waitForBackend(maxRetries: number = 60, retryDelayMs: number = 500): Promise<boolean> {
     if (!isTauri) {
       // In browser mode, assume backend is ready
       return true;

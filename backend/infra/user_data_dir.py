@@ -11,14 +11,26 @@ APP_NAME = "talus_tally"
 
 def get_user_data_dir() -> Path:
     """
-    Return the user data directory according to XDG Base Directory Specification.
-    Falls back to ~/.local/share/talus_tally if XDG_DATA_HOME is not set.
+    Return the platform-appropriate user data directory.
+
+    Windows:  %LOCALAPPDATA%/talus_tally
+    macOS:    ~/Library/Application Support/talus_tally
+    Linux:    $XDG_DATA_HOME/talus_tally  (default ~/.local/share/talus_tally)
     """
-    xdg_data_home = os.environ.get("XDG_DATA_HOME")
-    if xdg_data_home:
-        base = Path(xdg_data_home)
+    import sys
+
+    if sys.platform == 'win32':
+        local = os.environ.get('LOCALAPPDATA')
+        if local:
+            base = Path(local)
+        else:
+            base = Path.home() / 'AppData' / 'Local'
+    elif sys.platform == 'darwin':
+        base = Path.home() / 'Library' / 'Application Support'
     else:
-        base = Path.home() / ".local" / "share"
+        xdg_data_home = os.environ.get('XDG_DATA_HOME')
+        base = Path(xdg_data_home) if xdg_data_home else Path.home() / '.local' / 'share'
+
     user_dir = base / APP_NAME
     user_dir.mkdir(parents=True, exist_ok=True)
     return user_dir

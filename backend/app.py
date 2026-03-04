@@ -219,6 +219,14 @@ def create_app(config=None):
 
 
 if __name__ == '__main__':
+    # Ensure user data dirs are seeded with defaults (templates, icons, etc.)
+    # This is the PyInstaller entry point; __main__.py also calls this for `python -m backend`.
+    try:
+        from backend.infra.first_run_copy import ensure_user_data_populated
+        ensure_user_data_populated()
+    except Exception as _e:
+        logger.warning(f"[Startup] Failed to seed user data directories: {_e}")
+
     app = create_app()
     
     # Check if running as background daemon (via TALUS_DAEMON env var)
