@@ -15,9 +15,9 @@ property_types:
     python_type: "Decimal"
     description: "Currency amount"
     
-  - id: "boolean"
+  - id: "checkbox"
     python_type: "bool"
-    description: "True/false toggle"
+    description: "True/false checkbox toggle"
     
   - id: "date"
     python_type: "str"
@@ -38,6 +38,12 @@ property_types:
           description: "Bullet/indicator character to display for this option"
         - id: "string (optional)"
           description: "UUID for stable reference; auto-generated if not provided"
+
+  - id: "editor"
+    python_type: "str"
+    description: "Rich text editor with optional markup formatting profile"
+    optional_fields:
+      - markup_profile: "string (optional) - ID of a markup profile that defines token-based formatting rules"
 
 node_types:
   description: "Defines node types used in project templates"
