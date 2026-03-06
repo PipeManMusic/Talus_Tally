@@ -92,6 +92,7 @@ function TreeItem({
   const [iconSvg, setIconSvg] = useState<string | undefined>(undefined);
   const [dragOverDropZoneId, setDragOverDropZoneId] = useState<string | null>(null);
   const [reorderDropZone, setReorderDropZone] = useState<'above' | 'below' | null>(null);
+  const reorderDropZoneRef = useRef<'above' | 'below' | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [showFlyout, setShowFlyout] = useState(false);
   const addButtonRef = useRef<HTMLButtonElement>(null);
@@ -215,10 +216,15 @@ function TreeItem({
 
   const hasChildren = Array.isArray(node.children) && node.children.length > 0;
   const allowedChildrenList = Array.isArray(node.allowed_children) ? node.allowed_children : [];
+  const hasExplicitChildConstraint = Array.isArray(node.allowed_children);
   const normalizedAllowedChildren = allowedChildrenList.map((child) => String(child).trim().toLowerCase());
   const acceptsChildType = (childType?: string | null): boolean => {
     if (!childType) return false;
-    if (normalizedAllowedChildren.length === 0) return true;
+    if (normalizedAllowedChildren.length === 0) {
+      // If allowed_children is explicitly [] → no children allowed.
+      // If allowed_children is undefined/missing → permissive (accepts any).
+      return !hasExplicitChildConstraint;
+    }
     const normalized = childType.trim().toLowerCase();
     return normalizedAllowedChildren.some((allowed) => allowed === normalized || WILDCARD_CHILDREN.has(allowed));
   };
@@ -240,12 +246,18 @@ function TreeItem({
   const clearDragState = () => {
     setDragOverDropZoneId(null);
     setReorderDropZone(null);
+    reorderDropZoneRef.current = null;
   };
 
-  const computeDropZone = (clientY: number): 'above' | 'below' | 'inside' => {
-    const row = rowRef.current;
+  const getRowElement = (event: DragEvent<HTMLDivElement>): Element | null => {
+    return rowRef.current ?? (event.target as Element)?.closest?.('[data-testid="tree-item-row"]') ?? event.currentTarget;
+  };
+
+  const computeDropZone = (clientY: number, fallbackEl?: Element | null): 'above' | 'below' | 'inside' => {
+    const row = rowRef.current ?? fallbackEl;
     if (!row) return 'inside';
     const rect = row.getBoundingClientRect();
+    if (!rect.height) return 'inside';
     const offsetY = clientY - rect.top;
     if (offsetY < rect.height * 0.25) return 'above';
     if (offsetY > rect.height * 0.75) return 'below';
@@ -303,8 +315,9 @@ function TreeItem({
       return;
     }
 
-    const rect = rowRef.current?.getBoundingClientRect();
-    let dropZone = computeDropZone(event.clientY);
+    const rowEl = getRowElement(event);
+    const rect = rowEl?.getBoundingClientRect();
+    let dropZone = computeDropZone(event.clientY, rowEl);
     let isValid = false;
 
     if (dropZone === 'inside') {
@@ -350,6 +363,7 @@ function TreeItem({
     }
 
     const nextReorder = dropZone === 'inside' ? null : dropZone;
+    reorderDropZoneRef.current = nextReorder;
     if (reorderDropZone !== nextReorder) {
       setReorderDropZone(nextReorder);
     }
@@ -367,6 +381,7 @@ function TreeItem({
     event.preventDefault();
     event.stopPropagation();
     const info = parseDragPayload(event);
+    const savedDropZone = reorderDropZoneRef.current;
     clearDragState();
     globalDragPayloadRef.current = null;
     localDragPayloadRef.current = null;
@@ -389,8 +404,9 @@ function TreeItem({
       return;
     }
 
-    const rect = rowRef.current?.getBoundingClientRect();
-    let dropZone = reorderDropZone ?? computeDropZone(event.clientY);
+    const rowEl = getRowElement(event);
+    const rect = rowEl?.getBoundingClientRect();
+    let dropZone = savedDropZone ?? computeDropZone(event.clientY, rowEl);
     if (dropZone === 'inside' && !acceptsChildType(droppedType) && droppedParentId === targetParentId) {
       if (rect) {
         dropZone = event.clientY < rect.top + rect.height / 2 ? 'above' : 'below';
