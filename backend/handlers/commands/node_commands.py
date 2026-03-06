@@ -496,3 +496,57 @@ class ReorderNodeCommand(Command):
             parent.children.insert(self.old_index, self.node_id)
         except ValueError:
             return
+
+
+class DeleteOrphanedPropertyCommand(Command):
+    """Command to delete an orphaned property from a node's metadata."""
+
+    def __init__(self, node_id: UUID, property_key: str, graph=None, graph_service=None, session_id=None):
+        self.node_id = node_id
+        self.property_key = property_key
+        self.graph = graph
+        self.graph_service = graph_service
+        self.session_id = session_id
+        self.old_value = None  # for undo
+
+    def execute(self) -> None:
+        if not self.graph:
+            return
+        node = self.graph.get_node(self.node_id)
+        if not node:
+            return
+
+        orphaned = getattr(node, 'metadata', {}) or {}
+        orphaned_props = orphaned.get('orphaned_properties', {})
+
+        if self.property_key in orphaned_props:
+            self.old_value = orphaned_props.pop(self.property_key)
+
+            # Also remove from node.properties if it's still there
+            props = getattr(node, 'properties', {}) or {}
+            props.pop(self.property_key, None)
+
+            if self.session_id:
+                from backend.api.broadcaster import emit_property_changed
+                emit_property_changed(
+                    self.session_id,
+                    str(self.node_id),
+                    self.property_key,
+                    self.old_value,
+                    None,
+                )
+
+    def undo(self) -> None:
+        if not self.graph or self.old_value is None:
+            return
+        node = self.graph.get_node(self.node_id)
+        if not node:
+            return
+
+        metadata = getattr(node, 'metadata', None)
+        if metadata is None:
+            node.metadata = {}
+            metadata = node.metadata
+        if 'orphaned_properties' not in metadata:
+            metadata['orphaned_properties'] = {}
+        metadata['orphaned_properties'][self.property_key] = self.old_value

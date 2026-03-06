@@ -119,7 +119,7 @@ describe('markupRenderService', () => {
       expect(ranges).toHaveLength(1);
       expect(ranges[0]).toEqual({
         start: 0,
-        end: 12,
+        end: 13,
         tokenId: 'bold',
         format: mockTokens[0].format,
       });

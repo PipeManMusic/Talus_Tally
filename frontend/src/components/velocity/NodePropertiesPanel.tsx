@@ -1,8 +1,18 @@
 import React from 'react';
-import { X } from 'lucide-react';
+import { X, Lock, Trash2 } from 'lucide-react';
 import { Input } from '../ui/Input';
 import { Select } from '../ui/Select';
 import type { Node as NodeType } from '../../api/client';
+
+/** Minimal property definition from the template schema, used for grouping / locking. */
+export interface PropertyDefinition {
+  id: string;
+  label: string;
+  type: string;
+  system_locked?: boolean;
+  ui_group?: string;
+  semantic_role?: string;
+}
 
 interface NodePropertiesPanelProps {
   selectedNodeId: string | null;
@@ -11,6 +21,12 @@ interface NodePropertiesPanelProps {
   blocksNodes: string[];     // Node IDs that the selected node blocks
   onPropertyChange: (nodeId: string, propKey: string, value: string | number) => void;
   onClearBlocks: (nodeId: string) => void;  // Clear all blocking relationships from this node
+  /** Optional property definitions from the template schema for the selected node's type. */
+  propertyDefinitions?: PropertyDefinition[];
+  /** Orphaned property key-value pairs (read-only, from metadata). */
+  orphanedProperties?: Record<string, string | number>;
+  /** Called when the user clicks the trash icon on an orphaned property. */
+  onOrphanedPropertyDelete?: (propKey: string) => void;
 }
 
 export function NodePropertiesPanel({
@@ -20,6 +36,9 @@ export function NodePropertiesPanel({
   blocksNodes,
   onPropertyChange,
   onClearBlocks,
+  propertyDefinitions,
+  orphanedProperties,
+  onOrphanedPropertyDelete,
 }: NodePropertiesPanelProps) {
   if (!selectedNodeId || !nodes[selectedNodeId]) {
     return (
@@ -104,32 +123,125 @@ export function NodePropertiesPanel({
         )}
 
         {/* Properties Section */}
-        {selectNode.properties && Object.keys(selectNode.properties).length > 0 && (
-          <div className="space-y-3">
-            <div className="text-xs font-semibold text-fg-secondary px-2 py-1 border-b border-border">
-              Properties
-            </div>
-            {Object.entries(selectNode.properties).map(([key, value]) => (
-              <div key={key}>
-                <label className="block text-xs text-fg-secondary mb-1 font-medium">
-                  {key}
-                </label>
-                <input
-                  type="text"
-                  value={String(value)}
-                  onChange={(e) => onPropertyChange(selectedNodeId, key, e.target.value)}
-                  className="w-full bg-bg-dark text-fg-primary border border-border rounded px-2 py-1 text-xs focus:border-accent-primary focus:outline-none"
-                />
+        {selectNode.properties && Object.keys(selectNode.properties).length > 0 && (() => {
+          const propEntries = Object.entries(selectNode.properties);
+          // Build a quick lookup from property definitions
+          const defByKey: Record<string, PropertyDefinition> = {};
+          (propertyDefinitions || []).forEach(d => { defByKey[d.id] = d; });
+
+          // Split into ungrouped (custom) and grouped (ui_group)
+          const ungrouped: [string, any][] = [];
+          const grouped: Record<string, [string, any][]> = {};
+
+          propEntries.forEach(([key, value]) => {
+            const def = defByKey[key];
+            if (def?.ui_group) {
+              if (!grouped[def.ui_group]) grouped[def.ui_group] = [];
+              grouped[def.ui_group].push([key, value]);
+            } else {
+              ungrouped.push([key, value]);
+            }
+          });
+
+          const groupNames = Object.keys(grouped).sort();
+
+          return (
+            <div className="space-y-3">
+              <div className="text-xs font-semibold text-fg-secondary px-2 py-1 border-b border-border">
+                Properties
               </div>
-            ))}
-          </div>
-        )}
+
+              {/* Ungrouped (custom) properties first */}
+              {ungrouped.map(([key, value]) => {
+                const def = defByKey[key];
+                return (
+                  <div key={key}>
+                    <label className="block text-xs text-fg-secondary mb-1 font-medium flex items-center gap-1">
+                      {def?.label || key}
+                      {def?.system_locked && <Lock size={10} className="text-fg-muted" />}
+                    </label>
+                    <input
+                      type="text"
+                      value={String(value)}
+                      onChange={(e) => onPropertyChange(selectedNodeId, key, e.target.value)}
+                      className="w-full bg-bg-dark text-fg-primary border border-border rounded px-2 py-1 text-xs focus:border-accent-primary focus:outline-none"
+                    />
+                  </div>
+                );
+              })}
+
+              {/* Grouped properties by ui_group */}
+              {groupNames.map(group => (
+                <React.Fragment key={group}>
+                  <div className="flex items-center gap-2 mt-2">
+                    <div className="flex-1 border-t border-border" />
+                    <span className="text-xs font-semibold text-fg-secondary whitespace-nowrap">{group}</span>
+                    <div className="flex-1 border-t border-border" />
+                  </div>
+                  {grouped[group].map(([key, value]) => {
+                    const def = defByKey[key];
+                    return (
+                      <div key={key}>
+                        <label className="block text-xs text-fg-secondary mb-1 font-medium flex items-center gap-1">
+                          {def?.label || key}
+                          {def?.system_locked && <Lock size={10} className="text-fg-muted" />}
+                        </label>
+                        <input
+                          type="text"
+                          value={String(value)}
+                          onChange={(e) => onPropertyChange(selectedNodeId, key, e.target.value)}
+                          className="w-full bg-bg-dark text-fg-primary border border-border rounded px-2 py-1 text-xs focus:border-accent-primary focus:outline-none"
+                        />
+                      </div>
+                    );
+                  })}
+                </React.Fragment>
+              ))}
+            </div>
+          );
+        })()}
 
         {!selectNode.properties || Object.keys(selectNode.properties).length === 0 && 
           blockedByNodes.length === 0 && 
           blocksNodes.length === 0 && (
           <div className="text-xs text-fg-secondary text-center py-8">
             No properties or blocking info
+          </div>
+        )}
+
+        {/* Orphaned Properties Section */}
+        {orphanedProperties && Object.keys(orphanedProperties).length > 0 && (
+          <div className="mt-4 pt-4 border-t border-border">
+            <div className="text-xs font-semibold border-b border-orange-500/50 pb-2 mb-3 text-orange-400 flex items-center gap-2">
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              Orphaned Properties
+            </div>
+            <div className="mb-2 text-xs text-orange-300/80 bg-orange-500/10 border border-orange-500/30 rounded px-2 py-1.5">
+              Removed from template. Read-only.
+            </div>
+            <div className="space-y-2">
+              {Object.entries(orphanedProperties).map(([key, value]) => (
+                <div key={key}>
+                  <label className="block text-xs text-fg-secondary mb-1 font-medium">{key}</label>
+                  <div className="flex gap-1 items-center">
+                    <div className="flex-1 bg-bg-dark/50 text-fg-primary/70 border border-orange-500/30 rounded px-2 py-1 text-xs truncate">
+                      {String(value)}
+                    </div>
+                    {onOrphanedPropertyDelete && (
+                      <button
+                        onClick={() => onOrphanedPropertyDelete(key)}
+                        className="p-1 text-status-danger/70 hover:text-status-danger hover:bg-status-danger/10 rounded transition-colors"
+                        title="Delete orphaned property"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>

@@ -1,5 +1,5 @@
 import { useState, memo, useEffect, useRef } from 'react';
-import { Plus, Trash2, ChevronDown, ChevronUp, AlertCircle, Info } from 'lucide-react';
+import { Plus, Trash2, ChevronDown, ChevronUp, AlertCircle, Info, Lock } from 'lucide-react';
 import { apiClient, API_BASE_URL } from '../api/client';
 import { ColorPicker } from '../components/ui/ColorPicker';
 import type { IconCatalog, IndicatorsConfig, IndicatorTheme } from '../api/client';
@@ -24,6 +24,7 @@ export interface NodeType {
   allowed_asset_types?: string[];
   velocityConfig?: VelocityNodeConfig;
   properties: Property[];
+  features?: string[];
   icon?: string;
   shape?: string;
   color?: string;
@@ -39,6 +40,9 @@ export interface Property {
   description?: string;
   indicator_set?: string;
   velocityConfig?: VelocityPropertyConfig;
+  system_locked?: boolean;
+  ui_group?: string;
+  semantic_role?: string;
 }
 
 interface NodeTypeEditorProps {
@@ -840,6 +844,52 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
                   </div>
                 </div>
 
+                {/* Built-in Features Section */}
+                <div className="mt-4 pt-4 border-t border-border">
+                  <div className="flex items-center gap-2 mb-3">
+                    <h4 className="font-semibold text-fg-primary">Built-in Features</h4>
+                    <span title="Enable built-in feature macros. When enabled, the backend will inject system-locked properties into this node type automatically.">
+                      <Info size={14} className="text-fg-muted cursor-help" />
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 bg-bg-secondary/30 rounded p-3">
+                    <label className="flex items-center gap-2 text-sm text-fg-primary cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={(nodeType.features || []).includes('scheduling')}
+                        onChange={(e) => {
+                          const current = nodeType.features || [];
+                          const next = e.target.checked
+                            ? [...current, 'scheduling']
+                            : current.filter(f => f !== 'scheduling');
+                          updateNodeType(nodeType.id, { features: next });
+                        }}
+                        className="rounded"
+                      />
+                      Enable Scheduling
+                      <span className="text-xs text-fg-muted ml-1">(adds Start Date, End Date, Assigned Asset)</span>
+                    </label>
+
+                    <label className="flex items-center gap-2 text-sm text-fg-primary cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={(nodeType.features || []).includes('budgeting')}
+                        onChange={(e) => {
+                          const current = nodeType.features || [];
+                          const next = e.target.checked
+                            ? [...current, 'budgeting']
+                            : current.filter(f => f !== 'budgeting');
+                          updateNodeType(nodeType.id, { features: next });
+                        }}
+                        className="rounded"
+                      />
+                      Enable Budgeting
+                      <span className="text-xs text-fg-muted ml-1">(adds Estimated Cost)</span>
+                    </label>
+                  </div>
+                </div>
+
                 {/* Velocity Configuration Section */}
                 <div className="mt-4 pt-4 border-t border-border">
                   <div className="flex items-center justify-between mb-3">
@@ -1002,19 +1052,29 @@ const PropertyEditor = memo(function PropertyEditor({
             {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </button>
           <div className="min-w-0">
-            <h5 className="font-semibold text-fg-primary text-sm">{property.label || property.id}</h5>
-            <p className="text-xs text-fg-secondary font-mono">{property.type}</p>
+            <div className="flex items-center gap-1">
+              <h5 className="font-semibold text-fg-primary text-sm">{property.label || property.id}</h5>
+              {property.system_locked && (
+                <Lock size={12} className="text-fg-muted flex-shrink-0" title="System-locked property" />
+              )}
+            </div>
+            <p className="text-xs text-fg-secondary font-mono">
+              {property.type}
+              {property.ui_group && <span className="ml-1 text-fg-muted">· {property.ui_group}</span>}
+            </p>
           </div>
         </div>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onRemove();
-          }}
-          className="px-2 py-1 text-status-danger hover:bg-status-danger/20 rounded transition-colors flex-shrink-0"
-        >
-          <Trash2 size={14} />
-        </button>
+        {!property.system_locked && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemove();
+            }}
+            className="px-2 py-1 text-status-danger hover:bg-status-danger/20 rounded transition-colors flex-shrink-0"
+          >
+            <Trash2 size={14} />
+          </button>
+        )}
       </div>
 
       {/* Property Details */}
@@ -1023,10 +1083,10 @@ const PropertyEditor = memo(function PropertyEditor({
           {/* Property ID */}
           <div>
             <label className="text-xs text-fg-secondary mb-1 block">ID</label>
-            {property.indicator_set === 'status' ? (
+            {property.indicator_set === 'status' || property.system_locked ? (
               <input
                 type="text"
-                value="status"
+                value={property.indicator_set === 'status' ? 'status' : property.id}
                 disabled
                 className="w-full px-2 py-1 bg-bg-light border border-border rounded text-fg-primary text-sm font-mono opacity-70 cursor-not-allowed"
               />
@@ -1047,7 +1107,8 @@ const PropertyEditor = memo(function PropertyEditor({
               type="text"
               value={property.label}
               onChange={(e) => onUpdate({ label: e.target.value })}
-              className="w-full px-2 py-1 bg-bg-light border border-border rounded text-fg-primary text-sm"
+              disabled={!!property.system_locked}
+              className={`w-full px-2 py-1 bg-bg-light border border-border rounded text-fg-primary text-sm${property.system_locked ? ' opacity-70 cursor-not-allowed' : ''}`}
             />
           </div>
 

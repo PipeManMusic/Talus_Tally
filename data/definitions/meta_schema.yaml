@@ -39,6 +39,10 @@ property_types:
         - id: "string (optional)"
           description: "UUID for stable reference; auto-generated if not provided"
 
+  - id: "node_reference"
+    python_type: "str"
+    description: "Reference to another node by ID"
+
   - id: "editor"
     python_type: "str"
     description: "Rich text editor with optional markup formatting profile"
@@ -63,6 +67,9 @@ property_definition:
     - required: "optional - boolean, defaults to false"
     - value: "optional - default value for the property"
     - options: "required if type is 'select', array of string or object options"
+    - system_locked: "optional - boolean, when true the user cannot rename or delete this property"
+    - ui_group: "optional - string, display name used by the frontend to group properties under a header"
+    - semantic_role: "optional - string, tag for future tools/views (e.g. gantt_start, gantt_end)"
 
 capabilities:
   - id: "inventory"
