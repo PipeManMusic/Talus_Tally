@@ -3,6 +3,18 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { TreeView } from '../TreeView';
 import type { TreeNode } from '../../../utils/treeUtils';
 
+// Polyfill DragEvent for jsdom which lacks it — without this,
+// fireEvent.dragOver() falls back to `new Event()` and clientY is lost.
+if (typeof globalThis.DragEvent === 'undefined') {
+  (globalThis as any).DragEvent = class DragEventPolyfill extends MouseEvent {
+    dataTransfer: DataTransfer | null;
+    constructor(type: string, init?: any) {
+      super(type, init);
+      this.dataTransfer = init?.dataTransfer ?? null;
+    }
+  };
+}
+
 vi.mock('../graph/mapNodeIcon', () => ({
   mapNodeIcon: vi.fn(() => Promise.resolve('<svg></svg>')),
   subscribeToIconCache: vi.fn(() => () => {}),
@@ -77,6 +89,8 @@ const createRect = (top: number, height: number) => ({
 const assignBoundingRect = (element: Element, top = 0, height = 40) => {
   Object.defineProperty(element, 'getBoundingClientRect', {
     value: () => createRect(top, height),
+    configurable: true,
+    writable: true,
   });
 };
 
