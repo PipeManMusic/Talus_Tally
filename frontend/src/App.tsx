@@ -1297,6 +1297,71 @@ function App() {
     }
   }, [fetchBlockingRelationships, normalizeGraph, sessionId, setCurrentGraph]);
 
+  /**
+   * Full refresh of template schema, backend blueprint, graph, blocking
+   * relationships, and velocity data.  Called after the template editor
+   * closes and from the File ▸ Refresh Blueprint menu item.
+   */
+  const refreshTemplateAndGraph = useCallback(async () => {
+    if (!currentTemplateId || !sessionId) return;
+
+    console.log('Refreshing template schema:', currentTemplateId);
+    const schema = await apiClient.getTemplateSchema(currentTemplateId);
+
+    const validation = validateTemplateSchema(schema);
+    if (!validation.isValid) {
+      console.error('Refreshed template validation failed:', validation.errors);
+      throw new Error(`Template validation failed:\n${validation.errors.join('\n')}`);
+    }
+
+    setTemplateSchema(schema);
+    clearIconCache();
+
+    // Reload the blueprint in the backend session (also runs orphan detection)
+    try {
+      await apiClient.reloadBlueprint(sessionId);
+      console.log('✓ Backend blueprint reloaded from disk');
+    } catch (blueprintErr) {
+      console.warn('Failed to reload backend blueprint:', blueprintErr);
+    }
+
+    // Reload the graph to pick up updated allowed_children + orphan metadata
+    try {
+      const graphData = await apiClient.getSessionGraph(sessionId);
+      const refreshedGraph = normalizeGraph(graphData.graph);
+      setCurrentGraph(refreshedGraph);
+      console.log('✓ Graph reloaded with updated node metadata');
+    } catch (graphErr) {
+      console.warn('Failed to reload graph after schema refresh:', graphErr);
+    }
+
+    // Refresh blocking relationships and velocity so all views update
+    try {
+      await fetchBlockingRelationships();
+      setBlockingGraphRefreshSignal((prev) => prev + 1);
+    } catch (blockErr) {
+      console.warn('Failed to refresh blocking relationships:', blockErr);
+    }
+
+    try {
+      await fetchVelocity();
+    } catch (velErr) {
+      console.warn('Failed to refresh velocity:', velErr);
+    }
+
+    console.log('✓ Full template refresh completed');
+  }, [currentTemplateId, sessionId, normalizeGraph, setCurrentGraph, fetchBlockingRelationships, fetchVelocity]);
+
+  // When the template editor closes, refresh everything
+  const handleTemplateEditorClose = useCallback(async () => {
+    setShowTemplateEditor(false);
+    try {
+      await refreshTemplateAndGraph();
+    } catch (err) {
+      console.error('Failed to refresh schema on template editor close:', err);
+    }
+  }, [refreshTemplateAndGraph]);
+
   const toggleInspector = useCallback(() => {
     setInspectorOpen(prev => !prev);
   }, []);
@@ -1815,54 +1880,16 @@ function App() {
       { label: 'Save As...', onClick: handleSaveAs },
       { label: '---', onClick: () => {} },
       { label: 'Refresh Blueprint', onClick: async () => {
+        if (!currentTemplateId) {
+          alert('No template is currently loaded.');
+          return;
+        }
+        if (!sessionId) {
+          alert('No active session. Please open or create a project first.');
+          return;
+        }
         try {
-          // Reload the template schema without losing the current graph
-          const templateId = currentTemplateId;
-          if (!templateId) {
-            alert('No template is currently loaded.');
-            return;
-          }
-          
-          if (!sessionId) {
-            alert('No active session. Please open or create a project first.');
-            return;
-          }
-          
-          console.log('Refreshing template schema:', templateId);
-          const schema = await apiClient.getTemplateSchema(templateId);
-          
-          // Validate the refreshed schema
-          const validation = validateTemplateSchema(schema);
-          if (!validation.isValid) {
-            console.error('Refreshed template validation failed:', validation.errors);
-            alert(`Template validation failed:\n${validation.errors.join('\n')}`);
-            return;
-          }
-          
-          setTemplateSchema(schema);
-          console.log('✓ Template schema refreshed successfully');
-          clearIconCache();
-          
-          // Reload the blueprint in the backend session
-          try {
-            await apiClient.reloadBlueprint(sessionId);
-            console.log('✓ Backend blueprint reloaded from disk');
-          } catch (blueprintErr) {
-            console.warn('Failed to reload backend blueprint:', blueprintErr);
-            // Continue anyway - the frontend schema is updated
-          }
-          
-          // Reload the graph from backend to get updated allowedchildren on nodes
-          try {
-            const graphData = await apiClient.getSessionGraph(sessionId);
-            const refreshedGraph = normalizeGraph(graphData.graph);
-            setCurrentGraph(refreshedGraph);
-            console.log('✓ Graph reloaded with updated node metadata');
-          } catch (graphErr) {
-            console.warn('Failed to reload graph after schema refresh:', graphErr);
-            // Schema is still updated, just nodes might have stale allowed_children
-          }
-          
+          await refreshTemplateAndGraph();
           alert('Template schema refreshed successfully!');
         } catch (error) {
           console.error('Failed to refresh blueprint:', error);
@@ -2200,6 +2227,23 @@ function App() {
               nodes={storeNodes}
               onClearBlocks={handleClearBlocks}
               velocityScore={velocityScore || undefined}
+              onOrphanedPropertyDelete={(propKey) => {
+                if (!currentSelectedNodeData) return;
+                safeExecuteCommand('DeleteOrphanedProperty', {
+                  node_id: currentSelectedNodeData.id,
+                  property_key: propKey,
+                })
+                  .then((result) => {
+                    const graph = normalizeGraph(result.graph ?? result);
+                    setCurrentGraph(graph);
+                    setIsDirty(result.is_dirty ?? true);
+                    console.log('✓ Orphaned property deleted:', propKey);
+                  })
+                  .catch((err) => {
+                    console.error('Failed to delete orphaned property:', err);
+                    alert('Failed to delete orphaned property');
+                  });
+              }}
             />
           </aside>
         )}
@@ -2291,7 +2335,7 @@ function App() {
       {/* Template Editor View */}
       {showTemplateEditor && (
         <div className="absolute inset-0 bg-bg-dark z-50">
-          <TemplateEditor onClose={() => setShowTemplateEditor(false)} />
+          <TemplateEditor onClose={handleTemplateEditorClose} />
         </div>
       )}
 

@@ -252,8 +252,7 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
   }, []);
 
   const handleNodeTypesChange = useCallback(async (nodeTypes: NodeType[]) => {
-    // Update local state
-    // Update local state
+    // Update local state (optimistic)
     updateCurrentTemplate({ node_types: nodeTypes });
 
     // Persist change to backend
@@ -273,25 +272,7 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
         setLoading(false);
       }
     }
-
-    // Persist change to backend
-    if (currentTemplate) {
-      setLoading(true);
-      setError(null);
-      try {
-        const updated = { ...currentTemplate, node_types: nodeTypes };
-        const result = await apiClient.updateTemplate(updated.id, updated);
-        setCurrentTemplate(result?.template ?? updated);
-        setOriginalTemplate(JSON.parse(JSON.stringify(result?.template ?? updated)));
-        setSavedSuccessfully(true);
-        setTimeout(() => setSavedSuccessfully(false), 3000);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to update template');
-      } finally {
-        setLoading(false);
-      }
-    }
-  }, [updateCurrentTemplate]);
+  }, [currentTemplate, updateCurrentTemplate]);
 
   // List View
   if (view === 'list') {

@@ -114,7 +114,13 @@ describe('TemplateAwareEditor', () => {
       await userEvent.type(textarea, 'test');
 
       await waitFor(() => {
-        expect(onChange).toHaveBeenCalledWith(expect.stringContaining('test'));
+        // Controlled input: each keystroke triggers onChange with the
+        // current controlled value + the typed character. Since the mock
+        // doesn't feed the value back, each call appends one character
+        // to the original value.
+        expect(onChange).toHaveBeenCalled();
+        const calls = onChange.mock.calls.map((c: unknown[]) => c[0]);
+        expect(calls.some((v: unknown) => typeof v === 'string' && v.length > 'Initial text'.length)).toBe(true);
       });
     });
   });

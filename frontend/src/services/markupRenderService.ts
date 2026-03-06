@@ -58,7 +58,20 @@ function escapeHtml(text: string): string {
 function findMarkupRanges(text: string, tokens: MarkupToken[]): StyledRange[] {
   const ranges: StyledRange[] = [];
 
-  for (const token of tokens) {
+  // Track positions consumed by longer-prefix matches to prevent overlap
+  const consumedRanges: Array<{ start: number; end: number }> = [];
+  const isConsumed = (pos: number) =>
+    consumedRanges.some((r) => pos >= r.start && pos < r.end);
+
+  // Process line-scoped tokens first, then inline/prefix sorted by prefix
+  // length descending so longer prefixes claim positions before shorter ones
+  const sortedTokens = [...tokens].sort((a, b) => {
+    if (a.format_scope === 'line' && b.format_scope !== 'line') return -1;
+    if (a.format_scope !== 'line' && b.format_scope === 'line') return 1;
+    return (b.prefix || '').length - (a.prefix || '').length;
+  });
+
+  for (const token of sortedTokens) {
     if (!token.prefix && !token.pattern) {
       continue;
     }
@@ -71,7 +84,6 @@ function findMarkupRanges(text: string, tokens: MarkupToken[]): StyledRange[] {
 
         for (const line of lines) {
           if (line.startsWith(token.prefix)) {
-            const contentStart = currentPos + token.prefix.length;
             const contentEnd = currentPos + line.length;
             ranges.push({
               start: currentPos,
@@ -84,34 +96,67 @@ function findMarkupRanges(text: string, tokens: MarkupToken[]): StyledRange[] {
         }
       }
     } else if (token.format_scope === 'prefix' || token.format_scope === 'inline') {
-      // Prefix-based markup: token.prefix marks start, continues until newline or next prefix
+      // Paired-delimiter markup: opening prefix ... closing prefix
       if (token.prefix) {
         let searchPos = 0;
         while (true) {
-          const index = text.indexOf(token.prefix, searchPos);
-          if (index === -1) break;
+          const openIndex = text.indexOf(token.prefix, searchPos);
+          if (openIndex === -1) break;
 
-          // Find end: either next prefix of same type, or end of line
-          let endPos = index + token.prefix.length;
-          const nextPrefixIndex = text.indexOf(token.prefix, endPos);
-          const nextNewlineIndex = text.indexOf('\n', endPos);
-
-          if (nextNewlineIndex !== -1 && (nextPrefixIndex === -1 || nextNewlineIndex < nextPrefixIndex)) {
-            endPos = nextNewlineIndex;
-          } else if (nextPrefixIndex !== -1) {
-            endPos = nextPrefixIndex;
-          } else {
-            endPos = text.length;
+          // Skip if this position is already consumed by a longer prefix match
+          if (isConsumed(openIndex)) {
+            searchPos = openIndex + 1;
+            continue;
           }
 
-          ranges.push({
-            start: index,
-            end: endPos,
-            tokenId: token.id,
-            format: token.format,
-          });
+          // Look for a closing occurrence of the same prefix
+          const afterOpen = openIndex + token.prefix.length;
+          let closeIndex = text.indexOf(token.prefix, afterOpen);
 
-          searchPos = endPos;
+          // Skip closing candidates that are consumed
+          while (closeIndex !== -1 && isConsumed(closeIndex)) {
+            closeIndex = text.indexOf(token.prefix, closeIndex + 1);
+          }
+
+          if (closeIndex !== -1) {
+            // Check newline doesn't intervene (prefix pairs don't span lines)
+            const nextNewline = text.indexOf('\n', afterOpen);
+            if (nextNewline !== -1 && nextNewline < closeIndex) {
+              // Unpaired on this line: range to end of line
+              const endPos = nextNewline;
+              ranges.push({
+                start: openIndex,
+                end: endPos,
+                tokenId: token.id,
+                format: token.format,
+              });
+              consumedRanges.push({ start: openIndex, end: endPos });
+              searchPos = endPos;
+            } else {
+              // Paired delimiter: range covers open through end of close
+              const endPos = closeIndex + token.prefix.length;
+              ranges.push({
+                start: openIndex,
+                end: endPos,
+                tokenId: token.id,
+                format: token.format,
+              });
+              consumedRanges.push({ start: openIndex, end: endPos });
+              searchPos = endPos;
+            }
+          } else {
+            // Unpaired: extends to end of line or end of text
+            const nextNewline = text.indexOf('\n', afterOpen);
+            const endPos = nextNewline !== -1 ? nextNewline : text.length;
+            ranges.push({
+              start: openIndex,
+              end: endPos,
+              tokenId: token.id,
+              format: token.format,
+            });
+            consumedRanges.push({ start: openIndex, end: endPos });
+            searchPos = endPos;
+          }
         }
       }
     }

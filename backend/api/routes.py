@@ -838,6 +838,7 @@ def reload_blueprint(session_id):
     
     This is useful when the template file has been edited and you want
     to pick up the changes without restarting the backend or reloading the project.
+    Also runs orphan detection to handle removed node types and properties.
     """
     if session_id not in _sessions:
         return jsonify({
@@ -860,9 +861,82 @@ def reload_blueprint(session_id):
     
     try:
         template_id = graph.template_id
+
+        # Build a dict representation of the OLD blueprint for orphan comparison
+        old_blueprint = session_data.get('blueprint')
+        old_template_dict = None
+        if old_blueprint:
+            old_template_dict = {
+                'id': old_blueprint.id,
+                'name': old_blueprint.name,
+                'version': old_blueprint.version,
+                'node_types': []
+            }
+            for nt in old_blueprint.node_types:
+                nt_dict = {
+                    'id': nt.id,
+                    'name': nt.name,
+                    'allowed_children': nt.allowed_children,
+                    'properties': nt.properties or [],
+                }
+                old_template_dict['node_types'].append(nt_dict)
+
+        # Load the NEW template dict from disk for orphan comparison
+        new_template_dict = None
+        try:
+            from backend.infra.template_persistence import TemplatePersistence
+            persistence = TemplatePersistence()
+            new_template_dict = persistence.load_template(template_id)
+        except Exception as tp_err:
+            logger.warning(f"Could not load template dict for orphan detection: {tp_err}")
+
+        # Load the new blueprint via SchemaLoader (generates UUIDs, etc.)
         loader = SchemaLoader()
         blueprint = loader.load(f'{template_id}.yaml')
         session_data['blueprint'] = blueprint
+
+        # Run orphan detection if we have both old and new templates
+        orphan_info = {
+            'orphaned_sessions': [],
+            'total_orphaned_nodes': 0,
+            'total_orphaned_properties': 0
+        }
+        if old_template_dict and new_template_dict:
+            try:
+                orphan_mgr = OrphanManager()
+                removed_types = orphan_mgr.find_orphaned_node_types(old_template_dict, new_template_dict)
+                orphaned_props_by_type = orphan_mgr.find_orphaned_properties(old_template_dict, new_template_dict)
+
+                if removed_types or orphaned_props_by_type:
+                    graph_data = session_data.get('graph', {})
+                    orphaned_node_count = 0
+                    orphaned_prop_count = 0
+                    orphaned_node_ids = []
+
+                    if removed_types:
+                        result = orphan_mgr.mark_orphaned_nodes(graph_data, removed_types)
+                        orphaned_node_count = result['affected_count']
+                        orphaned_node_ids = result['orphaned_node_ids']
+
+                    if orphaned_props_by_type:
+                        orphaned_prop_count = orphan_mgr.mark_orphaned_properties(graph_data, orphaned_props_by_type)
+
+                    if orphaned_node_count > 0 or orphaned_prop_count > 0:
+                        orphan_info['orphaned_sessions'].append({
+                            'session_id': session_id,
+                            'orphaned_count': orphaned_node_count,
+                            'orphaned_node_ids': orphaned_node_ids,
+                            'orphaned_property_count': orphaned_prop_count
+                        })
+                        orphan_info['total_orphaned_nodes'] += orphaned_node_count
+                        orphan_info['total_orphaned_properties'] += orphaned_prop_count
+
+                    logger.info(
+                        f"[API] Blueprint reload orphaned {orphaned_node_count} nodes "
+                        f"and {orphaned_prop_count} properties in session {session_id}"
+                    )
+            except Exception as orphan_err:
+                logger.warning(f"Orphan detection during blueprint reload failed: {orphan_err}", exc_info=True)
 
         # Cache a velocity schema snapshot with option UUIDs for fast reuse
         velocity_schema = {'node_types': []}
@@ -889,7 +963,8 @@ def reload_blueprint(session_id):
             'success': True,
             'session_id': session_id,
             'template_id': template_id,
-            'message': f'Blueprint reloaded from {template_id}.yaml'
+            'message': f'Blueprint reloaded from {template_id}.yaml',
+            'orphan_info': orphan_info
         }), 200
         
     except Exception as e:
@@ -2134,6 +2209,28 @@ def get_template_schema(template_id):
     try:
         schema_loader = SchemaLoader()
         blueprint = schema_loader.load(f'{template_id}.yaml')
+
+        # Apply feature macros in-memory so macro properties appear in the
+        # schema even if the YAML was saved before the macro system existed.
+        from backend.core.feature_macros import apply_feature_macros
+        blueprint_dict = {
+            'node_types': [
+                {
+                    'id': nt.id,
+                    'properties': nt._extra_props.get('properties', []),
+                    'features': nt._extra_props.get('features'),
+                }
+                for nt in blueprint.node_types
+            ]
+        }
+        apply_feature_macros(blueprint_dict)
+        # Patch the properties back onto the blueprint node types
+        macro_props_by_id = {nt['id']: nt['properties'] for nt in blueprint_dict['node_types']}
+        for nt in blueprint.node_types:
+            if nt.id in macro_props_by_id:
+                nt._extra_props['properties'] = macro_props_by_id[nt.id]
+                nt.properties = macro_props_by_id[nt.id]
+
         markup_registry = MarkupRegistry()
         
         # Serialize blueprint to JSON-compatible format
@@ -2264,8 +2361,12 @@ def editor_get_template(template_id):
     """Get a complete template document for editing."""
     try:
         from backend.infra.template_persistence import TemplatePersistence
+        from backend.core.feature_macros import apply_feature_macros
         persistence = TemplatePersistence()
         template = persistence.load_template(template_id)
+        # Ensure macro properties are present even if template was saved
+        # before macro system existed
+        apply_feature_macros(template)
         
         # Migrate old templates for editor compatibility
         if 'node_types' in template:
@@ -2338,10 +2439,13 @@ def editor_create_template():
             }), 400
         
         try:
+            from backend.core.feature_macros import apply_feature_macros
+            apply_feature_macros(data)
             persistence.save_template(data)
             return jsonify({
                 'success': True,
                 'template_id': data['id'],
+                'template': data,
                 'message': f'Template "{data.get("name", data["id"])}" created successfully'
             }), 201
         except ValueError as ve:
@@ -2391,6 +2495,8 @@ def editor_update_template(template_id):
                 pass  # New template, no orphaning needed
             
             # Save the updated template
+            from backend.core.feature_macros import apply_feature_macros
+            apply_feature_macros(data)
             persistence.save_template(data)
             
             # Check for orphaned node types
@@ -2460,6 +2566,7 @@ def editor_update_template(template_id):
             return jsonify({
                 'success': True,
                 'template_id': template_id,
+                'template': data,
                 'message': f'Template "{data.get("name", template_id)}" updated successfully',
                 'orphan_info': orphan_info
             }), 200
@@ -2631,7 +2738,7 @@ def execute_command():
         # Execute command through dispatcher
         try:
             # Import command classes
-            from backend.handlers.commands.node_commands import CreateNodeCommand, DeleteNodeCommand, LinkNodeCommand, UpdatePropertyCommand, MoveNodeCommand, ReorderNodeCommand
+            from backend.handlers.commands.node_commands import CreateNodeCommand, DeleteNodeCommand, LinkNodeCommand, UpdatePropertyCommand, MoveNodeCommand, ReorderNodeCommand, DeleteOrphanedPropertyCommand
             from backend.handlers.commands.velocity_commands import UpdateBlockingRelationshipCommand
             from backend.handlers.commands.macro_commands import ApplyKitCommand
             from uuid import UUID
@@ -2649,6 +2756,7 @@ def execute_command():
                 'ReorderNode': ReorderNodeCommand,
                 'UpdateBlockingRelationship': UpdateBlockingRelationshipCommand,
                 'ApplyKit': ApplyKitCommand,
+                'DeleteOrphanedProperty': DeleteOrphanedPropertyCommand,
             }
 
             if command_type not in command_map:
@@ -2840,6 +2948,25 @@ def execute_command():
                         }
                     }), 400
                 command = ApplyKitCommand(target_id=UUID(target_id), kit_root_id=UUID(kit_root_id), graph=graph)
+                dispatcher.execute(command)
+
+            elif command_type == 'DeleteOrphanedProperty':
+                node_id = command_data.get('node_id')
+                property_key = command_data.get('property_key')
+                if not node_id or not property_key:
+                    return jsonify({
+                        'error': {
+                            'code': 'INVALID_COMMAND',
+                            'message': 'DeleteOrphanedProperty requires node_id and property_key'
+                        }
+                    }), 400
+                command = DeleteOrphanedPropertyCommand(
+                    node_id=UUID(node_id),
+                    property_key=property_key,
+                    graph=graph,
+                    graph_service=graph_service,
+                    session_id=session_id,
+                )
                 dispatcher.execute(command)
 
             # Mark session as dirty after any command execution
