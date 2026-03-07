@@ -9,14 +9,21 @@ interface DatePickerProps {
   disabled?: boolean;
 }
 
+function isValidDate(d: Date): boolean {
+  return d instanceof Date && !isNaN(d.getTime());
+}
+
+function parseToValidDate(val: string | undefined): Date {
+  if (val) {
+    const d = new Date(val);
+    if (isValidDate(d)) return d;
+  }
+  return new Date();
+}
+
 export function DatePicker({ value, onChange, label, error, disabled }: DatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [currentDate, setCurrentDate] = useState(() => {
-    if (value) {
-      return new Date(value);
-    }
-    return new Date();
-  });
+  const [currentDate, setCurrentDate] = useState(() => parseToValidDate(value));
 
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -54,8 +61,14 @@ export function DatePicker({ value, onChange, label, error, disabled }: DatePick
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     if (val) {
-      onChange(val);
-      setCurrentDate(new Date(val));
+      const d = new Date(val);
+      if (isValidDate(d)) {
+        onChange(val);
+        setCurrentDate(d);
+      }
+    } else {
+      // User cleared the date
+      onChange('');
     }
   };
 
@@ -75,17 +88,22 @@ export function DatePicker({ value, onChange, label, error, disabled }: DatePick
 
   const daysInMonth = getDaysInMonth(currentDate);
   const firstDay = getFirstDayOfMonth(currentDate);
-  const days: (number | null)[] = Array(firstDay).fill(null);
+  const days: (number | null)[] = Array(firstDay >= 0 ? firstDay : 0).fill(null);
   for (let i = 1; i <= daysInMonth; i++) {
     days.push(i);
   }
 
   // Format display value
-  const displayValue = value ? new Date(value).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  }) : '';
+  const displayValue = (() => {
+    if (!value) return '';
+    const d = new Date(value);
+    if (!isValidDate(d)) return '';
+    return d.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+  })();
 
   return (
     <div ref={containerRef} className="w-full">

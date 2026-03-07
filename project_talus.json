@@ -72,7 +72,9 @@
         "properties": {
           "name": "Intro",
           "description": "",
+          "end_date": "2026-03-27",
           "episode_number": 1,
+          "start_date": "2026-03-12",
           "status": "3094f28b-3fc3-2667-5ae1-933b041d78ed",
           "synopsis": "The who what where and why of Project Talus"
         },
@@ -2285,7 +2287,7 @@
         "type": "part_asset",
         "properties": {
           "name": "NY Threads Coverall (Grey XX-Large)",
-          "estimated_cost": "1",
+          "estimated_cost": "",
           "notes": "Order 113-8921857-3726624",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
@@ -3259,7 +3261,7 @@
         "type": "part_asset",
         "properties": {
           "name": "Purolator Fuel Filter",
-          "estimated_cost": "1.00",
+          "estimated_cost": "",
           "notes": "Order 113-8618213-6130662",
           "part_number": "F50126",
           "prop_1771951944461": "",
