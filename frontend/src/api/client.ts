@@ -281,6 +281,44 @@ export interface VelocityRanking {
   timestamp: number;
 }
 
+// --- Budget System Interfaces ---
+
+export interface BudgetNode {
+  nodeId: string;
+  nodeName: string;
+  nodeType: string;
+  ownCost: number;
+  childrenCost: number;
+  totalCost: number;
+  depth: number;
+  children: BudgetNode[];
+}
+
+export interface BudgetPayload {
+  trees: BudgetNode[];
+  grandTotal: number;
+  timestamp: number;
+}
+
+// --- Gantt System Interfaces ---
+
+export interface GanttBar {
+  nodeId: string;
+  nodeName: string;
+  nodeType: string;
+  startDate: string;
+  endDate: string;
+  leftPercent: number;
+  widthPercent: number;
+  depth: number;
+}
+
+export interface GanttPayload {
+  bars: GanttBar[];
+  timelineRange: { earliest: string; latest: string } | null;
+  timestamp: number;
+}
+
 export class APIClient {
     // Fetch meta_schema.yaml from backend
     async getMetaSchema(): Promise<MetaSchema> {
@@ -981,12 +1019,32 @@ export class APIClient {
     return response.json();
   }
 
+  // Budget & Gantt System API
+  async getBudgetPayload(sessionId: string): Promise<BudgetPayload> {
+    const response = await fetch(`${this.baseUrl}/api/v1/sessions/${sessionId}/budget`);
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || 'Failed to get budget data');
+    }
+    return response.json();
+  }
+
+  async getGanttPayload(sessionId: string): Promise<GanttPayload> {
+    const response = await fetch(`${this.baseUrl}/api/v1/sessions/${sessionId}/gantt`);
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || 'Failed to get gantt data');
+    }
+    return response.json();
+  }
+
   // WebSocket Connection
   connectSocket(callbacks: {
     onConnect?: () => void;
     onNodeCreated?: (data: any) => void;
     onNodeUpdated?: (data: any) => void;
     onNodeDeleted?: (data: any) => void;
+    onPropertyChanged?: (data: any) => void;
     onDisconnect?: () => void;
     sessionId?: string | null;
   }): Socket {
@@ -1022,6 +1080,10 @@ export class APIClient {
 
     if (callbacks.onNodeDeleted) {
       this.socket.on('node-deleted', callbacks.onNodeDeleted);
+    }
+
+    if (callbacks.onPropertyChanged) {
+      this.socket.on('property-changed', callbacks.onPropertyChanged);
     }
 
     if (callbacks.onDisconnect) {

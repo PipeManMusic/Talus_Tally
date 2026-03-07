@@ -206,6 +206,10 @@ def create_app(config=None):
     from backend.api.velocity_routes import velocity_bp
     app.register_blueprint(velocity_bp)
     
+    # Register budget & gantt routes
+    from backend.api.budget_gantt_routes import budget_gantt_bp
+    app.register_blueprint(budget_gantt_bp)
+    
     # Register text editor routes
     from backend.api.text_editor_routes import text_editor_bp
     app.register_blueprint(text_editor_bp)
