@@ -2285,6 +2285,7 @@
         "type": "part_asset",
         "properties": {
           "name": "NY Threads Coverall (Grey XX-Large)",
+          "estimated_cost": "1",
           "notes": "Order 113-8921857-3726624",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
@@ -3027,7 +3028,8 @@
           "3c7d325d-1c5c-453a-80a1-e82c3c5a4bd1",
           "66e4c108-796a-4021-8611-d3a05b3477e0",
           "fd6f9284-67a9-4788-a6f2-32ddcc37daeb",
-          "6ff13947-eb04-4de0-b11a-26c32a53ae18"
+          "6ff13947-eb04-4de0-b11a-26c32a53ae18",
+          "9fe1583f-d09b-43cf-81e8-b8813c3717a0"
         ],
         "indicator_id": null,
         "indicator_set": null,
@@ -3197,6 +3199,26 @@
         "allowed_children": []
       },
       {
+        "id": "9fe1583f-d09b-43cf-81e8-b8813c3717a0",
+        "type": "part_asset",
+        "properties": {
+          "name": "Axel Pivot Bushings",
+          "part_number": "",
+          "prop_1771951944461": "",
+          "quantity_on_hand": 2,
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
+          "supplier": "Amazon",
+          "unit_cost": "29.54"
+        },
+        "children": [],
+        "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
+        "allowed_children": []
+      },
+      {
         "id": "59d1eb52-1551-4e2a-a8db-7ea8a11d012a",
         "type": "part_category",
         "properties": {
@@ -3237,8 +3259,10 @@
         "type": "part_asset",
         "properties": {
           "name": "Purolator Fuel Filter",
+          "estimated_cost": "1.00",
           "notes": "Order 113-8618213-6130662",
           "part_number": "F50126",
+          "prop_1771951944461": "",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
@@ -5232,7 +5256,7 @@
     "3472fd21-b7dc-4476-a727-df51f70c46b1": false,
     "45efb876-0980-4c3d-8e0d-468566297868": false,
     "59d1eb52-1551-4e2a-a8db-7ea8a11d012a": false,
-    "1ab4d600-e346-4d04-8980-4612fd36496d": false,
+    "1ab4d600-e346-4d04-8980-4612fd36496d": true,
     "8af04d53-d82f-4a6c-970b-3701c4b1d90f": false,
     "ae724518-ae43-4bef-805d-0ea9e8bce488": false,
     "f1700f82-f825-4fa3-b39a-a0243e7671ae": true,

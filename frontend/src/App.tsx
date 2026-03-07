@@ -59,7 +59,7 @@ function App() {
   const [toolsSelectedNodeId, setToolsSelectedNodeId] = useState<string | null>(null);
   const [inspectorOpen, setInspectorOpen] = useState(true);
   const [activeView, setActiveView] = useState<ViewType>('graph');
-  const [activeToolsTab, setActiveToolsTab] = useState<'velocity' | 'blocking'>('velocity');
+  const [activeToolsTab, setActiveToolsTab] = useState<'velocity' | 'blocking' | 'budget' | 'gantt'>('velocity');
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isDirty, setIsDirty] = useState(false);  // Track dirty state
   const isDirtyRef = useRef(false);  // Ref to access current dirty state in callbacks
@@ -526,6 +526,41 @@ function App() {
     fetchVelocity();
   }, [fetchVelocity]);
 
+  // -----------------------------------------------------------------------
+  // Property group assignment: maps property types to display groups.
+  // The group ordering is: Identity → Details → Status → Notes → Dates →
+  // Financial.  Blocking and Velocity are rendered as their own sections
+  // (outside the properties list) so they don't appear here.
+  // If the template provides a `ui_group` it is used as-is; otherwise
+  // we fall back to the type-based mapping below.
+  // -----------------------------------------------------------------------
+  const PROPERTY_GROUP_ORDER: string[] = [
+    'Identity',
+    'Details',
+    'Status',
+    'Notes',
+    'Dates',
+    'Financial',
+  ];
+
+  const typeToGroup: Record<string, string> = {
+    text: 'Details',
+    number: 'Details',
+    select: 'Status',
+    checkbox: 'Status',
+    textarea: 'Notes',
+    editor: 'Notes',
+    date: 'Dates',
+    currency: 'Financial',
+  };
+
+  /** Assign a display group to a property. */
+  const assignGroup = (propId: string, propType: string, schemaUiGroup?: string): string => {
+    if (propId === 'name') return 'Identity';
+    if (schemaUiGroup) return schemaUiGroup;
+    return typeToGroup[propType] ?? 'Details';
+  };
+
   // Convert node properties to inspector format
   const getNodeProperties = useCallback((): NodeProperty[] => {
     if (!selectedNodeData || !templateSchema) {
@@ -551,6 +586,7 @@ function App() {
       type: 'text',
       value: selectedNodeData.properties?.name || '',
       required: true,
+      group: 'Identity',
     };
 
     // Build properties from schema
@@ -604,6 +640,7 @@ function App() {
         required: prop.required,
         markupTokens,
         markupProfile,
+        group: assignGroup(prop.id, type, (prop as any).ui_group),
       };
     });
 
@@ -714,6 +751,7 @@ function App() {
       type: 'text',
       value: currentSelectedNodeData.properties?.name || '',
       required: true,
+      group: 'Identity',
     };
 
     // Build properties from schema
@@ -757,6 +795,7 @@ function App() {
         required: prop.required,
         markupTokens,
         markupProfile,
+        group: assignGroup(prop.id, type, (prop as any).ui_group),
       };
     });
 
@@ -1385,6 +1424,22 @@ function App() {
       alert('Failed to clear blocking relationships');
     }
   }, [blocksNodes, fetchBlockingRelationships, fetchVelocity, sessionId]);
+
+  /** Clear a single blocking relationship by removing the blocker from blockedNodeId. */
+  const handleClearSingleBlock = useCallback(async (blockedNodeId: string) => {
+    if (!sessionId) return;
+    try {
+      await apiClient.updateBlockingRelationship(sessionId, blockedNodeId, null);
+      setBlockingGraphRefreshSignal((prev) => prev + 1);
+      await fetchBlockingRelationships();
+      await fetchVelocity();
+      setIsDirty(true);
+      console.log(`✓ Cleared block on node ${blockedNodeId}`);
+    } catch (error) {
+      console.error('Failed to clear blocking relationship:', error);
+      alert('Failed to clear blocking relationship');
+    }
+  }, [fetchBlockingRelationships, fetchVelocity, sessionId]);
 
   const handleExpandAll = useCallback(() => {
     setExpandAllSignal((prev) => prev + 1);
@@ -2226,6 +2281,7 @@ function App() {
               blocksNodes={blocksNodes}
               nodes={storeNodes}
               onClearBlocks={handleClearBlocks}
+              onClearSingleBlock={handleClearSingleBlock}
               velocityScore={velocityScore || undefined}
               onOrphanedPropertyDelete={(propKey) => {
                 if (!currentSelectedNodeData) return;

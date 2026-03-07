@@ -6,6 +6,7 @@ interface WebSocketCallbacks {
   onNodeCreated?: (data: any) => void;
   onNodeUpdated?: (data: any) => void;
   onNodeDeleted?: (data: any) => void;
+  onPropertyChanged?: (data: any) => void;
   onConnect?: () => void;
   onDisconnect?: () => void;
 }
@@ -30,6 +31,7 @@ export function useWebSocket(callbacks: WebSocketCallbacks = {}) {
       onNodeCreated: (data) => callbacksRef.current.onNodeCreated?.(data),
       onNodeUpdated: (data) => callbacksRef.current.onNodeUpdated?.(data),
       onNodeDeleted: (data) => callbacksRef.current.onNodeDeleted?.(data),
+      onPropertyChanged: (data) => callbacksRef.current.onPropertyChanged?.(data),
       onDisconnect: () => {
         setConnected(false);
         callbacksRef.current.onDisconnect?.();

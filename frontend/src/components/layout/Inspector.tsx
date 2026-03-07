@@ -14,6 +14,11 @@ export interface NodeProperty {
   required?: boolean;
   markupTokens?: MarkupToken[];
   markupProfile?: string;
+  /**
+   * Display group for property grouping in the Inspector.
+   * Properties with the same group are rendered together under a section header.
+   */
+  group?: string;
 }
 
 export interface LinkedAssetMetadata {
@@ -51,6 +56,8 @@ interface InspectorProps {
   blocksNodes?: string[];
   nodes?: Record<string, any>;
   onClearBlocks?: (nodeId: string) => void;
+  /** Clear a single blocking relationship. blockedNodeId is the node being unblocked. */
+  onClearSingleBlock?: (blockedNodeId: string) => void;
   velocityScore?: VelocityScore;
 }
 
@@ -68,6 +75,7 @@ export function Inspector({
   blocksNodes = [],
   nodes = {},
   onClearBlocks,
+  onClearSingleBlock,
   velocityScore,
 }: InspectorProps) {
   const [draftValues, setDraftValues] = useState<Record<string, string>>({});
@@ -180,72 +188,43 @@ export function Inspector({
           </div>
         </div>
 
-        {/* Properties */}
-        <div className="space-y-3">
-        {properties.map((prop) => {
-          const displayValue = prop.value;
-          const draftKey = makeDraftKey(prop.id, false);
-          const draftValue = draftValues[draftKey] ?? String(displayValue ?? '');
-          return (
-            <div key={prop.id}>
-              {prop.type === 'text' && (
-                <Input
-                  label={prop.name}
-                  value={draftValue}
-                  onChange={(e) => {
-                    const nextValue = e.target.value;
-                    setDraftValues((prev) => ({ ...prev, [draftKey]: nextValue }));
-                    scheduleCommit(draftKey, prop.id, nextValue, false);
-                  }}
-                  onBlur={(e) => {
-                    commitDraftValue(prop.id, e.target.value, false);
-                  }}
-                  required={prop.required}
-                />
-              )}
-              {prop.type === 'number' && (
-                <Input
-                  label={prop.name}
-                  type="number"
-                  value={displayValue}
-                  onChange={(e) =>
-                    handlePropertyChange(prop.id, e.target.valueAsNumber)
-                  }
-                  required={prop.required}
-                />
-              )}
-              {prop.type === 'currency' && (
-                <CurrencyInput
-                  label={prop.name}
-                  value={displayValue}
-                  onChange={(e) => handlePropertyChange(prop.id, e.target.value)}
-                  required={prop.required}
-                />
-              )}
-              {prop.type === 'date' && (
-                <Input
-                  label={prop.name}
-                  type="date"
-                  value={displayValue}
-                  onChange={(e) => handlePropertyChange(prop.id, e.target.value)}
-                  required={prop.required}
-                />
-              )}
-              {prop.type === 'select' && prop.options && (
-                <Select
-                  label={prop.name}
-                  value={String(displayValue)}
-                  onChange={(e) => handlePropertyChange(prop.id, e.target.value)}
-                  options={prop.options}
-                  required={prop.required}
-                />
-              )}
-              {prop.type === 'textarea' && (
-                <div>
-                  <label className="block text-sm text-fg-secondary mb-1">
-                    {prop.name}
-                  </label>
-                  <textarea
+        {/* Properties — grouped by section */}
+        {(() => {
+          // Ordered group names — properties are rendered within each group
+          // that has at least one property.
+          const GROUP_ORDER = [
+            'Identity',
+            'Details',
+            'Status',
+            'Notes',
+            'Dates',
+            'Financial',
+          ];
+
+          // Bucket properties by group
+          const groups: Record<string, NodeProperty[]> = {};
+          for (const prop of properties) {
+            const g = prop.group ?? 'Details';
+            (groups[g] ??= []).push(prop);
+          }
+
+          // Build an ordered list of groups that have at least one property
+          const orderedGroups = GROUP_ORDER.filter(g => groups[g]?.length);
+          // Append any custom ui_group values not in the canonical list
+          for (const g of Object.keys(groups)) {
+            if (!orderedGroups.includes(g)) orderedGroups.push(g);
+          }
+
+          // Helper to render a single property field
+          const renderPropertyField = (prop: NodeProperty) => {
+            const displayValue = prop.value;
+            const draftKey = makeDraftKey(prop.id, false);
+            const draftValue = draftValues[draftKey] ?? String(displayValue ?? '');
+            return (
+              <div key={prop.id}>
+                {prop.type === 'text' && (
+                  <Input
+                    label={prop.name}
                     value={draftValue}
                     onChange={(e) => {
                       const nextValue = e.target.value;
@@ -255,78 +234,162 @@ export function Inspector({
                     onBlur={(e) => {
                       commitDraftValue(prop.id, e.target.value, false);
                     }}
-                    className="w-full bg-bg-dark text-fg-primary border border-border rounded-sm px-2 py-1 text-sm font-body focus:border-accent-primary focus:outline-none resize-none"
-                    rows={3}
                     required={prop.required}
                   />
-                </div>
-              )}
-              {prop.type === 'checkbox' && (
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id={`checkbox-${prop.id}`}
-                    checked={displayValue === 'true' || displayValue === 1 || displayValue === '1'}
+                )}
+                {prop.type === 'number' && (
+                  <Input
+                    label={prop.name}
+                    type="number"
+                    value={displayValue}
                     onChange={(e) =>
-                      handlePropertyChange(prop.id, e.target.checked ? 'true' : 'false')
+                      handlePropertyChange(prop.id, e.target.valueAsNumber)
                     }
-                    className="w-4 h-4 cursor-pointer accent-accent-primary"
+                    required={prop.required}
                   />
-                  <label
-                    htmlFor={`checkbox-${prop.id}`}
-                    className="text-sm text-fg-secondary cursor-pointer"
-                  >
-                    {prop.name}
-                  </label>
-                </div>
-              )}
-              {prop.type === 'editor' && (
-                <div>
-                  <label className="block text-sm text-fg-secondary mb-1">
-                    {prop.name}
-                  </label>
-                  <div className="flex gap-2 items-center">
-                    <div className="flex-1 bg-bg-dark text-fg-primary border border-border rounded-sm px-2 py-1 text-sm truncate">
-                      {String(displayValue).substring(0, 50)}{String(displayValue).length > 50 ? '...' : ''}
-                    </div>
-                    <button
-                      onClick={() => openEditor(prop.id, prop.name, displayValue, false, prop.markupProfile)}
-                      className="px-3 py-1 bg-accent-primary text-fg-primary rounded hover:bg-accent-hover transition-colors text-sm font-semibold"
-                    >
-                      Edit
-                    </button>
+                )}
+                {prop.type === 'currency' && (
+                  <CurrencyInput
+                    label={prop.name}
+                    value={displayValue}
+                    onChange={(e) => handlePropertyChange(prop.id, e.target.value)}
+                    required={prop.required}
+                  />
+                )}
+                {prop.type === 'date' && (
+                  <Input
+                    label={prop.name}
+                    type="date"
+                    value={displayValue}
+                    onChange={(e) => handlePropertyChange(prop.id, e.target.value)}
+                    required={prop.required}
+                  />
+                )}
+                {prop.type === 'select' && prop.options && (
+                  <Select
+                    label={prop.name}
+                    value={String(displayValue)}
+                    onChange={(e) => handlePropertyChange(prop.id, e.target.value)}
+                    options={prop.options}
+                    required={prop.required}
+                  />
+                )}
+                {prop.type === 'textarea' && (
+                  <div>
+                    <label className="block text-sm text-fg-secondary mb-1">
+                      {prop.name}
+                    </label>
+                    <textarea
+                      value={draftValue}
+                      onChange={(e) => {
+                        const nextValue = e.target.value;
+                        setDraftValues((prev) => ({ ...prev, [draftKey]: nextValue }));
+                        scheduleCommit(draftKey, prop.id, nextValue, false);
+                      }}
+                      onBlur={(e) => {
+                        commitDraftValue(prop.id, e.target.value, false);
+                      }}
+                      className="w-full bg-bg-dark text-fg-primary border border-border rounded-sm px-2 py-1 text-sm font-body focus:border-accent-primary focus:outline-none resize-none"
+                      rows={3}
+                      required={prop.required}
+                    />
                   </div>
+                )}
+                {prop.type === 'checkbox' && (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id={`checkbox-${prop.id}`}
+                      checked={displayValue === 'true' || displayValue === 1 || displayValue === '1'}
+                      onChange={(e) =>
+                        handlePropertyChange(prop.id, e.target.checked ? 'true' : 'false')
+                      }
+                      className="w-4 h-4 cursor-pointer accent-accent-primary"
+                    />
+                    <label
+                      htmlFor={`checkbox-${prop.id}`}
+                      className="text-sm text-fg-secondary cursor-pointer"
+                    >
+                      {prop.name}
+                    </label>
+                  </div>
+                )}
+                {prop.type === 'editor' && (
+                  <div>
+                    <label className="block text-sm text-fg-secondary mb-1">
+                      {prop.name}
+                    </label>
+                    <div className="flex gap-2 items-center">
+                      <div className="flex-1 bg-bg-dark text-fg-primary border border-border rounded-sm px-2 py-1 text-sm truncate">
+                        {String(displayValue).substring(0, 50)}{String(displayValue).length > 50 ? '...' : ''}
+                      </div>
+                      <button
+                        onClick={() => openEditor(prop.id, prop.name, displayValue, false, prop.markupProfile)}
+                        className="px-3 py-1 bg-accent-primary text-fg-primary rounded hover:bg-accent-hover transition-colors text-sm font-semibold"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          };
+
+          return orderedGroups.map((groupName, idx) => (
+            <div key={groupName}>
+              {/* Section separator — skip the first group to avoid a leading line */}
+              {idx > 0 && (
+                <div className="flex items-center gap-2 mt-4 mb-2">
+                  <div className="flex-1 border-t border-border" />
+                  <span className="text-xs font-semibold text-fg-secondary uppercase tracking-wider whitespace-nowrap">
+                    {groupName}
+                  </span>
+                  <div className="flex-1 border-t border-border" />
                 </div>
               )}
+              <div className="space-y-3">
+                {groups[groupName].map(renderPropertyField)}
+              </div>
             </div>
-          );
-        })}
-        </div>
+          ));
+        })()}
 
         {/* Blocking */}
         {(blockedByNodes.length > 0 || blocksNodes.length > 0) && (
-          <div className="mt-6 pt-6 border-t border-border">
-            <div className="text-sm font-semibold text-fg-primary mb-2">
-              Blocking
+          <div className="mt-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="flex-1 border-t border-border" />
+              <span className="text-xs font-semibold text-fg-secondary uppercase tracking-wider whitespace-nowrap">
+                Blocking
+              </span>
+              <div className="flex-1 border-t border-border" />
             </div>
             {blockedByNodes.length > 0 && (
               <div className="mb-3">
-                <div className="flex items-center justify-between mb-1">
-                  <div className="text-xs text-fg-secondary">
-                    Blocked By ({blockedByNodes.length})
-                  </div>
+                <div className="text-xs text-fg-secondary mb-1">
+                  Blocked By ({blockedByNodes.length})
                 </div>
-                <ul className="space-y-1 text-sm text-fg-primary">
+                <div className="space-y-1">
                   {blockedByNodes.map((blockerId) => {
                     const blocker = nodes[blockerId];
                     const blockerName = blocker?.properties?.name || blockerId;
                     return (
-                      <li key={blockerId} className="truncate" title={blockerName}>
-                        {blockerName}
-                      </li>
+                      <div key={blockerId} className="flex items-center justify-between gap-1 text-sm text-fg-primary bg-bg-dark/50 rounded px-2 py-1">
+                        <span className="truncate" title={blockerName}>{blockerName}</span>
+                        {onClearSingleBlock && nodeId && (
+                          <button
+                            onClick={() => onClearSingleBlock(nodeId)}
+                            className="flex-shrink-0 text-xs text-orange-400 hover:text-orange-300 hover:bg-orange-500/20 rounded px-1 transition-colors"
+                            title={`Remove blocker: ${blockerName}`}
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
                     );
                   })}
-                </ul>
+                </div>
               </div>
             )}
             {blocksNodes.length > 0 && (
@@ -335,26 +398,35 @@ export function Inspector({
                   <div className="text-xs text-fg-secondary">
                     Blocks ({blocksNodes.length})
                   </div>
+                  {onClearBlocks && nodeId && blocksNodes.length > 1 && (
+                    <button
+                      onClick={() => onClearBlocks(nodeId)}
+                      className="text-xs px-2 py-0.5 bg-orange-500/20 text-orange-400 rounded border border-orange-500/50 hover:bg-orange-500/30 transition-colors"
+                    >
+                      Clear All
+                    </button>
+                  )}
                 </div>
-                <ul className="space-y-1 text-sm text-fg-primary mb-2">
+                <div className="space-y-1">
                   {blocksNodes.map((blockedId) => {
                     const blocked = nodes[blockedId];
                     const blockedName = blocked?.properties?.name || blockedId;
                     return (
-                      <li key={blockedId} className="truncate" title={blockedName}>
-                        {blockedName}
-                      </li>
+                      <div key={blockedId} className="flex items-center justify-between gap-1 text-sm text-fg-primary bg-bg-dark/50 rounded px-2 py-1">
+                        <span className="truncate" title={blockedName}>{blockedName}</span>
+                        {onClearSingleBlock && (
+                          <button
+                            onClick={() => onClearSingleBlock(blockedId)}
+                            className="flex-shrink-0 text-xs text-orange-400 hover:text-orange-300 hover:bg-orange-500/20 rounded px-1 transition-colors"
+                            title={`Unblock: ${blockedName}`}
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
                     );
                   })}
-                </ul>
-                {onClearBlocks && nodeId && (
-                  <button
-                    onClick={() => onClearBlocks(nodeId)}
-                    className="text-xs px-2 py-1 bg-orange-500/20 text-orange-400 rounded border border-orange-500/50 hover:bg-orange-500/30 transition-colors"
-                  >
-                    Clear
-                  </button>
-                )}
+                </div>
               </div>
             )}
           </div>
@@ -362,9 +434,13 @@ export function Inspector({
 
         {/* Velocity Section */}
         {velocityScore && (
-          <div className="mt-6 pt-6 border-t border-border">
-            <div className="text-sm font-semibold text-fg-primary mb-2">
-              Velocity
+          <div className="mt-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="flex-1 border-t border-border" />
+              <span className="text-xs font-semibold text-fg-secondary uppercase tracking-wider whitespace-nowrap">
+                Velocity
+              </span>
+              <div className="flex-1 border-t border-border" />
             </div>
             <div className="space-y-2">
               <div className="flex justify-between items-center">

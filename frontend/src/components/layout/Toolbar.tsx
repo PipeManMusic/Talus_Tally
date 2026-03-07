@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, Zap } from 'lucide-react';
+import { TrendingUp, Zap, DollarSign, Calendar } from 'lucide-react';
 
 export interface ToolbarButton {
   id: string;
@@ -10,7 +10,7 @@ export interface ToolbarButton {
 }
 
 export type ViewType = 'graph' | 'tools';
-export type ToolsTab = 'velocity' | 'blocking';
+export type ToolsTab = 'velocity' | 'blocking' | 'budget' | 'gantt';
 
 interface ToolbarProps {
   buttons?: ToolbarButton[];
@@ -63,6 +63,30 @@ export function Toolbar({
           >
             <Zap size={16} />
             Blocking
+          </button>
+          <button
+            onClick={() => onToolsTabChange('budget')}
+            className={`px-3 py-1.5 rounded text-sm font-semibold transition-colors flex items-center gap-2 ${
+              activeToolsTab === 'budget'
+                ? 'bg-accent-primary text-fg-primary'
+                : 'text-fg-secondary hover:text-fg-primary'
+            }`}
+            title="Switch to budget view"
+          >
+            <DollarSign size={16} />
+            Budget
+          </button>
+          <button
+            onClick={() => onToolsTabChange('gantt')}
+            className={`px-3 py-1.5 rounded text-sm font-semibold transition-colors flex items-center gap-2 ${
+              activeToolsTab === 'gantt'
+                ? 'bg-accent-primary text-fg-primary'
+                : 'text-fg-secondary hover:text-fg-primary'
+            }`}
+            title="Switch to Gantt chart"
+          >
+            <Calendar size={16} />
+            Gantt
           </button>
         </div>
       )}

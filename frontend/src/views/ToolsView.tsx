@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { VelocityView } from '../components/velocity/VelocityView';
 import { NodeBlockingEditor } from '../components/velocity/NodeBlockingEditor';
+import { BudgetView } from '../components/tools/BudgetView';
+import { GanttView } from '../components/tools/GanttView';
 import { type Node, type TemplateSchema } from '../api/client';
 
-export type ToolsTab = 'velocity' | 'blocking';
+export type ToolsTab = 'velocity' | 'blocking' | 'budget' | 'gantt';
 
 interface ToolsViewProps {
   sessionId?: string | null;
@@ -41,13 +43,14 @@ export function ToolsView({
     <div className="flex flex-col h-full bg-bg-dark text-fg-primary">
       {/* No header - tabs are in toolbar, just show content */}
       <div className="flex-1 overflow-hidden">
-        {activeTab === 'velocity' ? (
+        {activeTab === 'velocity' && (
           <VelocityView
             sessionId={sessionId || null}
             nodes={nodes}
             onNodeSelect={setSelectedNodeId}
           />
-        ) : (
+        )}
+        {activeTab === 'blocking' && (
           <NodeBlockingEditor
             sessionId={sessionId || null}
             nodes={nodes}
@@ -58,6 +61,20 @@ export function ToolsView({
             refreshSignal={blockingRefreshSignal}
             blockingViewConfig={blockingViewConfig}
             templateSchema={templateSchema}
+          />
+        )}
+        {activeTab === 'budget' && (
+          <BudgetView
+            sessionId={sessionId || null}
+            nodes={nodes}
+            onNodeSelect={setSelectedNodeId}
+          />
+        )}
+        {activeTab === 'gantt' && (
+          <GanttView
+            sessionId={sessionId || null}
+            nodes={nodes}
+            onNodeSelect={setSelectedNodeId}
           />
         )}
       </div>
