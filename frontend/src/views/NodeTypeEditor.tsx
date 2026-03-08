@@ -559,8 +559,8 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
 
       {/* Node Types List */}
       <div className="space-y-2">
-        {displayNodeTypes.map((nodeType, nodeTypeIndex) => (
-          <div key={String(nodeTypeIndex)} className="bg-bg-light border border-border rounded overflow-hidden">
+        {displayNodeTypes.map((nodeType) => (
+          <div key={nodeType.id} className="bg-bg-light border border-border rounded overflow-hidden">
             {/* Node Type Header */}
             <div className="flex items-center justify-between p-4 hover:bg-bg-dark/50 transition-colors cursor-pointer"
               onClick={() => setExpandedNodeType(expandedNodeType === nodeType.id ? null : nodeType.id)}>

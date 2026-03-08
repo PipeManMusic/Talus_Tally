@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronLeft, Plus, Save, Trash2, AlertCircle, CheckCircle } from 'lucide-react';
 import { apiClient } from '../api/client';
 import { TitleBar } from '../components/layout/TitleBar';
@@ -251,16 +251,25 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
     });
   }, []);
 
+  // Keep a ref to currentTemplate so handleNodeTypesChange can access the
+  // latest value without depending on it (which would recreate the callback
+  // on every save and break memo on NodeTypeEditor, resetting child state).
+  const currentTemplateRef = useRef(currentTemplate);
+  useEffect(() => {
+    currentTemplateRef.current = currentTemplate;
+  }, [currentTemplate]);
+
   const handleNodeTypesChange = useCallback(async (nodeTypes: NodeType[]) => {
     // Update local state (optimistic)
     updateCurrentTemplate({ node_types: nodeTypes });
 
     // Persist change to backend
-    if (currentTemplate) {
+    const template = currentTemplateRef.current;
+    if (template) {
       setLoading(true);
       setError(null);
       try {
-        const updated = { ...currentTemplate, node_types: nodeTypes };
+        const updated = { ...template, node_types: nodeTypes };
         const result = await apiClient.updateTemplate(updated.id, updated);
         setCurrentTemplate(result?.template ?? updated);
         setOriginalTemplate(JSON.parse(JSON.stringify(result?.template ?? updated)));
@@ -272,7 +281,7 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
         setLoading(false);
       }
     }
-  }, [currentTemplate, updateCurrentTemplate]);
+  }, [updateCurrentTemplate]);
 
   // List View
   if (view === 'list') {
