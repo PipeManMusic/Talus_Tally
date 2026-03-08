@@ -3456,6 +3456,46 @@ def register_routes(app):
     app.register_blueprint(api_bp)
 
 
+# ============================================================================
+# Settings
+# ============================================================================
+
+@api_bp.route('/settings', methods=['GET'])
+def get_settings():
+    """Return all user-configurable settings."""
+    from backend.infra.settings import load_settings
+    return jsonify(load_settings()), 200
+
+
+@api_bp.route('/settings', methods=['PUT'])
+def update_settings():
+    """Merge provided keys into the settings store and return the result."""
+    from backend.infra.settings import load_settings, save_settings
+    body = request.get_json(silent=True) or {}
+    current = load_settings()
+    current.update(body)
+    save_settings(current)
+    return jsonify(current), 200
+
+
+@api_bp.route('/settings/<key>', methods=['GET'])
+def get_setting_by_key(key):
+    """Return a single setting value."""
+    from backend.infra.settings import get_setting
+    value = get_setting(key)
+    return jsonify({'key': key, 'value': value}), 200
+
+
+@api_bp.route('/settings/<key>', methods=['PUT'])
+def set_setting_by_key(key):
+    """Set a single setting value."""
+    from backend.infra.settings import set_setting
+    body = request.get_json(silent=True) or {}
+    value = body.get('value')
+    set_setting(key, value)
+    return jsonify({'key': key, 'value': value}), 200
+
+
 @api_bp.route('/session/<session_id>/migrations/status', methods=['GET'])
 def get_migration_status(session_id):
     """Get migration status for current session.

@@ -47,6 +47,26 @@ cd "$PROJECT_ROOT"
 # it downgrades to nobody and cannot write to the bind-mounted workspace.
 export npm_config_unsafe_perm=true
 
+# ── Version bump ──────────────────────────────────────────────────────
+# If TALUS_VERSION is set, update tauri.conf.json before building.
+# Usage:  TALUS_VERSION=0.1.4 ./build-deb.sh
+if [ -n "${TALUS_VERSION:-}" ]; then
+    TAURI_CONF="frontend/src-tauri/tauri.conf.json"
+    echo "📌 Setting version to ${TALUS_VERSION} in ${TAURI_CONF}"
+    # Use Python (guaranteed present via backend venv) for safe JSON editing
+    python3 -c "
+import json, sys
+conf_path = '${TAURI_CONF}'
+with open(conf_path) as f:
+    cfg = json.load(f)
+cfg['version'] = '${TALUS_VERSION}'
+with open(conf_path, 'w') as f:
+    json.dump(cfg, f, indent=2)
+    f.write('\n')
+print(f'  version set to {cfg[\"version\"]}')
+"
+fi
+
 echo "📦 Step 1/3: Installing frontend dependencies"
 pushd frontend >/dev/null
 npm ci

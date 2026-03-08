@@ -16,10 +16,19 @@ from backend.infra.user_data_dir import get_user_templates_dir
 
 def get_templates_directory() -> str:
     """
-    Returns the user templates directory for user-created templates.
-    Falls back to system or repo templates for read-only access.
+    Returns the templates directory.
+
+    If the user has configured a custom templates directory (via Settings),
+    that path is returned – enabling shared/collaborative template folders.
+    Otherwise falls back to the XDG user-data default.
     """
-    # Always use user data dir for user-created templates
+    from backend.infra.settings import get_setting
+    custom_dir = get_setting("custom_templates_dir")
+    if custom_dir:
+        from pathlib import Path
+        p = Path(custom_dir)
+        if p.is_dir():
+            return str(p)
     return str(get_user_templates_dir())
 
 
