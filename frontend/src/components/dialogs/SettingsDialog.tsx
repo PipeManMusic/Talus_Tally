@@ -1,6 +1,6 @@
-import { X } from 'lucide-react';
+import { X, FolderOpen } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { API_BASE_URL } from '../../api/client';
+import { API_BASE_URL, apiClient } from '../../api/client';
 
 type IndicatorCatalog = {
   indicator_sets: Record<
@@ -83,6 +83,8 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
   const [indicatorCatalog, setIndicatorCatalog] = useState<IndicatorCatalog | null>(null);
   const [indicatorSvgs, setIndicatorSvgs] = useState<Record<string, string>>({});
   const [catalogError, setCatalogError] = useState<string | null>(null);
+  const [customTemplatesDir, setCustomTemplatesDir] = useState<string>('');
+  const [templatesDirSaved, setTemplatesDirSaved] = useState(false);
 
   // Load settings from localStorage on mount
   useEffect(() => {
@@ -95,6 +97,14 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
       }
     }
   }, []);
+
+  // Load backend settings when dialog opens
+  useEffect(() => {
+    if (!isOpen) return;
+    apiClient.getSettings().then((settings) => {
+      setCustomTemplatesDir(settings.custom_templates_dir || '');
+    }).catch(() => {});
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -266,9 +276,70 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
               </div>
             </div>
           </section>
-        </div>
 
-        {/* Footer */}
+          {/* Templates Section */}
+          <section>
+            <h3 className="text-sm font-semibold text-[var(--color-fg-primary)] mb-3">Templates</h3>
+
+            <div className="space-y-2">
+              <label className="text-sm text-[var(--color-fg-secondary)]">
+                Custom Template Folder
+              </label>
+              <p className="text-xs text-[var(--color-fg-secondary)] leading-relaxed">
+                Set a shared folder to collaborate on templates with others.
+                Leave empty to use the default user data directory.
+              </p>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={customTemplatesDir}
+                  onChange={(e) => {
+                    setCustomTemplatesDir(e.target.value);
+                    setTemplatesDirSaved(false);
+                  }}
+                  placeholder="e.g. /shared/project/templates"
+                  className="flex-1 bg-[var(--color-bg-dark)] text-[var(--color-fg-primary)] border border-[var(--color-border-default)] rounded-sm px-2 py-1 text-sm font-body focus:border-[var(--color-accent-primary)] focus:outline-none"
+                />
+                <button
+                  onClick={async () => {
+                    try {
+                      const { open } = await import('@tauri-apps/plugin-dialog');
+                      const selected = await open({ directory: true, multiple: false, title: 'Select Templates Folder' });
+                      if (selected && typeof selected === 'string') {
+                        setCustomTemplatesDir(selected);
+                        setTemplatesDirSaved(false);
+                      }
+                    } catch {
+                      // Not in Tauri or dialog cancelled — ignore
+                    }
+                  }}
+                  className="p-1.5 hover:bg-[var(--color-bg-selection)] rounded transition-colors border border-[var(--color-border-default)]"
+                  title="Browse for folder"
+                >
+                  <FolderOpen size={16} className="text-[var(--color-fg-secondary)]" />
+                </button>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={async () => {
+                    try {
+                      await apiClient.updateSettings({ custom_templates_dir: customTemplatesDir || null });
+                      setTemplatesDirSaved(true);
+                    } catch (err) {
+                      console.error('Failed to save template folder setting:', err);
+                    }
+                  }}
+                  className="px-3 py-1 text-xs bg-[var(--color-accent-primary)] hover:bg-[var(--color-accent-hover)] text-white rounded transition-colors"
+                >
+                  Apply
+                </button>
+                {templatesDirSaved && (
+                  <span className="text-xs text-green-400">Saved. Restart or reload to take effect.</span>
+                )}
+              </div>
+            </div>
+          </section>
+        </div>
         <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[var(--color-border-default)]">
           <button
             onClick={handleReset}

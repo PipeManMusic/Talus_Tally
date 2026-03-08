@@ -514,6 +514,27 @@ export class APIClient {
     }
   }
 
+  // Settings Management
+  async getSettings(): Promise<Record<string, any>> {
+    const response = await fetch(`${this.baseUrl}/api/v1/settings`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch settings: ${response.status} ${response.statusText}`);
+    }
+    return response.json();
+  }
+
+  async updateSettings(data: Record<string, any>): Promise<Record<string, any>> {
+    const response = await fetch(`${this.baseUrl}/api/v1/settings`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to update settings: ${response.status} ${response.statusText}`);
+    }
+    return response.json();
+  }
+
   // Config Management
   async getIconsConfig(): Promise<IconsConfig> {
     const response = await fetch(`${this.baseUrl}/api/v1/config/icons`);

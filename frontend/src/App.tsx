@@ -33,6 +33,7 @@ import { AddChildDialog } from './components/dialogs/AddChildDialog';
 import { AssetSelectDialog } from './components/dialogs/AssetSelectDialog';
 import { AssetCategoryDialog } from './components/dialogs/AssetCategoryDialog';
 import { SettingsDialog } from './components/dialogs/SettingsDialog';
+import { AboutDialog } from './components/dialogs/AboutDialog';
 import { SaveConfirmDialog, type SaveAction } from './components/dialogs/SaveConfirmDialog';
 import { Modal } from './components/ui/Modal';
 import { ImportCsvDialog } from './components/dialogs/ImportCsvDialog';
@@ -40,6 +41,7 @@ import { ExportDialog } from './components/dialogs/ExportDialog';
 import { TemplateEditor } from './views/TemplateEditor';
 import { IndicatorEditor } from './views/IndicatorEditor';
 import { MarkupEditor } from './views/MarkupEditor';
+import { openExternalUrl } from './utils/openExternal';
 import { IconEditor } from './views/IconEditor';
 import { ToolsView } from './views/ToolsView';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -73,6 +75,7 @@ function App() {
   const [showAssetSelectDialog, setShowAssetSelectDialog] = useState(false);
   const [showAssetCategoryDialog, setShowAssetCategoryDialog] = useState(false);
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
+  const [showAboutDialog, setShowAboutDialog] = useState(false);
   const [showTemplateEditor, setShowTemplateEditor] = useState(false);
   const [showIndicatorEditor, setShowIndicatorEditor] = useState(false);
   const [showMarkupEditor, setShowMarkupEditor] = useState(false);
@@ -1982,8 +1985,8 @@ function App() {
       { label: 'Settings', onClick: () => setShowSettingsDialog(true) },
     ],
     Help: [
-      { label: 'Documentation', onClick: () => console.log('Docs - TODO') },
-      { label: 'About', onClick: () => console.log('About - TODO') },
+      { label: 'Documentation', onClick: () => openExternalUrl('https://github.com/PipeManMusic/Talus_Tally#readme') },
+      { label: 'About', onClick: () => setShowAboutDialog(true) },
     ],
   };
 
@@ -2385,6 +2388,14 @@ function App() {
         <SettingsDialog
           isOpen={showSettingsDialog}
           onClose={() => setShowSettingsDialog(false)}
+        />
+      )}
+
+      {/* About Dialog */}
+      {showAboutDialog && (
+        <AboutDialog
+          isOpen={showAboutDialog}
+          onClose={() => setShowAboutDialog(false)}
         />
       )}
 
