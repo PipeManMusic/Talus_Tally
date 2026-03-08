@@ -977,7 +977,7 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
                     <div className="space-y-3">
                       {nodeType.properties.map((prop, propIndex) => (
                         <PropertyEditor
-                          key={`${nodeTypeIndex}-${propIndex}`}
+                          key={`${nodeType.id}-${prop.id}`}
                           property={prop}
                           onUpdate={(updates) =>
                             updateProperty(nodeType.id, prop.id, updates)
@@ -1055,7 +1055,9 @@ const PropertyEditor = memo(function PropertyEditor({
             <div className="flex items-center gap-1">
               <h5 className="font-semibold text-fg-primary text-sm">{property.label || property.id}</h5>
               {property.system_locked && (
-                <Lock size={12} className="text-fg-muted flex-shrink-0" title="System-locked property" />
+                <span title="System-locked property">
+                  <Lock size={12} className="text-fg-muted flex-shrink-0" />
+                </span>
               )}
             </div>
             <p className="text-xs text-fg-secondary font-mono">
