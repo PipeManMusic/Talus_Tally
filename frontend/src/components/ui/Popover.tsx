@@ -4,6 +4,8 @@ interface PopoverProps {
   content: React.ReactNode;
   trigger: React.ReactNode;
   position?: 'top' | 'bottom' | 'left' | 'right';
+  /** Close the popover imperatively (e.g. after a selection). */
+  closeRef?: React.MutableRefObject<(() => void) | null>;
 }
 
 const positions = {
@@ -13,9 +15,19 @@ const positions = {
   right: 'left-full ml-2',
 };
 
-export function Popover({ content, trigger, position = 'bottom' }: PopoverProps) {
+export function Popover({ content, trigger, position = 'bottom', closeRef }: PopoverProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+
+  // Expose an imperative close handle so parents can close the popover
+  useEffect(() => {
+    if (closeRef) {
+      closeRef.current = () => setOpen(false);
+    }
+    return () => {
+      if (closeRef) closeRef.current = null;
+    };
+  }, [closeRef]);
 
   // Close on outside click
   useEffect(() => {

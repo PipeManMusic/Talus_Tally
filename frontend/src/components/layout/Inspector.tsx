@@ -183,7 +183,7 @@ export function Inspector({
         </div>
         <div className="mb-3">
           <div className="text-xs text-fg-secondary mb-1">Node ID</div>
-          <div className="text-sm text-fg-primary font-mono bg-bg-dark rounded px-2 py-1 truncate" title={nodeId}>
+          <div className="text-sm text-fg-muted font-mono bg-bg-dark/60 rounded px-2 py-1 truncate opacity-60" title={nodeId}>
             {nodeId}
           </div>
         </div>
@@ -535,7 +535,7 @@ export function Inspector({
             </div>
             <div className="mb-3">
               <div className="text-xs text-fg-secondary mb-1">Asset ID</div>
-              <div className="text-sm text-fg-primary font-mono bg-bg-dark rounded px-2 py-1 truncate" title={linkedAsset.nodeId}>
+              <div className="text-sm text-fg-muted font-mono bg-bg-dark/60 rounded px-2 py-1 truncate opacity-60" title={linkedAsset.nodeId}>
                 {linkedAsset.nodeId}
               </div>
             </div>

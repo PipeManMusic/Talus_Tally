@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Popover } from './Popover';
 
 const DEFAULT_SWATCHES = [
@@ -63,6 +63,7 @@ export function ColorPicker({
   }, [value]);
 
   const palette = swatches && swatches.length > 0 ? swatches : DEFAULT_SWATCHES;
+  const popoverCloseRef = useRef<(() => void) | null>(null);
 
   const commitDraft = (nextValue: string) => {
     const normalized = normalizeHex(nextValue);
@@ -87,6 +88,7 @@ export function ColorPicker({
   return (
     <div className="flex items-center gap-2">
       <Popover
+        closeRef={popoverCloseRef}
         content={
           <div className="p-3">
             <div className="grid grid-cols-6 gap-2">
@@ -94,7 +96,10 @@ export function ColorPicker({
                 <button
                   key={color}
                   type="button"
-                  onClick={() => onChange(color)}
+                  onClick={() => {
+                    onChange(color);
+                    popoverCloseRef.current?.();
+                  }}
                   className="h-6 w-6 rounded border border-border transition hover:scale-105"
                   style={swatchStyle(color)}
                   title={color}
