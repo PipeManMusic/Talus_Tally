@@ -32,6 +32,12 @@ class CSVImportService:
         }
         valid_properties = {prop["id"] for prop in schema}
 
+        # Name is a system field used by node creation and CSV import payloads.
+        # Some custom templates may omit it from node_type.properties, but import
+        # still needs to accept and require the name binding consistently.
+        required_properties.add("name")
+        valid_properties.add("name")
+
         missing = plan.missing_required_properties(required_properties)
         if missing:
             raise CSVImportPlanError(
