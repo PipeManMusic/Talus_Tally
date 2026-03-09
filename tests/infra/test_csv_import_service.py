@@ -77,3 +77,28 @@ def test_prepare_import_collects_row_errors_for_missing_required_values(schema_r
     # First row missing optional description, so should still import
     assert len(batch.prepared_nodes) == 1
     assert batch.prepared_nodes[0].name == "Widget"
+
+
+def test_prepare_import_accepts_name_binding_when_schema_omits_name():
+    def schema_resolver(_node_type_id: str):
+        return [
+            {"id": "description", "required": False},
+            {"id": "cost", "required": True},
+        ]
+
+    service = CSVImportService(schema_resolver)
+    plan = CSVImportPlan(
+        parent_id=uuid.uuid4(),
+        blueprint_type_id="equpment",
+        column_bindings=[
+            CSVColumnBinding(header="Name", property_id="name"),
+            CSVColumnBinding(header="Cost", property_id="cost"),
+        ],
+    )
+
+    batch = service.prepare_import(plan, io.StringIO("Name,Cost\nMeter,30\n"))
+
+    assert not batch.has_errors
+    assert len(batch.prepared_nodes) == 1
+    assert batch.prepared_nodes[0].name == "Meter"
+    assert batch.prepared_nodes[0].properties == {"cost": "30"}
