@@ -88,8 +88,12 @@ class IndicatorCatalogManager:
         if not self.catalog_path.exists():
             raise FileNotFoundError(f"Catalog file not found: {self.catalog_path}")
 
-        with open(self.catalog_path, 'r') as f:
-            data = yaml.safe_load(f) or {}
+        try:
+            with open(self.catalog_path, 'r', encoding='utf-8-sig') as f:
+                data = yaml.safe_load(f) or {}
+        except UnicodeDecodeError:
+            with open(self.catalog_path, 'r', encoding='utf-8') as f:
+                data = yaml.safe_load(f) or {}
 
         # Validate against indicator schema
         errors = SchemaValidator.validate_indicator_catalog(data)

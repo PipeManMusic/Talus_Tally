@@ -82,8 +82,12 @@ class TemplatePersistence:
         
         for file in templates_path.glob('*.yaml'):
             try:
-                with open(file, 'r') as f:
-                    data = yaml.safe_load(f)
+                try:
+                    with open(file, 'r', encoding='utf-8-sig') as f:
+                        data = yaml.safe_load(f)
+                except UnicodeDecodeError:
+                    with open(file, 'r', encoding='utf-8') as f:
+                        data = yaml.safe_load(f)
                 if data:
                     data = self._ensure_template_uuid(data, file)
                     templates.append({
@@ -117,8 +121,12 @@ class TemplatePersistence:
         if not template_path.exists():
             raise FileNotFoundError(f'Template not found: {template_id}')
         
-        with open(template_path, 'r') as f:
-            data = yaml.safe_load(f)
+        try:
+            with open(template_path, 'r', encoding='utf-8-sig') as f:
+                data = yaml.safe_load(f)
+        except UnicodeDecodeError:
+            with open(template_path, 'r', encoding='utf-8') as f:
+                data = yaml.safe_load(f)
 
         return self._ensure_template_uuid(data, template_path)
     
