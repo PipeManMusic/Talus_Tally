@@ -280,8 +280,13 @@ class SchemaLoader:
         print(f"[SchemaLoader.load] Is readable: {os.access(filepath, os.R_OK)}")
         
         try:
-            with open(filepath, 'r') as f:
-                data = yaml.safe_load(f)
+            # Use utf-8-sig to handle Windows BOM, fallback to utf-8
+            try:
+                with open(filepath, 'r', encoding='utf-8-sig') as f:
+                    data = yaml.safe_load(f)
+            except UnicodeDecodeError:
+                with open(filepath, 'r', encoding='utf-8') as f:
+                    data = yaml.safe_load(f)
         except Exception as e:
             print(f"[SchemaLoader.load] ERROR opening/reading file: {type(e).__name__}: {e}")
             raise
