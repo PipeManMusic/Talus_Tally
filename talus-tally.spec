@@ -5,6 +5,7 @@ from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
 async_driver_hiddenimports = []
 async_driver_hiddenimports += collect_submodules('engineio.async_drivers')
+watchdog_hiddenimports = collect_submodules('watchdog')
 spellchecker_datas = collect_data_files('spellchecker', include_py_files=False)
 
 
@@ -13,7 +14,7 @@ a = Analysis(
     pathex=['backend'],
     binaries=[],
     datas=spellchecker_datas,
-    hiddenimports=async_driver_hiddenimports,
+    hiddenimports=async_driver_hiddenimports + watchdog_hiddenimports,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
