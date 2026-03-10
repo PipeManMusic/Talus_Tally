@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { TreeView } from '../TreeView';
+import { useFilterStore } from '../../../store/filterStore';
 import type { TreeNode } from '../../../utils/treeUtils';
 
 // Polyfill DragEvent for jsdom which lacks it — without this,
@@ -106,6 +107,12 @@ const createDataTransfer = (payload: DragPayload) => {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  useFilterStore.setState({
+    rules: [],
+    filterMode: 'ghost',
+    isExpanded: false,
+    filterTabVisible: false,
+  });
   global.fetch = vi.fn(async () => ({
     ok: false,
     status: 404,
@@ -233,5 +240,71 @@ describe('TreeView drag and drop', () => {
     fireEvent.drop(targetRow!, { dataTransfer, clientY: 10 });
 
     expect(onContextMenu).not.toHaveBeenCalled();
+  });
+});
+
+describe('TreeView filtering', () => {
+  it('keeps ancestors visible in hide mode when a descendant matches', () => {
+    useFilterStore.setState({
+      rules: [
+        {
+          id: 'velocity-rule',
+          property: 'velocity_score',
+          operator: 'greater_than',
+          value: 0,
+        },
+      ],
+      filterMode: 'hide',
+    });
+
+    const nodes = createTree();
+
+    render(
+      <TreeView
+        nodes={nodes}
+        velocityScores={{
+          'episode-b': { totalVelocity: 3 },
+        }}
+        expandedMap={{ 'season-1': true }}
+        setExpandedMap={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText('Season 1')).toBeInTheDocument();
+    expect(screen.queryByText('Episode A')).not.toBeInTheDocument();
+    expect(screen.getByText('Episode B')).toBeInTheDocument();
+  });
+
+  it('ghosts only the non-matching row, not the whole matching subtree', () => {
+    useFilterStore.setState({
+      rules: [
+        {
+          id: 'velocity-rule',
+          property: 'velocity_score',
+          operator: 'greater_than',
+          value: 0,
+        },
+      ],
+      filterMode: 'ghost',
+    });
+
+    const nodes = createTree();
+
+    render(
+      <TreeView
+        nodes={nodes}
+        velocityScores={{
+          'episode-b': { totalVelocity: 3 },
+        }}
+        expandedMap={{ 'season-1': true }}
+        setExpandedMap={vi.fn()}
+      />
+    );
+
+    const seasonRow = screen.getByText('Season 1').closest('[data-testid="tree-item-row"]');
+    const matchingChildRow = screen.getByText('Episode B').closest('[data-testid="tree-item-row"]');
+
+    expect(seasonRow?.className).not.toContain('opacity-30');
+    expect(matchingChildRow?.className).not.toContain('opacity-30');
   });
 });

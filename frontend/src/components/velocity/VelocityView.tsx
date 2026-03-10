@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { AlertCircle, TrendingUp, Lock, Zap } from 'lucide-react';
 import { apiClient, type VelocityRanking, type VelocityScore } from '../../api/client';
 import { useWebSocket } from '../../hooks/useWebSocket';
+import { useFilterStore } from '../../store/filterStore';
+import { evaluateNodeVisibility } from '../../utils/filterEngine';
 
 interface VelocityViewProps {
   sessionId: string | null;
@@ -9,12 +11,13 @@ interface VelocityViewProps {
   onNodeSelect?: (nodeId: string | null) => void;
 }
 
-export function VelocityView({ sessionId, onNodeSelect }: VelocityViewProps) {
+export function VelocityView({ sessionId, nodes = {}, onNodeSelect }: VelocityViewProps) {
   const [ranking, setRanking] = useState<(VelocityScore & { nodeName: string; nodeType: string })[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const refreshPendingRef = useRef(false);
   const refreshingRef = useRef(false);
+  const { rules, filterMode } = useFilterStore();
 
   const fetchRanking = useCallback(async () => {
     if (!sessionId) return;
@@ -52,6 +55,41 @@ export function VelocityView({ sessionId, onNodeSelect }: VelocityViewProps) {
     onNodeDeleted: fetchRanking,
   });
 
+  const displayNodes = useCallback(() => {
+    const rankingById = new Map(ranking.map((node) => [node.nodeId, node]));
+    const sourceNodes = Object.values(nodes || {});
+
+    if (sourceNodes.length === 0) {
+      return ranking;
+    }
+
+    const merged = sourceNodes
+      .filter((node: any) => node?.type !== 'project' && node?.type !== 'project_root')
+      .map((node: any) => {
+        const rankedNode = rankingById.get(node.id);
+        return {
+          nodeId: node.id,
+          nodeName: node.properties?.name || node.name || node.id,
+          nodeType: node.type || 'unknown',
+          baseScore: rankedNode?.baseScore ?? 0,
+          inheritedScore: rankedNode?.inheritedScore ?? 0,
+          statusScore: rankedNode?.statusScore ?? 0,
+          numericalScore: rankedNode?.numericalScore ?? 0,
+          blockingPenalty: rankedNode?.blockingPenalty ?? 0,
+          blockingBonus: rankedNode?.blockingBonus ?? 0,
+          totalVelocity: rankedNode?.totalVelocity ?? 0,
+          isBlocked: rankedNode?.isBlocked ?? false,
+          blockedByNodes: rankedNode?.blockedByNodes ?? [],
+          blocksNodeIds: rankedNode?.blocksNodeIds ?? [],
+        };
+      });
+
+    merged.sort((left, right) => right.totalVelocity - left.totalVelocity || left.nodeName.localeCompare(right.nodeName));
+    return merged;
+  }, [nodes, ranking]);
+
+  const visibleRanking = displayNodes();
+
   if (!sessionId) {
     return (
       <div className="flex-1 flex items-center justify-center text-fg-secondary bg-bg-dark">
@@ -83,14 +121,31 @@ export function VelocityView({ sessionId, onNodeSelect }: VelocityViewProps) {
       )}
 
       {/* Velocity List */}
-      {!loading && ranking.length > 0 && (
+      {!loading && visibleRanking.length > 0 && (
         <div className="flex-1 overflow-auto">
           <div className="space-y-0">
-            {ranking.map((node, index) => (
+            {visibleRanking.map((node, index) => {
+              const storeNode = nodes[node.nodeId];
+              const filterNode = {
+                id: node.nodeId,
+                name: node.nodeName,
+                type: node.nodeType,
+                properties: storeNode?.properties || {},
+                // Include velocity data for filtering
+                velocity: {
+                  totalVelocity: node.totalVelocity,
+                  isBlocked: node.isBlocked,
+                  blocksNodeIds: node.blocksNodeIds,
+                  blockedByNodes: node.blockedByNodes,
+                },
+              };
+              const passes = evaluateNodeVisibility(filterNode, rules);
+              if (!passes && filterMode === 'hide') return null;
+              return (
               <div
                 key={node.nodeId}
                 onClick={() => onNodeSelect?.(node.nodeId)}
-                className="border-b border-border hover:bg-bg-light transition-colors cursor-pointer"
+                className={`border-b border-border hover:bg-bg-light transition-colors cursor-pointer${!passes ? ' opacity-30' : ''}`}
               >
                 <div className="px-6 py-4">
                   {/* Rank and Title */}
@@ -167,13 +222,14 @@ export function VelocityView({ sessionId, onNodeSelect }: VelocityViewProps) {
                   )}
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
 
       {/* Empty State */}
-      {!loading && ranking.length === 0 && (
+      {!loading && visibleRanking.length === 0 && (
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center text-fg-secondary">
             <TrendingUp size={48} className="mx-auto mb-3 opacity-30" />
@@ -183,7 +239,7 @@ export function VelocityView({ sessionId, onNodeSelect }: VelocityViewProps) {
       )}
 
       {/* Legend */}
-      {ranking.length > 0 && (
+      {visibleRanking.length > 0 && (
         <div className="border-t border-border px-6 py-3 bg-bg-light text-xs text-fg-secondary">
           <div className="grid grid-cols-2 gap-4">
             <div>

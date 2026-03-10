@@ -5,6 +5,8 @@ import { clearIconCache } from './components/graph/mapNodeIcon';
 import type { TreeNode } from './utils/treeUtils';
 import { TreeView } from './components/layout/TreeView';
 import { Inspector } from './components/layout/Inspector';
+import { FilterBar } from './components/layout/FilterBar';
+import { useFilterStore } from './store/filterStore';
 
 // Ensure Tauri context is initialized for plugin APIs
 // This import triggers Tauri's webview initialization in v2
@@ -36,6 +38,7 @@ import { SettingsDialog } from './components/dialogs/SettingsDialog';
 import { AboutDialog } from './components/dialogs/AboutDialog';
 import { SaveConfirmDialog, type SaveAction } from './components/dialogs/SaveConfirmDialog';
 import { Modal } from './components/ui/Modal';
+import { ToastContainer, type ToastProps } from './components/ui/Toast';
 import { ImportCsvDialog } from './components/dialogs/ImportCsvDialog';
 import { ExportDialog } from './components/dialogs/ExportDialog';
 import { TemplateEditor } from './views/TemplateEditor';
@@ -46,6 +49,7 @@ import { IconEditor } from './views/IconEditor';
 import { ToolsView } from './views/ToolsView';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { DebugPanel, type DebugLogEntry } from './components/dev/DebugPanel';
+import { filterDebugPanelLogs } from './config/debugPanelConfig';
 import { ErrorBoundary } from './components/dev/ErrorBoundary';
 // Toggleable debug logging for tree/expansion state
 const DEBUG_TREE = process.env.NODE_ENV !== 'production';
@@ -60,9 +64,16 @@ function App() {
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [toolsSelectedNodeId, setToolsSelectedNodeId] = useState<string | null>(null);
   const [inspectorOpen, setInspectorOpen] = useState(true);
+  const [inspectorTab, setInspectorTab] = useState<'properties' | 'filters'>('properties');
+  const { filterTabVisible, toggleFilterTabVisible, savedFilterSets, setSavedFilterSets } = useFilterStore();
   const [activeView, setActiveView] = useState<ViewType>('graph');
   const [activeToolsTab, setActiveToolsTab] = useState<'velocity' | 'blocking' | 'budget' | 'gantt'>('velocity');
   const [sessionId, setSessionId] = useState<string | null>(null);
+
+  // Debug: log whenever sessionId changes
+  useEffect(() => {
+    console.log('[App::STATE] sessionId changed to:', sessionId);
+  }, [sessionId]);
   const [isDirty, setIsDirty] = useState(false);  // Track dirty state
   const isDirtyRef = useRef(false);  // Ref to access current dirty state in callbacks
   const sessionIdRef = useRef<string | null>(null);
@@ -96,6 +107,12 @@ function App() {
   const [blocksNodes, setBlocksNodes] = useState<string[]>([]);
   const [blockingRelationships, setBlockingRelationships] = useState<Array<{ blockedNodeId: string; blockingNodeId: string }>>([]);
   const [velocityScore, setVelocityScore] = useState<VelocityScore | null>(null);
+  const [velocityScores, setVelocityScores] = useState<Record<string, VelocityScore>>({});
+
+  // Debug: log whenever velocityScores state updates
+  useEffect(() => {
+    console.log('[App::STATE] velocityScores updated to', Object.keys(velocityScores).length, 'scores');
+  }, [velocityScores]);
   const [blockingNodeCount, setBlockingNodeCount] = useState(0);
   const [blockingEdgeCount, setBlockingEdgeCount] = useState(0);
   const [blockingFitSignal, setBlockingFitSignal] = useState(0);
@@ -105,6 +122,7 @@ function App() {
   const [expandAllSignal, setExpandAllSignal] = useState(0);
   const [collapseAllSignal, setCollapseAllSignal] = useState(0);
   const [debugLogs, setDebugLogs] = useState<DebugLogEntry[]>([]);
+  const debugPanelLogs = useMemo(() => filterDebugPanelLogs(debugLogs), [debugLogs]);
   const [recentFiles, setRecentFiles] = useState<string[]>(() => {
     try {
       const stored = localStorage.getItem(RECENT_FILES_KEY);
@@ -119,6 +137,8 @@ function App() {
     }
     return [];
   });
+  const [toasts, setToasts] = useState<ToastProps[]>([]);
+  const toastIdCounter = useRef(0);
   const debugLogCounterRef = useRef(0);
   const [isAppInitialized, setIsAppInitialized] = useState(false);
   // Track which nodes are expanded (by id) - restore from localStorage
@@ -138,9 +158,6 @@ function App() {
   const initialLoadStartRef = useRef<number>(Date.now());
   const INITIAL_LOADING_MS = 30000;
   const { nodes: storeNodes, currentGraph, setCurrentGraph } = useGraphStore();
-  
-  // Enable real-time WebSocket synchronization
-  useGraphSync();
 
   // Keep ref in sync with state for use in event handlers
   useEffect(() => {
@@ -190,6 +207,8 @@ function App() {
 
   // Wait for backend and create/restore session on mount
   useEffect(() => {
+    let isActive = true;
+
     const initApp = async () => {
       try {
         // TEMPORARY: Force clear corrupted state
@@ -224,26 +243,33 @@ function App() {
           await new Promise(resolve => setTimeout(resolve, 300));
         }
         
+        if (!isActive) return;
         setIsInitialConnection(false);
         
         if (!ready) {
+          if (!isActive) return;
           const errorMsg = 'Cannot connect to backend. Please ensure the server is running.';
           console.error(errorMsg);
           setBackendError(errorMsg);
           setIsAppInitialized(true);
           return;
         }
+        if (!isActive) return;
+        console.log('[App::INIT] Backend connection OK');
         setBackendError(null); // Clear any previous errors
         
         // Try to restore existing session from localStorage
         const savedSessionId = localStorage.getItem('talus_tally_session_id');
+        console.log('[App::INIT] Checking for saved session...');
         if (savedSessionId) {
-          console.log('Found saved session ID:', savedSessionId);
+          console.log('[App::INIT] Found saved session ID:', savedSessionId);
           try {
             // Validate session still exists on backend
             const sessionInfo = await apiClient.getSessionInfo(savedSessionId);
             if (sessionInfo && sessionInfo.session_id) {
-              console.log('✓ Restored session:', savedSessionId);
+              if (!isActive) return;
+              console.log('[App::INIT] ✓ Restored session:', savedSessionId);
+              console.log('[App::INIT] Calling setSessionId with:', savedSessionId);
               setSessionId(savedSessionId);
               
               // If session has a project, restore it
@@ -271,6 +297,7 @@ function App() {
                     }
                   }
                   const graphData = await apiClient.getSessionGraph(savedSessionId);
+                  if (!isActive) return;
                   console.log('[DEBUG] Raw graphData from backend:', JSON.stringify(graphData, null, 2));
                   const graph = normalizeGraph(graphData.graph);
                   console.log('[DEBUG] Normalized graph nodes:', graph.nodes);
@@ -282,6 +309,7 @@ function App() {
                   setCurrentGraph({ id: 'default', nodes: [], edges: [] });
                 }
               }
+              if (!isActive) return;
               setIsAppInitialized(true);
               return;
             }
@@ -293,15 +321,20 @@ function App() {
         }
         
         // Create new session
+        console.log('[App::INIT] No saved session found, creating new session...');
         const session = await apiClient.createSession();
+        if (!isActive) return;
         const sid = session.session_id || session.id || 'unknown';
+        console.log('[App::INIT] New session created:', sid);
+        console.log('[App::INIT] Calling setSessionId with:', sid);
         setSessionId(sid);
         localStorage.setItem('talus_tally_session_id', sid);
         localStorage.setItem('sessionId', sid);
-        console.log('✓ Session created:', sid);
+        console.log('[App::INIT] ✓ Session created and stored:', sid);
         setIsAppInitialized(true);
         setIsInitialConnection(false);
       } catch (err) {
+        if (!isActive) return;
         setIsInitialConnection(false);
         const errorMsg = `Failed to initialize app: ${err instanceof Error ? err.message : String(err)}`;
         console.error('✗', errorMsg);
@@ -310,12 +343,18 @@ function App() {
       }
     };
     initApp();
+
+    return () => {
+      isActive = false;
+    };
   }, []);
 
   useEffect(() => {
     if (process.env.NODE_ENV === 'production') return;
 
-    const maxEntries = 500;
+    // Keep a larger in-memory log buffer so high-volume debug sessions
+    // (for example normalizeGraph traces) do not evict key API logs.
+    const maxEntries = 10000;
     const original = {
       log: console.log,
       info: console.info,
@@ -424,6 +463,7 @@ function App() {
         parent_id: parentId ?? undefined,
         selected: node.id === selectedNode,
         allowed_children: allowedChildren,
+        properties: node.properties || {},
         children: node.children?.map(childId => {
           const childNode = nodesMap[childId];
           return childNode
@@ -436,6 +476,7 @@ function App() {
                 children: [],
                 selected: false,
                 parent_id: node.id,
+                properties: {},
               };
         }) || []
       };
@@ -528,6 +569,59 @@ function App() {
   useEffect(() => {
     fetchVelocity();
   }, [fetchVelocity]);
+
+  const graphNodeCount = currentGraph?.nodes?.length ?? 0;
+
+  // Fetch velocity scores for all nodes for filtering.
+  // Depend on graph size so we refetch after a project graph is loaded into session.
+  useEffect(() => {
+    console.log('[App::VELOCITY] useEffect triggered with sessionId =', sessionId, 'graphNodeCount =', graphNodeCount);
+    if (!sessionId) {
+      console.log('[App::VELOCITY] sessionId is null/empty, clearing velocityScores');
+      setVelocityScores({});
+      return;
+    }
+
+    console.log('[App::VELOCITY] sessionId is truthy:', sessionId, 'fetching velocity data...');
+    const fetchAllVelocityScores = async () => {
+      console.log('[App::VELOCITY] Starting fetch for sessionId:', sessionId);
+      try {
+        console.log('[App::VELOCITY] Calling apiClient.getVelocityRanking...');
+        const result = await apiClient.getVelocityRanking(sessionId);
+        console.log('[App::VELOCITY] API response received:', result ? 'DATA' : 'NULL');
+        if (result?.nodes) {
+          console.log('[App::VELOCITY] API returned', result.nodes.length, 'nodes');
+        }
+        const scoresMap: Record<string, VelocityScore> = {};
+        if (result?.nodes) {
+          result.nodes.forEach((score) => {
+            scoresMap[score.nodeId] = {
+              nodeId: score.nodeId,
+              baseScore: score.baseScore,
+              inheritedScore: score.inheritedScore,
+              statusScore: score.statusScore,
+              numericalScore: score.numericalScore,
+              blockingPenalty: score.blockingPenalty,
+              blockingBonus: score.blockingBonus,
+              totalVelocity: score.totalVelocity,
+              isBlocked: score.isBlocked,
+              blockedByNodes: score.blockedByNodes,
+              blocksNodeIds: score.blocksNodeIds,
+            };
+          });
+        }
+        console.log('[App::VELOCITY] Processed', Object.keys(scoresMap).length, 'scored nodes');
+        console.log('[App::VELOCITY] Calling setVelocityScores with', Object.keys(scoresMap).length, 'entries');
+        setVelocityScores(scoresMap);
+      } catch (err) {
+        console.error('[App::VELOCITY] EXCEPTION during fetch:', err);
+        setVelocityScores({});
+      }
+    };
+
+    console.log('[App::VELOCITY] Invoking fetchAllVelocityScores()');
+    fetchAllVelocityScores();
+  }, [sessionId, graphNodeCount]);
 
   // -----------------------------------------------------------------------
   // Property group assignment: maps property types to display groups.
@@ -900,6 +994,34 @@ function App() {
     return sid;
   }, []);
 
+  const showToast = useCallback((message: string, variant: ToastProps['variant'] = 'info', duration = 4000) => {
+    const id = `toast-${++toastIdCounter.current}`;
+    const newToast: ToastProps = { id, message, variant, duration };
+    setToasts((prev) => [...prev, newToast]);
+  }, []);
+
+  const dismissToast = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
+  // Handle external file changes (from cloud sync, etc.)
+  const handleExternalProjectUpdate = useCallback((data: any) => {
+    console.log('[External Update] Project file changed externally:', data);
+    showToast('Project synced with external changes', 'success', 3000);
+    // The backend emits this after reloading the graph.
+  }, [showToast]);
+
+  const handleExternalTemplateUpdate = useCallback((data: any) => {
+    console.log('[External Update] Template file changed externally:', data);
+    showToast('Template updated by external change', 'info', 3000);
+  }, [showToast]);
+
+  // Enable real-time WebSocket synchronization
+  useGraphSync({
+    onExternalProjectUpdate: handleExternalProjectUpdate,
+    onExternalTemplateUpdate: handleExternalTemplateUpdate,
+  });
+
   const restoreGraphToSession = useCallback(async (sid: string) => {
     if (!currentGraphRef.current) {
       console.warn('[Recovery] No graph to restore (currentGraphRef is null)');
@@ -1089,6 +1211,7 @@ function App() {
         template_id: currentTemplateId,
         expanded_map: expandedMap,
         blocking_relationships: blocking,
+        filter_sets: savedFilterSets,
       }, null, 2);
 
       if (!lastFilePath) {
@@ -1121,7 +1244,7 @@ function App() {
       alert('Save failed.');
       return false;
     }
-  }, [currentGraph, lastFilePath, sessionId, currentTemplateId, expandedMap, recordRecentFile, blockingRelationships]);
+  }, [currentGraph, lastFilePath, sessionId, currentTemplateId, expandedMap, recordRecentFile, blockingRelationships, savedFilterSets]);
 
   const handleSaveAs = useCallback(async (): Promise<boolean> => {
     try {
@@ -1145,6 +1268,7 @@ function App() {
         template_id: currentTemplateId,
         expanded_map: expandedMap,
         blocking_relationships: blocking,
+        filter_sets: savedFilterSets,
       }, null, 2);
       const { save } = await import('@tauri-apps/plugin-dialog');
       const filePath = await save({
@@ -1173,7 +1297,7 @@ function App() {
       alert('Save failed.');
       return false;
     }
-  }, [currentGraph, sessionId, currentTemplateId, expandedMap, blockingRelationships]);
+  }, [currentGraph, sessionId, currentTemplateId, expandedMap, blockingRelationships, savedFilterSets]);
 
   const handleOpenRecent = useCallback(async (filePath: string) => {
     console.log('📂 Opening recent file:', filePath);
@@ -1242,7 +1366,8 @@ function App() {
         sid,
         normalizedGraph,
         templateId,
-        parsed.blocking_relationships || []
+        parsed.blocking_relationships || [],
+        filePath  // Pass the file path for file watching
       );
       console.log('✓ Graph loaded into backend session');
       finalGraph = normalizeGraph(loadResult.graph ?? loadResult);
@@ -1283,9 +1408,14 @@ function App() {
       setExpandedMap(parsed.expanded_map);
       console.log('✓ Restored tree expansion state');
     }
+
+    if (Array.isArray(parsed.filter_sets)) {
+      setSavedFilterSets(parsed.filter_sets);
+      console.log('✓ Restored', parsed.filter_sets.length, 'saved filter workflows');
+    }
     
     console.log('✓ Project opened:', filePath);
-  }, [normalizeGraph, setCurrentGraph, sessionId, setSessionId, setExpandedMap, setTemplateSchema, setCurrentTemplateId, recordRecentFile]);
+  }, [normalizeGraph, setCurrentGraph, sessionId, setSessionId, setExpandedMap, setTemplateSchema, setCurrentTemplateId, recordRecentFile, setSavedFilterSets]);
 
   const handleOpen = useCallback(async () => {
     try {
@@ -1970,6 +2100,7 @@ function App() {
     ],
     View: [
       { label: 'Toggle Properties Panel', onClick: toggleInspector },
+      { label: 'Toggle Filter Panel', onClick: toggleFilterTabVisible },
       { label: 'Expand All', onClick: handleExpandAll },
       { label: 'Collapse All', onClick: handleCollapseAll },
     ],
@@ -2041,6 +2172,7 @@ function App() {
               ) : (
                 <TreeView
                   nodes={treeNodes}
+                  velocityScores={velocityScores}
               onSelectNode={setSelectedNode}
               expandAllSignal={expandAllSignal}
               collapseAllSignal={collapseAllSignal}
@@ -2207,10 +2339,45 @@ function App() {
           </div>
         )}
 
-        {/* Inspector Panel - Collapsible - Unified across all views */}
-        {inspectorOpen && (
+        {/* Right Panel — Properties, Filters, or both as tabs */}
+        {(inspectorOpen || filterTabVisible) && (
           <aside className="w-80 h-full bg-bg-darker border-l border-border flex flex-col flex-shrink-0">
-            <Inspector
+            {/* Tab bar — only when both panels are active */}
+            {inspectorOpen && filterTabVisible && (
+              <div className="flex border-b border-border flex-shrink-0">
+                <button
+                  onClick={() => setInspectorTab('properties')}
+                  className={`flex-1 py-2 text-xs font-semibold uppercase tracking-wide transition-colors ${
+                    inspectorTab === 'properties'
+                      ? 'text-accent-primary border-b-2 border-accent-primary -mb-px bg-bg-darker'
+                      : 'text-fg-secondary hover:text-fg-primary'
+                  }`}
+                >
+                  Properties
+                </button>
+                <button
+                  onClick={() => setInspectorTab('filters')}
+                  className={`flex-1 py-2 text-xs font-semibold uppercase tracking-wide transition-colors ${
+                    inspectorTab === 'filters'
+                      ? 'text-accent-primary border-b-2 border-accent-primary -mb-px bg-bg-darker'
+                      : 'text-fg-secondary hover:text-fg-primary'
+                  }`}
+                >
+                  Filters
+                </button>
+              </div>
+            )}
+
+            {/* Filter-only header when inspector is hidden */}
+            {!inspectorOpen && filterTabVisible && (
+              <div className="px-3 py-2 border-b border-border flex-shrink-0">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-fg-secondary">Filters</h3>
+              </div>
+            )}
+
+            {/* Properties content */}
+            {inspectorOpen && (!filterTabVisible || inspectorTab === 'properties') && (
+              <Inspector
               nodeId={currentSelectedNodeId || undefined}
               nodeName={currentSelectedNodeData?.properties?.name || currentSelectedNodeId || undefined}
               nodeType={currentSelectedNodeData?.type || undefined}
@@ -2303,7 +2470,15 @@ function App() {
                     alert('Failed to delete orphaned property');
                   });
               }}
-            />
+              />
+            )}
+
+            {/* Filters content */}
+            {filterTabVisible && (!inspectorOpen || inspectorTab === 'filters') && (
+              <div className="flex-1 overflow-y-auto">
+                <FilterBar forceExpanded={true} />
+              </div>
+            )}
           </aside>
         )}
       </div>
@@ -2320,7 +2495,7 @@ function App() {
 
       {/* Dev-only Debug Panel */}
       {process.env.NODE_ENV !== 'production' && (
-        <DebugPanel treeNodes={treeNodes} expandedMap={expandedMap} logs={debugLogs} />
+        <DebugPanel treeNodes={treeNodes} expandedMap={expandedMap} logs={debugPanelLogs} totalLogs={debugLogs.length} />
       )}
 
       {/* Add Child Dialog */}
@@ -2483,6 +2658,9 @@ function App() {
           Delete <span className="text-fg-primary font-semibold">{pendingDelete?.label}</span>? You can undo this action.
         </div>
       </Modal>
+
+      {/* Toast Notifications */}
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
     </div>
       )}
   </ErrorBoundary>

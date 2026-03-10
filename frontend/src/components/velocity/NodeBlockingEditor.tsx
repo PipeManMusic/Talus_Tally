@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { apiClient, type Node as NodeType, type TemplateSchema } from '../../api/client';
 import { mapNodeIcon, subscribeToIconCache } from '../graph/mapNodeIcon';
 import { AlertCircle } from 'lucide-react';
+import { useFilterStore } from '../../store/filterStore';
+import { evaluateNodeVisibility } from '../../utils/filterEngine';
 
 // Helper to recolor SVG fills and strokes with a single color
 const recolorSvg = (svgString: string, color: string | undefined): string => {
@@ -71,6 +73,7 @@ interface Edge {
 interface Props {
   sessionId: string | null;
   nodes: Record<string, NodeType>;
+  velocityScores?: Record<string, any>;
   onNodeSelect?: (nodeId: string | null) => void;
   onCountsChange?: (nodeCount: number, edgeCount: number) => void;
   onDirtyChange?: (isDirty: boolean) => void;
@@ -80,9 +83,10 @@ interface Props {
   templateSchema?: TemplateSchema | null;
 }
 
-export function NodeBlockingEditor({ sessionId, nodes, onNodeSelect, onCountsChange, onDirtyChange, fitToViewSignal, refreshSignal, blockingViewConfig, templateSchema }: Props) {
+export function NodeBlockingEditor({ sessionId, nodes, velocityScores = {}, onNodeSelect, onCountsChange, onDirtyChange, fitToViewSignal, refreshSignal, blockingViewConfig, templateSchema }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
   const isDev = import.meta.env.DEV;
+  const { rules, filterMode } = useFilterStore();
   const [nodePositions, setNodePositions] = useState<NodeData[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [draggingNode, setDraggingNode] = useState<string | null>(null);
@@ -95,7 +99,6 @@ export function NodeBlockingEditor({ sessionId, nodes, onNodeSelect, onCountsCha
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [scale, setScale] = useState(1);
   const [spacePressed, setSpacePressed] = useState(false);
-  const [velocityNodeIds, setVelocityNodeIds] = useState<Set<string> | null>(null);
   const [nodeDepths, setNodeDepths] = useState<Record<string, number>>({});
   const [iconSvgs, setIconSvgs] = useState<Record<string, string | undefined>>({});
   const [iconCacheVersion, setIconCacheVersion] = useState(0);
@@ -143,6 +146,20 @@ export function NodeBlockingEditor({ sessionId, nodes, onNodeSelect, onCountsCha
     if (maxDepthObserved <= 0) return nodeSizeConfig.maxDepth;
     return Math.max(1, Math.min(nodeSizeConfig.maxDepth, maxDepthObserved));
   }, [maxDepthObserved, nodeSizeConfig.maxDepth]);
+
+  const nodeVisibility = useMemo(() => {
+    const visibility = new Map<string, boolean>();
+    Object.entries(nodes).forEach(([nodeId, node]) => {
+      visibility.set(nodeId, evaluateNodeVisibility({
+        id: node.id,
+        name: node.properties?.name || node.id,
+        type: node.type,
+        properties: node.properties || {},
+        velocity: velocityScores[nodeId],
+      }, rules));
+    });
+    return visibility;
+  }, [nodes, rules, velocityScores]);
 
   const getNodeScale = useCallback((nodeId: string) => {
     const depth = nodeDepths[nodeId] ?? 0;
@@ -268,30 +285,6 @@ export function NodeBlockingEditor({ sessionId, nodes, onNodeSelect, onCountsCha
   };
 
   useEffect(() => {
-    if (!sessionId) {
-      setVelocityNodeIds(null);
-      return;
-    }
-
-    const fetchVelocityNodes = async () => {
-      try {
-        const result = await apiClient.getVelocityRanking(sessionId);
-        const ids = new Set(
-          result.nodes
-            .filter(node => node.totalVelocity >= 0)
-            .map(node => node.nodeId)
-        );
-        setVelocityNodeIds(ids);
-      } catch (error) {
-        console.error('Failed to fetch velocity ranking for blocker filter:', error);
-        setVelocityNodeIds(null);
-      }
-    };
-
-    fetchVelocityNodes();
-  }, [sessionId]);
-
-  useEffect(() => {
     const unsubscribe = subscribeToIconCache(() => {
       setIconCacheVersion((version) => version + 1);
     });
@@ -379,12 +372,14 @@ export function NodeBlockingEditor({ sessionId, nodes, onNodeSelect, onCountsCha
 
     setNodeDepths(nodeDepth);
 
-    // Create grid layout spread across canvas
-    // Include all non-project nodes (velocity is optional now)
+    // Create grid layout spread across canvas.
+    // Include all non-project nodes; filtering is handled by the shared filter system.
     const positionableNodes = nodeIds.filter(id => {
       if (id === projectNodeId) return false;
-      if (velocityNodeIds === null) return true;
-      return velocityNodeIds.has(id);
+      if (filterMode === 'hide' && rules.length > 0 && !nodeVisibility.get(id)) {
+        return false;
+      }
+      return true;
     });
     const nodeSize = { width: nodeSizeConfig.baseWidth, height: nodeSizeConfig.baseHeight };
     const padding = 50;
@@ -414,7 +409,7 @@ export function NodeBlockingEditor({ sessionId, nodes, onNodeSelect, onCountsCha
     });
 
     setNodePositions(positions);
-  }, [nodes, velocityNodeIds, nodeSizeConfig.baseWidth, nodeSizeConfig.baseHeight, nodeSizeConfig.maxScale]);
+  }, [nodes, filterMode, nodeSizeConfig.baseWidth, nodeSizeConfig.baseHeight, nodeSizeConfig.maxScale, nodeVisibility, rules.length]);
 
   useEffect(() => {
     let isMounted = true;
@@ -812,12 +807,19 @@ export function NodeBlockingEditor({ sessionId, nodes, onNodeSelect, onCountsCha
 
             {/* Blocking relationship wires */}
             {edges.map((edge) => {
+              const fromVisible = nodeVisibility.get(edge.from) ?? true;
+              const toVisible = nodeVisibility.get(edge.to) ?? true;
+              if (filterMode === 'hide' && rules.length > 0 && (!fromVisible || !toVisible)) {
+                return null;
+              }
+
               const fromNode = getNodePosition(edge.from);
               const toNode = getNodePosition(edge.to);
               if (!fromNode || !toNode) return null;
 
               const edgeId = edgeKey(edge);
               const isHovered = hoveredEdge === edgeId;
+              const isGhosted = filterMode === 'ghost' && rules.length > 0 && (!fromVisible || !toVisible);
 
               const fromSize = getNodeSize(edge.from);
               const toSize = getNodeSize(edge.to);
@@ -843,7 +845,7 @@ export function NodeBlockingEditor({ sessionId, nodes, onNodeSelect, onCountsCha
                     className="transition-all"
                     onMouseEnter={() => setHoveredEdge(edgeId)}
                     onMouseLeave={() => setHoveredEdge(null)}
-                    opacity="0.7"
+                    opacity={isGhosted ? '0.18' : '0.7'}
                     strokeDasharray="5,5"
                   />
                   <text
@@ -854,6 +856,7 @@ export function NodeBlockingEditor({ sessionId, nodes, onNodeSelect, onCountsCha
                     fill="#ef4444"
                     className="cursor-pointer pointer-events-none select-none"
                     fontWeight="600"
+                    opacity={isGhosted ? '0.3' : '1'}
                   >
                     blocks
                   </text>
@@ -879,6 +882,9 @@ export function NodeBlockingEditor({ sessionId, nodes, onNodeSelect, onCountsCha
             {/* Draw nodes */}
             {nodePositions.map(nodeData => {
               const node = nodes[nodeData.id];
+              if (!node) return null; // Skip rendering if node doesn't exist
+              const isVisible = nodeVisibility.get(nodeData.id) ?? true;
+              const isGhosted = filterMode === 'ghost' && rules.length > 0 && !isVisible;
               const parentNode = node.parent_id ? nodes[node.parent_id] : null;
               const parentName = parentNode?.properties?.name || (node.parent_id ? node.parent_id.slice(0, 8) : '');
               const nodeSize = getNodeSize(nodeData.id);
@@ -1006,7 +1012,7 @@ export function NodeBlockingEditor({ sessionId, nodes, onNodeSelect, onCountsCha
               const handleRadius = Math.max(5, Math.min(10, nodeSize.height * 0.08));
 
               return (
-                <g key={nodeData.id} transform={`translate(${nodeData.x}, ${nodeData.y})`}>
+                <g key={nodeData.id} transform={`translate(${nodeData.x}, ${nodeData.y})`} opacity={isGhosted ? 0.28 : 1}>
                   {/* Main node body */}
                   {showBaseShape && renderBaseShape()}
                   {renderNodeShape()}
