@@ -11,9 +11,10 @@ type DebugPanelProps = {
   treeNodes: unknown;
   expandedMap: unknown;
   logs?: DebugLogEntry[];
+  totalLogs?: number;
 };
 
-export function DebugPanel({ treeNodes, expandedMap, logs = [] }: DebugPanelProps) {
+export function DebugPanel({ treeNodes, expandedMap, logs = [], totalLogs }: DebugPanelProps) {
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -71,6 +72,9 @@ export function DebugPanel({ treeNodes, expandedMap, logs = [] }: DebugPanelProp
             >
               Copy Logs
             </button>
+          </div>
+          <div style={{ color: '#8ecae6', fontSize: 10, marginBottom: 4 }}>
+            Showing {logs.length} of {totalLogs ?? logs.length} captured entries
           </div>
           <div style={{ background: '#111', color: '#ccc', fontSize: 11, maxHeight: 160, overflow: 'auto', padding: 6 }}>
             {logs.length === 0 && <div>No logs captured yet.</div>}
