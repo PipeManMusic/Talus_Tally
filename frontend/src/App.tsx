@@ -94,6 +94,8 @@ function App() {
   const [showSaveConfirmDialog, setShowSaveConfirmDialog] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [showExportDialog, setShowExportDialog] = useState(false);
+  const [importTargetNodeId, setImportTargetNodeId] = useState<string | null>(null);
+  const [exportTargetNodeId, setExportTargetNodeId] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<{ nodeIds: string[]; label: string } | null>(null);
   const pendingCloseActionRef = useRef<(() => Promise<void>) | null>(null);
   const [addChildParentId, setAddChildParentId] = useState<string | null>(null);
@@ -2105,8 +2107,13 @@ function App() {
       { label: 'Collapse All', onClick: handleCollapseAll },
     ],
     Tools: [
-      { label: 'Import from CSV...', onClick: () => setShowImportDialog(true) },
-      { label: 'Export Data...', onClick: () => setShowExportDialog(true) },
+      {
+        label: 'Export Project...',
+        onClick: () => {
+          setExportTargetNodeId(null);
+          setShowExportDialog(true);
+        },
+      },
       { label: '---', onClick: () => {} },
       { label: 'Template Editor', onClick: () => setShowTemplateEditor(true) },
       { label: 'Indicator Editor', onClick: () => setShowIndicatorEditor(true) },
@@ -2217,6 +2224,12 @@ function App() {
                     }
                   }
                   openAddChildDialog(nodeId, node.properties?.name, childTypeName, type);
+                } else if (action === 'import-csv-here') {
+                  setImportTargetNodeId(nodeId);
+                  setShowImportDialog(true);
+                } else if (action === 'export-branch') {
+                  setExportTargetNodeId(nodeId);
+                  setShowExportDialog(true);
                 } else if (action === 'delete') {
                   const node = storeNodes[nodeId];
                   const label = node?.properties?.name || node?.type || nodeId;
@@ -2540,11 +2553,14 @@ function App() {
       {showImportDialog && (
         <ImportCsvDialog
           isOpen={showImportDialog}
-          selectedNodeId={selectedNode}
+          selectedNodeId={importTargetNodeId || selectedNode}
           nodes={storeNodes}
           templateSchema={templateSchema}
           ensureSession={ensureSession}
-          onClose={() => setShowImportDialog(false)}
+          onClose={() => {
+            setShowImportDialog(false);
+            setImportTargetNodeId(null);
+          }}
           onImported={handleImportSuccess}
         />
       )}
@@ -2553,8 +2569,13 @@ function App() {
       {showExportDialog && (
         <ExportDialog
           isOpen={showExportDialog}
-          onClose={() => setShowExportDialog(false)}
+          onClose={() => {
+            setShowExportDialog(false);
+            setExportTargetNodeId(null);
+          }}
           sessionId={sessionId}
+          targetNodeId={exportTargetNodeId || undefined}
+          velocityScores={velocityScores}
         />
       )}
 

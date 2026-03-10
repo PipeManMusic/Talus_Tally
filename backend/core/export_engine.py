@@ -5,9 +5,8 @@ Provides template discovery and rendering capabilities for exporting
 project graphs in various formats (XML, CSV, HTML, etc.).
 """
 
-import os
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional, Set
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound
 
 
@@ -127,3 +126,65 @@ class ExportEngine:
             return f"project_{project_id}_{name_part}{ext_part}"
         else:
             return base_name
+
+    def filter_nodes(
+        self,
+        nodes: List[Dict[str, Any]],
+        root_node_id: Optional[str] = None,
+        included_node_ids: Optional[List[str]] = None,
+    ) -> List[Dict[str, Any]]:
+        """
+        Filter export nodes by optional branch root and/or explicit include list.
+
+        Args:
+            nodes: Flat list of node dictionaries containing id and children fields.
+            root_node_id: Optional node ID. If provided, only this node and descendants are exported.
+            included_node_ids: Optional explicit include list. Nodes not in the list are excluded.
+
+        Returns:
+            Filtered list of node dictionaries.
+        """
+        if not nodes:
+            return []
+
+        node_by_id: Dict[str, Dict[str, Any]] = {str(node.get('id')): node for node in nodes if node.get('id') is not None}
+
+        allowed_ids: Optional[Set[str]] = None
+        if root_node_id:
+            allowed_ids = self._collect_descendants(node_by_id, root_node_id)
+
+        if included_node_ids is not None:
+            included_set = {str(node_id) for node_id in included_node_ids}
+            allowed_ids = included_set if allowed_ids is None else (allowed_ids & included_set)
+
+        if allowed_ids is None:
+            return nodes
+
+        return [node for node in nodes if str(node.get('id')) in allowed_ids]
+
+    def _collect_descendants(self, node_by_id: Dict[str, Dict[str, Any]], root_node_id: str) -> Set[str]:
+        """Collect root node id + all descendant ids from children links."""
+        root_id = str(root_node_id)
+        if root_id not in node_by_id:
+            return set()
+
+        collected: Set[str] = set()
+        stack: List[str] = [root_id]
+
+        while stack:
+            current_id = stack.pop()
+            if current_id in collected:
+                continue
+            collected.add(current_id)
+
+            current_node = node_by_id.get(current_id)
+            if not current_node:
+                continue
+
+            child_ids = current_node.get('children') or []
+            for child_id in child_ids:
+                child_str = str(child_id)
+                if child_str in node_by_id and child_str not in collected:
+                    stack.append(child_str)
+
+        return collected
