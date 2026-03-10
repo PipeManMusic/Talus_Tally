@@ -3,6 +3,32 @@ import { ChevronRight, ChevronDown } from 'lucide-react';
 import { mapNodeIndicator } from '../graph/mapNodeIndicator';
 import { mapNodeIcon, subscribeToIconCache } from '../graph/mapNodeIcon';
 import type { TreeNode } from '../../utils/treeUtils';
+import { useFilterStore } from '../../store/filterStore';
+import { evaluateNodeVisibility } from '../../utils/filterEngine';
+
+const buildFilterNode = (node: TreeNode, velocityScores: Record<string, any>) => ({
+  id: node.id,
+  name: node.name,
+  type: node.type,
+  properties: node.properties || {},
+  velocity: velocityScores[node.id],
+});
+
+const nodeMatchesFilters = (node: TreeNode, filterRules: ReturnType<typeof useFilterStore.getState>['rules'], velocityScores: Record<string, any>) => {
+  return evaluateNodeVisibility(buildFilterNode(node, velocityScores), filterRules);
+};
+
+const subtreeHasMatch = (node: TreeNode, filterRules: ReturnType<typeof useFilterStore.getState>['rules'], velocityScores: Record<string, any>): boolean => {
+  if (nodeMatchesFilters(node, filterRules, velocityScores)) {
+    return true;
+  }
+
+  if (!Array.isArray(node.children) || node.children.length === 0) {
+    return false;
+  }
+
+  return node.children.some((child) => subtreeHasMatch(child, filterRules, velocityScores));
+};
 
 // Helper to recolor SVG fills and strokes with the blueprint color
 const recolorSvg = (svgString: string, color: string | undefined): string => {
@@ -61,9 +87,125 @@ const collectDescendantIds = (item: TreeNode): string[] => {
   return results;
 };
 
+function FilteredTreeContent({
+  node,
+  allowedChildrenList,
+  resolveTypeLabel,
+  velocityScores = {},
+  onSelect,
+  onExpand,
+  onContextMenu,
+  expandedMap,
+  setExpandedMap,
+  getTypeLabel,
+  scrollContainerRef,
+  level,
+}: {
+  node: TreeNode;
+  allowedChildrenList: any[];
+  resolveTypeLabel: (type: string) => string;
+  velocityScores?: Record<string, any>;
+  onSelect?: (id: string) => void;
+  onExpand?: (id: string) => void;
+  onContextMenu?: (nodeId: string, action: string) => void;
+  expandedMap: Record<string, boolean>;
+  setExpandedMap: Dispatch<SetStateAction<Record<string, boolean>>>;
+  getTypeLabel?: (type: string) => string;
+  scrollContainerRef?: React.RefObject<HTMLDivElement | null>;
+  level: number;
+}) {
+  const { rules: filterRules, filterMode } = useFilterStore();
+
+  const groups: Array<{ key: string; title: string; items: TreeNode[] }> = [];
+  const typeMap = new Map<string, { title: string; items: TreeNode[] }>();
+
+  node.children?.forEach((child) => {
+    const rawType = child.type ?? 'Unknown';
+    const normalized = rawType.trim().toLowerCase();
+    if (!typeMap.has(normalized)) {
+      typeMap.set(normalized, {
+        title: resolveTypeLabel(rawType),
+        items: [],
+      });
+    }
+    typeMap.get(normalized)?.items.push(child);
+  });
+
+  const consumed = new Set<string>();
+  allowedChildrenList.forEach((typeId) => {
+    const normalized = String(typeId ?? '').trim().toLowerCase();
+    if (!normalized || consumed.has(normalized)) {
+      return;
+    }
+    const group = typeMap.get(normalized);
+    if (!group || group.items.length === 0) {
+      return;
+    }
+    groups.push({ key: normalized, title: resolveTypeLabel(String(typeId)), items: group.items });
+    consumed.add(normalized);
+  });
+
+  typeMap.forEach((group, normalized) => {
+    if (consumed.has(normalized) || group.items.length === 0) {
+      return;
+    }
+    groups.push({ key: normalized, title: group.title, items: group.items });
+  });
+
+  return (
+    <>
+      {groups.map((group) => (
+        <div key={`${node.id}-${group.key}`} className="mb-3 last:mb-0">
+          {(() => {
+            const visibleItems = group.items.filter((child) => filterMode !== 'hide' || subtreeHasMatch(child, filterRules, velocityScores));
+            if (visibleItems.length === 0) {
+              return null;
+            }
+
+            return (
+              <>
+                <div className="text-[11px] font-semibold uppercase tracking-wide text-fg-secondary mb-1">
+                  {group.title}
+                </div>
+                <div className="space-y-1">
+                  {visibleItems.map((child) => {
+                    const isDirectMatch = nodeMatchesFilters(child, filterRules, velocityScores);
+                    const hasMatchingDescendant = Array.isArray(child.children) && child.children.length > 0
+                      ? child.children.some((grandchild) => subtreeHasMatch(grandchild, filterRules, velocityScores))
+                      : false;
+
+                    return (
+                      <TreeItem
+                        key={child.id}
+                        node={child}
+                        velocityScores={velocityScores}
+                        level={level + 1}
+                        onSelect={onSelect}
+                        onExpand={onExpand}
+                        onContextMenu={onContextMenu}
+                        expandedMap={expandedMap}
+                        setExpandedMap={setExpandedMap}
+                        getTypeLabel={getTypeLabel}
+                        scrollContainerRef={scrollContainerRef}
+                        isGhosted={filterMode === 'ghost' && !isDirectMatch && !hasMatchingDescendant}
+                      />
+                    );
+                  })}
+                </div>
+              </>
+            );
+          })()}
+        </div>
+      ))}
+    </>
+  );
+}
+
 type TreeItemProps = {
   node: TreeNode;
+  velocityScores?: Record<string, any>;
   level?: number;
+  isGhosted?: boolean;
   onSelect?: (id: string) => void;
   onExpand?: (id: string) => void;
   onContextMenu?: (nodeId: string, action: string) => void;
@@ -75,7 +217,9 @@ type TreeItemProps = {
 
 function TreeItem({
   node,
+  velocityScores = {},
   level = 0,
+  isGhosted = false,
   onSelect,
   onExpand,
   onContextMenu,
@@ -467,6 +611,7 @@ function TreeItem({
 
   const rowClasses = [
     'relative flex w-full items-center gap-1 px-2 py-1.5 rounded-sm cursor-pointer transition-colors border-l-2 border-transparent',
+    isGhosted ? 'opacity-30' : '',
     isSelected
       ? 'bg-bg-selection border-l-4 border-accent-primary shadow-inner ring-1 ring-accent-primary/60'
       : isMoveTarget
@@ -664,67 +809,20 @@ function TreeItem({
 
       {expanded && hasChildren && (
         <div className="ml-2 border-l border-border pl-3">
-          {(() => {
-            const groups: Array<{ key: string; title: string; items: TreeNode[] }> = [];
-            const typeMap = new Map<string, { title: string; items: TreeNode[] }>();
-
-            node.children?.forEach((child) => {
-              const rawType = child.type ?? 'Unknown';
-              const normalized = rawType.trim().toLowerCase();
-              if (!typeMap.has(normalized)) {
-                typeMap.set(normalized, {
-                  title: resolveTypeLabel(rawType),
-                  items: [],
-                });
-              }
-              typeMap.get(normalized)?.items.push(child);
-            });
-
-            const consumed = new Set<string>();
-            allowedChildrenList.forEach((typeId) => {
-              const normalized = String(typeId ?? '').trim().toLowerCase();
-              if (!normalized || consumed.has(normalized)) {
-                return;
-              }
-              const group = typeMap.get(normalized);
-              if (!group || group.items.length === 0) {
-                return;
-              }
-              groups.push({ key: normalized, title: resolveTypeLabel(String(typeId)), items: group.items });
-              consumed.add(normalized);
-            });
-
-            typeMap.forEach((group, normalized) => {
-              if (consumed.has(normalized) || group.items.length === 0) {
-                return;
-              }
-              groups.push({ key: normalized, title: group.title, items: group.items });
-            });
-
-            return groups.map((group) => (
-              <div key={`${node.id}-${group.key}`} className="mb-3 last:mb-0">
-                <div className="text-[11px] font-semibold uppercase tracking-wide text-fg-secondary mb-1">
-                  {group.title}
-                </div>
-                <div className="space-y-1">
-                  {group.items.map((child) => (
-                    <TreeItem
-                      key={child.id}
-                      node={child}
-                      level={level + 1}
-                      onSelect={onSelect}
-                      onExpand={onExpand}
-                      onContextMenu={onContextMenu}
-                      expandedMap={expandedMap}
-                      setExpandedMap={setExpandedMap}
-                      getTypeLabel={getTypeLabel}
-                      scrollContainerRef={scrollContainerRef}
-                    />
-                  ))}
-                </div>
-              </div>
-            ));
-          })()}
+          <FilteredTreeContent
+            node={node}
+            allowedChildrenList={allowedChildrenList}
+            resolveTypeLabel={resolveTypeLabel}
+            velocityScores={velocityScores}
+            onSelect={onSelect}
+            onExpand={onExpand}
+            onContextMenu={onContextMenu}
+            expandedMap={expandedMap}
+            setExpandedMap={setExpandedMap}
+            getTypeLabel={getTypeLabel}
+            scrollContainerRef={scrollContainerRef}
+            level={level}
+          />
         </div>
       )}
     </div>
@@ -733,6 +831,7 @@ function TreeItem({
 
 type TreeViewProps = {
   nodes: TreeNode[];
+  velocityScores?: Record<string, any>;
   onSelectNode?: (id: string) => void;
   onExpandNode?: (id: string) => void;
   onContextMenu?: (id: string, action: string) => void;
@@ -745,6 +844,7 @@ type TreeViewProps = {
 
 export function TreeView({
   nodes,
+  velocityScores = {},
   onSelectNode,
   onExpandNode,
   onContextMenu,
@@ -806,6 +906,25 @@ export function TreeView({
   const projectRoots = nodes.filter((node) => node.type === 'project_root');
   const hasMultipleProjects = projectRoots.length > 1;
 
+  // Get filter state - must be called at top level, not in map loop
+  const { rules: filterRules, filterMode } = useFilterStore();
+
+  // Debug: log when filter rules change
+  useEffect(() => {
+    if (filterRules.length > 0) {
+      console.log('[TreeView] Filters active - rules:', filterRules.length, 'velocityScores:', Object.keys(velocityScores).length);
+    }
+  }, [filterRules, velocityScores]);
+
+  // Debug: log whenever velocityScores changes
+  useEffect(() => {
+    console.log('[TreeView] velocityScores updated:', {
+      count: Object.keys(velocityScores).length,
+      sampleNodeId: Object.keys(velocityScores)[0] || 'none',
+      sampleScore: Object.keys(velocityScores)[0] ? velocityScores[Object.keys(velocityScores)[0]]?.totalVelocity : undefined,
+    });
+  }, [velocityScores]);
+
   return (
     <aside
       ref={scrollContainerRef}
@@ -817,25 +936,38 @@ export function TreeView({
       </div>
 
       <div className="space-y-1">
-        {nodes.map((node) => (
-          <div key={node.id}>
-            {hasMultipleProjects && node.type === 'project_root' && (
-              <div className="font-display text-xs font-semibold uppercase tracking-wide text-accent-primary border-t border-border pt-2 mt-2 mb-1">
-                Project: {node.name}
-              </div>
-            )}
-            <TreeItem
-              node={node}
-              onSelect={onSelectNode}
-              onExpand={onExpandNode}
-              onContextMenu={onContextMenu}
-              expandedMap={expandedMap}
-              setExpandedMap={setExpandedMap}
-              getTypeLabel={getTypeLabel}
-              scrollContainerRef={scrollContainerRef}
-            />
-          </div>
-        ))}
+        {nodes.map((node) => {
+          const isDirectMatch = nodeMatchesFilters(node, filterRules, velocityScores);
+          const hasMatchingDescendant = Array.isArray(node.children) && node.children.length > 0
+            ? node.children.some((child) => subtreeHasMatch(child, filterRules, velocityScores))
+            : false;
+
+          if (!isDirectMatch && !hasMatchingDescendant && filterMode === 'hide') {
+            return null;
+          }
+
+          return (
+            <div key={node.id}>
+              {hasMultipleProjects && node.type === 'project_root' && (
+                <div className="font-display text-xs font-semibold uppercase tracking-wide text-accent-primary border-t border-border pt-2 mt-2 mb-1">
+                  Project: {node.name}
+                </div>
+              )}
+              <TreeItem
+                node={node}
+                velocityScores={velocityScores}
+                isGhosted={filterMode === 'ghost' && !isDirectMatch && !hasMatchingDescendant}
+                onSelect={onSelectNode}
+                onExpand={onExpandNode}
+                onContextMenu={onContextMenu}
+                expandedMap={expandedMap}
+                setExpandedMap={setExpandedMap}
+                getTypeLabel={getTypeLabel}
+                scrollContainerRef={scrollContainerRef}
+              />
+            </div>
+          );
+        })}
       </div>
     </aside>
   );

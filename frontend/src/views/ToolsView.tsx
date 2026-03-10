@@ -3,7 +3,7 @@ import { VelocityView } from '../components/velocity/VelocityView';
 import { NodeBlockingEditor } from '../components/velocity/NodeBlockingEditor';
 import { BudgetView } from '../components/tools/BudgetView';
 import { GanttView } from '../components/tools/GanttView';
-import { type Node, type TemplateSchema } from '../api/client';
+import { apiClient, type Node, type TemplateSchema, type VelocityScore } from '../api/client';
 
 export type ToolsTab = 'velocity' | 'blocking' | 'budget' | 'gantt';
 
@@ -33,6 +33,42 @@ export function ToolsView({
   templateSchema,
 }: ToolsViewProps) {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [velocityScores, setVelocityScores] = useState<Record<string, VelocityScore>>({});
+
+  // Fetch velocity scores for filtering
+  useEffect(() => {
+    if (!sessionId) {
+      setVelocityScores({});
+      return;
+    }
+
+    const fetchVelocity = async () => {
+      try {
+        const result = await apiClient.getVelocityRanking(sessionId);
+        const scoresMap: Record<string, VelocityScore> = {};
+        result.nodes.forEach((score) => {
+          scoresMap[score.nodeId] = {
+            nodeId: score.nodeId,
+            baseScore: score.baseScore,
+            inheritedScore: score.inheritedScore,
+            statusScore: score.statusScore,
+            numericalScore: score.numericalScore,
+            blockingPenalty: score.blockingPenalty,
+            blockingBonus: score.blockingBonus,
+            totalVelocity: score.totalVelocity,
+            isBlocked: score.isBlocked,
+            blockedByNodes: score.blockedByNodes,
+            blocksNodeIds: score.blocksNodeIds,
+          };
+        });
+        setVelocityScores(scoresMap);
+      } catch (err) {
+        console.error('Failed to fetch velocity scores:', err);
+      }
+    };
+
+    fetchVelocity();
+  }, [sessionId]);
 
   // Notify parent when selected node changes
   useEffect(() => {
@@ -41,7 +77,7 @@ export function ToolsView({
 
   return (
     <div className="flex flex-col h-full bg-bg-dark text-fg-primary">
-      {/* No header - tabs are in toolbar, just show content */}
+      {/* View Content */}
       <div className="flex-1 overflow-hidden">
         {activeTab === 'velocity' && (
           <VelocityView
@@ -54,6 +90,7 @@ export function ToolsView({
           <NodeBlockingEditor
             sessionId={sessionId || null}
             nodes={nodes}
+            velocityScores={velocityScores}
             onNodeSelect={setSelectedNodeId}
             onCountsChange={onBlockingCountsChange}
             onDirtyChange={onBlockingDirtyChange}
@@ -67,6 +104,7 @@ export function ToolsView({
           <BudgetView
             sessionId={sessionId || null}
             nodes={nodes}
+            velocityScores={velocityScores}
             onNodeSelect={setSelectedNodeId}
           />
         )}
@@ -74,6 +112,7 @@ export function ToolsView({
           <GanttView
             sessionId={sessionId || null}
             nodes={nodes}
+            velocityScores={velocityScores}
             onNodeSelect={setSelectedNodeId}
           />
         )}

@@ -1,11 +1,14 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { AlertCircle, DollarSign, ChevronRight, ChevronDown } from 'lucide-react';
-import { apiClient, type BudgetPayload, type BudgetNode } from '../../api/client';
+import { apiClient, type BudgetPayload, type BudgetNode, type VelocityScore } from '../../api/client';
 import { useWebSocket } from '../../hooks/useWebSocket';
+import { useFilterStore, type FilterRule } from '../../store/filterStore';
+import { evaluateNodeVisibility } from '../../utils/filterEngine';
 
 interface BudgetViewProps {
   sessionId: string | null;
   nodes?: Record<string, any>;
+  velocityScores?: Record<string, VelocityScore>;
   onNodeSelect?: (nodeId: string | null) => void;
 }
 
@@ -20,19 +23,63 @@ function formatCurrency(value: number): string {
 
 function BudgetTreeRow({
   node,
+  nodes,
+  velocityScores,
   onNodeSelect,
+  filterRules,
+  filterMode,
 }: {
   node: BudgetNode;
+  nodes?: Record<string, any>;
+  velocityScores?: Record<string, any>;
   onNodeSelect?: (nodeId: string | null) => void;
+  filterRules: FilterRule[];
+  filterMode: 'hide' | 'ghost';
 }) {
   const [expanded, setExpanded] = useState(true);
   const hasChildren = node.children.length > 0;
-  const hasCost = node.totalCost > 0;
+
+  // Evaluate visibility based on filter rules
+  // Create a node-like structure for filter evaluation
+  const sourceNodeProps = nodes?.[node.nodeId]?.properties || {};
+  const nodeForFilter = {
+    id: node.nodeId,
+    name: node.nodeName,
+    type: node.nodeType,
+    properties: {
+      ...sourceNodeProps,
+      name: node.nodeName,
+      type: node.nodeType,
+      estimated: node.totalEstimated,
+      actual: node.totalActual,
+      variance: node.variance,
+    },
+    velocity: velocityScores?.[node.nodeId],
+  };
+
+  const isVisible = evaluateNodeVisibility(nodeForFilter, filterRules);
+
+  // If node doesn't pass filter
+  if (!isVisible) {
+    if (filterMode === 'hide') {
+      return null; // Don't render at all
+    }
+    // If 'ghost', continue rendering but with reduced opacity
+  }
+
+  const varianceClass =
+    node.variance > 0
+      ? 'text-status-danger'
+      : node.variance < 0
+        ? 'text-status-success'
+        : 'text-fg-primary';
+
+  const rowOpacity = !isVisible && filterMode === 'ghost' ? 'opacity-30' : '';
 
   return (
     <>
       <div
-        className="flex items-center border-b border-border hover:bg-bg-light transition-colors cursor-pointer group"
+        className={`flex items-center border-b border-border hover:bg-bg-light transition-colors cursor-pointer group ${rowOpacity}`}
         style={{ paddingLeft: `${node.depth * 24 + 12}px` }}
         onClick={() => onNodeSelect?.(node.nodeId)}
       >
@@ -61,24 +108,22 @@ function BudgetTreeRow({
 
         {/* Cost columns */}
         <div className="flex items-center gap-6 pr-4 flex-shrink-0">
-          <div className="text-right w-28">
-            <div className="text-xs text-fg-secondary">Own</div>
-            <div className={`text-sm font-mono ${node.ownCost > 0 ? 'text-fg-primary' : 'text-fg-secondary'}`}>
-              {node.ownCost > 0 ? formatCurrency(node.ownCost) : '—'}
+          <div className="text-right w-32">
+            <div className="text-xs text-fg-secondary">Estimated</div>
+            <div className={`text-sm font-mono ${node.totalEstimated > 0 ? 'text-fg-primary' : 'text-fg-secondary'}`}>
+              {node.totalEstimated > 0 ? formatCurrency(node.totalEstimated) : '—'}
             </div>
           </div>
-          {hasChildren && (
-            <div className="text-right w-28">
-              <div className="text-xs text-fg-secondary">Children</div>
-              <div className={`text-sm font-mono ${node.childrenCost > 0 ? 'text-fg-primary' : 'text-fg-secondary'}`}>
-                {node.childrenCost > 0 ? formatCurrency(node.childrenCost) : '—'}
-              </div>
-            </div>
-          )}
           <div className="text-right w-32">
-            <div className="text-xs text-fg-secondary">Total</div>
-            <div className={`text-sm font-mono font-bold ${hasCost ? 'text-accent-primary' : 'text-fg-secondary'}`}>
-              {hasCost ? formatCurrency(node.totalCost) : '—'}
+            <div className="text-xs text-fg-secondary">Actual</div>
+            <div className={`text-sm font-mono ${node.totalActual > 0 ? 'text-fg-primary' : 'text-fg-secondary'}`}>
+              {node.totalActual > 0 ? formatCurrency(node.totalActual) : '—'}
+            </div>
+          </div>
+          <div className="text-right w-32">
+            <div className="text-xs text-fg-secondary">Variance</div>
+            <div className={`text-sm font-mono font-bold ${varianceClass}`}>
+              {node.variance !== 0 ? formatCurrency(node.variance) : '$0.00'}
             </div>
           </div>
         </div>
@@ -88,13 +133,161 @@ function BudgetTreeRow({
       {expanded &&
         hasChildren &&
         node.children.map((child) => (
-          <BudgetTreeRow key={child.nodeId} node={child} onNodeSelect={onNodeSelect} />
+          <BudgetTreeRow
+            key={child.nodeId}
+            node={child}
+            nodes={nodes}
+            velocityScores={velocityScores}
+            onNodeSelect={onNodeSelect}
+            filterRules={filterRules}
+            filterMode={filterMode}
+          />
         ))}
     </>
   );
 }
 
-export function BudgetView({ sessionId, onNodeSelect }: BudgetViewProps) {
+// Flat row component for filtered results
+function BudgetFlatRow({
+  node,
+  nodes,
+  velocityScores,
+  onNodeSelect,
+}: {
+  node: BudgetNode;
+  nodes?: Record<string, any>;
+  velocityScores?: Record<string, any>;
+  onNodeSelect?: (nodeId: string | null) => void;
+}) {
+  const varianceClass =
+    node.variance > 0
+      ? 'text-status-danger'
+      : node.variance < 0
+        ? 'text-status-success'
+        : '';
+
+  return (
+    <div
+      className="px-6 py-3 border-b border-border hover:bg-bg-light transition-colors cursor-pointer"
+      onClick={() => onNodeSelect?.(node.nodeId)}
+    >
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex-1">
+          <div className="font-medium text-fg-primary">{node.nodeName}</div>
+          <div className="text-xs text-fg-secondary">{node.nodeType}</div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-6 text-right">
+          <div>
+            <div className="text-xs text-fg-secondary">Estimated</div>
+            <div className="font-medium text-fg-primary">{formatCurrency(node.totalEstimated)}</div>
+          </div>
+          <div>
+            <div className="text-xs text-fg-secondary">Actual</div>
+            <div className="font-medium text-fg-primary">{formatCurrency(node.totalActual)}</div>
+          </div>
+          <div>
+            <div className="text-xs text-fg-secondary">Variance</div>
+            <div className={`font-medium ${varianceClass}`}>{formatCurrency(node.variance)}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BudgetTreeContent({
+  trees,
+  nodes,
+  velocityScores,
+  onNodeSelect,
+}: {
+  trees: BudgetNode[];
+  nodes?: Record<string, any>;
+  velocityScores?: Record<string, any>;
+  onNodeSelect?: (nodeId: string | null) => void;
+}) {
+  const { rules, filterMode } = useFilterStore();
+
+  // Helper to flatten tree to all leaf nodes
+  const flattenTree = (node: BudgetNode): BudgetNode[] => {
+    const sourceNodeProps = nodes?.[node.nodeId]?.properties || {};
+    const nodeForFilter = {
+      id: node.nodeId,
+      name: node.nodeName,
+      type: node.nodeType,
+      properties: {
+        ...sourceNodeProps,
+        name: node.nodeName,
+        type: node.nodeType,
+        estimated: node.totalEstimated,
+        actual: node.totalActual,
+        variance: node.variance,
+      },
+      velocity: velocityScores?.[node.nodeId],
+    };
+    
+    const isVisible = evaluateNodeVisibility(nodeForFilter, rules);
+    const results: BudgetNode[] = [];
+    
+    if (isVisible) {
+      results.push(node);
+    }
+    
+    // Recurse into children
+    for (const child of node.children) {
+      results.push(...flattenTree(child));
+    }
+    
+    return results;
+  };
+
+  // When filters are active, show flat list; otherwise show tree
+  const hasFilters = rules.length > 0;
+  const flatNodes = hasFilters 
+    ? trees.flatMap(tree => flattenTree(tree))
+    : [];
+
+  return (
+    <>
+      {hasFilters ? (
+        // Flat list when filters are active
+        <div className="space-y-0">
+          {flatNodes.length === 0 ? (
+            <div className="px-6 py-4 text-sm text-fg-secondary italic">No nodes match the filter</div>
+          ) : (
+            flatNodes.map((node) => (
+              <BudgetFlatRow
+                key={node.nodeId}
+                node={node}
+                nodes={nodes}
+                velocityScores={velocityScores}
+                onNodeSelect={onNodeSelect}
+              />
+            ))
+          )}
+        </div>
+      ) : (
+        // Tree view when no filters
+        <>
+          {trees.map((tree) => (
+            <BudgetTreeRow
+              key={tree.nodeId}
+              node={tree}
+              nodes={nodes}
+              velocityScores={velocityScores}
+              onNodeSelect={onNodeSelect}
+              filterRules={rules}
+              filterMode={filterMode}
+            />
+          ))}
+        </>
+      )}
+    </>
+  );
+}
+
+export function BudgetView({ sessionId, nodes, velocityScores, onNodeSelect }: BudgetViewProps) {
   const [data, setData] = useState<BudgetPayload | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -174,11 +367,15 @@ export function BudgetView({ sessionId, onNodeSelect }: BudgetViewProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <DollarSign size={20} className="text-accent-primary" />
-              <span className="text-sm font-semibold text-fg-secondary">Project Total</span>
+              <span className="text-sm font-semibold text-fg-secondary">Project Estimated Total</span>
             </div>
             <div className="text-2xl font-bold text-accent-primary font-mono">
-              {formatCurrency(data.grandTotal)}
+              {formatCurrency(data.grandEstimated ?? data.grandTotal)}
             </div>
+          </div>
+          <div className="mt-3 flex items-center justify-end gap-8 text-sm font-mono">
+            <div className="text-fg-secondary">Actual: <span className="text-fg-primary">{formatCurrency(data.grandActual ?? 0)}</span></div>
+            <div className="text-fg-secondary">Variance: <span className={(data.grandVariance ?? 0) > 0 ? 'text-status-danger' : (data.grandVariance ?? 0) < 0 ? 'text-status-success' : 'text-fg-primary'}>{formatCurrency(data.grandVariance ?? 0)}</span></div>
           </div>
         </div>
       )}
@@ -186,9 +383,7 @@ export function BudgetView({ sessionId, onNodeSelect }: BudgetViewProps) {
       {/* Budget Tree */}
       {data && data.trees.length > 0 && (
         <div className="flex-1 overflow-auto">
-          {data.trees.map((tree) => (
-            <BudgetTreeRow key={tree.nodeId} node={tree} onNodeSelect={onNodeSelect} />
-          ))}
+          <BudgetTreeContent trees={data.trees} nodes={nodes} velocityScores={velocityScores} onNodeSelect={onNodeSelect} />
         </div>
       )}
 
