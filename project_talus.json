@@ -213,7 +213,8 @@
           "aa2be0f9-9346-46ee-9761-68688522d219",
           "71945aab-7b63-43ce-8acd-5bf331688fc9",
           "f527e3cb-0fc6-418d-891a-7f59d0049543",
-          "a7b6e320-f290-47bf-9be9-ae455233e893"
+          "a7b6e320-f290-47bf-9be9-ae455233e893",
+          "a60a9ab4-f613-4461-9874-8bd674c25bde"
         ],
         "indicator_id": "partial",
         "indicator_set": "status",
@@ -722,10 +723,11 @@
         "type": "footage",
         "properties": {
           "name": "Check Fuel Pressure",
-          "status": "73af3b66-1e07-98eb-09a3-6403a771929a"
+          "notes": "Pressurized to 22 psi. Hopefully the result of a plugged fuel filter. Will recheck after replacing the fuel filter.",
+          "status": "29666e58-9f31-a814-91df-cdc056dfbc76"
         },
         "children": [],
-        "indicator_id": "partial",
+        "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "film",
         "schema_shape": "circle",
@@ -741,10 +743,11 @@
         "type": "footage",
         "properties": {
           "name": "Fuel Leak Down Test",
-          "status": "73af3b66-1e07-98eb-09a3-6403a771929a"
+          "notes": "Lost 4 psi over 15 minutes",
+          "status": "29666e58-9f31-a814-91df-cdc056dfbc76"
         },
         "children": [],
-        "indicator_id": "partial",
+        "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "film",
         "schema_shape": "circle",
@@ -1059,10 +1062,31 @@
         "type": "footage",
         "properties": {
           "name": "Test Alternator",
-          "status": "73af3b66-1e07-98eb-09a3-6403a771929a"
+          "notes": "Alternator passes putting out 14.6 volts at idle",
+          "status": "29666e58-9f31-a814-91df-cdc056dfbc76"
         },
         "children": [],
-        "indicator_id": "partial",
+        "indicator_id": "filled",
+        "indicator_set": "status",
+        "icon_id": "film",
+        "schema_shape": "circle",
+        "schema_color": "#10b981",
+        "allowed_children": [
+          "uses_camera_gear",
+          "uses_car_part",
+          "uses_tool"
+        ]
+      },
+      {
+        "id": "a60a9ab4-f613-4461-9874-8bd674c25bde",
+        "type": "footage",
+        "properties": {
+          "name": "Coolant System Pressure Test",
+          "notes": "Found three leaks at hose clamps one on the inlet to the water pump, one on the outlet of the water pump and one on the heater hoses at the fire wall. Clear rust on the clamp at the firewall. Filled up with 50/50 mix to top off and replaced the radiator cap that only held 11 psi of pressure instead of 13 psi.",
+          "status": "29666e58-9f31-a814-91df-cdc056dfbc76"
+        },
+        "children": [],
+        "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "film",
         "schema_shape": "circle",
@@ -5250,7 +5274,7 @@
     "6c53b542-1a3e-43cf-a0de-6d1c74f0bd04": false,
     "c2504f1a-e609-4da9-b1ac-95c6540126ef": false,
     "269dbcbb-db3e-476c-bc14-9fd164af2b6c": false,
-    "9b6d26d8-9ac0-4846-b10c-c667d221d941": true,
+    "9b6d26d8-9ac0-4846-b10c-c667d221d941": false,
     "e4750de5-a8eb-4525-8cf6-eb092af1a6b3": false,
     "ad566f5f-67f3-49b9-8f04-550a709c2460": false,
     "a5dc3b1e-7511-465f-ac9a-be44698bd43f": false,
