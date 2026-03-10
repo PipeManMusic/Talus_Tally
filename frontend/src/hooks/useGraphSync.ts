@@ -2,11 +2,16 @@ import { useCallback, useEffect } from 'react';
 import { useWebSocket } from './useWebSocket';
 import { useGraphStore } from '@/store';
 
+export interface GraphSyncOptions {
+  onExternalProjectUpdate?: (data: any) => void;
+  onExternalTemplateUpdate?: (data: any) => void;
+}
+
 /**
  * Hook for real-time graph synchronization via WebSocket
  * Automatically syncs node create/update/delete events with the graph store
  */
-export function useGraphSync() {
+export function useGraphSync(options?: GraphSyncOptions) {
   const { addNode, updateNode, removeNode } = useGraphStore();
 
   // Handle real-time node events
@@ -46,6 +51,8 @@ export function useGraphSync() {
     onNodeDeleted: handleNodeDeleted,
     onConnect: handleConnect,
     onDisconnect: handleDisconnect,
+    onExternalProjectUpdate: options?.onExternalProjectUpdate,
+    onExternalTemplateUpdate: options?.onExternalTemplateUpdate,
   });
 
   useEffect(() => {

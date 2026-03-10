@@ -9,6 +9,8 @@ interface WebSocketCallbacks {
   onPropertyChanged?: (data: any) => void;
   onConnect?: () => void;
   onDisconnect?: () => void;
+  onExternalProjectUpdate?: (data: any) => void;
+  onExternalTemplateUpdate?: (data: any) => void;
 }
 
 export function useWebSocket(callbacks: WebSocketCallbacks = {}) {
@@ -32,6 +34,8 @@ export function useWebSocket(callbacks: WebSocketCallbacks = {}) {
       onNodeUpdated: (data) => callbacksRef.current.onNodeUpdated?.(data),
       onNodeDeleted: (data) => callbacksRef.current.onNodeDeleted?.(data),
       onPropertyChanged: (data) => callbacksRef.current.onPropertyChanged?.(data),
+      onExternalProjectUpdate: (data) => callbacksRef.current.onExternalProjectUpdate?.(data),
+      onExternalTemplateUpdate: (data) => callbacksRef.current.onExternalTemplateUpdate?.(data),
       onDisconnect: () => {
         setConnected(false);
         callbacksRef.current.onDisconnect?.();
