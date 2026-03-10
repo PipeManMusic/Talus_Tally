@@ -3189,12 +3189,15 @@
         "type": "part_asset",
         "properties": {
           "name": "MOOG Tie Rod End (Left)",
+          "actual_cost": 27.34,
+          "estimated_cost": "27.34",
           "notes": "Order 113-8321077-1869806",
           "part_number": "ES2215L",
+          "prop_1771951966105": "",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "27.34"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",

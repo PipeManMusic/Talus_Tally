@@ -6,6 +6,7 @@ export interface TreeNode {
   id: string;
   name: string;
   type: string;
+  properties: Record<string, any>;
   allowed_children: string[];
   children: TreeNode[];
   selected?: boolean;
@@ -38,6 +39,7 @@ export function convertNodesToTree(
       id: node.id,
       name: node.properties?.name || node.type,
       type: node.type || 'project',
+      properties: node.properties || {},
       indicator_id: node.indicator_id ?? undefined,
       indicator_set: node.indicator_set ?? undefined,
       icon_id: node.icon_id ?? undefined,
@@ -47,7 +49,7 @@ export function convertNodesToTree(
       allowed_children: getAllowedChildren(node.type),
       children: node.children?.map(childId => {
         const childNode = nodesMap[childId];
-        return childNode ? buildTree(childNode, nodesMap, node.id) : { id: childId, name: 'Unknown', type: 'unknown', allowed_children: [], children: [], parent_id: node.id };
+        return childNode ? buildTree(childNode, nodesMap, node.id) : { id: childId, name: 'Unknown', type: 'unknown', properties: {}, allowed_children: [], children: [], parent_id: node.id };
       }) || []
     };
   };
