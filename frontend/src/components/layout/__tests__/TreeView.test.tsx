@@ -37,6 +37,7 @@ const createTree = (): TreeNode[] => [
     id: 'season-1',
     name: 'Season 1',
     type: 'season',
+    properties: { name: 'Season 1' },
     allowed_children: ['episode'],
     parent_id: undefined,
     indicator_id: undefined,
@@ -49,6 +50,7 @@ const createTree = (): TreeNode[] => [
         id: 'episode-a',
         name: 'Episode A',
         type: 'episode',
+        properties: { name: 'Episode A' },
         allowed_children: [],
         parent_id: 'season-1',
         indicator_id: undefined,
@@ -62,6 +64,7 @@ const createTree = (): TreeNode[] => [
         id: 'episode-b',
         name: 'Episode B',
         type: 'episode',
+        properties: { name: 'Episode B' },
         allowed_children: [],
         parent_id: 'season-1',
         indicator_id: undefined,
@@ -306,5 +309,49 @@ describe('TreeView filtering', () => {
 
     expect(seasonRow?.className).not.toContain('opacity-30');
     expect(matchingChildRow?.className).not.toContain('opacity-30');
+  });
+});
+
+describe('TreeView contextual import/export actions', () => {
+  it('emits import-csv-here from context menu', () => {
+    const nodes = createTree();
+    const onContextMenu = vi.fn();
+
+    render(
+      <TreeView
+        nodes={nodes}
+        onContextMenu={onContextMenu}
+        expandedMap={{ 'season-1': true }}
+        setExpandedMap={vi.fn()}
+      />
+    );
+
+    const targetRow = screen.getByText('Episode A').closest('[data-testid="tree-item-row"]');
+    expect(targetRow).not.toBeNull();
+
+    fireEvent.contextMenu(targetRow!);
+    fireEvent.click(screen.getByText('📥 Import CSV Here'));
+
+    expect(onContextMenu).toHaveBeenCalledWith('episode-a', 'import-csv-here');
+  });
+
+  it('emits export-branch from plus flyout menu', () => {
+    const nodes = createTree();
+    const onContextMenu = vi.fn();
+
+    render(
+      <TreeView
+        nodes={nodes}
+        onContextMenu={onContextMenu}
+        expandedMap={{ 'season-1': true }}
+        setExpandedMap={vi.fn()}
+      />
+    );
+
+    const addButton = screen.getAllByTestId('add-child-btn')[0];
+    fireEvent.click(addButton);
+    fireEvent.click(screen.getByText('📤 Export Branch'));
+
+    expect(onContextMenu).toHaveBeenCalledWith('season-1', 'export-branch');
   });
 });

@@ -709,6 +709,29 @@ function TreeItem({
                     ➕ Add Asset Category
                   </button>
                 )}
+                <div className="border-t border-border my-1" />
+                <button
+                  className="block w-full text-left px-4 py-2 text-sm text-fg-primary hover:bg-bg-selection"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setShowFlyout(false);
+                    handleMenuAction('import-csv-here');
+                  }}
+                  data-testid="add-child-flyout-option"
+                >
+                  📥 Import CSV Here
+                </button>
+                <button
+                  className="block w-full text-left px-4 py-2 text-sm text-fg-primary hover:bg-bg-selection"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setShowFlyout(false);
+                    handleMenuAction('export-branch');
+                  }}
+                  data-testid="add-child-flyout-option"
+                >
+                  📤 Export Branch
+                </button>
               </div>
             )}
           </>
@@ -800,6 +823,19 @@ function TreeItem({
               className="w-full text-left px-4 py-2 text-sm text-fg-primary hover:bg-status-danger hover:text-fg-primary transition-colors last:rounded-b-sm"
             >
               🗑️ Delete
+            </button>
+            <div className="border-t border-border my-1" />
+            <button
+              onClick={() => handleMenuAction('import-csv-here')}
+              className="w-full text-left px-4 py-2 text-sm text-fg-primary hover:bg-bg-selection transition-colors"
+            >
+              📥 Import CSV Here
+            </button>
+            <button
+              onClick={() => handleMenuAction('export-branch')}
+              className="w-full text-left px-4 py-2 text-sm text-fg-primary hover:bg-bg-selection transition-colors last:rounded-b-sm"
+            >
+              📤 Export Branch
             </button>
           </div>
         )}

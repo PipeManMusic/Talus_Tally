@@ -2,15 +2,20 @@ import { useState, useEffect } from 'react';
 import { Download, FileText, AlertCircle, CheckCircle } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
-import { apiClient, type ExportTemplate } from '../../api/client';
+import { apiClient, type ExportTemplate, type VelocityScore } from '../../api/client';
+import { useFilterStore } from '../../store/filterStore';
+import { evaluateNodeVisibility } from '../../utils/filterEngine';
+import { useGraphStore } from '../../store';
 
 interface ExportDialogProps {
   isOpen: boolean;
   onClose: () => void;
   sessionId: string | null;
+  targetNodeId?: string;
+  velocityScores?: Record<string, VelocityScore>;
 }
 
-export function ExportDialog({ isOpen, onClose, sessionId }: ExportDialogProps) {
+export function ExportDialog({ isOpen, onClose, sessionId, targetNodeId, velocityScores = {} }: ExportDialogProps) {
   const [templates, setTemplates] = useState<ExportTemplate[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -18,6 +23,8 @@ export function ExportDialog({ isOpen, onClose, sessionId }: ExportDialogProps) 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isTauri, setIsTauri] = useState(false);
+  const { rules } = useFilterStore();
+  const { nodes } = useGraphStore();
 
   useEffect(() => {
     // Check if we're running in Tauri
@@ -83,8 +90,27 @@ export function ExportDialog({ isOpen, onClose, sessionId }: ExportDialogProps) 
       console.log('[ExportDialog] Starting export...');
       console.log('[ExportDialog] isTauri state:', isTauri);
 
+      let includedNodeIds: string[] | undefined;
+      if (!targetNodeId && rules.length > 0) {
+        includedNodeIds = Object.values(nodes)
+          .filter((node) => {
+            const nodeForFilter = {
+              id: node.id,
+              name: node.properties?.name || node.id,
+              type: node.type,
+              properties: node.properties || {},
+              velocity: velocityScores[node.id],
+            };
+            return evaluateNodeVisibility(nodeForFilter, rules);
+          })
+          .map((node) => node.id);
+      }
+
       // Download the export file as a blob
-      const blob = await apiClient.downloadExport(sessionId, selectedTemplate);
+      const blob = await apiClient.downloadExport(sessionId, selectedTemplate, {
+        rootNodeId: targetNodeId,
+        includedNodeIds,
+      });
 
       // Generate filename from template
       const template = templates.find((t) => t.id === selectedTemplate);
@@ -221,7 +247,9 @@ export function ExportDialog({ isOpen, onClose, sessionId }: ExportDialogProps) 
 
         {/* Description */}
         <p className="text-sm text-fg-secondary">
-          Export your project data in various formats. Select a template below to save your data.
+          {targetNodeId
+            ? 'Export the selected branch in various formats. Select a template below to save your data.'
+            : 'Export your project data in various formats. Select a template below to save your data.'}
         </p>
 
         {/* Success Display */}
@@ -306,8 +334,13 @@ export function ExportDialog({ isOpen, onClose, sessionId }: ExportDialogProps) 
         {/* Additional Info */}
         {!loading && templates.length > 0 && (
           <div className="text-xs text-fg-secondary bg-bg-dark p-3 rounded-sm">
-            <strong>Note:</strong> The export will include all nodes from your current project graph.
-            Depending on the template, only relevant node types will be included in the output.
+            <strong>Note:</strong>{' '}
+            {targetNodeId
+              ? 'This export is limited to the selected branch (target node plus descendants).'
+              : rules.length > 0
+                ? 'Active frontend filters are applied to this export.'
+                : 'The export will include all nodes from your current project graph.'}
+            {' '}Depending on the template, only relevant node types will be included in the output.
           </div>
         )}
       </div>

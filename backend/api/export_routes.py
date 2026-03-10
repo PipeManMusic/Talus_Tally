@@ -9,7 +9,7 @@ Provides REST endpoints for:
 import logging
 from flask import Blueprint, request, jsonify, Response
 from uuid import UUID
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional, Set
 
 from backend.core.export_engine import ExportEngine
 
@@ -73,6 +73,8 @@ def download_export(session_id):
     Request Body (JSON):
         {
             "template_id": "kdenlive_session.xml.j2",
+            "root_node_id": "uuid-string",            // optional
+            "included_node_ids": ["uuid-1", "uuid-2"], // optional
             "context": {  // optional additional context data
                 "project_name": "My Project",
                 "custom_field": "value"
@@ -126,6 +128,27 @@ def download_export(session_id):
             }), 400
         
         user_context = body.get('context', {})
+        root_node_id = body.get('root_node_id')
+        included_node_ids_raw = body.get('included_node_ids')
+
+        if root_node_id is not None and not isinstance(root_node_id, str):
+            return jsonify({
+                'error': {
+                    'code': 'INVALID_ROOT_NODE_ID',
+                    'message': 'root_node_id must be a string when provided'
+                }
+            }), 400
+
+        included_node_ids: Optional[List[str]] = None
+        if included_node_ids_raw is not None:
+            if not isinstance(included_node_ids_raw, list) or not all(isinstance(item, str) for item in included_node_ids_raw):
+                return jsonify({
+                    'error': {
+                        'code': 'INVALID_INCLUDED_NODE_IDS',
+                        'message': 'included_node_ids must be an array of strings when provided'
+                    }
+                }), 400
+            included_node_ids = included_node_ids_raw
         
         # Build status label map from blueprint if available
         status_label_map: Dict[str, str] = {}
@@ -164,6 +187,15 @@ def download_export(session_id):
             }
             nodes.append(node_dict)
         
+        # Apply export filters (branch root and/or explicit included node ids)
+        engine = get_export_engine()
+        nodes = engine.filter_nodes(
+            nodes,
+            root_node_id=root_node_id,
+            included_node_ids=included_node_ids,
+        )
+        filtered_node_ids: Set[str] = {str(node['id']) for node in nodes}
+
         # Build template context
         project_id = session_data.get('current_project_id', 'unknown')
         blueprint_version = None
@@ -171,6 +203,11 @@ def download_export(session_id):
             blueprint_version = blueprint.version
         template_version = blueprint_version or (graph.template_version if hasattr(graph, 'template_version') else None)
         blocking_relationships = session_data.get('blocking_relationships', [])
+        if filtered_node_ids:
+            blocking_relationships = [
+                edge for edge in blocking_relationships
+                if str(edge.get('blockedNodeId')) in filtered_node_ids and str(edge.get('blockingNodeId')) in filtered_node_ids
+            ]
 
         velocity_nodes = []
         try:
@@ -216,6 +253,9 @@ def download_export(session_id):
                     })
         except Exception as velocity_error:
             logger.warning(f"[EXPORT] Velocity data unavailable: {velocity_error}")
+
+        if filtered_node_ids:
+            velocity_nodes = [entry for entry in velocity_nodes if str(entry.get('nodeId')) in filtered_node_ids]
         
         from datetime import datetime
 
@@ -233,7 +273,6 @@ def download_export(session_id):
         }
         
         # Render template
-        engine = get_export_engine()
         try:
             rendered_content = engine.render(template_id, context)
         except Exception as render_error:

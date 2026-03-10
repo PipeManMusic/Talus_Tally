@@ -228,6 +228,12 @@ export interface ExportTemplate {
   extension: string;
 }
 
+export interface ExportDownloadOptions {
+  context?: Record<string, any>;
+  rootNodeId?: string;
+  includedNodeIds?: string[];
+}
+
 export interface IconsConfig {
   icons: IconCatalog[];
 }
@@ -1004,14 +1010,24 @@ export class APIClient {
     return response.json();
   }
 
-  async downloadExport(sessionId: string, templateId: string, context?: Record<string, any>): Promise<Blob> {
+  async downloadExport(sessionId: string, templateId: string, options: ExportDownloadOptions = {}): Promise<Blob> {
+    const payload: Record<string, any> = {
+      template_id: templateId,
+      context: options.context || {},
+    };
+
+    if (options.rootNodeId) {
+      payload.root_node_id = options.rootNodeId;
+    }
+
+    if (options.includedNodeIds !== undefined) {
+      payload.included_node_ids = options.includedNodeIds;
+    }
+
     const response = await fetch(`${this.baseUrl}/api/export/${sessionId}/download`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        template_id: templateId,
-        context: context || {},
-      }),
+      body: JSON.stringify(payload),
     });
     if (!response.ok) {
       const error = await response.json();
