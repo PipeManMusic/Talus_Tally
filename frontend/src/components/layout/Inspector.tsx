@@ -241,18 +241,30 @@ export function Inspector({
                   <Input
                     label={prop.name}
                     type="number"
-                    value={displayValue}
-                    onChange={(e) =>
-                      handlePropertyChange(prop.id, e.target.valueAsNumber)
-                    }
+                    value={draftValue}
+                    onChange={(e) => {
+                      const nextValue = e.target.value;
+                      setDraftValues((prev) => ({ ...prev, [draftKey]: nextValue }));
+                      scheduleCommit(draftKey, prop.id, nextValue, false);
+                    }}
+                    onBlur={(e) => {
+                      commitDraftValue(prop.id, e.target.value, false);
+                    }}
                     required={prop.required}
                   />
                 )}
                 {prop.type === 'currency' && (
                   <CurrencyInput
                     label={prop.name}
-                    value={displayValue}
-                    onChange={(e) => handlePropertyChange(prop.id, e.target.value)}
+                    value={draftValue}
+                    onChange={(e) => {
+                      const nextValue = e.target.value;
+                      setDraftValues((prev) => ({ ...prev, [draftKey]: nextValue }));
+                      scheduleCommit(draftKey, prop.id, nextValue, false);
+                    }}
+                    onBlur={(e) => {
+                      commitDraftValue(prop.id, e.target.value, false);
+                    }}
                     required={prop.required}
                   />
                 )}
@@ -260,8 +272,15 @@ export function Inspector({
                   <Input
                     label={prop.name}
                     type="date"
-                    value={displayValue}
-                    onChange={(e) => handlePropertyChange(prop.id, e.target.value)}
+                    value={draftValue}
+                    onChange={(e) => {
+                      const nextValue = e.target.value;
+                      setDraftValues((prev) => ({ ...prev, [draftKey]: nextValue }));
+                      scheduleCommit(draftKey, prop.id, nextValue, false);
+                    }}
+                    onBlur={(e) => {
+                      commitDraftValue(prop.id, e.target.value, false);
+                    }}
                     required={prop.required}
                   />
                 )}
@@ -565,18 +584,30 @@ export function Inspector({
                       <Input
                         label={prop.name}
                         type="number"
-                        value={assetDisplayValue}
-                        onChange={(e) =>
-                          handleLinkedAssetPropertyChange(prop.id, e.target.valueAsNumber)
-                        }
+                        value={assetDraftValue}
+                        onChange={(e) => {
+                          const nextValue = e.target.value;
+                          setDraftValues((prev) => ({ ...prev, [assetDraftKey]: nextValue }));
+                          scheduleCommit(assetDraftKey, prop.id, nextValue, true);
+                        }}
+                        onBlur={(e) => {
+                          commitDraftValue(prop.id, e.target.value, true);
+                        }}
                         required={prop.required}
                       />
                     )}
                     {prop.type === 'currency' && (
                       <CurrencyInput
                         label={prop.name}
-                        value={assetDisplayValue}
-                        onChange={(e) => handleLinkedAssetPropertyChange(prop.id, e.target.value)}
+                        value={assetDraftValue}
+                        onChange={(e) => {
+                          const nextValue = e.target.value;
+                          setDraftValues((prev) => ({ ...prev, [assetDraftKey]: nextValue }));
+                          scheduleCommit(assetDraftKey, prop.id, nextValue, true);
+                        }}
+                        onBlur={(e) => {
+                          commitDraftValue(prop.id, e.target.value, true);
+                        }}
                         required={prop.required}
                       />
                     )}
@@ -584,8 +615,15 @@ export function Inspector({
                       <Input
                         label={prop.name}
                         type="date"
-                        value={assetDisplayValue}
-                        onChange={(e) => handleLinkedAssetPropertyChange(prop.id, e.target.value)}
+                        value={assetDraftValue}
+                        onChange={(e) => {
+                          const nextValue = e.target.value;
+                          setDraftValues((prev) => ({ ...prev, [assetDraftKey]: nextValue }));
+                          scheduleCommit(assetDraftKey, prop.id, nextValue, true);
+                        }}
+                        onBlur={(e) => {
+                          commitDraftValue(prop.id, e.target.value, true);
+                        }}
                         required={prop.required}
                       />
                     )}

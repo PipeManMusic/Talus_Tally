@@ -2402,12 +2402,6 @@ function App() {
                   alert('No node selected');
                   return;
                 }
-                console.log('[onPropertyChange] Starting property update:', {
-                  nodeId: currentSelectedNodeData.id,
-                  propId,
-                  oldValue: currentSelectedNodeData.properties?.[propId],
-                  newValue: value
-                });
                 safeExecuteCommand('UpdateProperty', {
                     node_id: currentSelectedNodeData.id,
                     property_id: propId,
@@ -2415,17 +2409,10 @@ function App() {
                     new_value: value,
                   })
                   .then((result) => {
-                    console.log('[onPropertyChange] Got result from API');
-                    console.log('[onPropertyChange] Result keys:', Object.keys(result));
-                    console.log('[onPropertyChange] Result.graph:', result.graph);
-                    console.log('[onPropertyChange] Result.graph.roots count:', result.graph?.roots?.length);
-                    console.log('[onPropertyChange] Starting normalizeGraph...');
                     try {
                       const graph = normalizeGraph(result.graph ?? result);
-                      console.log('[onPropertyChange] Graph normalized successfully, nodes:', graph.nodes.length);
                       setCurrentGraph(graph);
-                      setIsDirty(result.is_dirty ?? true);  // Update dirty state from API
-                      console.log('✓ Property updated');
+                      setIsDirty(result.is_dirty ?? true);
                     } catch (error) {
                       console.error('[onPropertyChange] Error normalizing graph:', error);
                       alert('Error updating UI after property change: ' + (error as Error).message);

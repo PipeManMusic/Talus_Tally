@@ -2309,7 +2309,8 @@ def get_template_schema(template_id):
                     'indicator_set': indicator_set,
                     'options': options,
                     'markup_profile': markup_profile,
-                    'markup_tokens': markup_tokens
+                    'markup_tokens': markup_tokens,
+                    'ui_group': prop_data.get('ui_group'),
                 })
             
             node_types.append({

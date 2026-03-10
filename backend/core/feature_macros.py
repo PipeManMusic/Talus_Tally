@@ -45,14 +45,14 @@ FEATURE_MACROS: Dict[str, List[Dict[str, Any]]] = {
             "label": "Estimated Cost",
             "type": "currency",
             "system_locked": True,
-            "ui_group": "Budget",
+            "ui_group": "Financial",
         },
         {
             "id": "actual_cost",
-            "label": "Actual Cost ($)",
-            "type": "number",
+            "label": "Actual Cost",
+            "type": "currency",
             "system_locked": True,
-            "ui_group": "Budget",
+            "ui_group": "Financial",
         },
     ],
 }
