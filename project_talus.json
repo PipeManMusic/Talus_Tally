@@ -1959,12 +1959,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Lisle Ignition Module Wrench",
+          "actual_cost": 8.49,
+          "estimated_cost": "8.49",
           "notes": "Order 113-4787138-6269046",
           "part_number": "64650",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "8.49"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -1979,12 +1981,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Brake Fluid Tester",
+          "actual_cost": "21.37",
+          "estimated_cost": "21.37",
           "notes": "Order 113-6163034-9629866",
           "part_number": "BF200",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "21.37"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -1999,11 +2003,13 @@
         "type": "part_asset",
         "properties": {
           "name": "RX WELD Plastic Welder Kit",
+          "actual_cost": "39.99",
+          "estimated_cost": "39.99",
           "notes": "Order 113-4787138-6269046",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "39.99"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -2037,12 +2043,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Bosch Clear Advantage Wiper 13in",
+          "actual_cost": "12.69",
+          "estimated_cost": "12.69",
           "notes": "Order 113-4257500-9827458",
           "part_number": "40513",
           "quantity_on_hand": "1",
           "status": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "supplier": "Amazon",
-          "unit_cost": "12.69"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "filled",
@@ -3071,6 +3079,8 @@
         "type": "part_asset",
         "properties": {
           "name": "MOOG Adjusting Sleeve",
+          "actual_cost": 16.99,
+          "estimated_cost": "16.99",
           "notes": "Order 113-4787138-6269046",
           "part_number": "ES2080S",
           "quantity_on_hand": "1",
@@ -3111,6 +3121,8 @@
           "name": "Mevotech Inner Tie Rod",
           "notes": "Order 113-9966641-7922652",
           "part_number": "MDS1042",
+          "prop_1771951944461": "",
+          "prop_1771951966105": "",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
@@ -5329,6 +5341,22 @@
     {
       "blockedNodeId": "c80dab8c-ab7d-4685-b260-fcbdcef5536b",
       "blockingNodeId": "89941716-6549-4335-9b87-7a9a5b544233"
+    }
+  ],
+  "filter_sets": [
+    {
+      "id": "fset-1773170128885-ffncvsq",
+      "name": "Velocity > 0",
+      "rules": [
+        {
+          "property": "velocity_score",
+          "operator": "greater_than",
+          "value": "0",
+          "id": "filter-1773170041085-5dv09zs"
+        }
+      ],
+      "filterMode": "hide",
+      "createdAt": "2026-03-10T19:15:28.885Z"
     }
   ]
 }
