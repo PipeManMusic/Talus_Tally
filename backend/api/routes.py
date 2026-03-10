@@ -306,6 +306,13 @@ def _cleanup_inactive_sessions(max_inactive_hours=24):
     
     for session_id in sessions_to_remove:
         logger.info(f"Cleaning up inactive session: {session_id}")
+        # Stop file watcher before removing session
+        session_data = _sessions.get(session_id)
+        if session_data and session_data.get('project_manager'):
+            try:
+                session_data['project_manager'].stop_file_watching()
+            except Exception as e:
+                logger.warning(f"Error stopping file watcher during cleanup: {e}")
         _sessions.pop(session_id, None)
         _session_metadata.pop(session_id, None)
     
@@ -2005,6 +2012,7 @@ def load_graph_into_session(session_id):
         graph_data = data['graph']
         template_id = data.get('template_id')
         blocking_relationships = data.get('blocking_relationships') or []
+        project_file_path = data.get('project_file_path')  # Optional path for file watching
 
         # Create new graph from saved data
         from backend.core.graph import ProjectGraph
@@ -2146,6 +2154,26 @@ def load_graph_into_session(session_id):
         session_data['current_project_id'] = str(uuid.uuid4())
         session_data['blocking_relationships'] = blocking_relationships
         
+        # Initialize ProjectManager for file watching if file path provided
+        if not session_data.get('project_manager'):
+            session_data['project_manager'] = ProjectManager()
+        
+        project_manager = session_data['project_manager']
+        
+        # Start file watching if project_file_path was provided
+        if project_file_path:
+            try:
+                # Stop any existing file watcher first
+                project_manager.stop_file_watching()
+                # Load the project into ProjectManager to track the path
+                project_manager.current_project_path = project_file_path
+                # Start watching for external changes
+                project_manager.start_file_watching(session_id)
+                logger.info(f"[API] Started file watching for project: {project_file_path}")
+            except Exception as watch_err:
+                logger.warning(f"[API] Failed to start file watching: {watch_err}")
+                # Don't fail the load if file watching fails
+        
         # Mark as dirty since it's a loaded state
         _mark_session_dirty(session_id)
         _update_session_activity(session_id)
@@ -2177,8 +2205,8 @@ def load_graph_into_session(session_id):
 def list_templates():
     """List available templates."""
     try:
-        schema_loader = SchemaLoader()
-        templates_dir = schema_loader.templates_dir
+        from backend.infra.template_persistence import get_templates_directory
+        templates_dir = get_templates_directory()
         
         templates = []
         if os.path.exists(templates_dir):
@@ -2194,7 +2222,7 @@ def list_templates():
         return jsonify({'templates': templates}), 200
         
     except Exception as e:
-        logger.error(f"Error listing templates: {e}")
+        logger.error(f"Error listing templates: {e}", exc_info=True)
         return jsonify({
             'error': {
                 'code': 'INTERNAL_ERROR',
@@ -2519,16 +2547,30 @@ def editor_update_template(template_id):
                 
                 if removed_types or orphaned_props_by_type:
                     # Find all sessions using this template and mark orphaned nodes/properties
-                    sessions = GraphService.get_all_sessions()
+                    sessions = _sessions
                     
                     for session_id, session_data in sessions.items():
                         blueprint = session_data.get('blueprint')
-                        if not blueprint or blueprint.get('id') != template_id:
+                        blueprint_id = None
+                        if blueprint:
+                            if isinstance(blueprint, dict):
+                                blueprint_id = blueprint.get('id')
+                            else:
+                                blueprint_id = getattr(blueprint, 'id', None)
+
+                        if blueprint_id != template_id:
                             continue
                         
                         # Get graph for this session
                         graph = session_data.get('graph', {})
-                        
+                        if not isinstance(graph, dict):
+                            logger.warning(
+                                "Skipping orphan marking for session %s: unsupported graph type %s",
+                                session_id,
+                                type(graph).__name__,
+                            )
+                            continue
+
                         orphaned_node_count = 0
                         orphaned_prop_count = 0
                         orphaned_node_ids = []
