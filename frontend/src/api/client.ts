@@ -287,9 +287,11 @@ export interface BudgetNode {
   nodeId: string;
   nodeName: string;
   nodeType: string;
-  ownCost: number;
-  childrenCost: number;
-  totalCost: number;
+  estimatedCost: number;
+  actualCost: number;
+  totalEstimated: number;
+  totalActual: number;
+  variance: number;
   depth: number;
   children: BudgetNode[];
 }
@@ -297,6 +299,9 @@ export interface BudgetNode {
 export interface BudgetPayload {
   trees: BudgetNode[];
   grandTotal: number;
+  grandEstimated?: number;
+  grandActual?: number;
+  grandVariance?: number;
   timestamp: number;
 }
 
@@ -451,9 +456,21 @@ export class APIClient {
 
   // Template Management
   async listTemplates(): Promise<Template[]> {
-    const response = await fetch(`${this.baseUrl}/api/v1/templates`);
-    const data = await response.json();
-    return data.templates || [];
+    const primary = await fetch(`${this.baseUrl}/api/v1/templates`);
+    if (primary.ok) {
+      const data = await primary.json();
+      return data.templates || [];
+    }
+
+    const fallback = await fetch(`${this.baseUrl}/api/v1/templates/editor/list`);
+    if (fallback.ok) {
+      const data = await fallback.json();
+      return data.templates || [];
+    }
+
+    throw new Error(
+      `Failed to list templates: primary=${primary.status} ${primary.statusText}, fallback=${fallback.status} ${fallback.statusText}`
+    );
   }
 
   async getTemplateSchema(templateId: string): Promise<TemplateSchema> {
@@ -764,7 +781,8 @@ export class APIClient {
     sessionId: string,
     graph: any,
     templateId: string | null,
-    blockingRelationships: Array<{ blockedNodeId: string; blockingNodeId: string }> = []
+    blockingRelationships: Array<{ blockedNodeId: string; blockingNodeId: string }> = [],
+    projectFilePath?: string | null
   ): Promise<any> {
     const response = await fetch(`${this.baseUrl}/api/v1/sessions/${sessionId}/load-graph`, {
       method: 'POST',
@@ -773,6 +791,7 @@ export class APIClient {
         graph,
         template_id: templateId,
         blocking_relationships: blockingRelationships,
+        project_file_path: projectFilePath,
       }),
     });
     if (!response.ok) {
@@ -1066,6 +1085,8 @@ export class APIClient {
     onNodeUpdated?: (data: any) => void;
     onNodeDeleted?: (data: any) => void;
     onPropertyChanged?: (data: any) => void;
+    onExternalProjectUpdate?: (data: any) => void;
+    onExternalTemplateUpdate?: (data: any) => void;
     onDisconnect?: () => void;
     sessionId?: string | null;
   }): Socket {
@@ -1105,6 +1126,14 @@ export class APIClient {
 
     if (callbacks.onPropertyChanged) {
       this.socket.on('property-changed', callbacks.onPropertyChanged);
+    }
+
+    if (callbacks.onExternalProjectUpdate) {
+      this.socket.on('external_project_update', callbacks.onExternalProjectUpdate);
+    }
+
+    if (callbacks.onExternalTemplateUpdate) {
+      this.socket.on('external_template_update', callbacks.onExternalTemplateUpdate);
     }
 
     if (callbacks.onDisconnect) {
