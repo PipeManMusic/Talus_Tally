@@ -3,7 +3,7 @@ Tests for feature_macros — Template Feature Macro injection/removal system.
 
 Covers:
 - Scheduling feature injects start_date, end_date, assigned_to
-- Budgeting feature injects estimated_cost
+- Budgeting feature injects estimated_cost + actual_cost
 - Disabling a feature removes its system_locked properties
 - Enabling both features simultaneously
 - Existing user properties are preserved
@@ -120,12 +120,16 @@ class TestFeatureInjection:
         assert prop_map["estimated_cost"]["type"] == "currency"
         assert prop_map["estimated_cost"]["system_locked"] is True
         assert prop_map["estimated_cost"]["ui_group"] == "Budget"
+        assert "actual_cost" in prop_map
+        assert prop_map["actual_cost"]["type"] == "number"
+        assert prop_map["actual_cost"]["system_locked"] is True
+        assert prop_map["actual_cost"]["ui_group"] == "Budget"
 
     def test_both_features_inject_all_properties(self, both_features_template):
         result = apply_feature_macros(both_features_template)
         prop_ids = [p["id"] for p in result["node_types"][0]["properties"]]
 
-        expected = {"start_date", "end_date", "assigned_to", "estimated_cost"}
+        expected = {"start_date", "end_date", "assigned_to", "estimated_cost", "actual_cost"}
         assert expected.issubset(set(prop_ids))
 
 
@@ -175,10 +179,12 @@ class TestFeatureRemoval:
     def test_disabling_budgeting_removes_estimated_cost(self, budgeting_template):
         injected = apply_feature_macros(budgeting_template)
         assert any(p["id"] == "estimated_cost" for p in injected["node_types"][0]["properties"])
+        assert any(p["id"] == "actual_cost" for p in injected["node_types"][0]["properties"])
 
         injected["node_types"][0]["features"] = []
         result = apply_feature_macros(injected)
         assert not any(p["id"] == "estimated_cost" for p in result["node_types"][0]["properties"])
+        assert not any(p["id"] == "actual_cost" for p in result["node_types"][0]["properties"])
 
     def test_removing_one_feature_keeps_other(self, both_features_template):
         injected = apply_feature_macros(both_features_template)

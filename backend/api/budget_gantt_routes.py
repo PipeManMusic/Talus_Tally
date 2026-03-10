@@ -43,9 +43,11 @@ def _serialise_budget_tree(bn) -> dict:
         'nodeId': bn.node_id,
         'nodeName': bn.node_name,
         'nodeType': bn.node_type,
-        'ownCost': bn.own_cost,
-        'childrenCost': bn.children_cost,
-        'totalCost': bn.total_cost,
+        'estimatedCost': bn.estimated_cost,
+        'actualCost': bn.actual_cost,
+        'totalEstimated': bn.total_estimated,
+        'totalActual': bn.total_actual,
+        'variance': bn.variance,
         'depth': bn.depth,
         'children': [_serialise_budget_tree(c) for c in bn.children],
     }
@@ -70,11 +72,16 @@ def get_budget(session_id: str):
 
         engine = BudgetEngine(graph_nodes)
         trees = engine.calculate()
-        grand_total = sum(t.total_cost for t in trees)
+        grand_estimated = sum(t.total_estimated for t in trees)
+        grand_actual = sum(t.total_actual for t in trees)
+        grand_variance = grand_actual - grand_estimated
 
         return jsonify({
             'trees': [_serialise_budget_tree(t) for t in trees],
-            'grandTotal': grand_total,
+            'grandTotal': grand_estimated,
+            'grandEstimated': grand_estimated,
+            'grandActual': grand_actual,
+            'grandVariance': grand_variance,
             'timestamp': int(time.time() * 1000),
         })
 
