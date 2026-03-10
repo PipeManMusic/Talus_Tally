@@ -1,11 +1,12 @@
 """
-Budget Engine — recursive tree rollup for total cost calculation.
+Budget Engine — recursive tree rollup for cost calculation.
 
-Each node's total_cost = its own estimated_cost + sum of children's total_cost.
+Each node returns full financial rollups:
+- total_estimated = own estimated_cost + children total_estimated
+- total_actual = own actual_cost + children total_actual
+- variance = total_actual - total_estimated
+
 The frontend receives a pre-calculated tree; it does ZERO recursive math.
-
-Endpoints consume the BudgetEngine.calculate() method which returns a list of
-BudgetNode dataclass instances ready to be serialised to JSON.
 """
 
 from __future__ import annotations
@@ -25,9 +26,11 @@ class BudgetNode:
     node_id: str
     node_name: str
     node_type: str
-    own_cost: float
-    children_cost: float
-    total_cost: float
+    estimated_cost: float
+    actual_cost: float
+    total_estimated: float
+    total_actual: float
+    variance: float
     depth: int
     children: List[BudgetNode] = field(default_factory=list)
 
@@ -96,32 +99,45 @@ class BudgetEngine:
     # ------------------------------------------------------------------
 
     def _rollup(self, nid_str: str, depth: int) -> Optional[BudgetNode]:
-        """Recursively compute total_cost for *nid_str* and its subtree."""
+        """Recursively compute estimated/actual/variance for *nid_str* subtree."""
         node = self._resolve_node(nid_str)
         if node is None:
             return None
 
-        raw_cost = self._get_prop(node, "estimated_cost", 0)
+        raw_estimated = self._get_prop(node, "estimated_cost", 0)
+        raw_actual = self._get_prop(node, "actual_cost", 0)
         try:
-            own_cost = float(raw_cost) if raw_cost else 0.0
+            estimated_cost = float(raw_estimated) if raw_estimated else 0.0
         except (ValueError, TypeError):
-            own_cost = 0.0
+            estimated_cost = 0.0
+        try:
+            actual_cost = float(raw_actual) if raw_actual else 0.0
+        except (ValueError, TypeError):
+            actual_cost = 0.0
 
         child_budget_nodes: List[BudgetNode] = []
-        children_cost = 0.0
+        children_estimated = 0.0
+        children_actual = 0.0
         for cid in self._children_map.get(nid_str, []):
             child_bn = self._rollup(cid, depth + 1)
             if child_bn is not None:
                 child_budget_nodes.append(child_bn)
-                children_cost += child_bn.total_cost
+                children_estimated += child_bn.total_estimated
+                children_actual += child_bn.total_actual
+
+        total_estimated = estimated_cost + children_estimated
+        total_actual = actual_cost + children_actual
+        variance = total_actual - total_estimated
 
         return BudgetNode(
             node_id=nid_str,
             node_name=self._get_name(node),
             node_type=self._get_type(node),
-            own_cost=own_cost,
-            children_cost=children_cost,
-            total_cost=own_cost + children_cost,
+            estimated_cost=estimated_cost,
+            actual_cost=actual_cost,
+            total_estimated=total_estimated,
+            total_actual=total_actual,
+            variance=variance,
             depth=depth,
             children=child_budget_nodes,
         )
@@ -135,7 +151,7 @@ class BudgetEngine:
         Return a list of root-level BudgetNode trees.
 
         Each root contains recursively nested children with pre-calculated
-        total_cost values ready for the frontend to render.
+        total_estimated/total_actual/variance values ready for the frontend.
         """
         # Roots = nodes that have no parent
         root_ids = [
@@ -167,9 +183,11 @@ class BudgetEngine:
                     "node_id": bn.node_id,
                     "node_name": bn.node_name,
                     "node_type": bn.node_type,
-                    "own_cost": bn.own_cost,
-                    "children_cost": bn.children_cost,
-                    "total_cost": bn.total_cost,
+                    "estimated_cost": bn.estimated_cost,
+                    "actual_cost": bn.actual_cost,
+                    "total_estimated": bn.total_estimated,
+                    "total_actual": bn.total_actual,
+                    "variance": bn.variance,
                     "depth": bn.depth,
                 }
             )
@@ -181,5 +199,5 @@ class BudgetEngine:
         return flat
 
     def grand_total(self) -> float:
-        """Sum of all root-level total_cost values (the project grand total)."""
-        return sum(t.total_cost for t in self.calculate())
+        """Backward-compatible grand total (sum of total_estimated)."""
+        return sum(t.total_estimated for t in self.calculate())
