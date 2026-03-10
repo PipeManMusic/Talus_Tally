@@ -1,11 +1,14 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { AlertCircle, Calendar } from 'lucide-react';
-import { apiClient, type GanttPayload, type GanttBar } from '../../api/client';
+import { apiClient, type GanttPayload, type GanttBar, type VelocityScore } from '../../api/client';
 import { useWebSocket } from '../../hooks/useWebSocket';
+import { useFilterStore } from '../../store/filterStore';
+import { evaluateNodeVisibility } from '../../utils/filterEngine';
 
 interface GanttViewProps {
   sessionId: string | null;
   nodes?: Record<string, any>;
+  velocityScores?: Record<string, VelocityScore>;
   onNodeSelect?: (nodeId: string | null) => void;
 }
 
@@ -23,7 +26,104 @@ function depthColor(depth: number): string {
   return DEPTH_COLORS[depth % DEPTH_COLORS.length];
 }
 
-export function GanttView({ sessionId, onNodeSelect }: GanttViewProps) {
+function GanttBarsContent({
+  bars,
+  nodes,
+  velocityScores,
+  draggingBarId,
+  onDragStart,
+  onDragEnd,
+  onNodeSelect,
+}: {
+  bars: GanttBar[];
+  nodes?: Record<string, any>;
+  velocityScores?: Record<string, any>;
+  draggingBarId: string | null;
+  onDragStart: (e: React.DragEvent<HTMLDivElement>, bar: GanttBar) => void;
+  onDragEnd: (e: React.DragEvent<HTMLDivElement>) => void;
+  onNodeSelect?: (nodeId: string | null) => void;
+}) {
+  const { rules, filterMode } = useFilterStore();
+
+  return (
+    <>
+      {bars.map((bar) => {
+        const sourceNodeProps = nodes?.[bar.nodeId]?.properties || {};
+        // Create a node-like structure for filter evaluation
+        const nodeForFilter = {
+          id: bar.nodeId,
+          name: bar.nodeName,
+          type: bar.nodeType,
+          properties: {
+            ...sourceNodeProps,
+            name: bar.nodeName,
+            type: bar.nodeType,
+            start_date: bar.startDate,
+            end_date: bar.endDate,
+          },
+          velocity: velocityScores?.[bar.nodeId],
+        };
+
+        const isVisible = evaluateNodeVisibility(nodeForFilter, rules);
+
+        // If node doesn't pass filter
+        if (!isVisible) {
+          if (filterMode === 'hide') {
+            return null; // Don't render at all
+          }
+          // If 'ghost', continue rendering but with reduced opacity
+        }
+
+        const barOpacity = !isVisible && filterMode === 'ghost' ? 'opacity-30' : '';
+
+        return (
+          <div
+            key={bar.nodeId}
+            className={`flex items-center border-b border-border hover:bg-bg-light transition-colors cursor-pointer ${barOpacity}`}
+            onClick={() => onNodeSelect?.(bar.nodeId)}
+          >
+            {/* Label column */}
+            <div
+              className="w-48 flex-shrink-0 px-4 py-3 truncate"
+              style={{ paddingLeft: `${bar.depth * 16 + 16}px` }}
+            >
+              <div className="font-medium text-sm text-fg-primary truncate">
+                {bar.nodeName}
+              </div>
+              <div className="text-xs text-fg-secondary">{bar.nodeType}</div>
+            </div>
+
+            {/* Bar track */}
+            <div className="flex-1 relative h-10 mx-2">
+              <div
+                draggable
+                onDragStart={(e) => onDragStart(e, bar)}
+                onDragEnd={onDragEnd}
+                className={`absolute top-1 h-8 rounded ${depthColor(bar.depth)} ${
+                  draggingBarId === bar.nodeId ? 'opacity-50' : 'opacity-90 hover:opacity-100'
+                } transition-opacity cursor-grab active:cursor-grabbing flex items-center justify-center`}
+                style={{
+                  left: `${bar.leftPercent}%`,
+                  width: `${bar.widthPercent}%`,
+                  minWidth: '4px',
+                }}
+                title={`${bar.startDate} → ${bar.endDate}`}
+              >
+                {bar.widthPercent > 8 && (
+                  <span className="text-[10px] text-white font-medium truncate px-1">
+                    {bar.startDate} — {bar.endDate}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
+export function GanttView({ sessionId, nodes, velocityScores, onNodeSelect }: GanttViewProps) {
   const [data, setData] = useState<GanttPayload | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -186,48 +286,7 @@ export function GanttView({ sessionId, onNodeSelect }: GanttViewProps) {
       {/* Gantt Bars */}
       {data && data.bars.length > 0 && (
         <div className="flex-1 overflow-auto">
-          {data.bars.map((bar) => (
-            <div
-              key={bar.nodeId}
-              className="flex items-center border-b border-border hover:bg-bg-light transition-colors cursor-pointer"
-              onClick={() => onNodeSelect?.(bar.nodeId)}
-            >
-              {/* Label column */}
-              <div
-                className="w-48 flex-shrink-0 px-4 py-3 truncate"
-                style={{ paddingLeft: `${bar.depth * 16 + 16}px` }}
-              >
-                <div className="font-medium text-sm text-fg-primary truncate">
-                  {bar.nodeName}
-                </div>
-                <div className="text-xs text-fg-secondary">{bar.nodeType}</div>
-              </div>
-
-              {/* Bar track */}
-              <div className="flex-1 relative h-10 mx-2">
-                <div
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, bar)}
-                  onDragEnd={handleDragEnd}
-                  className={`absolute top-1 h-8 rounded ${depthColor(bar.depth)} ${
-                    draggingBarId === bar.nodeId ? 'opacity-50' : 'opacity-90 hover:opacity-100'
-                  } transition-opacity cursor-grab active:cursor-grabbing flex items-center justify-center`}
-                  style={{
-                    left: `${bar.leftPercent}%`,
-                    width: `${bar.widthPercent}%`,
-                    minWidth: '4px',
-                  }}
-                  title={`${bar.startDate} → ${bar.endDate}`}
-                >
-                  {bar.widthPercent > 8 && (
-                    <span className="text-[10px] text-white font-medium truncate px-1">
-                      {bar.startDate} — {bar.endDate}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
+          <GanttBarsContent bars={data.bars} nodes={nodes} velocityScores={velocityScores} draggingBarId={draggingBarId} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onNodeSelect={onNodeSelect} />
         </div>
       )}
 
