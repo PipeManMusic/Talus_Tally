@@ -1,5 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { createNewProject, openNewProjectDialog } from './utils';
+import { createNewProject, openNewProjectDialog, resetE2ETemplateFixture } from './utils';
+
+test.beforeEach(async () => {
+  await resetE2ETemplateFixture();
+});
 
 test('File menu New Project opens the dialog', async ({ page }) => {
   await page.goto('/');
