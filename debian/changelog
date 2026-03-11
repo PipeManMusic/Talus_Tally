@@ -1,3 +1,12 @@
+talus-tally (0.1.5-1) jammy; urgency=medium
+
+  * Alpha 0.1.5 desktop prerelease
+  * Add charts view with improved aggregation and label handling
+  * Fix indicator editor color picker form submission behavior
+  * Refresh indicators when blueprint reloads
+
+ -- Talus Tally Dev <dev@talusstally.local>  Wed, 11 Mar 2026 00:00:00 +0000
+
 talus-tally (0.1.3-1) jammy; urgency=medium
 
   * Bump release metadata to 0.1.3 for the new desktop installers
