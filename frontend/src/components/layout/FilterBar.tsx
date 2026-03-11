@@ -3,6 +3,8 @@ import { ChevronDown, ChevronUp, Plus, Trash2, X, Bookmark, BookmarkCheck, Play 
 import { useFilterStore, type FilterOperator } from '../../store/filterStore';
 import { extractUniquePropertyKeys } from '../../utils/filterEngine';
 import { useGraphStore } from '../../store';
+import type { TemplateSchema } from '../../api/client';
+import { getSelectOptionsByProperty } from '../../utils/propertyValueDisplay';
 
 const OPERATORS: FilterOperator[] = ['equals', 'not_equals', 'contains', 'greater_than', 'less_than'];
 
@@ -34,7 +36,13 @@ const PROPERTY_LABELS: Record<string, string> = {
   node_type: '🏷 Node Type',
 };
 
-export function FilterBar({ forceExpanded = false }: { forceExpanded?: boolean }) {
+export function FilterBar({
+  forceExpanded = false,
+  templateSchema,
+}: {
+  forceExpanded?: boolean;
+  templateSchema?: TemplateSchema | null;
+}) {
   const {
     rules, filterMode, isExpanded, addRule, updateRule, removeRule, clearRules,
     setFilterMode, toggleExpanded, savedFilterSets,
@@ -62,6 +70,11 @@ export function FilterBar({ forceExpanded = false }: { forceExpanded?: boolean }
     });
     return Array.from(types).sort();
   }, [nodes]);
+
+  const selectOptionsByProperty = useMemo(
+    () => getSelectOptionsByProperty(templateSchema),
+    [templateSchema],
+  );
 
   const hasActiveFilters = rules.length > 0;
   const showExpanded = forceExpanded || isExpanded;
@@ -176,6 +189,19 @@ export function FilterBar({ forceExpanded = false }: { forceExpanded?: boolean }
                             </option>
                           ))}
                         </select>
+                      ) : rule.property && selectOptionsByProperty[rule.property]?.length ? (
+                        <select
+                          value={rule.value}
+                          onChange={(e) => updateRule(rule.id, { value: e.target.value })}
+                          className="w-full px-2 py-1.5 text-sm bg-bg-dark border border-border rounded text-fg-primary focus:outline-none focus:ring-1 focus:ring-accent-primary"
+                        >
+                          <option value="">Select value...</option>
+                          {selectOptionsByProperty[rule.property].map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
                       ) : (
                         <input
                           type="text"
@@ -226,6 +252,19 @@ export function FilterBar({ forceExpanded = false }: { forceExpanded?: boolean }
                           {availableNodeTypes.map((nodeType) => (
                             <option key={nodeType} value={nodeType}>
                               {nodeType}
+                            </option>
+                          ))}
+                        </select>
+                      ) : rule.property && selectOptionsByProperty[rule.property]?.length ? (
+                        <select
+                          value={rule.value}
+                          onChange={(e) => updateRule(rule.id, { value: e.target.value })}
+                          className="flex-1 px-2 py-1 text-sm bg-bg-dark border border-border rounded text-fg-primary focus:outline-none focus:ring-1 focus:ring-accent-primary"
+                        >
+                          <option value="">Select value...</option>
+                          {selectOptionsByProperty[rule.property].map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
                             </option>
                           ))}
                         </select>

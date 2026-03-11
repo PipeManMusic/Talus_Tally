@@ -9,6 +9,7 @@ interface GanttViewProps {
   sessionId: string | null;
   nodes?: Record<string, any>;
   velocityScores?: Record<string, VelocityScore>;
+  selectedNodeId?: string | null;
   onNodeSelect?: (nodeId: string | null) => void;
 }
 
@@ -28,6 +29,7 @@ function depthColor(depth: number): string {
 
 function GanttBarsContent({
   bars,
+  selectedNodeId,
   nodes,
   velocityScores,
   draggingBarId,
@@ -38,6 +40,7 @@ function GanttBarsContent({
   bars: GanttBar[];
   nodes?: Record<string, any>;
   velocityScores?: Record<string, any>;
+  selectedNodeId?: string | null;
   draggingBarId: string | null;
   onDragStart: (e: React.DragEvent<HTMLDivElement>, bar: GanttBar) => void;
   onDragEnd: (e: React.DragEvent<HTMLDivElement>) => void;
@@ -75,11 +78,16 @@ function GanttBarsContent({
         }
 
         const barOpacity = !isVisible && filterMode === 'ghost' ? 'opacity-30' : '';
+        const isSelected = selectedNodeId === bar.nodeId;
 
         return (
           <div
             key={bar.nodeId}
-            className={`flex items-center border-b border-border hover:bg-bg-light transition-colors cursor-pointer ${barOpacity}`}
+            className={`flex items-center border-b transition-colors cursor-pointer ${
+              isSelected
+                ? 'bg-accent-primary/20 border-accent-primary/50 ring-1 ring-accent-primary/40'
+                : 'border-border hover:bg-bg-light'
+            } ${barOpacity}`}
             onClick={() => onNodeSelect?.(bar.nodeId)}
           >
             {/* Label column */}
@@ -123,7 +131,7 @@ function GanttBarsContent({
   );
 }
 
-export function GanttView({ sessionId, nodes, velocityScores, onNodeSelect }: GanttViewProps) {
+export function GanttView({ sessionId, nodes, velocityScores, selectedNodeId, onNodeSelect }: GanttViewProps) {
   const [data, setData] = useState<GanttPayload | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -286,7 +294,16 @@ export function GanttView({ sessionId, nodes, velocityScores, onNodeSelect }: Ga
       {/* Gantt Bars */}
       {data && data.bars.length > 0 && (
         <div className="flex-1 overflow-auto">
-          <GanttBarsContent bars={data.bars} nodes={nodes} velocityScores={velocityScores} draggingBarId={draggingBarId} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onNodeSelect={onNodeSelect} />
+          <GanttBarsContent
+            bars={data.bars}
+            selectedNodeId={selectedNodeId}
+            nodes={nodes}
+            velocityScores={velocityScores}
+            draggingBarId={draggingBarId}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+            onNodeSelect={onNodeSelect}
+          />
         </div>
       )}
 

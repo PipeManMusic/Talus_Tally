@@ -9,6 +9,7 @@ interface BudgetViewProps {
   sessionId: string | null;
   nodes?: Record<string, any>;
   velocityScores?: Record<string, VelocityScore>;
+  selectedNodeId?: string | null;
   onNodeSelect?: (nodeId: string | null) => void;
 }
 
@@ -23,6 +24,7 @@ function formatCurrency(value: number): string {
 
 function BudgetTreeRow({
   node,
+  selectedNodeId,
   nodes,
   velocityScores,
   onNodeSelect,
@@ -30,6 +32,7 @@ function BudgetTreeRow({
   filterMode,
 }: {
   node: BudgetNode;
+  selectedNodeId?: string | null;
   nodes?: Record<string, any>;
   velocityScores?: Record<string, any>;
   onNodeSelect?: (nodeId: string | null) => void;
@@ -75,11 +78,16 @@ function BudgetTreeRow({
         : 'text-fg-primary';
 
   const rowOpacity = !isVisible && filterMode === 'ghost' ? 'opacity-30' : '';
+  const isSelected = selectedNodeId === node.nodeId;
 
   return (
     <>
       <div
-        className={`flex items-center border-b border-border hover:bg-bg-light transition-colors cursor-pointer group ${rowOpacity}`}
+        className={`flex items-center border-b transition-colors cursor-pointer group ${
+          isSelected
+            ? 'bg-accent-primary/20 border-accent-primary/50 ring-1 ring-accent-primary/40'
+            : 'border-border hover:bg-bg-light'
+        } ${rowOpacity}`}
         style={{ paddingLeft: `${node.depth * 24 + 12}px` }}
         onClick={() => onNodeSelect?.(node.nodeId)}
       >
@@ -136,6 +144,7 @@ function BudgetTreeRow({
           <BudgetTreeRow
             key={child.nodeId}
             node={child}
+            selectedNodeId={selectedNodeId}
             nodes={nodes}
             velocityScores={velocityScores}
             onNodeSelect={onNodeSelect}
@@ -150,11 +159,13 @@ function BudgetTreeRow({
 // Flat row component for filtered results
 function BudgetFlatRow({
   node,
+  selectedNodeId,
   nodes,
   velocityScores,
   onNodeSelect,
 }: {
   node: BudgetNode;
+  selectedNodeId?: string | null;
   nodes?: Record<string, any>;
   velocityScores?: Record<string, any>;
   onNodeSelect?: (nodeId: string | null) => void;
@@ -166,9 +177,15 @@ function BudgetFlatRow({
         ? 'text-status-success'
         : '';
 
+  const isSelected = selectedNodeId === node.nodeId;
+
   return (
     <div
-      className="px-6 py-3 border-b border-border hover:bg-bg-light transition-colors cursor-pointer"
+      className={`px-6 py-3 border-b transition-colors cursor-pointer ${
+        isSelected
+          ? 'bg-accent-primary/20 border-accent-primary/50 ring-1 ring-accent-primary/40'
+          : 'border-border hover:bg-bg-light'
+      }`}
       onClick={() => onNodeSelect?.(node.nodeId)}
     >
       <div className="flex items-center justify-between gap-4">
@@ -198,11 +215,13 @@ function BudgetFlatRow({
 
 function BudgetTreeContent({
   trees,
+  selectedNodeId,
   nodes,
   velocityScores,
   onNodeSelect,
 }: {
   trees: BudgetNode[];
+  selectedNodeId?: string | null;
   nodes?: Record<string, any>;
   velocityScores?: Record<string, any>;
   onNodeSelect?: (nodeId: string | null) => void;
@@ -260,6 +279,7 @@ function BudgetTreeContent({
               <BudgetFlatRow
                 key={node.nodeId}
                 node={node}
+                selectedNodeId={selectedNodeId}
                 nodes={nodes}
                 velocityScores={velocityScores}
                 onNodeSelect={onNodeSelect}
@@ -274,6 +294,7 @@ function BudgetTreeContent({
             <BudgetTreeRow
               key={tree.nodeId}
               node={tree}
+              selectedNodeId={selectedNodeId}
               nodes={nodes}
               velocityScores={velocityScores}
               onNodeSelect={onNodeSelect}
@@ -287,7 +308,7 @@ function BudgetTreeContent({
   );
 }
 
-export function BudgetView({ sessionId, nodes, velocityScores, onNodeSelect }: BudgetViewProps) {
+export function BudgetView({ sessionId, nodes, velocityScores, selectedNodeId, onNodeSelect }: BudgetViewProps) {
   const [data, setData] = useState<BudgetPayload | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -383,7 +404,13 @@ export function BudgetView({ sessionId, nodes, velocityScores, onNodeSelect }: B
       {/* Budget Tree */}
       {data && data.trees.length > 0 && (
         <div className="flex-1 overflow-auto">
-          <BudgetTreeContent trees={data.trees} nodes={nodes} velocityScores={velocityScores} onNodeSelect={onNodeSelect} />
+          <BudgetTreeContent
+            trees={data.trees}
+            selectedNodeId={selectedNodeId}
+            nodes={nodes}
+            velocityScores={velocityScores}
+            onNodeSelect={onNodeSelect}
+          />
         </div>
       )}
 
