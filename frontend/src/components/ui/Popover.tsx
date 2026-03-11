@@ -46,6 +46,7 @@ export function Popover({ content, trigger, position = 'bottom', closeRef }: Pop
   return (
     <div className="relative inline-block" ref={ref}>
       <button
+        type="button"
         onClick={() => setOpen(!open)}
         className="focus:outline-none"
       >
