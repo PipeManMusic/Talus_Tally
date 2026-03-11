@@ -8,10 +8,11 @@ import { evaluateNodeVisibility } from '../../utils/filterEngine';
 interface VelocityViewProps {
   sessionId: string | null;
   nodes?: Record<string, any>;
+  selectedNodeId?: string | null;
   onNodeSelect?: (nodeId: string | null) => void;
 }
 
-export function VelocityView({ sessionId, nodes = {}, onNodeSelect }: VelocityViewProps) {
+export function VelocityView({ sessionId, nodes = {}, selectedNodeId, onNodeSelect }: VelocityViewProps) {
   const [ranking, setRanking] = useState<(VelocityScore & { nodeName: string; nodeType: string })[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -145,7 +146,7 @@ export function VelocityView({ sessionId, nodes = {}, onNodeSelect }: VelocityVi
               <div
                 key={node.nodeId}
                 onClick={() => onNodeSelect?.(node.nodeId)}
-                className={`border-b border-border hover:bg-bg-light transition-colors cursor-pointer${!passes ? ' opacity-30' : ''}`}
+                className={`border-b border-border transition-colors cursor-pointer${!passes ? ' opacity-30' : ''}${selectedNodeId === node.nodeId ? ' bg-accent-primary/20 border-accent-primary/50 ring-1 ring-inset ring-accent-primary/40' : ' hover:bg-bg-light'}`}
               >
                 <div className="px-6 py-4">
                   {/* Rank and Title */}

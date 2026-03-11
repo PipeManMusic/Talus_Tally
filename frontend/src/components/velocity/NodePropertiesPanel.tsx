@@ -9,6 +9,7 @@ export interface PropertyDefinition {
   id: string;
   label: string;
   type: string;
+  options?: Array<{ id?: string; name?: string; label?: string }>;
   system_locked?: boolean;
   ui_group?: string;
   semantic_role?: string;
@@ -52,6 +53,20 @@ export function NodePropertiesPanel({
 
   const selectNode = nodes[selectedNodeId];
   const nodeLabel = selectNode.properties?.name || selectedNodeId;
+
+  const getSelectOptions = (def?: PropertyDefinition) => {
+    if (!def?.options || !Array.isArray(def.options)) {
+      return [] as Array<{ value: string; label: string }>;
+    }
+    return def.options
+      .map((option) => {
+        const value = String(option.id ?? option.name ?? option.label ?? '').trim();
+        const label = String(option.name ?? option.label ?? option.id ?? '').trim();
+        if (!value) return null;
+        return { value, label: label || value };
+      })
+      .filter((option): option is { value: string; label: string } => Boolean(option));
+  };
 
   return (
     <div className="w-80 border-l border-border bg-bg-light flex flex-col h-full overflow-hidden">
@@ -154,18 +169,28 @@ export function NodePropertiesPanel({
               {/* Ungrouped (custom) properties first */}
               {ungrouped.map(([key, value]) => {
                 const def = defByKey[key];
+                const selectOptions = getSelectOptions(def);
                 return (
                   <div key={key}>
                     <label className="block text-xs text-fg-secondary mb-1 font-medium flex items-center gap-1">
                       {def?.label || key}
                       {def?.system_locked && <Lock size={10} className="text-fg-muted" />}
                     </label>
-                    <input
-                      type="text"
-                      value={String(value)}
-                      onChange={(e) => onPropertyChange(selectedNodeId, key, e.target.value)}
-                      className="w-full bg-bg-dark text-fg-primary border border-border rounded px-2 py-1 text-xs focus:border-accent-primary focus:outline-none"
-                    />
+                    {selectOptions.length > 0 ? (
+                      <Select
+                        value={String(value ?? '')}
+                        onChange={(e) => onPropertyChange(selectedNodeId, key, e.target.value)}
+                        options={selectOptions}
+                        className="text-xs"
+                      />
+                    ) : (
+                      <input
+                        type="text"
+                        value={String(value)}
+                        onChange={(e) => onPropertyChange(selectedNodeId, key, e.target.value)}
+                        className="w-full bg-bg-dark text-fg-primary border border-border rounded px-2 py-1 text-xs focus:border-accent-primary focus:outline-none"
+                      />
+                    )}
                   </div>
                 );
               })}
@@ -180,18 +205,28 @@ export function NodePropertiesPanel({
                   </div>
                   {grouped[group].map(([key, value]) => {
                     const def = defByKey[key];
+                    const selectOptions = getSelectOptions(def);
                     return (
                       <div key={key}>
                         <label className="block text-xs text-fg-secondary mb-1 font-medium flex items-center gap-1">
                           {def?.label || key}
                           {def?.system_locked && <Lock size={10} className="text-fg-muted" />}
                         </label>
-                        <input
-                          type="text"
-                          value={String(value)}
-                          onChange={(e) => onPropertyChange(selectedNodeId, key, e.target.value)}
-                          className="w-full bg-bg-dark text-fg-primary border border-border rounded px-2 py-1 text-xs focus:border-accent-primary focus:outline-none"
-                        />
+                        {selectOptions.length > 0 ? (
+                          <Select
+                            value={String(value ?? '')}
+                            onChange={(e) => onPropertyChange(selectedNodeId, key, e.target.value)}
+                            options={selectOptions}
+                            className="text-xs"
+                          />
+                        ) : (
+                          <input
+                            type="text"
+                            value={String(value)}
+                            onChange={(e) => onPropertyChange(selectedNodeId, key, e.target.value)}
+                            className="w-full bg-bg-dark text-fg-primary border border-border rounded px-2 py-1 text-xs focus:border-accent-primary focus:outline-none"
+                          />
+                        )}
                       </div>
                     );
                   })}

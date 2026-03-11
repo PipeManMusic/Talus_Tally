@@ -62,12 +62,11 @@ import { validateTemplateSchema, safeExtractOptions } from './utils/templateVali
 
 function App() {
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
-  const [toolsSelectedNodeId, setToolsSelectedNodeId] = useState<string | null>(null);
   const [inspectorOpen, setInspectorOpen] = useState(true);
   const [inspectorTab, setInspectorTab] = useState<'properties' | 'filters'>('properties');
   const { filterTabVisible, toggleFilterTabVisible, savedFilterSets, setSavedFilterSets } = useFilterStore();
   const [activeView, setActiveView] = useState<ViewType>('graph');
-  const [activeToolsTab, setActiveToolsTab] = useState<'velocity' | 'blocking' | 'budget' | 'gantt'>('velocity');
+  const [activeToolsTab, setActiveToolsTab] = useState<'velocity' | 'blocking' | 'budget' | 'gantt' | 'charts'>('velocity');
   const [sessionId, setSessionId] = useState<string | null>(null);
 
   // Debug: log whenever sessionId changes
@@ -516,7 +515,7 @@ function App() {
   }, [selectedNode, storeNodes]);
 
   const fetchBlockingRelationships = useCallback(async () => {
-    const currentlySelectedNode = activeView === 'graph' ? selectedNode : toolsSelectedNodeId;
+    const currentlySelectedNode = selectedNode;
     if (!currentlySelectedNode || !sessionId) {
       setBlockedByNodes([]);
       setBlocksNodes([]);
@@ -543,7 +542,7 @@ function App() {
     } catch (error) {
       console.error('Failed to fetch blocking relationships:', error);
     }
-  }, [activeView, selectedNode, sessionId, toolsSelectedNodeId]);
+  }, [selectedNode, sessionId]);
 
   // Fetch blocking relationships based on active view
   useEffect(() => {
@@ -552,7 +551,7 @@ function App() {
 
   // Fetch velocity score for selected node
   const fetchVelocity = useCallback(async () => {
-    const currentlySelectedNode = activeView === 'graph' ? selectedNode : toolsSelectedNodeId;
+    const currentlySelectedNode = selectedNode;
     if (!currentlySelectedNode || !sessionId) {
       setVelocityScore(null);
       return;
@@ -565,7 +564,7 @@ function App() {
       console.error('Failed to fetch node velocity:', error);
       setVelocityScore(null);
     }
-  }, [activeView, selectedNode, sessionId, toolsSelectedNodeId]);
+  }, [selectedNode, sessionId]);
 
   // Fetch velocity score when selected node changes
   useEffect(() => {
@@ -823,10 +822,8 @@ function App() {
   const nodeProperties = useMemo(() => getNodeProperties(), [getNodeProperties]);
   const linkedAsset = useMemo(() => getLinkedAssetMetadata(), [getLinkedAssetMetadata]);
 
-  // Determine which node is active based on the current view
-  const currentSelectedNodeId = useMemo(() => {
-    return activeView === 'graph' ? selectedNode : toolsSelectedNodeId;
-  }, [activeView, selectedNode, toolsSelectedNodeId]);
+  // A single selection is shared across all views so visuals and inspector stay in sync.
+  const currentSelectedNodeId = selectedNode;
 
   const currentSelectedNodeData = useMemo(() => {
     return currentSelectedNodeId ? storeNodes[currentSelectedNodeId] : null;
@@ -2340,7 +2337,8 @@ function App() {
             <ToolsView 
               sessionId={sessionId} 
               nodes={storeNodes} 
-              onNodeSelect={setToolsSelectedNodeId}
+              selectedNodeId={selectedNode}
+              onNodeSelect={setSelectedNode}
               activeTab={activeToolsTab}
               onBlockingCountsChange={handleBlockingCountsChange}
               onBlockingDirtyChange={setIsDirty}
@@ -2476,7 +2474,7 @@ function App() {
             {/* Filters content */}
             {filterTabVisible && (!inspectorOpen || inspectorTab === 'filters') && (
               <div className="flex-1 overflow-y-auto">
-                <FilterBar forceExpanded={true} />
+                <FilterBar forceExpanded={true} templateSchema={templateSchema} />
               </div>
             )}
           </aside>

@@ -74,6 +74,7 @@ interface Props {
   sessionId: string | null;
   nodes: Record<string, NodeType>;
   velocityScores?: Record<string, any>;
+  selectedNodeId?: string | null;
   onNodeSelect?: (nodeId: string | null) => void;
   onCountsChange?: (nodeCount: number, edgeCount: number) => void;
   onDirtyChange?: (isDirty: boolean) => void;
@@ -83,7 +84,7 @@ interface Props {
   templateSchema?: TemplateSchema | null;
 }
 
-export function NodeBlockingEditor({ sessionId, nodes, velocityScores = {}, onNodeSelect, onCountsChange, onDirtyChange, fitToViewSignal, refreshSignal, blockingViewConfig, templateSchema }: Props) {
+export function NodeBlockingEditor({ sessionId, nodes, velocityScores = {}, selectedNodeId, onNodeSelect, onCountsChange, onDirtyChange, fitToViewSignal, refreshSignal, blockingViewConfig, templateSchema }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
   const isDev = import.meta.env.DEV;
   const { rules, filterMode } = useFilterStore();
@@ -522,6 +523,10 @@ export function NodeBlockingEditor({ sessionId, nodes, velocityScores = {}, onNo
     return nodePositions.find(n => n.id === nodeId);
   };
 
+  const displayedNodeIds = useMemo(() => {
+    return new Set(nodePositions.map((node) => node.id));
+  }, [nodePositions]);
+
   const handleNodeMouseDown = (nodeId: string, e: React.MouseEvent) => {
     if (e.button === 0) { // Left click
       setDraggingNode(nodeId);
@@ -809,7 +814,10 @@ export function NodeBlockingEditor({ sessionId, nodes, velocityScores = {}, onNo
             {edges.map((edge) => {
               const fromVisible = nodeVisibility.get(edge.from) ?? true;
               const toVisible = nodeVisibility.get(edge.to) ?? true;
-              if (filterMode === 'hide' && rules.length > 0 && (!fromVisible || !toVisible)) {
+              const fromDisplayed = displayedNodeIds.has(edge.from);
+              const toDisplayed = displayedNodeIds.has(edge.to);
+
+              if (filterMode === 'hide' && rules.length > 0 && (!fromDisplayed || !toDisplayed)) {
                 return null;
               }
 
@@ -900,11 +908,13 @@ export function NodeBlockingEditor({ sessionId, nodes, velocityScores = {}, onNo
               const overlayFill = resolvedColor
                 ? mixHexColors(resolvedColor, '#000000', 0.2)
                 : '#1f2937';
-              const strokeColor = hoveredNode === nodeData.id || drawingWire?.from === nodeData.id
+              const isSelected = selectedNodeId === nodeData.id;
+              const strokeColor = isSelected || hoveredNode === nodeData.id || drawingWire?.from === nodeData.id
                 ? '#3b82f6'
                 : resolvedColor
                   ? mixHexColors(resolvedColor, '#000000', 0.6)
                   : '#4b5563';
+              const selectedStrokeWidth = isSelected ? 3 : 2;
               const overlayInset = Math.max(4, Math.min(12, nodeSize.height * 0.1));
               const overlayWidth = Math.max(20, nodeSize.width - overlayInset * 2);
               const overlayHeight = Math.max(16, nodeSize.height - overlayInset * 2);
@@ -922,7 +932,7 @@ export function NodeBlockingEditor({ sessionId, nodes, velocityScores = {}, onNo
               const baseShapeProps = {
                 fill: hoveredNode === nodeData.id ? adjustHexColor(neutralFill, 10) : neutralFill,
                 stroke: strokeColor || neutralStroke,
-                strokeWidth: 2,
+                strokeWidth: selectedStrokeWidth,
                 className: 'cursor-move select-none transition-all',
                 onMouseDown: (e: React.MouseEvent) => handleNodeMouseDown(nodeData.id, e),
                 onMouseEnter: () => handleNodeMouseEnter(nodeData.id),

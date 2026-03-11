@@ -9,6 +9,7 @@
           "name": "Project Talus",
           "actual_cost": "3500",
           "budget": "3500",
+          "estimated_cost": "3500",
           "project_lead": "Danel Worth",
           "vehicle": "Talus"
         },
@@ -1919,6 +1920,8 @@
         "type": "part_asset",
         "properties": {
           "name": "Dana 35",
+          "actual_cost": "",
+          "estimated_cost": "500",
           "notes": "",
           "part_number": "",
           "prop_1771951944461": "Ford",
@@ -2065,12 +2068,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Bosch Clear Advantage Wiper Blade 18in",
+          "actual_cost": "10.00",
+          "estimated_cost": "10.00",
           "notes": "Order 113-3193159-3144240",
           "part_number": "18CA",
           "quantity_on_hand": 2,
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "10.00"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -2110,11 +2115,13 @@
         "type": "part_asset",
         "properties": {
           "name": "A-Premium Rear Tailgate Lift Supports",
+          "actual_cost": "25.09",
+          "estimated_cost": "25.09",
           "notes": "Order 113-3598232-5019468",
           "quantity_on_hand": "1",
           "status": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "supplier": "Amazon",
-          "unit_cost": "25.09"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "filled",
@@ -2129,12 +2136,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Dorman Dome Light Lens",
+          "actual_cost": "7.99",
+          "estimated_cost": "7.99",
           "notes": "Order 209266272083",
           "part_number": "74973",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "AutoZone",
-          "unit_cost": "7.99"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -2149,11 +2158,13 @@
         "type": "part_asset",
         "properties": {
           "name": "Mustang Automatic T-Handle Shifter",
+          "actual_cost": "24.99",
+          "estimated_cost": "24.99",
           "notes": "Order VH19521",
           "quantity_on_hand": "1",
           "status": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "supplier": "LMR",
-          "unit_cost": "24.99"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "filled",
@@ -2168,11 +2179,13 @@
         "type": "part_asset",
         "properties": {
           "name": "Headlight Switch Knob (Black Billet)",
+          "actual_cost": "25.00",
+          "estimated_cost": "25.00",
           "notes": "Order 13280",
           "quantity_on_hand": "1",
           "status": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "supplier": "JC Customs CNC",
-          "unit_cost": "25.00"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "filled",
@@ -2187,11 +2200,13 @@
         "type": "part_asset",
         "properties": {
           "name": "Vent Window Handle (Driver Side)",
+          "actual_cost": "9.10",
+          "estimated_cost": "9.10",
           "notes": "Order 121936",
           "quantity_on_hand": "1",
           "status": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "supplier": "eClassics.com",
-          "unit_cost": "9.10"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "filled",
@@ -2206,12 +2221,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Brake Pedal Pad (Automatic)",
+          "actual_cost": "5.00",
+          "estimated_cost": "5.00",
           "notes": "Order 81365682",
           "part_number": "96050",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Bronco Graveyard",
-          "unit_cost": "5.00"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -2226,12 +2243,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Window Weatherstrip Kit (Both Doors)",
+          "actual_cost": "85.00",
+          "estimated_cost": "85.00",
           "notes": "Order 81365682",
           "part_number": "96020",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Bronco Graveyard",
-          "unit_cost": "85.00"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -2246,11 +2265,13 @@
         "type": "part_asset",
         "properties": {
           "name": "Ignition Door & Tailgate Lock Cylinder Set",
+          "actual_cost": "146.21",
+          "estimated_cost": "146.21",
           "notes": "Order 51810",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Pro Steering Columns",
-          "unit_cost": "146.21"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -2300,11 +2321,13 @@
         "type": "part_asset",
         "properties": {
           "name": "StonyLab Filter Paper (100 Pack)",
+          "actual_cost": "15.99",
+          "estimated_cost": "15.99",
           "notes": "Order 113-5089179-4637061",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "15.99"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -2319,12 +2342,13 @@
         "type": "part_asset",
         "properties": {
           "name": "NY Threads Coverall (Grey XX-Large)",
-          "estimated_cost": "",
+          "actual_cost": "28.49",
+          "estimated_cost": "28.49",
           "notes": "Order 113-8921857-3726624",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "28.49"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -2339,11 +2363,13 @@
         "type": "part_asset",
         "properties": {
           "name": "TCP Global Paint Strainers (50 Pack)",
+          "actual_cost": "8.99",
+          "estimated_cost": "8.99",
           "notes": "Order 113-2773185-0817049",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "8.99"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -2358,11 +2384,13 @@
         "type": "part_asset",
         "properties": {
           "name": "Valvoline Gear Oil 80W-90 (1 Qt)",
+          "actual_cost": "12.49",
+          "estimated_cost": "12.49",
           "notes": "Order 113-4340895-1946666",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "12.49"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -2377,11 +2405,13 @@
         "type": "part_asset",
         "properties": {
           "name": "Zerex Original Green Coolant (1 Gal)",
+          "actual_cost": "20.49",
+          "estimated_cost": "20.49",
           "notes": "Order 113-9364954-5874637",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "20.49"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -2395,10 +2425,12 @@
         "id": "4b53dd31-92fd-482e-b097-e067f591f7ee",
         "type": "part_asset",
         "properties": {
-          "name": "Ospo",
+          "name": "Corroseal",
+          "actual_cost": "62.94",
+          "estimated_cost": "62.94",
           "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
           "supplier": "Amazon",
-          "unit_cost": "41.50"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "empty",
@@ -2413,10 +2445,11 @@
         "type": "part_asset",
         "properties": {
           "name": "Epoxy Primer",
+          "estimated_cost": "147.37",
           "part_number": "#6620-1",
           "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
           "supplier": "Southern Polyurethane, Inc.",
-          "unit_cost": "147.37"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "empty",
@@ -2431,10 +2464,11 @@
         "type": "part_asset",
         "properties": {
           "name": "Epoxy Activator",
+          "estimated_cost": "147.37",
           "part_number": "#6700-1",
           "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
           "supplier": "Southern Polyurethane, Inc.",
-          "unit_cost": "147.37"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "empty",
@@ -2449,11 +2483,13 @@
         "type": "part_asset",
         "properties": {
           "name": "Valvoline DOT 3 & 4 Brake Fluid",
+          "actual_cost": "9.88",
+          "estimated_cost": "9.88",
           "notes": "Order 113-4340895-1946666",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "9.88"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -2468,11 +2504,13 @@
         "type": "part_asset",
         "properties": {
           "name": "HDPE Plastic Welding Rods",
+          "actual_cost": "14.35",
+          "estimated_cost": "14.35",
           "notes": "Order 113-8518811-4433833",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "14.35"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -2487,11 +2525,13 @@
         "type": "part_asset",
         "properties": {
           "name": "Zerex Original Green Coolant (1 Gal)",
+          "actual_cost": "20.49",
+          "estimated_cost": "20.49",
           "notes": "Order 113-8321077-1869806",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "20.49"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -2506,12 +2546,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Motorcraft MERCON V Fluid (5qt)",
+          "actual_cost": "40.31",
+          "estimated_cost": "40.31",
           "notes": "Order 113-8321077-1869806",
           "part_number": "XT-5-5QM",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "40.31"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -2526,12 +2568,14 @@
         "type": "part_asset",
         "properties": {
           "name": "ATP AT-205 Re-Seal",
+          "actual_cost": "18.00",
+          "estimated_cost": "18.00",
           "notes": "Order 113-3193159-3144240",
           "part_number": "AT-205",
           "quantity_on_hand": "1",
           "status": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "supplier": "Amazon",
-          "unit_cost": "18.00"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "filled",
@@ -2546,12 +2590,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Permatex The Right Stuff Gasket Maker",
+          "actual_cost": "14.38",
+          "estimated_cost": "14.38",
           "notes": "Order 113-8321077-1869806",
           "part_number": "34328",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "14.38"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -2566,11 +2612,13 @@
         "type": "part_asset",
         "properties": {
           "name": "Mobil 1 High Mileage 10W-30 Oil (5 Qt)",
+          "actual_cost": "27.97",
+          "estimated_cost": "27.97",
           "notes": "Order 113-9978039-2329857",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "27.97"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -2585,11 +2633,13 @@
         "type": "part_asset",
         "properties": {
           "name": "IDIK Heat Shrink Label Tape",
+          "actual_cost": "9.69",
+          "estimated_cost": "9.69",
           "notes": "Order 113-7549109-5968215",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "9.69"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -2604,12 +2654,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Prestone Cooling System Cleaner",
+          "actual_cost": "14.49",
+          "estimated_cost": "14.49",
           "notes": "Order 113-3591847-7097832",
           "part_number": "AS105",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "14.49"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -2624,12 +2676,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Phoenix Systems Brake/Coolant Test Strips",
+          "actual_cost": "14.97",
+          "estimated_cost": "14.97",
           "notes": "Order 113-2773185-0817049",
           "part_number": "8006-B",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "14.97"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -2646,7 +2700,6 @@
           "name": "Stock Suspension"
         },
         "children": [
-          "31b7a96d-4afa-4f3e-b5a1-9dfdb7fb4f41",
           "9492c724-7906-4e40-9457-44a786cc7087",
           "60473e42-8873-42d6-a769-a115766074e0"
         ],
@@ -2660,33 +2713,18 @@
         ]
       },
       {
-        "id": "31b7a96d-4afa-4f3e-b5a1-9dfdb7fb4f41",
-        "type": "part_asset",
-        "properties": {
-          "name": "Axel Pivot Bushings",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
-          "supplier": "Amazon",
-          "unit_cost": "26.97"
-        },
-        "children": [],
-        "indicator_id": "empty",
-        "indicator_set": "status",
-        "icon_id": "cog",
-        "schema_shape": "circle",
-        "schema_color": "#fb7185",
-        "allowed_children": []
-      },
-      {
         "id": "9492c724-7906-4e40-9457-44a786cc7087",
         "type": "part_asset",
         "properties": {
           "name": "KYB Excel-G Gas Shock (Front)",
+          "actual_cost": "30.69",
+          "estimated_cost": "30.69",
           "notes": "Order 113-8321077-1869806",
           "part_number": "344049",
           "quantity_on_hand": "2",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "30.69"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -2701,15 +2739,17 @@
         "type": "part_asset",
         "properties": {
           "name": "KYB Excel-G Gas Shock (Rear)",
+          "actual_cost": "31.52",
+          "estimated_cost": "31.52",
           "notes": "Order 113-0565454-4792220",
           "part_number": "344050",
           "quantity_on_hand": "2",
-          "status": "b3b79228-4930-102f-7da4-6b0cbb28cf76",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "31.52"
+          "unit_cost": ""
         },
         "children": [],
-        "indicator_id": "alert",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "schema_shape": "circle",
@@ -2753,12 +2793,14 @@
         "type": "part_asset",
         "properties": {
           "name": "National Wheel Seal",
+          "actual_cost": "6.99",
+          "estimated_cost": "6.99",
           "notes": "Order 113-7006402-8249017",
           "part_number": "8312",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "6.99"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -2773,12 +2815,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Raybestos Drum Adjuster Kit (Right)",
+          "actual_cost": "14.46",
+          "estimated_cost": "14.46",
           "notes": "Order 113-9966641-7922652",
           "part_number": "H2593",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "14.46"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -2793,12 +2837,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Timken Axle Shaft Bearing",
+          "actual_cost": "36.78",
+          "estimated_cost": "36.78",
           "notes": "Order 113-4787138-6269046",
           "part_number": "TRP1563TAV",
           "quantity_on_hand": "2",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "36.78"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -2813,12 +2859,14 @@
         "type": "part_asset",
         "properties": {
           "name": "MOOG Radius Arm Bushing Kit",
+          "actual_cost": "30.49",
+          "estimated_cost": "30.49",
           "notes": "Order 113-4787138-6269046",
           "part_number": "K8361",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "30.49"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -2833,12 +2881,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Power Stop Front Caliper (Right)",
+          "actual_cost": "44.85",
+          "estimated_cost": "44.85",
           "notes": "Order 113-8321077-1869806",
           "part_number": "L4196",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "44.85"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -2853,12 +2903,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Carlson Drum Brake Hardware Kit",
+          "actual_cost": "15.89",
+          "estimated_cost": "15.89",
           "notes": "Order 113-8321077-1869806",
           "part_number": "H2312",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "15.89"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -2873,12 +2925,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Power Stop Front Caliper (Left)",
+          "actual_cost": "62.65",
+          "estimated_cost": "62.65",
           "notes": "Order 113-8321077-1869806",
           "part_number": "L4197",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "62.65"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -2893,12 +2947,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Raybestos Ceramic Brake Pads",
+          "actual_cost": "22.53",
+          "estimated_cost": "22.53",
           "notes": "Order 113-8321077-1869806",
           "part_number": "PGD249M",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "22.53"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -2913,12 +2969,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Raybestos Brake Shoes",
+          "actual_cost": "15.68",
+          "estimated_cost": "15.68",
           "notes": "Order 113-8321077-1869806",
           "part_number": "559PG",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "15.68"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -2933,12 +2991,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Timken Wheel Bearing Set",
+          "actual_cost": "17.85",
+          "estimated_cost": "17.85",
           "notes": "Order 113-8321077-1869806",
           "part_number": "SET45",
           "quantity_on_hand": "4",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "17.85"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -2953,12 +3013,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Dorman Wheel Cylinder (Rear)",
+          "actual_cost": "7.25",
+          "estimated_cost": "7.25",
           "notes": "Order 113-8321077-1869806",
           "part_number": "W37862",
           "quantity_on_hand": 2,
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "7.25"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -2973,12 +3035,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Raybestos Drum Adjuster Kit (Left)",
+          "actual_cost": "10.26",
+          "estimated_cost": "10.26",
           "notes": "Order 113-8321077-1869806",
           "part_number": "H2592",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "10.26"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -2993,12 +3057,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Raybestos Disc Brake Rotor",
+          "actual_cost": "58.04",
+          "estimated_cost": "58.04",
           "notes": "Order 113-1210497-9601038",
           "part_number": "6005R",
           "quantity_on_hand": "2",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "58.04"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -3013,12 +3079,14 @@
         "type": "part_asset",
         "properties": {
           "name": "National Wheel Seal (Front)",
+          "actual_cost": "6.99",
+          "estimated_cost": "6.99",
           "notes": "Order 113-0185488-1976276",
           "part_number": "8312",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "6.99"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -3033,12 +3101,14 @@
         "type": "part_asset",
         "properties": {
           "name": "FEL-PRO Differential Gasket",
+          "actual_cost": "7.49",
+          "estimated_cost": "7.49",
           "notes": "Order 113-2820310-8076257",
           "part_number": "RDS 55393",
           "quantity_on_hand": "2",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "7.49"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -3063,7 +3133,8 @@
           "66e4c108-796a-4021-8611-d3a05b3477e0",
           "fd6f9284-67a9-4788-a6f2-32ddcc37daeb",
           "6ff13947-eb04-4de0-b11a-26c32a53ae18",
-          "9fe1583f-d09b-43cf-81e8-b8813c3717a0"
+          "9fe1583f-d09b-43cf-81e8-b8813c3717a0",
+          "31b7a96d-4afa-4f3e-b5a1-9dfdb7fb4f41"
         ],
         "indicator_id": null,
         "indicator_set": null,
@@ -3086,7 +3157,7 @@
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "16.99"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -3101,13 +3172,15 @@
         "type": "part_asset",
         "properties": {
           "name": "Ball Joints",
+          "actual_cost": "25.84",
+          "estimated_cost": "25.84",
           "part_number": "",
-          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "25.84"
+          "unit_cost": ""
         },
         "children": [],
-        "indicator_id": "empty",
+        "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
         "schema_shape": "circle",
@@ -3119,6 +3192,8 @@
         "type": "part_asset",
         "properties": {
           "name": "Mevotech Inner Tie Rod",
+          "actual_cost": "32.05",
+          "estimated_cost": "32.05",
           "notes": "Order 113-9966641-7922652",
           "part_number": "MDS1042",
           "prop_1771951944461": "",
@@ -3126,7 +3201,7 @@
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "32.05"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -3141,12 +3216,14 @@
         "type": "part_asset",
         "properties": {
           "name": "MOOG Tie Rod End (Right)",
+          "actual_cost": "23.97",
+          "estimated_cost": "23.97",
           "notes": "Order 113-4787138-6269046",
           "part_number": "ES2214R",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "23.97"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -3161,12 +3238,14 @@
         "type": "part_asset",
         "properties": {
           "name": "MOOG Adjusting Sleeve",
+          "actual_cost": "16.87",
+          "estimated_cost": "16.87",
           "notes": "Order 113-4787138-6269046",
           "part_number": "ES2079S",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "16.87"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -3181,12 +3260,14 @@
         "type": "part_asset",
         "properties": {
           "name": "MOOG Steering Drag Link",
+          "actual_cost": "52.78",
+          "estimated_cost": "52.78",
           "notes": "Order 113-8321077-1869806",
           "part_number": "DS1041",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "52.78"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -3224,12 +3305,15 @@
         "type": "part_asset",
         "properties": {
           "name": "MOOG Camber Bushing",
+          "actual_cost": "35.49",
+          "estimated_cost": "35.49",
           "notes": "Order 113-3193159-3144240",
           "part_number": "K8736",
+          "prop_1771951944461": "",
           "quantity_on_hand": "2",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "35.49"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -3244,15 +3328,36 @@
         "type": "part_asset",
         "properties": {
           "name": "Axel Pivot Bushings",
+          "actual_cost": "29.54",
+          "estimated_cost": "29.54",
           "part_number": "",
           "prop_1771951944461": "",
           "quantity_on_hand": 2,
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "29.54"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
+        "allowed_children": []
+      },
+      {
+        "id": "31b7a96d-4afa-4f3e-b5a1-9dfdb7fb4f41",
+        "type": "part_asset",
+        "properties": {
+          "name": "Axel Pivot Bushings",
+          "actual_cost": "26.97",
+          "estimated_cost": "26.97",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Amazon",
+          "unit_cost": ""
+        },
+        "children": [],
+        "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "cog",
         "schema_shape": "circle",
@@ -3300,14 +3405,15 @@
         "type": "part_asset",
         "properties": {
           "name": "Purolator Fuel Filter",
-          "estimated_cost": "",
+          "actual_cost": "18.25",
+          "estimated_cost": "18.25",
           "notes": "Order 113-8618213-6130662",
           "part_number": "F50126",
           "prop_1771951944461": "",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "18.25"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -3322,12 +3428,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Standard Motor Distributor Cap",
+          "actual_cost": "19.95",
+          "estimated_cost": "19.95",
           "notes": "Order 113-3562115-2735432",
           "part_number": "FD169X",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "19.95"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -3342,12 +3450,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Standard Motor PCV Valve",
+          "actual_cost": "10.17",
+          "estimated_cost": "10.17",
           "notes": "Order 113-9966641-7922652",
           "part_number": "V288",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "10.17"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -3362,12 +3472,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Standard Motor PCV Grommet",
+          "actual_cost": "7.14",
+          "estimated_cost": "7.14",
           "notes": "Order 113-9966641-7922652",
           "part_number": "GV22",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "7.14"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -3382,12 +3494,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Motorcraft Thermostat",
+          "actual_cost": "41.00",
+          "estimated_cost": "41.00",
           "notes": "Order 113-9966641-7922652",
           "part_number": "RT1161",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "41.00"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -3402,12 +3516,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Cloyes Timing Chain Kit",
+          "actual_cost": "96.81",
+          "estimated_cost": "96.81",
           "notes": "Order 113-1413231-0669819",
           "part_number": "9-4151S",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "96.81"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -3422,12 +3538,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Gates Radiator Cap",
+          "actual_cost": "9.09",
+          "estimated_cost": "9.09",
           "notes": "Order 113-4787138-6269046",
           "part_number": "31527",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "9.09"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -3442,12 +3560,15 @@
         "type": "part_asset",
         "properties": {
           "name": "Standard Motor Distributor Rotor",
+          "actual_cost": "11.97",
+          "estimated_cost": "11.97",
           "notes": "Order 113-7989869-5202600",
           "part_number": "FD-308",
+          "prop_1771951966105": "",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "11.97"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -3462,12 +3583,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Motorcraft Ignition Module",
+          "actual_cost": "65.28",
+          "estimated_cost": "65.28",
           "notes": "Order 113-8518811-4433833",
           "part_number": "DY1284",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "65.28"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -3482,12 +3605,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Motorcraft Copper Spark Plug",
+          "actual_cost": "4.89",
+          "estimated_cost": "4.89",
           "notes": "Order 113-8321077-1869806",
           "part_number": "SP409AX",
           "quantity_on_hand": "6",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "4.89"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -3502,12 +3627,14 @@
         "type": "part_asset",
         "properties": {
           "name": "FEL-PRO Timing Cover Gasket Set",
+          "actual_cost": "22.71",
+          "estimated_cost": "22.71",
           "notes": "Order 113-8321077-1869806",
           "part_number": "TCS 45791",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "22.71"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -3522,12 +3649,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Gates Water Pump",
+          "actual_cost": "53.78",
+          "estimated_cost": "53.78",
           "notes": "Order 113-8321077-1869806",
           "part_number": "43054",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "53.78"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -3542,12 +3671,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Motorcraft Ignition Wire Set",
+          "actual_cost": "43.78",
+          "estimated_cost": "43.78",
           "notes": "Order 113-8321077-1869806",
           "part_number": "WR4010C",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "43.78"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -3562,12 +3693,14 @@
         "type": "part_asset",
         "properties": {
           "name": "FEL-PRO O-Ring",
+          "actual_cost": "4.41",
+          "estimated_cost": "4.41",
           "notes": "Order 113-8321077-1869806",
           "part_number": "35404",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "4.41"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -3582,12 +3715,14 @@
         "type": "part_asset",
         "properties": {
           "name": "National Redi-sleeve",
+          "actual_cost": "31.24",
+          "estimated_cost": "31.24",
           "notes": "Order 113-8321077-1869806",
           "part_number": "99166",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "31.24"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -3602,12 +3737,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Hayden Premium Fan Clutch",
+          "actual_cost": "46.05",
+          "estimated_cost": "46.05",
           "notes": "Order 113-9595477-0381812",
           "part_number": "2614",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "46.05"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -3622,12 +3759,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Rostra Transmission Vacuum Modulator",
+          "actual_cost": "49.99",
+          "estimated_cost": "49.99",
           "notes": "Order 113-4842826-4464226",
           "part_number": "51-0056-02-00",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "49.99"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -3642,12 +3781,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Dorman Cooling Fan Blade",
+          "actual_cost": "38.78",
+          "estimated_cost": "38.78",
           "notes": "Order 113-8170202-8044248",
           "part_number": "620-112",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "38.78"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -3662,12 +3803,14 @@
         "type": "part_asset",
         "properties": {
           "name": "PurolatorBOSS Oil Filter",
+          "actual_cost": "15.99",
+          "estimated_cost": "15.99",
           "notes": "Order 113-9797078-2910603",
           "part_number": "PBL30001",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "15.99"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -3700,11 +3843,12 @@
         "type": "part_asset",
         "properties": {
           "name": "Patch Panel",
+          "estimated_cost": "50.31",
           "notes": "",
           "part_number": "50-9675",
           "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
           "supplier": "LMC Truck",
-          "unit_cost": "50.31"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "empty",
@@ -3737,10 +3881,11 @@
         "type": "part_asset",
         "properties": {
           "name": "SDI E-Clik",
+          "estimated_cost": "2499",
           "part_number": "SDI-SS-2154001",
           "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
           "supplier": "suspensiondirect.com",
-          "unit_cost": "2499"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "empty",
@@ -3773,10 +3918,11 @@
         "type": "part_asset",
         "properties": {
           "name": "Locking Hubs",
+          "estimated_cost": "289.00",
           "part_number": "AVM 465 XP",
           "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
           "supplier": "https://ccsurplusparts.com/products/avm-465-xp-ford-ranger-explorer-1990-1997-mazda-b4000-lock-outs-hubs-extreme",
-          "unit_cost": "289.00"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "empty",
@@ -3815,12 +3961,14 @@
         "type": "part_asset",
         "properties": {
           "name": "CEC Industries 12V Flasher Relay",
+          "actual_cost": "11.19",
+          "estimated_cost": "11.19",
           "notes": "Order 113-9978039-2329857",
           "part_number": "EF32",
           "quantity_on_hand": "1",
           "status": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "supplier": "Amazon",
-          "unit_cost": "11.19"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "filled",
@@ -3835,11 +3983,13 @@
         "type": "part_asset",
         "properties": {
           "name": "TOMALL T10 Bulb Sockets (Pack of 4)",
+          "actual_cost": "5.99",
+          "estimated_cost": "5.99",
           "notes": "Order 113-9978039-2329857",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "5.99"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -3854,11 +4004,13 @@
         "type": "part_asset",
         "properties": {
           "name": "YOGEIER 24-Piece LED Interior Bulb Set",
+          "actual_cost": "7.99",
+          "estimated_cost": "7.99",
           "notes": "Order 113-6837171-9368256",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "7.99"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -3873,12 +4025,15 @@
         "type": "part_asset",
         "properties": {
           "name": "AUXITO 3157 LED Bulb (Pack of 2)",
+          "actual_cost": "13.99",
+          "estimated_cost": "13.99",
           "notes": "Order 113-6837171-9368256",
           "part_number": "3157",
+          "prop_1771951966105": "",
           "quantity_on_hand": "1",
           "status": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "supplier": "Amazon",
-          "unit_cost": "13.99"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "filled",
@@ -3893,12 +4048,14 @@
         "type": "part_asset",
         "properties": {
           "name": "AUXITO 1157 LED Bulb (Pack of 2)",
+          "actual_cost": "16.14",
+          "estimated_cost": "16.14",
           "notes": "Order 113-7405377-0513052",
           "part_number": "1157",
           "quantity_on_hand": "1",
           "status": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "supplier": "Amazon",
-          "unit_cost": "16.14"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "filled",
@@ -3913,12 +4070,14 @@
         "type": "part_asset",
         "properties": {
           "name": "AUXITO 1156 LED Bulb (Pack of 2)",
+          "actual_cost": "13.99",
+          "estimated_cost": "13.99",
           "notes": "Order 113-7405377-0513052",
           "part_number": "1156",
           "quantity_on_hand": "1",
           "status": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "supplier": "Amazon",
-          "unit_cost": "13.99"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "filled",
@@ -3933,12 +4092,14 @@
         "type": "part_asset",
         "properties": {
           "name": "PurolatorONE Engine Air Filter",
+          "actual_cost": "9.92",
+          "estimated_cost": "9.92",
           "notes": "Order 113-5772056-1777033",
           "part_number": "A23592",
           "quantity_on_hand": "1",
           "status": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "supplier": "Amazon",
-          "unit_cost": "9.92"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "filled",
@@ -3977,12 +4138,14 @@
         "type": "part_asset",
         "properties": {
           "name": "RTL-SDR Blog V4 Radio Dongle",
+          "actual_cost": "39.95",
+          "estimated_cost": "39.95",
           "notes": "Order 113-0896419-0819443",
           "part_number": "V4 R828D",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "39.95"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -3997,11 +4160,13 @@
         "type": "part_asset",
         "properties": {
           "name": "Coolwell HDMI to USB Capture Card",
+          "actual_cost": "20.90",
+          "estimated_cost": "20.90",
           "notes": "Order 113-4459009-2675434",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "20.90"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -4016,12 +4181,14 @@
         "type": "part_asset",
         "properties": {
           "name": "CarlinKit Wireless CarPlay Adapter",
+          "actual_cost": "55.99",
+          "estimated_cost": "55.99",
           "notes": "Order 113-9492001-6861849",
           "part_number": "CPC200-CCPA",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "55.99"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -4036,11 +4203,13 @@
         "type": "part_asset",
         "properties": {
           "name": "ACEIRMC 8CH Optocoupler",
+          "actual_cost": "15.69",
+          "estimated_cost": "15.69",
           "notes": "Order 113-9492001-6861849",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "15.69"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -4055,11 +4224,13 @@
         "type": "part_asset",
         "properties": {
           "name": "RS485 CAN HAT for Raspberry Pi",
+          "actual_cost": "16.31",
+          "estimated_cost": "16.31",
           "notes": "Order 113-7549109-5968215",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "16.31"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -4074,11 +4245,13 @@
         "type": "part_asset",
         "properties": {
           "name": "hiBCTR CAN Transceiver Module (3 Pcs)",
+          "actual_cost": "7.97",
+          "estimated_cost": "7.97",
           "notes": "Order 113-7549109-5968215",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "7.97"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -4093,11 +4266,13 @@
         "type": "part_asset",
         "properties": {
           "name": "AITRIP ESP32 Development Board (3 Pcs)",
+          "actual_cost": "15.99",
+          "estimated_cost": "15.99",
           "notes": "Order 113-7549109-5968215",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "15.99"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -4133,11 +4308,13 @@
         "type": "part_asset",
         "properties": {
           "name": "Acerkyt Single Din Touchscreen Stereo",
+          "actual_cost": "55.99",
+          "estimated_cost": "55.99",
           "notes": "Order 113-5755298-4531422",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "55.99"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -4152,12 +4329,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Metra Reverse Wiring Harness",
+          "actual_cost": "21.95",
+          "estimated_cost": "21.95",
           "notes": "Order 113-7989869-5202600",
           "part_number": "71-1770",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "21.95"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -4172,12 +4351,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Metra Radio Installation Kit",
+          "actual_cost": "14.99",
+          "estimated_cost": "14.99",
           "notes": "Order 113-7989869-5202600",
           "part_number": "99-5700",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "14.99"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -4192,12 +4373,14 @@
         "type": "part_asset",
         "properties": {
           "name": "Metra Wiring Harness",
+          "actual_cost": "8.60",
+          "estimated_cost": "8.60",
           "notes": "Order 113-7989869-5202600",
           "part_number": "70-1770",
           "quantity_on_hand": "1",
           "status": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "supplier": "Amazon",
-          "unit_cost": "8.60"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "partial",
@@ -4230,11 +4413,12 @@
         "type": "part_asset",
         "properties": {
           "name": "Micro Squirt Controller",
+          "estimated_cost": "379.99",
           "notes": "For controlling the swapped electronically controlled transmission",
           "part_number": " MicroSqrt8",
           "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
           "supplier": "DIYAutoTune",
-          "unit_cost": "379.99"
+          "unit_cost": ""
         },
         "children": [],
         "indicator_id": "empty",
@@ -4295,7 +4479,9 @@
         "type": "tool_asset",
         "properties": {
           "name": "Ultimate No Spill Coolant Funnel Kit",
-          "acquisition_cost": "16.99",
+          "acquisition_cost": "",
+          "actual_cost": "16.99",
+          "estimated_cost": "16.99",
           "notes": "Order 113-8203985-7070602",
           "status": "bf46e370-d97f-5e46-df4d-dad388280546"
         },
@@ -4312,7 +4498,9 @@
         "type": "tool_asset",
         "properties": {
           "name": "Toolwiz Magnetic Camber Gauge",
-          "acquisition_cost": "13.49",
+          "acquisition_cost": "",
+          "actual_cost": "13.49",
+          "estimated_cost": "13.49",
           "notes": "Order 113-3193159-3144240",
           "status": "bf46e370-d97f-5e46-df4d-dad388280546"
         },
@@ -4329,7 +4517,9 @@
         "type": "tool_asset",
         "properties": {
           "name": "Performance Tool Lock Nut Socket",
-          "acquisition_cost": "13.84",
+          "acquisition_cost": "",
+          "actual_cost": "13.84",
+          "estimated_cost": "13.84",
           "make_model": "W1269",
           "notes": "Order 113-8321077-1869806",
           "status": "bf46e370-d97f-5e46-df4d-dad388280546"
@@ -4347,7 +4537,9 @@
         "type": "tool_asset",
         "properties": {
           "name": "Decibel Meter",
-          "acquisition_cost": "30",
+          "acquisition_cost": "",
+          "actual_cost": "30",
+          "estimated_cost": "30",
           "notes": "Order 113-8921857-3726624",
           "status": "bf46e370-d97f-5e46-df4d-dad388280546"
         },
@@ -4364,7 +4556,9 @@
         "type": "tool_asset",
         "properties": {
           "name": "Espusta Brake Pad Gauge",
-          "acquisition_cost": "9.99",
+          "acquisition_cost": "",
+          "actual_cost": "9.99",
+          "estimated_cost": "9.99",
           "notes": "Order 113-6163034-9629866",
           "status": "bf46e370-d97f-5e46-df4d-dad388280546"
         },
@@ -4381,7 +4575,9 @@
         "type": "tool_asset",
         "properties": {
           "name": "AUTOOL Smoke Machine",
-          "acquisition_cost": "43.2",
+          "acquisition_cost": "",
+          "actual_cost": "43.2",
+          "estimated_cost": "43.2",
           "make_model": "SDT106",
           "notes": "Order 113-4787138-6269046",
           "status": "bf46e370-d97f-5e46-df4d-dad388280546"
@@ -4399,7 +4595,9 @@
         "type": "tool_asset",
         "properties": {
           "name": "Hose Pinch Off Pliers Set",
-          "acquisition_cost": "24.99",
+          "acquisition_cost": "",
+          "actual_cost": "24.99",
+          "estimated_cost": "24.99",
           "notes": "Order 113-4787138-6269046",
           "status": "bf46e370-d97f-5e46-df4d-dad388280546"
         },
@@ -4416,7 +4614,9 @@
         "type": "tool_asset",
         "properties": {
           "name": "INNOVA Ford OBD1 Code Reader",
-          "acquisition_cost": "36.79",
+          "acquisition_cost": "",
+          "actual_cost": "36.79",
+          "estimated_cost": "36.79",
           "make_model": "3145",
           "notes": "Order 113-4787138-6269046",
           "status": "bf46e370-d97f-5e46-df4d-dad388280546"
@@ -4434,7 +4634,9 @@
         "type": "tool_asset",
         "properties": {
           "name": "VEVOR Toe Alignment Plates",
-          "acquisition_cost": "35.9",
+          "acquisition_cost": "",
+          "actual_cost": "35.9",
+          "estimated_cost": "35.9",
           "notes": "Order 113-4340895-1946666",
           "status": "bf46e370-d97f-5e46-df4d-dad388280546"
         },
@@ -4451,7 +4653,9 @@
         "type": "tool_asset",
         "properties": {
           "name": "CTA Tools One-Man Brake Bleeder",
-          "acquisition_cost": "9.3",
+          "acquisition_cost": "",
+          "actual_cost": "9.3",
+          "estimated_cost": "9.3",
           "make_model": "1250",
           "notes": "Order 113-4340895-1946666",
           "status": "bf46e370-d97f-5e46-df4d-dad388280546"
@@ -4493,7 +4697,9 @@
         "type": "tool_asset",
         "properties": {
           "name": "Air Compressor",
-          "acquisition_cost": "359.99",
+          "acquisition_cost": "",
+          "actual_cost": "359.99",
+          "estimated_cost": "359.99",
           "make_model": "Fortress 27 Gallon",
           "purchase_date": "2022-02-20",
           "serial_number": "",
@@ -4512,7 +4718,9 @@
         "type": "tool_asset",
         "properties": {
           "name": "Fuel Injection Service Kit",
-          "acquisition_cost": "94.99",
+          "acquisition_cost": "",
+          "actual_cost": "94.99",
+          "estimated_cost": "94.99",
           "make_model": "MADDOX Deluxe Fuel Injection Service Kit",
           "purchase_date": "2023-08-22",
           "serial_number": "",
@@ -4531,7 +4739,9 @@
         "type": "tool_asset",
         "properties": {
           "name": "Fuel Line Disconnect Kit",
-          "acquisition_cost": "37.99",
+          "acquisition_cost": "",
+          "actual_cost": "37.99",
+          "estimated_cost": "37.99",
           "make_model": "MADDOX Master Disconnect Tool Set",
           "purchase_date": "2023-08-22",
           "serial_number": "",
@@ -4550,7 +4760,9 @@
         "type": "tool_asset",
         "properties": {
           "name": "Brake Bleeder Kit",
-          "acquisition_cost": "24.99",
+          "acquisition_cost": "",
+          "actual_cost": "24.99",
+          "estimated_cost": "24.99",
           "make_model": "PITTSBURGH Brake Bleeder and Vacuum Pump Kit",
           "purchase_date": "2023-08-22",
           "status": "bf46e370-d97f-5e46-df4d-dad388280546"
@@ -4568,7 +4780,9 @@
         "type": "tool_asset",
         "properties": {
           "name": "Long Throw DA",
-          "acquisition_cost": "69.99",
+          "acquisition_cost": "",
+          "actual_cost": "69.99",
+          "estimated_cost": "69.99",
           "last_service_date": "04/11/2023",
           "make_model": "BAUER 7.5 Amp, 6 in., 20 mm Long-Throw Random Orbit DA Polisher",
           "purchase_date": "2023-04-12",
@@ -4588,7 +4802,9 @@
         "type": "tool_asset",
         "properties": {
           "name": "Short Throw DA",
-          "acquisition_cost": "39.99",
+          "acquisition_cost": "",
+          "actual_cost": "39.99",
+          "estimated_cost": "39.99",
           "make_model": "BAUER 5.7 Amp, 6 in., 8 mm Short-Throw Random Orbit DA Polisher/Sander",
           "purchase_date": "2023-04-15",
           "serial_number": "",
@@ -4607,7 +4823,9 @@
         "type": "tool_asset",
         "properties": {
           "name": "Welder",
-          "acquisition_cost": "862.49",
+          "acquisition_cost": "",
+          "actual_cost": "862.49",
+          "estimated_cost": "862.49",
           "make_model": "VULCAN OMNIPRO 220 Industrial Multiprocess Welder with 120/240V Input",
           "purchase_date": "2022-05-30",
           "status": "bf46e370-d97f-5e46-df4d-dad388280546"
@@ -5273,49 +5491,265 @@
   "expanded_map": {
     "8f0b11a8-aea2-415b-938c-3633e816eff7": true,
     "063e0759-c0d2-4caf-b411-ed87e2f16637": true,
-    "58e9689c-0b7f-4325-8ebe-ca53944cf667": false,
+    "58e9689c-0b7f-4325-8ebe-ca53944cf667": true,
+    "820342f7-a2d4-4ba8-a069-71464831e660": true,
+    "ca1eaebb-9420-4282-9d5a-e5b24305f6fd": true,
+    "1fd92134-4784-464c-9962-da6806ec1c76": true,
+    "ddceaea8-34fd-4b9c-8bbb-e2aa687eb029": true,
+    "89941716-6549-4335-9b87-7a9a5b544233": true,
+    "9b6d26d8-9ac0-4846-b10c-c667d221d941": true,
+    "3a294d0a-1e83-4fb2-8a3a-602548b43aea": true,
+    "2e79852a-2689-4c55-86fc-3551e38b6f11": true,
+    "b6bbe747-2f96-4774-8a3c-bdb3b65288cb": true,
+    "701f5718-88dd-400b-a3fb-c7413b14f359": true,
+    "8955a0d9-12be-44e9-8229-c942a43fa4e2": true,
+    "88f29f14-cda7-4921-867a-930c0ac4e14f": true,
+    "79d70133-7369-4936-ae37-3caea28dfad1": true,
+    "96baf06a-829d-45a3-85dc-7e0b7355cd12": true,
+    "ce98ccbb-20e8-4342-83aa-2a3beee0baca": true,
+    "198744f3-58fc-40e1-9c5a-120ade6c96bc": true,
+    "72700a15-614d-4990-954f-3f5880d78e4b": true,
+    "cb666fe0-8e9b-4096-9cf0-fba1169dbc76": true,
+    "1fc8206f-4ec6-4df0-a477-01f8a10fbe06": true,
+    "46e0ec93-c139-4e5c-bcf2-37b213b8731e": true,
+    "1917a858-0294-4561-95de-109d8828d1e4": true,
+    "e09f39d3-4ed6-4c54-8ce0-0dd198618941": true,
+    "6424bb32-c891-412a-9200-cac327a900bc": true,
+    "6c53b542-1a3e-43cf-a0de-6d1c74f0bd04": true,
+    "7ff846cb-6df0-4b4d-adcb-e8cb2bf3eff3": true,
+    "c2504f1a-e609-4da9-b1ac-95c6540126ef": true,
+    "8234e852-64ec-49de-bd35-f14454b2afb0": true,
+    "269dbcbb-db3e-476c-bc14-9fd164af2b6c": true,
+    "1a12d878-9c11-4cb9-a2a5-b41702dffbf5": true,
+    "106df4c1-205a-464f-871b-fab1be402549": true,
+    "dc5836c8-8853-445b-b476-70ae8a4e0d79": true,
+    "37bd34ac-e3e7-41d3-9de7-0510e48e157e": true,
+    "7cd43fa0-fe3c-4c1d-a6e1-6824fb6daed8": true,
+    "f08168c0-d944-4239-8d30-7bec18a18fe2": true,
+    "af3e4d07-4505-494b-afb8-14957809617b": true,
+    "46c41a8b-c646-40f5-beff-313a9ac758de": true,
+    "30d94305-67ec-4e29-8e59-60d9beea5fed": true,
+    "4facc8ea-0e6c-474a-a682-e1648b641bda": true,
+    "e4750de5-a8eb-4525-8cf6-eb092af1a6b3": true,
+    "607c0e3c-88bb-4699-ac96-17be8ab0b34d": true,
+    "12fa74ff-cb73-456a-b3e3-c197b62f1820": true,
+    "5435fce3-9225-46b7-acbc-d77fd8a8c46f": true,
+    "0cf92dc8-23d4-406e-970a-b4b0918af03f": true,
+    "04577fcc-a1e6-45c5-834b-403321828887": true,
+    "d463a2d2-3051-44a0-9450-e2e052d395fa": true,
+    "3dd5add5-9a42-4f24-b0b6-bc0176e7d24f": true,
+    "aa2be0f9-9346-46ee-9761-68688522d219": true,
+    "71945aab-7b63-43ce-8acd-5bf331688fc9": true,
+    "f527e3cb-0fc6-418d-891a-7f59d0049543": true,
+    "a7b6e320-f290-47bf-9be9-ae455233e893": true,
+    "a60a9ab4-f613-4461-9874-8bd674c25bde": true,
+    "1c00929d-a96f-42e3-9759-a66e91ae24bc": true,
+    "3bcc3a04-e889-4d16-be33-56860e87d2ff": true,
+    "d38a6631-e2b6-4982-9f39-d2d7717aa005": true,
+    "e93a0a48-e084-4390-8f74-5fbf6cd72b57": true,
+    "5bb378c0-63ec-4830-a6a2-f79b364dba4e": true,
+    "d9819413-c4c7-4d56-9a1b-36ada933620c": true,
+    "d06e54ef-624b-4dc2-b55a-4bd1fc86edd7": true,
+    "f24493f3-2207-4a50-bd86-f73fd97e8cd4": true,
+    "b7914eb6-ca71-4125-b790-6e658dd9efdb": true,
+    "0b36282f-9b5b-4eea-b79b-35d730e0135f": true,
+    "56d5b421-8c0b-4e7f-919a-ff0b143135a3": true,
+    "78289ec0-cc14-44e3-b904-cb647c4d00b2": true,
+    "596e295d-6fb1-46c2-b93c-b3f4383d007a": true,
+    "c80dab8c-ab7d-4685-b260-fcbdcef5536b": true,
+    "154d79df-57be-4bc1-85b6-86d773974066": true,
+    "6291ddc4-a5cc-42ed-8008-4c7c0a0d6b4c": true,
+    "99ad04e7-9c4d-4168-8cc8-a001eab7783e": true,
+    "5295e53d-c829-4469-8abf-3def09bd19f8": true,
+    "12c924fd-d375-49a4-ae43-7828f9cb73bd": true,
+    "80d65e64-ef89-4b52-b87a-fcfa65e6206d": true,
+    "4467317c-b664-45b4-afcc-41e1cc9404df": true,
+    "8b7f14a7-69c8-4ad4-b4b8-072ed20b4ec6": true,
+    "50077053-5b8e-42fa-9c14-b1659e86d746": true,
+    "53634d62-57e9-467b-99ff-e536e680165f": true,
+    "b1abe5e0-a57a-469b-81af-4e1de842420f": true,
+    "b4b7941e-1e36-4b35-b6f2-3f5def75d7f7": true,
+    "b74c027e-53d0-45fa-ac9c-52906da8baa6": true,
+    "eabde8c2-206c-401d-be76-3f00b764ad1a": true,
     "fb04ceae-e213-462b-805e-a94fead8b824": true,
     "0f71cdf1-f7b1-4ce9-bf97-dc55b20eb208": true,
-    "be07bc50-f298-4e9b-a7b0-9c5b5e7db4c8": false,
-    "80050417-1151-4cae-8431-ac5e047f58e9": false,
-    "89941716-6549-4335-9b87-7a9a5b544233": true,
+    "be07bc50-f298-4e9b-a7b0-9c5b5e7db4c8": true,
+    "73915ba5-984d-409a-8405-fb30c07c8260": true,
+    "9a789eb9-bd48-49f0-a8a9-95a47472dc39": true,
+    "6ec434e2-ce7f-4ade-9d9e-7cbc8d5af636": true,
+    "b1adc95d-e032-4b50-92be-a2491c7378e2": true,
+    "f0041e5f-6d84-419b-a831-8f878353250d": true,
+    "49b3f657-b698-4e67-9fec-931979b34a7a": true,
+    "eec8276a-0913-44e9-af8b-d2862066c331": true,
+    "cf708f0f-91c4-40ff-822f-034cf5c2b2c8": true,
     "82584abf-2b5c-45f1-80c7-34e9d508f69c": true,
-    "318d9929-d908-4319-b908-fbeba4a8e7ff": false,
-    "1fd92134-4784-464c-9962-da6806ec1c76": false,
-    "141251af-850d-4868-a75a-16bd0afc90a6": true,
-    "b1fe1049-5d9e-44c4-8d25-31965d40995d": false,
-    "820342f7-a2d4-4ba8-a069-71464831e660": true,
-    "e09f39d3-4ed6-4c54-8ce0-0dd198618941": false,
-    "6c53b542-1a3e-43cf-a0de-6d1c74f0bd04": false,
-    "c2504f1a-e609-4da9-b1ac-95c6540126ef": false,
-    "269dbcbb-db3e-476c-bc14-9fd164af2b6c": false,
-    "9b6d26d8-9ac0-4846-b10c-c667d221d941": false,
-    "e4750de5-a8eb-4525-8cf6-eb092af1a6b3": false,
-    "ad566f5f-67f3-49b9-8f04-550a709c2460": false,
-    "a5dc3b1e-7511-465f-ac9a-be44698bd43f": false,
-    "d83d81ec-5a38-4a2c-a27e-90256b02daa8": true,
-    "3472fd21-b7dc-4476-a727-df51f70c46b1": false,
-    "45efb876-0980-4c3d-8e0d-468566297868": false,
-    "59d1eb52-1551-4e2a-a8db-7ea8a11d012a": false,
-    "1ab4d600-e346-4d04-8980-4612fd36496d": true,
-    "8af04d53-d82f-4a6c-970b-3701c4b1d90f": false,
-    "ae724518-ae43-4bef-805d-0ea9e8bce488": false,
-    "f1700f82-f825-4fa3-b39a-a0243e7671ae": true,
-    "1c00929d-a96f-42e3-9759-a66e91ae24bc": false,
-    "3bcc3a04-e889-4d16-be33-56860e87d2ff": false,
-    "5bb378c0-63ec-4830-a6a2-f79b364dba4e": false,
-    "d06e54ef-624b-4dc2-b55a-4bd1fc86edd7": false,
-    "0b36282f-9b5b-4eea-b79b-35d730e0135f": false,
-    "78cbaba6-697c-4dec-b72d-04c633b73686": false,
-    "faca8529-d909-4632-a805-1d1d9b6db60d": false,
-    "d8e270bb-73ef-404c-8468-19684b043d45": false,
     "05943ed2-50fa-4169-aade-ba55965950fb": true,
-    "80d65e64-ef89-4b52-b87a-fcfa65e6206d": false,
-    "96b21b54-a2ca-4657-bbf6-86b5db20c3ab": false,
-    "cfe70a3a-5e60-4ec2-8921-5f369386ac87": true,
-    "10662246-98d6-4f4a-b2da-914525e41c51": true,
+    "c639f7c5-a900-42d8-92c1-b052c4af2807": true,
+    "318d9929-d908-4319-b908-fbeba4a8e7ff": true,
+    "7c42e3a9-b772-4581-a144-36184f8257d5": true,
+    "ec6521e1-979d-493c-aa8f-0c304b70811a": true,
+    "56435d32-aca9-4190-864e-39fbd3dea4ec": true,
+    "71eb1939-e0f0-4966-a7ba-edaee2d897bd": true,
+    "06ec7615-80d2-47c6-b1c2-536c0db8dc5d": true,
+    "a11c211d-633f-4790-8750-16b9342e9335": true,
+    "d8e270bb-73ef-404c-8468-19684b043d45": true,
+    "9afb9909-a086-4135-bcb0-f637a90cdc32": true,
+    "b7422c4a-d3a1-4960-8d31-b64455e38749": true,
+    "167c41ed-fb16-42cd-8c7f-23457b009eb9": true,
+    "3ad9c900-dd50-4874-87e6-7fdd1c9de657": true,
+    "940626a4-742b-4f90-b13a-c1f4d17864f7": true,
+    "1962d6d9-cbcb-41c6-b9a7-4e83519fa6a8": true,
+    "d584bbeb-1061-49a6-81f1-1157d7537f9b": true,
+    "5978040d-0b88-4f06-a026-93d7d79e99b0": true,
+    "ad566f5f-67f3-49b9-8f04-550a709c2460": true,
+    "592dd22d-761d-4ac8-b956-70c9fa1464b3": true,
+    "e6f349cb-6b4e-4103-b5fe-fe7e52872d17": true,
+    "0dea750a-e836-42a6-89b8-bd40ff9e3801": true,
+    "46ac75b4-057d-4bdc-a94a-c8f1c5154ec8": true,
+    "7d289fe2-6503-47b1-a7c7-5497397ee4ff": true,
+    "4b53dd31-92fd-482e-b097-e067f591f7ee": true,
+    "7de51d54-23bd-4bf7-9dc7-d1e08238d68f": true,
+    "6c5a8367-3b93-4691-a65d-77c9371fb74d": true,
+    "1929617c-1720-4b9e-8041-fcde48f1cf04": true,
+    "5969b939-8380-4550-9269-99b7b540dc8b": true,
+    "2ded71ea-3e89-4cea-b541-5693e8cfb543": true,
+    "ef4ed987-b0ed-4679-8bf4-fb46d7f8b129": true,
+    "91c66873-6260-4f38-ad86-44ac2ba8b0de": true,
+    "fd034f30-1fac-4577-93ac-0875376150e7": true,
+    "3a8eeaa6-615e-46ec-b9cf-5149377c8bca": true,
+    "b12bbe00-ce28-45a8-9b82-5a1fce27b54e": true,
+    "4e113aa6-5b7c-4fb5-ad3a-344249cf0542": true,
+    "91c22f42-2c06-4cbb-b325-02ec77d174c3": true,
+    "45efb876-0980-4c3d-8e0d-468566297868": true,
+    "31b7a96d-4afa-4f3e-b5a1-9dfdb7fb4f41": true,
+    "9492c724-7906-4e40-9457-44a786cc7087": true,
+    "60473e42-8873-42d6-a769-a115766074e0": true,
+    "faca8529-d909-4632-a805-1d1d9b6db60d": true,
+    "ddf7a11a-1c67-4b2d-9d50-c8f58d54c973": true,
+    "55fba9e4-9e82-4b11-8a61-a606775169f2": true,
+    "7592fc53-54ce-45e3-87e3-23322a98b330": true,
+    "33c71c1b-2588-4152-8d68-1f99e1ad5ac8": true,
+    "981a6cb8-3d8e-4c6c-be25-b572ae2a5fac": true,
+    "424a6ed0-240a-4315-bfff-d97dabc5474c": true,
+    "4598ddb0-24b9-4016-a076-93c357944595": true,
+    "f27f025c-edee-4e13-804e-f4b4532a369a": true,
+    "313501c9-ad34-4466-a16d-d4eb0e71cda8": true,
+    "bbd44c56-f037-40e4-a458-ae5bd617c4fb": true,
+    "f1c66f12-ae9e-4fb7-a883-3d964da257c1": true,
+    "7c94ca42-332f-4783-8ac3-f6ee9f3e5755": true,
+    "8f27ae66-fc84-44bf-a62f-adfe09c4d6b3": true,
+    "e1727d65-3dd9-4335-8a5f-5b07eb87a98d": true,
+    "c2519ca1-e795-4351-9608-4eda3c11bc8e": true,
+    "1ab4d600-e346-4d04-8980-4612fd36496d": true,
+    "b26cdc31-e759-4553-b85f-b5712e1c6d1a": true,
+    "f23e02a2-f764-472a-8617-fb85ae33053f": true,
+    "72647d06-bdc5-4159-ac65-cdb68d6ac652": true,
+    "deafa784-be69-47bc-9b2a-f73cf842bb53": true,
+    "3c7d325d-1c5c-453a-80a1-e82c3c5a4bd1": true,
+    "66e4c108-796a-4021-8611-d3a05b3477e0": true,
+    "fd6f9284-67a9-4788-a6f2-32ddcc37daeb": true,
+    "6ff13947-eb04-4de0-b11a-26c32a53ae18": true,
+    "9fe1583f-d09b-43cf-81e8-b8813c3717a0": true,
+    "59d1eb52-1551-4e2a-a8db-7ea8a11d012a": true,
+    "778fa48b-30cc-44d6-a99a-be92d05dcb3e": true,
+    "768cd6d0-05d2-4184-8f90-9270d4a7e61c": true,
+    "dc2d6516-8fea-4262-b577-a544c8454a28": true,
+    "5da7a3b3-d4bd-4edf-aee9-a3e1777e4774": true,
+    "e24511bb-a348-4b2c-89ac-6df4795727c6": true,
+    "0e61ebbc-175d-42fd-9cb7-ec6969979329": true,
+    "81ee4340-bb4a-47a5-a9b2-70e11908d8cf": true,
+    "99d7d090-4fb9-4500-b3ac-f4fecb4aa770": true,
+    "acbcab2e-8055-4f71-a18a-7c9e08890522": true,
+    "246693fa-7e86-4d2b-804a-a3dcbc3146f2": true,
+    "96b966ab-b38c-419c-aae9-49a4e9dc743b": true,
+    "8e4b4cac-2bff-478c-a469-6a693bfd2095": true,
+    "a5070c01-ba93-4292-8159-bb7ff1c16bc8": true,
+    "7023e037-8d4f-4156-94d9-3b071cd5aba9": true,
+    "24a5babb-e205-4147-8572-c3ec5b6b959d": true,
+    "89022244-7312-4e7e-b50f-61a76356d15e": true,
+    "32155103-0125-4a06-b227-9fdfe05e1be6": true,
+    "58014237-9e9c-4fb4-b545-e1f80118577f": true,
+    "fcf26c6e-7815-4e4a-a566-65edd18ad7d0": true,
+    "ae724518-ae43-4bef-805d-0ea9e8bce488": true,
+    "baa65202-ba3b-411b-9e2e-f15b02bfccae": true,
+    "bdc8c629-0808-4f3d-b378-cb82d5e28fc4": true,
+    "cbf55983-c7b9-422e-9248-9d28a4a68efc": true,
+    "78cbaba6-697c-4dec-b72d-04c633b73686": true,
+    "a60f735e-082c-4020-b019-5e7bd001df06": true,
+    "63494286-90e9-44c0-8d93-8d1f436feb06": true,
+    "503b3ba9-a725-4e25-b265-9c6d37cc936c": true,
+    "faa8b534-b326-4c32-a366-f691902894c1": true,
+    "e2575adb-dff0-4e68-adbd-e9d9529abbec": true,
+    "db12e5c2-429e-42c0-a2b9-7e3f27b701f5": true,
+    "180299eb-ef94-40ee-9f74-5faca75362e7": true,
+    "fa5291dc-75e7-4d61-ae7a-b8427fd99eab": true,
+    "3c7410e4-4024-4cd2-a9ae-8562a0429a71": true,
+    "3bd95921-3c79-45ae-9a3f-f68b37ba99f9": true,
+    "07d0375e-9b1c-41bd-bdbb-49275b363985": true,
+    "f8e94e9a-c53d-47c0-ba69-c418dfdf7dc2": true,
+    "fff14e1b-0f97-4013-adb6-3fb9977f27a7": true,
+    "ca6f4e06-43a4-4b75-863c-9d53c45e9ac1": true,
+    "e0ce1b66-502e-4cfb-bc69-54bbbc18e4b7": true,
+    "5e66a573-7e72-4a46-86cd-88c85aec8fe6": true,
+    "04b539a7-808d-40af-9d0b-9fefde93682d": true,
+    "219ee95c-5307-49a6-8fd4-7e834061db5b": true,
+    "5e1a6113-1d08-415b-a91f-9cba13843956": true,
+    "9353f5d4-c3fe-46c3-b6fd-21192ac1e293": true,
+    "a570811e-fb99-4ab9-b749-6cd178107bd4": true,
+    "a6a6c972-0c4b-444d-9013-f33f729a701e": true,
     "2be1250e-7c5c-47f3-a93e-9258718dbe90": true,
-    "d93b8930-899a-4955-b897-263ddf0c4b14": true
+    "0c2aeed7-bf17-4a96-922a-68bd41be7cbf": true,
+    "141251af-850d-4868-a75a-16bd0afc90a6": true,
+    "b1fe1049-5d9e-44c4-8d25-31965d40995d": true,
+    "1b7ac27b-401d-4645-a4d2-8670e8c07cce": true,
+    "98fc1da2-b9fb-4ad9-a0c0-477937617e32": true,
+    "299e943a-4526-4324-8e41-a50887eb9a1f": true,
+    "e15fdad8-0778-4ae6-abf6-0bfb6f097f3d": true,
+    "71ef8247-ce6f-43c7-a773-a366a775315e": true,
+    "cb1e7bdb-075b-4dd0-baf4-e44aefc84f64": true,
+    "a53d1f70-0f8c-4820-8234-f98862ccbcd4": true,
+    "585e0e4d-7ca6-4c17-b763-955be77e4a08": true,
+    "ebc8971f-98c3-4974-8066-e80cd4ee3d2c": true,
+    "66d7e8a8-8f0b-40b7-90c8-969aed42905f": true,
+    "8af04d53-d82f-4a6c-970b-3701c4b1d90f": true,
+    "a91eb167-ae77-4bd5-86d9-d22033d6dc0e": true,
+    "9f571674-bf0e-4247-a012-b1a373eacc07": true,
+    "828eacd8-9333-46ef-9016-5b645271f46a": true,
+    "d068167c-1349-43a5-a4d2-3f0355b3b88d": true,
+    "81419774-5375-4113-b0c0-c40d81b3ec12": true,
+    "9f000dc0-6bb6-4afb-ab1d-09c7ba9854b5": true,
+    "57dcde39-3e80-46b4-9ecc-00a477baa234": true,
+    "80050417-1151-4cae-8431-ac5e047f58e9": true,
+    "12054bd3-0528-42c7-b0da-282ebc1665e0": true,
+    "79b90636-06fa-4d2c-a450-020d6ee6e3d1": true,
+    "98892dce-57c4-4799-b3f7-81009b2b8ddf": true,
+    "78b25908-5925-44a4-8312-d07314e6c0d9": true,
+    "25b3658e-e54a-433a-aaa4-ab3d734227b0": true,
+    "c3b68e0f-aaaf-4d37-9a8c-469eef9e4149": true,
+    "947eaf8e-2b46-4fa3-90b0-4d3b929de5c4": true,
+    "a5dc3b1e-7511-465f-ac9a-be44698bd43f": true,
+    "d83d81ec-5a38-4a2c-a27e-90256b02daa8": true,
+    "19ac3489-a9fd-4121-bd0e-6b51d2e0a4ed": true,
+    "f1700f82-f825-4fa3-b39a-a0243e7671ae": true,
+    "be3a81d5-a4de-42cc-a610-ff2f0408a192": true,
+    "437b6993-f27e-453b-8fb6-7cda0e4343df": true,
+    "1fcee437-7ade-4251-855b-c64a09fea4bb": true,
+    "96b21b54-a2ca-4657-bbf6-86b5db20c3ab": true,
+    "43ed49db-e0e8-443e-b8d9-e1e5b9f863c4": true,
+    "256d04e9-d7c8-46eb-874a-33ae15350332": true,
+    "fbde829f-51a7-40b6-b5fd-2e0d9949d522": true,
+    "d9a36323-51d7-42f9-bd45-fd2413a04c68": true,
+    "cfe70a3a-5e60-4ec2-8921-5f369386ac87": true,
+    "b6d309c7-23ca-4580-9dd9-05e8375272f8": true,
+    "adf08ecd-117a-48ff-a0b1-2646369c6c66": true,
+    "10662246-98d6-4f4a-b2da-914525e41c51": true,
+    "d93b8930-899a-4955-b897-263ddf0c4b14": true,
+    "c07c498c-79c4-4c66-8e6b-f4b82423599d": true,
+    "bc043205-a612-46cd-a016-64f3167b6481": true,
+    "f3589ed8-5310-4eed-bac4-cb8829426db0": true,
+    "4f164917-dbd0-40b7-b293-5ac7347e9ff0": true,
+    "3472fd21-b7dc-4476-a727-df51f70c46b1": true,
+    "c3cad0c4-fc19-4bd3-9995-a3978886fc9c": true
   },
   "blocking_relationships": [
     {
@@ -5345,7 +5779,7 @@
   ],
   "filter_sets": [
     {
-      "id": "fset-1773170128885-ffncvsq",
+      "id": "fset-1773246022456-ier6p9b",
       "name": "Velocity > 0",
       "rules": [
         {
@@ -5356,7 +5790,7 @@
         }
       ],
       "filterMode": "hide",
-      "createdAt": "2026-03-10T19:15:28.885Z"
+      "createdAt": "2026-03-11T16:20:22.456Z"
     }
   ]
 }

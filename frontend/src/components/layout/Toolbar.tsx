@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, Zap, DollarSign, Calendar } from 'lucide-react';
+import { TrendingUp, Zap, DollarSign, Calendar, ChartColumn } from 'lucide-react';
 
 export interface ToolbarButton {
   id: string;
@@ -10,7 +10,7 @@ export interface ToolbarButton {
 }
 
 export type ViewType = 'graph' | 'tools';
-export type ToolsTab = 'velocity' | 'blocking' | 'budget' | 'gantt';
+export type ToolsTab = 'velocity' | 'blocking' | 'budget' | 'gantt' | 'charts';
 
 interface ToolbarProps {
   buttons?: ToolbarButton[];
@@ -87,6 +87,18 @@ export function Toolbar({
           >
             <Calendar size={16} />
             Gantt
+          </button>
+          <button
+            onClick={() => onToolsTabChange('charts')}
+            className={`px-3 py-1.5 rounded text-sm font-semibold transition-colors flex items-center gap-2 ${
+              activeToolsTab === 'charts'
+                ? 'bg-accent-primary text-fg-primary'
+                : 'text-fg-secondary hover:text-fg-primary'
+            }`}
+            title="Switch to charts view"
+          >
+            <ChartColumn size={16} />
+            Charts
           </button>
         </div>
       )}
