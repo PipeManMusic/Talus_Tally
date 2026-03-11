@@ -15,22 +15,12 @@ log() {
   echo "[macOS build] $1"
 }
 
-ensure_icon() {
-  local source_icon="assets/icons/TalusTallyIcon.png"
-  local target_icon="frontend/src-tauri/icons/icon.png"
-  if [[ -f "$source_icon" ]]; then
-    cp "$source_icon" "$target_icon"
-  fi
-}
-
 log "Building Talus Tally macOS installer"
 
 log "Step 1/3: Installing frontend dependencies"
 pushd frontend >/dev/null
 $NPM_BIN ci
 popd >/dev/null
-
-ensure_icon
 
 log "Step 2/3: Bundling Tauri app"
 pushd frontend >/dev/null

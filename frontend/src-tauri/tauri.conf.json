@@ -5,7 +5,7 @@
   "identifier": "com.talus.tally",
   "build": {
     "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "npm run build && npm run stage:resources",
+    "beforeBuildCommand": "npm run build && npm run stage:icons && npm run stage:resources",
     "devUrl": "http://localhost:5173",
     "frontendDist": "../dist"
   },
