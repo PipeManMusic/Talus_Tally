@@ -118,6 +118,7 @@ function App() {
   const [blockingEdgeCount, setBlockingEdgeCount] = useState(0);
   const [blockingFitSignal, setBlockingFitSignal] = useState(0);
   const [blockingGraphRefreshSignal, setBlockingGraphRefreshSignal] = useState(0);
+  const [indicatorRefreshSignal, setIndicatorRefreshSignal] = useState(0);
   const [lastFilePath, setLastFilePath] = useState<string | null>(null);
   const [currentTemplateId, setCurrentTemplateId] = useState<string | null>(null);
   const [expandAllSignal, setExpandAllSignal] = useState(0);
@@ -1520,6 +1521,13 @@ function App() {
       console.warn('Failed to refresh velocity:', velErr);
     }
 
+    // Refresh indicators config
+    try {
+      setIndicatorRefreshSignal((prev) => prev + 1);
+    } catch (indErr) {
+      console.warn('Failed to refresh indicators:', indErr);
+    }
+
     console.log('✓ Full template refresh completed');
   }, [currentTemplateId, sessionId, normalizeGraph, setCurrentGraph, fetchBlockingRelationships, fetchVelocity]);
 
@@ -2590,7 +2598,7 @@ function App() {
       {/* Indicator Editor View */}
       {showIndicatorEditor && (
         <div className="absolute inset-0 bg-bg-dark z-50">
-          <IndicatorEditor onClose={() => setShowIndicatorEditor(false)} />
+          <IndicatorEditor onClose={() => setShowIndicatorEditor(false)} refreshSignal={indicatorRefreshSignal} />
         </div>
       )}
 

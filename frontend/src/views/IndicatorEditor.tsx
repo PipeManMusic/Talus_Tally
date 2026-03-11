@@ -6,6 +6,7 @@ import { TitleBar } from '../components/layout/TitleBar';
 
 export interface IndicatorEditorProps {
   onClose: () => void;
+  refreshSignal?: number;
 }
 
 interface ExtendedIndicatorSet {
@@ -15,7 +16,7 @@ interface ExtendedIndicatorSet {
   default_theme?: Record<string, { indicator_color?: string; text_color?: string; text_style?: string }>;
 }
 
-export function IndicatorEditor({ onClose }: IndicatorEditorProps) {
+export function IndicatorEditor({ onClose, refreshSignal }: IndicatorEditorProps) {
   const [indicatorSets, setIndicatorSets] = useState<Record<string, ExtendedIndicatorSet>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,6 +37,12 @@ export function IndicatorEditor({ onClose }: IndicatorEditorProps) {
   useEffect(() => {
     loadIndicators();
   }, []);
+
+  useEffect(() => {
+    if (refreshSignal !== undefined && refreshSignal > 0) {
+      loadIndicators();
+    }
+  }, [refreshSignal]);
 
   const loadIndicators = async () => {
     try {
