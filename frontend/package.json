@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "stage:icons": "npx tauri icon ../assets/icons/TalusTallyIcon.svg --output src-tauri/icons",
     "lint": "eslint .",
     "preview": "vite preview",
     "desktop:dev": "tauri dev",

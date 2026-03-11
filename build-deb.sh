@@ -72,11 +72,6 @@ pushd frontend >/dev/null
 npm ci
 popd >/dev/null
 
-# Ensure correct icon is used for Tauri build
-if [ -f assets/icons/TalusTallyIcon.png ]; then
-    cp assets/icons/TalusTallyIcon.png frontend/src-tauri/icons/icon.png
-fi
-
 echo "📦 Step 2/3: Bundling with Tauri (deb)"
 pushd frontend >/dev/null
 npx tauri build --bundles deb

@@ -9,7 +9,6 @@ $ErrorActionPreference = 'Stop'
 $ScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $ScriptRoot
 
-$pythonBin = if ($env:PYTHON_BIN) { $env:PYTHON_BIN } else { 'python' }
 $npmBin = if ($env:NPM_BIN) { $env:NPM_BIN } else { 'npm' }
 
 function Invoke-Step {
@@ -20,14 +19,6 @@ function Invoke-Step {
 
   Write-Host "[Windows build] $Name"
   & $Action
-}
-
-function Copy-Icon {
-  $sourceIcon = Join-Path $ScriptRoot 'assets/icons/TalusTallyIcon.png'
-  $targetIcon = Join-Path $ScriptRoot 'frontend/src-tauri/icons/icon.png'
-  if (Test-Path $sourceIcon) {
-    Copy-Item -Path $sourceIcon -Destination $targetIcon -Force
-  }
 }
 
 function Invoke-Native {
@@ -48,8 +39,6 @@ Invoke-Step 'Installing frontend dependencies' {
   Invoke-Native $npmBin @('ci')
   Pop-Location
 }
-
-Copy-Icon
 
 Invoke-Step 'Bundling Tauri app' {
   Push-Location 'frontend'
