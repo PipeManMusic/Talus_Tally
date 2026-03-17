@@ -4,6 +4,7 @@ import { mapNodeIcon, subscribeToIconCache } from '../graph/mapNodeIcon';
 import { AlertCircle } from 'lucide-react';
 import { useFilterStore } from '../../store/filterStore';
 import { evaluateNodeVisibility } from '../../utils/filterEngine';
+import { buildBlockingHierarchyLayout } from '../../utils/blockingLayout';
 
 // Helper to recolor SVG fills and strokes with a single color
 const recolorSvg = (svgString: string, color: string | undefined): string => {
@@ -58,13 +59,6 @@ const iconDefaults: Record<string, string> = {
   location_scout: 'map-pin',
 };
 
-interface NodeData {
-  id: string;
-  label: string;
-  x: number;
-  y: number;
-}
-
 interface Edge {
   from: string;
   to: string;
@@ -101,6 +95,7 @@ export function NodeBlockingEditor({ sessionId, nodes, velocityScores = {}, sele
   const [scale, setScale] = useState(1);
   const [spacePressed, setSpacePressed] = useState(false);
   const [nodeDepths, setNodeDepths] = useState<Record<string, number>>({});
+  const [parentNodeIds, setParentNodeIds] = useState<Record<string, string | undefined>>({});
   const [iconSvgs, setIconSvgs] = useState<Record<string, string | undefined>>({});
   const [iconCacheVersion, setIconCacheVersion] = useState(0);
 
@@ -314,102 +309,24 @@ export function NodeBlockingEditor({ sessionId, nodes, velocityScores = {}, sele
     const nodeIds = Object.keys(nodes);
     if (nodeIds.length === 0) {
       setNodeDepths({});
+      setParentNodeIds({});
       setNodePositions([]);
       return;
     }
 
-    // Find project node (if any) to ignore for grouping
-    const projectNodeId = nodeIds.find(id => {
-      const type = nodes[id].type;
-      return type === 'project' || type === 'project_root';
+    const layout = buildBlockingHierarchyLayout(nodes, {
+      visibleNodeIds: new Set(
+        nodeIds.filter((id) => nodeVisibility.get(id) ?? true),
+      ),
+      hideFilteredNodes: filterMode === 'hide' && rules.length > 0,
+      baseWidth: nodeSizeConfig.baseWidth,
+      baseHeight: nodeSizeConfig.baseHeight,
+      maxScale: nodeSizeConfig.maxScale,
     });
 
-    // Build parent-child relationships from children arrays
-    const nodeDepth: Record<string, number> = {};
-    const childrenMap: Record<string, string[]> = {};
-    const parentMap: Record<string, string | undefined> = {};
-
-    nodeIds.forEach(id => {
-      nodeDepth[id] = 0;
-      childrenMap[id] = [];
-    });
-
-    nodeIds.forEach(id => {
-      const children = nodes[id].children || [];
-      children.forEach(childId => {
-        if (!childrenMap[id].includes(childId)) {
-          childrenMap[id].push(childId);
-        }
-        if (!parentMap[childId]) {
-          parentMap[childId] = id;
-        }
-      });
-    });
-
-    // Calculate depth
-    const visited = new Set<string>();
-    const queue: string[] = [];
-
-    nodeIds.forEach(id => {
-      const parentId = parentMap[id];
-      if (!parentId || parentId === projectNodeId) {
-        queue.push(id);
-        nodeDepth[id] = 0;
-        visited.add(id);
-      }
-    });
-
-    while (queue.length > 0) {
-      const nodeId = queue.shift()!;
-      const children = childrenMap[nodeId] || [];
-      children.forEach(childId => {
-        if (!visited.has(childId)) {
-          nodeDepth[childId] = nodeDepth[nodeId] + 1;
-          visited.add(childId);
-          queue.push(childId);
-        }
-      });
-    }
-
-    setNodeDepths(nodeDepth);
-
-    // Create grid layout spread across canvas.
-    // Include all non-project nodes; filtering is handled by the shared filter system.
-    const positionableNodes = nodeIds.filter(id => {
-      if (id === projectNodeId) return false;
-      if (filterMode === 'hide' && rules.length > 0 && !nodeVisibility.get(id)) {
-        return false;
-      }
-      return true;
-    });
-    const nodeSize = { width: nodeSizeConfig.baseWidth, height: nodeSizeConfig.baseHeight };
-    const padding = 50;
-    const spacing = Math.max(nodeSize.width, nodeSize.height) * nodeSizeConfig.maxScale + 60;
-    
-    // Determine grid dimensions based on number of nodes
-    const nodesPerRow = Math.max(3, Math.ceil(Math.sqrt(positionableNodes.length * 0.7)));
-    
-    const positions: NodeData[] = positionableNodes.map((id, idx) => {
-      const depth = nodeDepth[id];
-      
-      // Simple grid layout: arrange in rows and columns
-      const row = Math.floor(idx / nodesPerRow);
-      const col = idx % nodesPerRow;
-      
-      // Weight x position by depth, but spread across columns
-      const x = col * spacing + (depth * 80) + padding;
-      // Y position is just based on grid row
-      const y = row * spacing + padding;
-
-      return {
-        id,
-        label: nodes[id].properties?.name || id,
-        x,
-        y
-      };
-    });
-
-    setNodePositions(positions);
+    setNodeDepths(layout.depths);
+    setParentNodeIds(layout.parentIds);
+    setNodePositions(layout.positions);
   }, [nodes, filterMode, nodeSizeConfig.baseWidth, nodeSizeConfig.baseHeight, nodeSizeConfig.maxScale, nodeVisibility, rules.length]);
 
   useEffect(() => {
@@ -780,10 +697,10 @@ export function NodeBlockingEditor({ sessionId, nodes, velocityScores = {}, sele
           <g transform={`translate(${pan.x}, ${pan.y}) scale(${scale})`}>
             {/* Family connection wires (parent-child) */}
             {nodePositions.map((nodeData) => {
-              const childNode = nodes[nodeData.id];
-              if (!childNode || !childNode.parent_id) return null;
+              const parentId = parentNodeIds[nodeData.id] ?? nodes[nodeData.id]?.parent_id;
+              if (!parentId) return null;
 
-              const parentNode = nodePositions.find(n => n.id === childNode.parent_id);
+              const parentNode = nodePositions.find(n => n.id === parentId);
               if (!parentNode) return null;
 
               const parentSize = getNodeSize(parentNode.id);
@@ -893,8 +810,9 @@ export function NodeBlockingEditor({ sessionId, nodes, velocityScores = {}, sele
               if (!node) return null; // Skip rendering if node doesn't exist
               const isVisible = nodeVisibility.get(nodeData.id) ?? true;
               const isGhosted = filterMode === 'ghost' && rules.length > 0 && !isVisible;
-              const parentNode = node.parent_id ? nodes[node.parent_id] : null;
-              const parentName = parentNode?.properties?.name || (node.parent_id ? node.parent_id.slice(0, 8) : '');
+              const parentId = parentNodeIds[nodeData.id] ?? node.parent_id;
+              const parentNode = parentId ? nodes[parentId] : null;
+              const parentName = parentNode?.properties?.name || (parentId ? parentId.slice(0, 8) : '');
               const nodeSize = getNodeSize(nodeData.id);
               const nodeDepth = nodeDepths[nodeData.id] ?? 0;
               const nodeScale = getNodeScale(nodeData.id);

@@ -94,6 +94,7 @@ export interface CsvImportError extends Error {
 export interface NodeTypeSchema {
   id: string;
   name: string;
+  primary_status_property_id?: string;
   allowed_children: string[];
   allowed_asset_types?: string[];
   icon?: string;
@@ -327,6 +328,20 @@ export interface GanttBar {
 export interface GanttPayload {
   bars: GanttBar[];
   timelineRange: { earliest: string; latest: string } | null;
+  timestamp: number;
+}
+
+// --- Manpower System Interfaces ---
+
+export interface ManpowerResource {
+  name: string;
+  capacity: number;
+  load: Record<string, number>;
+}
+
+export interface ManpowerPayload {
+  date_columns: string[];
+  resources: Record<string, ManpowerResource>;
   timestamp: number;
 }
 
@@ -1090,6 +1105,15 @@ export class APIClient {
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.error?.message || 'Failed to get gantt data');
+    }
+    return response.json();
+  }
+
+  async getManpowerPayload(sessionId: string): Promise<ManpowerPayload> {
+    const response = await fetch(`${this.baseUrl}/api/v1/sessions/${sessionId}/manpower`);
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || 'Failed to get manpower data');
     }
     return response.json();
   }

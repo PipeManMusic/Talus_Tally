@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { TreeView } from '../TreeView';
 import { useFilterStore } from '../../../store/filterStore';
 import type { TreeNode } from '../../../utils/treeUtils';
@@ -16,13 +16,35 @@ if (typeof globalThis.DragEvent === 'undefined') {
   };
 }
 
-vi.mock('../graph/mapNodeIcon', () => ({
+vi.mock('../../graph/mapNodeIcon', () => ({
   mapNodeIcon: vi.fn(() => Promise.resolve('<svg></svg>')),
   subscribeToIconCache: vi.fn(() => () => {}),
 }));
 
-vi.mock('../graph/mapNodeIndicator', () => ({
-  mapNodeIndicator: vi.fn(async (node: any) => node),
+vi.mock('../../graph/mapNodeIndicator', () => ({
+  mapNodeIndicator: vi.fn(async (node: any) => {
+    if (node.indicator_id === 'empty') {
+      return {
+        ...node,
+        statusIndicatorSvg: '<svg><circle cx="5" cy="5" r="4"/></svg>',
+        statusText: undefined,
+        indicatorColor: '#888888',
+        textColor: '#888888',
+        textStyle: 'normal',
+      };
+    }
+    if (node.indicator_id === 'filled') {
+      return {
+        ...node,
+        statusIndicatorSvg: '<svg><rect x="1" y="1" width="8" height="8"/></svg>',
+        statusText: undefined,
+        indicatorColor: '#22aa22',
+        textColor: '#22aa22',
+        textStyle: 'bold',
+      };
+    }
+    return node;
+  }),
 }));
 
 type DragPayload = {
@@ -355,3 +377,90 @@ describe('TreeView contextual import/export actions', () => {
     expect(onContextMenu).toHaveBeenCalledWith('season-1', 'export-branch');
   });
 });
+
+describe('TreeView multiple status indicators', () => {
+  it('renders all status indicators horizontally and uses primary status for text styling', async () => {
+    const nodes: TreeNode[] = [
+      {
+        id: 'episode-a',
+        name: 'Episode A',
+        type: 'episode',
+        properties: { name: 'Episode A', production_status: 'Planned', publish_status: 'Done' },
+        allowed_children: [],
+        parent_id: undefined,
+        indicator_id: undefined,
+        indicator_set: undefined,
+        icon_id: undefined,
+        statusIndicatorSvg: undefined,
+        statusText: undefined,
+        children: [],
+      },
+    ];
+
+    const nodeTypeSchemas = {
+      episode: {
+        id: 'episode',
+        name: 'Episode',
+        primary_status_property_id: 'publish_status',
+        allowed_children: [],
+        properties: [
+          {
+            id: 'production_status',
+            name: 'Production Status',
+            type: 'select',
+            required: false,
+            indicator_set: 'status',
+            options: [
+              { id: 'planned', name: 'Planned', indicator_id: 'empty' },
+            ],
+          },
+          {
+            id: 'publish_status',
+            name: 'Publish Status',
+            type: 'select',
+            required: false,
+            indicator_set: 'status',
+            options: [
+              { id: 'done', name: 'Done', indicator_id: 'filled' },
+            ],
+          },
+        ],
+      },
+    };
+
+    render(
+      <TreeView
+        nodes={nodes}
+        nodeTypeSchemas={nodeTypeSchemas as any}
+        expandedMap={{}}
+        setExpandedMap={vi.fn()}
+      />
+    );
+
+    await waitFor(() => {
+      expect(rowHasTwoStatusSvgs()).toBe(true);
+    });
+
+    const row = screen.getByText('Episode A').closest('[data-testid="tree-item-row"]');
+    expect(row).not.toBeNull();
+
+    const statusContainer = row!.querySelector('.status-indicator-svg');
+    expect(statusContainer).not.toBeNull();
+    expect(statusContainer!.querySelectorAll('svg').length).toBe(2);
+
+    const label = screen.getByText('Episode A');
+    expect(label).toHaveStyle({ color: '#22aa22', fontWeight: 'bold' });
+  });
+});
+
+function rowHasTwoStatusSvgs(): boolean {
+  const row = screen.queryByText('Episode A')?.closest('[data-testid="tree-item-row"]');
+  if (!row) {
+    return false;
+  }
+  const statusContainer = row.querySelector('.status-indicator-svg');
+  if (!statusContainer) {
+    return false;
+  }
+  return statusContainer.querySelectorAll('svg').length === 2;
+}

@@ -14,6 +14,18 @@ from uuid import uuid4
 
 from backend.infra.user_data_dir import get_user_templates_dir
 
+
+def _resolve_directory_setting(setting_key: str, default_path: Path) -> str:
+    from backend.infra.settings import get_setting
+
+    custom_dir = get_setting(setting_key)
+    if custom_dir:
+        candidate = Path(str(custom_dir))
+        if candidate.is_dir():
+            return str(candidate)
+    return str(default_path)
+
+
 def get_templates_directory() -> str:
     """
     Returns the templates directory.
@@ -22,14 +34,9 @@ def get_templates_directory() -> str:
     that path is returned – enabling shared/collaborative template folders.
     Otherwise falls back to the XDG user-data default.
     """
-    from backend.infra.settings import get_setting
-    custom_dir = get_setting("custom_templates_dir")
-    if custom_dir:
-        from pathlib import Path
-        p = Path(custom_dir)
-        if p.is_dir():
-            return str(p)
-    return str(get_user_templates_dir())
+    from backend.infra.settings import CUSTOM_BLUEPRINT_TEMPLATES_DIR_KEY
+
+    return _resolve_directory_setting(CUSTOM_BLUEPRINT_TEMPLATES_DIR_KEY, get_user_templates_dir())
 
 
 class TemplatePersistence:

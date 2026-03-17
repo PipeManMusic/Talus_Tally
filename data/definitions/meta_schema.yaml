@@ -42,6 +42,8 @@ property_types:
   - id: "node_reference"
     python_type: "str"
     description: "Reference to another node by ID"
+    optional_fields:
+      - target_type: "string (optional) - restricts reference targets to a node type (e.g. person)"
 
   - id: "editor"
     python_type: "str"
@@ -66,6 +68,7 @@ property_definition:
   optional_fields:
     - required: "optional - boolean, defaults to false"
     - value: "optional - default value for the property"
+    - target_type: "optional - for node_reference properties, the required target node type"
     - options: "required if type is 'select', array of string or object options"
     - system_locked: "optional - boolean, when true the user cannot rename or delete this property"
     - ui_group: "optional - string, display name used by the frontend to group properties under a header"

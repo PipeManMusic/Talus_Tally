@@ -34,7 +34,9 @@ export function mapNodeIcon(iconId?: string): Promise<string | undefined> {
     return iconCache.get(cacheKey)!;
   }
 
-  const fetchPromise = fetch(`${API_BASE_URL}/api/v1/icons/${cacheKey}`)
+  const fetchPromise = fetch(`${API_BASE_URL}/api/v1/icons/${cacheKey}`, {
+    cache: 'no-store',
+  })
     .then(async (res) => {
       if (!res.ok) {
         console.warn('[mapNodeIcon] Failed to load icon', cacheKey, 'status', res.status);

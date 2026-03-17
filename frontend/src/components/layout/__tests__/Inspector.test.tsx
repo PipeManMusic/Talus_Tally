@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { Inspector, type NodeProperty } from '../Inspector';
 
 describe('Inspector', () => {
@@ -46,6 +46,33 @@ describe('Inspector', () => {
     expect(screen.getByText('Blocking')).toBeInTheDocument();
     expect(screen.getByText('Blocker Node')).toBeInTheDocument();
     expect(screen.getByText('Blocked Node')).toBeInTheDocument();
+  });
+
+  it('renders person weekly schedule summary UI', () => {
+    const personProperties: NodeProperty[] = [
+      { id: 'name', name: 'Full Name', type: 'text', value: 'Alex' },
+      { id: 'email', name: 'Email', type: 'text', value: 'alex@example.com' },
+      { id: 'capacity_monday', name: 'Capacity Monday (Hours)', type: 'number', value: 8 },
+      { id: 'hourly_rate_monday', name: 'Hourly Rate Monday', type: 'number', value: 95 },
+    ];
+
+    render(
+      <Inspector
+        nodeId="person-1"
+        nodeName="Alex"
+        nodeType="person"
+        properties={personProperties}
+      />,
+    );
+
+    expect(screen.getByText('Weekly Availability')).toBeInTheDocument();
+    expect(screen.getByText('Edit Week')).toBeInTheDocument();
+    expect(screen.getByText('Mon')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('Edit Week'));
+    expect(screen.getByText('Copy Mon Capacity → Tue–Fri')).toBeInTheDocument();
+    expect(screen.getByText('Copy Mon Rate → Tue–Fri')).toBeInTheDocument();
+    expect(screen.getByText('Copy Fri Rate → Weekend')).toBeInTheDocument();
   });
 
   describe('Velocity Section', () => {

@@ -49,6 +49,7 @@ node_types:
   allowed_children:
   - camera_gear_inventory
   - car_parts_inventory
+  - personnel_assets
   - tools_inventory
   color: '#a78bfa'
   id: inventory_root
@@ -81,6 +82,118 @@ node_types:
     label: Category Name
     type: text
   shape: roundedSquare
+- allowed_asset_types: []
+  allowed_children:
+  - person
+  color: '#60a5fa'
+  id: personnel_assets
+  label: Personnel Assets
+  properties:
+  - id: name
+    label: Name
+    type: text
+  shape: rounded
+- allowed_asset_types: []
+  allowed_children: []
+  base_type: asset
+  color: '#3b82f6'
+  icon: user
+  id: person
+  label: Person
+  properties:
+  - id: name
+    label: Full Name
+    required: true
+    system_locked: true
+    type: text
+  - id: email
+    label: Email
+    required: true
+    system_locked: true
+    type: text
+  - id: capacity_monday
+    label: Capacity Monday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 8
+  - id: capacity_tuesday
+    label: Capacity Tuesday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 8
+  - id: capacity_wednesday
+    label: Capacity Wednesday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 8
+  - id: capacity_thursday
+    label: Capacity Thursday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 8
+  - id: capacity_friday
+    label: Capacity Friday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 8
+  - id: capacity_saturday
+    label: Capacity Saturday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 0
+  - id: capacity_sunday
+    label: Capacity Sunday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 0
+  - id: hourly_rate_monday
+    label: Hourly Rate Monday
+    required: false
+    system_locked: true
+    type: number
+  - id: hourly_rate_tuesday
+    label: Hourly Rate Tuesday
+    required: false
+    system_locked: true
+    type: number
+  - id: hourly_rate_wednesday
+    label: Hourly Rate Wednesday
+    required: false
+    system_locked: true
+    type: number
+  - id: hourly_rate_thursday
+    label: Hourly Rate Thursday
+    required: false
+    system_locked: true
+    type: number
+  - id: hourly_rate_friday
+    label: Hourly Rate Friday
+    required: false
+    system_locked: true
+    type: number
+  - id: hourly_rate_saturday
+    label: Hourly Rate Saturday
+    required: false
+    system_locked: true
+    type: number
+  - id: hourly_rate_sunday
+    label: Hourly Rate Sunday
+    required: false
+    system_locked: true
+    type: number
+  - id: system_role
+    label: System Role
+    required: false
+    system_locked: true
+    type: text
+  shape: circle
 - allowed_asset_types: []
   allowed_children: []
   color: '#0ea5e9'

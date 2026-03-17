@@ -2,7 +2,7 @@
 Tests for feature_macros — Template Feature Macro injection/removal system.
 
 Covers:
-- Scheduling feature injects start_date, end_date, assigned_to
+- Scheduling feature injects start_date, end_date, assigned_to, estimated_hours, actual_hours
 - Budgeting feature injects estimated_cost + actual_cost
 - Disabling a feature removes its system_locked properties
 - Enabling both features simultaneously
@@ -71,7 +71,7 @@ def both_features_template(base_template):
 
 class TestFeatureInjection:
 
-    def test_scheduling_injects_three_properties(self, scheduling_template):
+    def test_scheduling_injects_required_properties(self, scheduling_template):
         result = apply_feature_macros(scheduling_template)
         props = result["node_types"][0]["properties"]
         prop_ids = [p["id"] for p in props]
@@ -79,12 +79,14 @@ class TestFeatureInjection:
         assert "start_date" in prop_ids
         assert "end_date" in prop_ids
         assert "assigned_to" in prop_ids
+        assert "estimated_hours" in prop_ids
+        assert "actual_hours" in prop_ids
 
     def test_scheduling_properties_are_system_locked(self, scheduling_template):
         result = apply_feature_macros(scheduling_template)
         props = result["node_types"][0]["properties"]
         for p in props:
-            if p["id"] in ("start_date", "end_date", "assigned_to"):
+            if p["id"] in ("start_date", "end_date", "assigned_to", "estimated_hours", "actual_hours"):
                 assert p["system_locked"] is True
 
     def test_scheduling_properties_have_correct_types(self, scheduling_template):
@@ -94,6 +96,9 @@ class TestFeatureInjection:
         assert prop_map["start_date"]["type"] == "date"
         assert prop_map["end_date"]["type"] == "date"
         assert prop_map["assigned_to"]["type"] == "node_reference"
+        assert prop_map["assigned_to"]["target_type"] == "person"
+        assert prop_map["estimated_hours"]["type"] == "number"
+        assert prop_map["actual_hours"]["type"] == "number"
 
     def test_scheduling_properties_have_ui_group(self, scheduling_template):
         result = apply_feature_macros(scheduling_template)
@@ -102,6 +107,8 @@ class TestFeatureInjection:
         assert prop_map["start_date"]["ui_group"] == "Schedule"
         assert prop_map["end_date"]["ui_group"] == "Schedule"
         assert prop_map["assigned_to"]["ui_group"] == "Schedule"
+        assert prop_map["estimated_hours"]["ui_group"] == "Schedule"
+        assert prop_map["actual_hours"]["ui_group"] == "Schedule"
 
     def test_scheduling_semantic_roles(self, scheduling_template):
         result = apply_feature_macros(scheduling_template)
@@ -129,7 +136,15 @@ class TestFeatureInjection:
         result = apply_feature_macros(both_features_template)
         prop_ids = [p["id"] for p in result["node_types"][0]["properties"]]
 
-        expected = {"start_date", "end_date", "assigned_to", "estimated_cost", "actual_cost"}
+        expected = {
+            "start_date",
+            "end_date",
+            "assigned_to",
+            "estimated_hours",
+            "actual_hours",
+            "estimated_cost",
+            "actual_cost",
+        }
         assert expected.issubset(set(prop_ids))
 
 
@@ -175,6 +190,8 @@ class TestFeatureRemoval:
         assert "start_date" not in prop_ids
         assert "end_date" not in prop_ids
         assert "assigned_to" not in prop_ids
+        assert "estimated_hours" not in prop_ids
+        assert "actual_hours" not in prop_ids
 
     def test_disabling_budgeting_removes_estimated_cost(self, budgeting_template):
         injected = apply_feature_macros(budgeting_template)

@@ -3,6 +3,9 @@ import { ChevronLeft, AlertCircle, Plus } from 'lucide-react';
 import { apiClient, API_BASE_URL, type IndicatorSet } from '../api/client';
 import { ColorPicker } from '../components/ui/ColorPicker';
 import { TitleBar } from '../components/layout/TitleBar';
+import { LazyMaskedIcon } from '../components/ui/LazyMaskedIcon';
+
+const INDICATORS_PAGE_SIZE = 72;
 
 export interface IndicatorEditorProps {
   onClose: () => void;
@@ -18,6 +21,7 @@ interface ExtendedIndicatorSet {
 
 export function IndicatorEditor({ onClose, refreshSignal }: IndicatorEditorProps) {
   const [indicatorSets, setIndicatorSets] = useState<Record<string, ExtendedIndicatorSet>>({});
+  const [visiblePerSet, setVisiblePerSet] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
@@ -49,7 +53,13 @@ export function IndicatorEditor({ onClose, refreshSignal }: IndicatorEditorProps
       setLoading(true);
       setError(null);
       const data = await apiClient.getIndicatorsConfig();
-      setIndicatorSets(data.indicator_sets || {});
+      const sets = data.indicator_sets || {};
+      setIndicatorSets(sets);
+      const initialVisible: Record<string, number> = {};
+      Object.entries(sets).forEach(([setId, setData]) => {
+        initialVisible[setId] = Math.min(INDICATORS_PAGE_SIZE, setData.indicators?.length || 0);
+      });
+      setVisiblePerSet(initialVisible);
       console.log('Loaded indicator sets:', data.indicator_sets);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
@@ -280,22 +290,36 @@ export function IndicatorEditor({ onClose, refreshSignal }: IndicatorEditorProps
                   {set.indicators && set.indicators.length > 0 ? (
                     <div className="p-6 bg-bg-light">
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {set.indicators.map((indicator) => (
+                        {set.indicators.slice(0, visiblePerSet[setId] ?? INDICATORS_PAGE_SIZE).map((indicator) => (
                           <div
                             key={indicator.id}
                             className="p-4 bg-bg-dark border border-border rounded hover:border-accent-primary transition-colors"
                           >
-                            <h3 className="font-mono text-sm font-semibold text-fg-primary mb-2">
-                              {indicator.id}
-                            </h3>
-                            {indicator.description && (
-                              <p className="text-xs text-fg-secondary mb-3">{indicator.description}</p>
-                            )}
-                            {indicator.file && (
-                              <p className="text-xs text-fg-secondary mb-2">
-                                <span className="font-semibold">File:</span> {indicator.file}
-                              </p>
-                            )}
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <h3 className="font-mono text-sm font-semibold text-fg-primary mb-2">
+                                  {indicator.id}
+                                </h3>
+                                {indicator.description && (
+                                  <p className="text-xs text-fg-secondary mb-3">{indicator.description}</p>
+                                )}
+                                {indicator.file && (
+                                  <p className="text-xs text-fg-secondary mb-2">
+                                    <span className="font-semibold">File:</span> {indicator.file}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="flex flex-col items-center gap-1">
+                                <div className="h-12 w-12 rounded border border-border bg-bg-light flex items-center justify-center">
+                                  <LazyMaskedIcon
+                                    url={`${API_BASE_URL}/api/v1/assets/indicators/${setId}/${indicator.id}`}
+                                    color={set.default_theme?.[indicator.id]?.indicator_color || '#e5e7eb'}
+                                    className="h-8 w-8"
+                                  />
+                                </div>
+                                <span className="text-[10px] uppercase tracking-wide text-fg-secondary">Preview</span>
+                              </div>
+                            </div>
                             <div className="mt-4 flex items-center gap-2">
                               <button
                                 onClick={() => openEditForm(setId, indicator)}
@@ -313,6 +337,24 @@ export function IndicatorEditor({ onClose, refreshSignal }: IndicatorEditorProps
                           </div>
                         ))}
                       </div>
+                      {(visiblePerSet[setId] ?? INDICATORS_PAGE_SIZE) < set.indicators.length && (
+                        <div className="mt-4 flex justify-center">
+                          <button
+                            onClick={() => {
+                              setVisiblePerSet((current) => ({
+                                ...current,
+                                [setId]: Math.min(
+                                  (current[setId] ?? INDICATORS_PAGE_SIZE) + INDICATORS_PAGE_SIZE,
+                                  set.indicators.length,
+                                ),
+                              }));
+                            }}
+                            className="px-4 py-2 text-sm font-semibold border border-border rounded hover:border-accent-primary transition-colors"
+                          >
+                            Show more ({set.indicators.length - (visiblePerSet[setId] ?? INDICATORS_PAGE_SIZE)} remaining)
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="p-6 bg-bg-light text-center text-sm text-fg-secondary">

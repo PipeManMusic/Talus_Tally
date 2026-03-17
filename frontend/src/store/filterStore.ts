@@ -8,9 +8,12 @@ const SAVED_FILTER_SETS_STORAGE_KEY = 'talus-tally:saved-filter-sets';
 const loadFilterTabVisible = (): boolean => {
   try {
     const stored = localStorage.getItem(FILTER_TAB_VISIBLE_STORAGE_KEY);
+    if (stored === null) {
+      return true;
+    }
     return stored === 'true';
   } catch {
-    return false;
+    return true;
   }
 };
 

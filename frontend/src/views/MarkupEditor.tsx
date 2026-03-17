@@ -402,7 +402,7 @@ export function MarkupEditor({ onClose }: MarkupEditorProps) {
                   ) : (
                     <div className="space-y-4">
                       {formTokens.map((token, index) => (
-                        <div key={`${token.id || 'token'}-${index}`} className="border border-border rounded p-4 bg-bg-light">
+                        <div key={`token-${index}`} className="border border-border rounded p-4 bg-bg-light">
                           <div className="flex items-start justify-between gap-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 flex-1">
                               <label className="text-xs text-fg-secondary">

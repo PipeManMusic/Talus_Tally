@@ -109,6 +109,14 @@ pub fn run() {
 
 fn start_backend(backend_process: Arc<Mutex<Option<Child>>>, app_handle: tauri::AppHandle) {
   diag("=== Backend launch sequence starting ===");
+  let talus_env = std::env::var("TALUS_ENV").unwrap_or_else(|_| {
+    if cfg!(debug_assertions) {
+      "development".to_string()
+    } else {
+      "production".to_string()
+    }
+  });
+  diag(&format!("TALUS_ENV for backend launch: {}", talus_env));
 
   // Kill any existing backend process first to ensure clean state
   diag("Checking for existing backend processes...");
@@ -170,6 +178,7 @@ fn start_backend(backend_process: Arc<Mutex<Option<Child>>>, app_handle: tauri::
     let mut command = Command::new(&binary_path);
     command
       .env("TALUS_DAEMON", "1")
+      .env("TALUS_ENV", &talus_env)
       .current_dir(working_dir);
 
     #[cfg(target_os = "windows")]
@@ -184,6 +193,7 @@ fn start_backend(backend_process: Arc<Mutex<Option<Child>>>, app_handle: tauri::
     Command::new(&venv_python)
       .args(["-m", "backend.app"])
       .env("TALUS_DAEMON", "1")
+      .env("TALUS_ENV", &talus_env)
       .current_dir(&project_root)
       .spawn()
   } else {
@@ -193,6 +203,7 @@ fn start_backend(backend_process: Arc<Mutex<Option<Child>>>, app_handle: tauri::
     Command::new(python_cmd)
       .args(["-m", "backend.app"])
       .env("TALUS_DAEMON", "1")
+      .env("TALUS_ENV", &talus_env)
       .current_dir(&project_root)
       .spawn()
   };

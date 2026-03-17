@@ -10,6 +10,19 @@ from typing import Dict, Any, List, Optional, Set
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound
 
 
+def get_export_templates_directory() -> Path:
+    from backend.api.routes import _resolve_assets_subpath
+    from backend.infra.settings import CUSTOM_EXPORT_TEMPLATES_DIR_KEY, get_setting
+
+    custom_dir = get_setting(CUSTOM_EXPORT_TEMPLATES_DIR_KEY)
+    if custom_dir:
+        candidate = Path(str(custom_dir))
+        if candidate.is_dir():
+            return candidate
+
+    return Path(_resolve_assets_subpath('data', 'templates', 'exports'))
+
+
 class ExportEngine:
     """Engine for rendering export templates with Jinja2."""
     
@@ -21,9 +34,7 @@ class ExportEngine:
             templates_dir: Path to templates directory. Defaults to data/templates/exports
         """
         if templates_dir is None:
-            # Use _resolve_assets_subpath logic similar to routes.py
-            from backend.api.routes import _resolve_assets_subpath
-            templates_dir = _resolve_assets_subpath('data', 'templates', 'exports')
+            templates_dir = get_export_templates_directory()
         
         self.templates_dir = Path(templates_dir)
         

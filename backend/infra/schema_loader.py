@@ -56,6 +56,7 @@ class IndicatorCatalog:
         """
         with open(filepath, 'r') as f:
             data = yaml.safe_load(f)
+        data = data or {}
         
         indicator_sets = data.get('indicator_sets', {})
         catalog_dir = os.path.dirname(os.path.abspath(filepath))
@@ -111,18 +112,21 @@ class IndicatorCatalog:
 class NodeTypeDef:
     """Definition of a node type from a blueprint."""
     
-    def __init__(self, id: str, label: str = None, name: str = None, allowed_children: List[str] = None, allowed_asset_types: List[str] = None, properties: List[Dict[str, Any]] = None, **kwargs):
+    def __init__(self, id: str, label: str = None, name: str = None, allowed_children: List[str] = None, allowed_asset_types: List[str] = None, properties: List[Dict[str, Any]] = None, primary_status_property_id: str = None, **kwargs):
         self.id = id
         # Accept either 'label' or 'name', prefer 'label'
         self.name = label or name or id
         self.allowed_children = allowed_children or []
         self.allowed_asset_types = allowed_asset_types or []
         self.properties = properties or []  # Preserve properties with their velocityConfigs
+        self.primary_status_property_id = primary_status_property_id  # Which status property controls node styling
         self.has_time_log = kwargs.get('has_time_log', False)
         self._extra_props = kwargs
         # Ensure properties is in _extra_props for backward compatibility
         if properties is not None:
             self._extra_props['properties'] = properties
+        if primary_status_property_id is not None:
+            self._extra_props['primary_status_property_id'] = primary_status_property_id
 
 
 class Blueprint:
@@ -205,31 +209,48 @@ class SchemaLoader:
         """Initialize schema loader with optional indicator catalog."""
         self.indicator_catalog = None
         self.icon_catalog = None
+
+        env_mode = os.environ.get('TALUS_ENV', '').strip().lower()
+        if env_mode in {'development', 'dev'}:
+            is_development_mode = True
+        elif env_mode in {'production', 'prod'}:
+            is_development_mode = False
+        else:
+            is_development_mode = not (getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'))
         
         # Get absolute path to project root
         schema_loader_dir = Path(__file__).resolve().parent  # backend/infra
         project_root = schema_loader_dir.parent.parent  # Go up 2 levels to project root
 
-        # Look for assets in preferred order: production install, PyInstaller bundle, repo root
+        # Look for assets in environment-aware order.
         asset_roots = []
         production_root = Path('/opt/talus_tally')
-        if production_root.exists():
-            asset_roots.append(production_root)
-        if hasattr(sys, '_MEIPASS'):
-            asset_roots.append(Path(sys._MEIPASS))
-        asset_roots.append(project_root)
+        pyinstaller_root = Path(sys._MEIPASS) if hasattr(sys, '_MEIPASS') else None
+        if is_development_mode:
+            asset_roots.append(project_root)
+            if production_root.exists():
+                asset_roots.append(production_root)
+            if pyinstaller_root:
+                asset_roots.append(pyinstaller_root)
+        else:
+            if production_root.exists():
+                asset_roots.append(production_root)
+            if pyinstaller_root:
+                asset_roots.append(pyinstaller_root)
+            asset_roots.append(project_root)
 
         catalog_path = None
         icon_catalog_path = None
 
-        # Prefer user-managed catalogs so edits live outside the install prefix
-        user_indicator_catalog = get_user_indicators_dir() / 'catalog.yaml'
-        if user_indicator_catalog.exists():
-            catalog_path = user_indicator_catalog
+        # In production, prefer user-managed catalogs so edits live outside install prefix.
+        if not is_development_mode:
+            user_indicator_catalog = get_user_indicators_dir() / 'catalog.yaml'
+            if user_indicator_catalog.exists():
+                catalog_path = user_indicator_catalog
 
-        user_icon_catalog = get_user_icons_dir() / 'catalog.yaml'
-        if user_icon_catalog.exists():
-            icon_catalog_path = user_icon_catalog
+            user_icon_catalog = get_user_icons_dir() / 'catalog.yaml'
+            if user_icon_catalog.exists():
+                icon_catalog_path = user_icon_catalog
 
         for root in asset_roots:
             candidate_catalog = root / 'assets' / 'indicators' / 'catalog.yaml'
@@ -240,6 +261,16 @@ class SchemaLoader:
                 icon_catalog_path = candidate_icon
             if catalog_path and icon_catalog_path:
                 break
+
+        # Final fallback to user catalogs if no asset catalog was found.
+        if catalog_path is None:
+            user_indicator_catalog = get_user_indicators_dir() / 'catalog.yaml'
+            if user_indicator_catalog.exists():
+                catalog_path = user_indicator_catalog
+        if icon_catalog_path is None:
+            user_icon_catalog = get_user_icons_dir() / 'catalog.yaml'
+            if user_icon_catalog.exists():
+                icon_catalog_path = user_icon_catalog
 
         if catalog_path:
             try:

@@ -12,6 +12,7 @@ from flask import Blueprint, jsonify, request, current_app
 from typing import Optional, Dict, Any
 from uuid import UUID
 import logging
+import time
 from backend.handlers.commands.velocity_commands import UpdateBlockingRelationshipCommand
 
 velocity_bp = Blueprint('velocity', __name__, url_prefix='/api/v1')
@@ -129,6 +130,7 @@ def get_velocity_ranking(session_id: str):
     Returns nodes sorted by velocity score (highest first)
     """
     try:
+        request_start = time.perf_counter()
         from backend.api.routes import get_session_data
         
         # Check if session exists
@@ -138,6 +140,7 @@ def get_velocity_ranking(session_id: str):
         
         # If no graph loaded, return empty ranking
         graph_nodes, schema, blocking_graph = _get_velocity_context(session_id)
+        context_loaded_ms = (time.perf_counter() - request_start) * 1000
         
         if graph_nodes is None:
             logger.debug(f'No graph found in session {session_id}')
@@ -151,14 +154,17 @@ def get_velocity_ranking(session_id: str):
         # Import and use velocity engine
         from backend.core.velocity_engine import VelocityEngine
         
+        engine_start = time.perf_counter()
         engine = VelocityEngine(graph_nodes, schema, blocking_graph)
         ranking = engine.get_ranking()
+        ranking_calculated_ms = (time.perf_counter() - engine_start) * 1000
         
         logger.debug(f'Velocity ranking calculated: {len(ranking)} nodes')
         
         # Format response
         nodes = []
         filtered_count = 0
+        response_start = time.perf_counter()
         for node_id, calc in ranking:
             if calc.total_velocity < 0:
                 filtered_count += 1
@@ -196,10 +202,20 @@ def get_velocity_ranking(session_id: str):
                 'blockedByNodes': calc.blocked_by_nodes,
                 'blocksNodeIds': calc.blocks_node_ids,
             })
+        response_built_ms = (time.perf_counter() - response_start) * 1000
+        total_ms = (time.perf_counter() - request_start) * 1000
         
         logger.info(f'Velocity ranking: {len(ranking)} total, {filtered_count} filtered (negative), {len(nodes)} returned')
         if len(nodes) > 0:
             logger.info(f'Top 5 nodes: {[{n["nodeName"]: n["totalVelocity"]} for n in nodes[:5]]}')
+        logger.info(
+            f'[VelocityAPI] GET /sessions/{session_id}/velocity timings '
+            f'context={context_loaded_ms:.1f}ms '
+            f'ranking={ranking_calculated_ms:.1f}ms '
+            f'response={response_built_ms:.1f}ms '
+            f'total={total_ms:.1f}ms '
+            f'nodes_in_graph={len(graph_nodes)} nodes_in_response={len(nodes)}'
+        )
         
         return jsonify({
             'nodes': nodes,
@@ -215,6 +231,7 @@ def get_velocity_ranking(session_id: str):
 def get_node_velocity(session_id: str, node_id: str):
     """Get velocity score for a single node"""
     try:
+        request_start = time.perf_counter()
         from backend.api.routes import get_session_data
         
         node_uuid = _convert_node_id(node_id)
@@ -227,6 +244,7 @@ def get_node_velocity(session_id: str, node_id: str):
             return jsonify({'error': 'Session not found'}), 404
         
         graph_nodes, schema, blocking_graph = _get_velocity_context(session_id)
+        context_loaded_ms = (time.perf_counter() - request_start) * 1000
         
         if graph_nodes is None:
             return jsonify({'error': f'Node {node_id} not found'}), 404
@@ -236,8 +254,10 @@ def get_node_velocity(session_id: str, node_id: str):
         
         from backend.core.velocity_engine import VelocityEngine
         
+        engine_start = time.perf_counter()
         engine = VelocityEngine(graph_nodes, schema, blocking_graph)
         calc = engine.calculate_velocity(node_uuid)
+        calc_ms = (time.perf_counter() - engine_start) * 1000
         
         node = graph_nodes.get(node_uuid, {})
         
@@ -249,6 +269,15 @@ def get_node_velocity(session_id: str, node_id: str):
             node_name = node.get('properties', {}).get('name', 'Unnamed')
             node_type = node.get('type', 'unknown')
         
+        total_ms = (time.perf_counter() - request_start) * 1000
+        logger.info(
+            f'[VelocityAPI] GET /sessions/{session_id}/nodes/{node_id}/velocity timings '
+            f'context={context_loaded_ms:.1f}ms '
+            f'calc={calc_ms:.1f}ms '
+            f'total={total_ms:.1f}ms '
+            f'nodes_in_graph={len(graph_nodes)}'
+        )
+
         return jsonify({
             'nodeId': str(node_uuid),
             'nodeName': node_name,

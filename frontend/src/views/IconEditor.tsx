@@ -2,6 +2,9 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { ChevronLeft, AlertCircle, Plus } from 'lucide-react';
 import { apiClient, API_BASE_URL, type IconCatalog } from '../api/client';
 import { TitleBar } from '../components/layout/TitleBar';
+import { LazyMaskedIcon } from '../components/ui/LazyMaskedIcon';
+
+const ICONS_PAGE_SIZE = 72;
 
 export interface IconEditorProps {
   onClose: () => void;
@@ -9,6 +12,7 @@ export interface IconEditorProps {
 
 export function IconEditor({ onClose }: IconEditorProps) {
   const [icons, setIcons] = useState<IconCatalog[]>([]);
+  const [visibleCount, setVisibleCount] = useState(ICONS_PAGE_SIZE);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
@@ -29,7 +33,9 @@ export function IconEditor({ onClose }: IconEditorProps) {
       setLoading(true);
       setError(null);
       const data = await apiClient.getIconsConfig();
-      setIcons(data.icons || []);
+      const loadedIcons = data.icons || [];
+      setIcons(loadedIcons);
+      setVisibleCount(Math.min(ICONS_PAGE_SIZE, loadedIcons.length));
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       setError(`Failed to load icons: ${message}`);
@@ -191,8 +197,9 @@ export function IconEditor({ onClose }: IconEditorProps) {
               <p className="text-lg text-fg-secondary">No icons found</p>
             </div>
           ) : (
+            <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {icons.map((icon) => (
+              {icons.slice(0, visibleCount).map((icon) => (
                 <div
                   key={icon.id}
                   className="p-4 bg-bg-dark border border-border rounded hover:border-accent-primary transition-colors"
@@ -211,21 +218,15 @@ export function IconEditor({ onClose }: IconEditorProps) {
                         </p>
                       )}
                     </div>
-                    <div className="h-10 w-10 rounded bg-bg-light flex items-center justify-center">
-                      <div
-                        style={{
-                          backgroundColor: '#e5e7eb',
-                          maskImage: `url(${API_BASE_URL}/api/v1/assets/icons/${icon.id})`,
-                          maskSize: 'contain',
-                          maskRepeat: 'no-repeat',
-                          maskPosition: 'center',
-                          WebkitMaskImage: `url(${API_BASE_URL}/api/v1/assets/icons/${icon.id})`,
-                          WebkitMaskSize: 'contain',
-                          WebkitMaskRepeat: 'no-repeat',
-                          WebkitMaskPosition: 'center',
-                        }}
-                        className="h-6 w-6"
-                      />
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="h-12 w-12 rounded border border-border bg-bg-light flex items-center justify-center">
+                        <LazyMaskedIcon
+                          url={`${API_BASE_URL}/api/v1/assets/icons/${icon.id}`}
+                          color="#e5e7eb"
+                          className="h-8 w-8"
+                        />
+                      </div>
+                      <span className="text-[10px] uppercase tracking-wide text-fg-secondary">Preview</span>
                     </div>
                   </div>
                   <div className="mt-4 flex items-center gap-2">
@@ -245,6 +246,17 @@ export function IconEditor({ onClose }: IconEditorProps) {
                 </div>
               ))}
             </div>
+            {visibleCount < icons.length && (
+              <div className="mt-4 flex justify-center">
+                <button
+                  onClick={() => setVisibleCount((current) => Math.min(current + ICONS_PAGE_SIZE, icons.length))}
+                  className="px-4 py-2 text-sm font-semibold border border-border rounded hover:border-accent-primary transition-colors"
+                >
+                  Show more ({icons.length - visibleCount} remaining)
+                </button>
+              </div>
+            )}
+            </>
           )}
         </div>
       </div>

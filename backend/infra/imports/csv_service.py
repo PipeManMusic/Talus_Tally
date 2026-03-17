@@ -25,6 +25,12 @@ class CSVImportService:
                 f"Unknown blueprint type '{plan.blueprint_type_id}' for CSV import"
             )
 
+        schema_by_id = {
+            str(prop.get("id")): prop
+            for prop in schema
+            if isinstance(prop, dict) and prop.get("id")
+        }
+
         required_properties = {
             prop["id"]
             for prop in schema
@@ -86,7 +92,10 @@ class CSVImportService:
                 if binding.property_id == "name":
                     name_value = value
                 else:
-                    properties[binding.property_id] = value
+                    properties[binding.property_id] = _normalize_property_value(
+                        schema_by_id.get(binding.property_id),
+                        value,
+                    )
 
             if name_value is None:
                 errors.append("Missing value for 'name'")
@@ -113,3 +122,39 @@ def _normalize_cell(value: object) -> str:
 
 def _is_blank_cell(value: object) -> bool:
     return _normalize_cell(value) == ""
+
+
+def _normalize_property_value(property_schema: Optional[dict], value: str) -> str:
+    if not property_schema:
+        return value
+
+    property_type = str(property_schema.get("type") or "").strip().lower()
+    options = property_schema.get("options") or []
+    if not isinstance(options, list) or not options:
+        return value
+
+    if property_type == "select":
+        return _resolve_option_value(options, value)
+
+    if property_type == "multi_select":
+        parts = [part.strip() for part in value.split("|")]
+        normalized_parts = [
+            _resolve_option_value(options, part)
+            for part in parts
+            if part.strip()
+        ]
+        return "|".join(normalized_parts)
+
+    return value
+
+
+def _resolve_option_value(options: List[dict], raw_value: str) -> str:
+    normalized_raw = raw_value.strip().casefold()
+    for option in options:
+        option_id = str(option.get("id") or "").strip()
+        option_name = str(option.get("name") or "").strip()
+        if option_id and option_id.casefold() == normalized_raw:
+            return option_id
+        if option_name and option_name.casefold() == normalized_raw:
+            return option_id or raw_value
+    return raw_value

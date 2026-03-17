@@ -21,6 +21,7 @@ class IconCatalog:
             filepath = user_dir / "catalog.yaml"
         with open(filepath, 'r', encoding='utf-8') as f:
             data = yaml.safe_load(f)
+        data = data or {}
 
         # Validate against icon schema
         errors = SchemaValidator.validate_icon_catalog(data)

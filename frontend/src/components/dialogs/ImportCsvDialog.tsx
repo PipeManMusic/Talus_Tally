@@ -16,8 +16,15 @@ type BlueprintProperty = {
   name: string;
   type: string;
   required: boolean;
+  indicatorSet?: string;
   options?: Array<{ id: string; name: string }>;
 };
+
+const isStatusBlueprintProperty = (prop: BlueprintProperty): boolean => {
+  return Boolean(prop.indicatorSet);
+};
+
+const getTemplateHeader = (prop: BlueprintProperty): string => prop.name || prop.id;
 
 interface ImportCsvDialogProps {
   isOpen: boolean;
@@ -157,6 +164,7 @@ export function ImportCsvDialog({
       name: prop.name,
       type: prop.type,
       required: Boolean(prop.required),
+      indicatorSet: prop.indicator_set,
       options: prop.options?.map((opt) => ({ id: opt.id, name: opt.name })),
     }));
 
@@ -334,9 +342,9 @@ export function ImportCsvDialog({
       case 'boolean':
         return 'true';
       case 'select':
-        return prop.options?.[0]?.id ?? '';
+        return prop.options?.[0]?.name ?? '';
       case 'multi_select':
-        return prop.options?.slice(0, 2).map((opt) => opt.id).join('|') ?? '';
+        return prop.options?.slice(0, 2).map((opt) => opt.name).join('|') ?? '';
       default:
         return prop.id === 'name' ? 'Example Name' : '';
     }
@@ -355,8 +363,9 @@ export function ImportCsvDialog({
       return;
     }
 
-    const headers = blueprintProperties.map((prop) => prop.id);
-    const sampleRow = blueprintProperties.map((prop) => getSampleValue(prop));
+    const exportableProperties = blueprintProperties.filter((prop) => !isStatusBlueprintProperty(prop));
+    const headers = exportableProperties.map((prop) => getTemplateHeader(prop));
+    const sampleRow = exportableProperties.map((prop) => getSampleValue(prop));
 
     const csvContent = [headers, sampleRow]
       .map((row) => row.map((cell) => escapeCsvValue(cell)).join(','))
