@@ -23,6 +23,8 @@ logs/
 
 # Debian packages
 *.deb
+*.dmg
+*.exe
 talus-tally_*/
 
 # VS Code workspace and settings
@@ -30,9 +32,13 @@ talus-tally_*/
 *.code-workspace
 
 # Playwright/test artifacts
+/test-results/
 /frontend/test-results/
 /frontend/playwright-report/
 
 # Frontend build artifacts
 /frontend/dist/
 /frontend/src-tauri/resources/
+
+# Dependency artifacts
+/node_modules/
