@@ -7,6 +7,19 @@ from backend.infra.user_data_dir import (
     get_user_indicators_dir,
 )
 
+
+def _is_packaged_runtime() -> bool:
+    return bool(getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'))
+
+
+def _is_development_mode() -> bool:
+    env_mode = os.environ.get('TALUS_ENV', '').strip().lower()
+    if env_mode in {'development', 'dev'}:
+        return True
+    if env_mode in {'production', 'prod'}:
+        return False
+    return not _is_packaged_runtime()
+
 def _resolve_assets_subpath(*parts: str, prefer_writable: bool = False) -> Path:
     """Resolve an assets subpath with environment-aware path preference.
     
@@ -21,6 +34,8 @@ def _resolve_assets_subpath(*parts: str, prefer_writable: bool = False) -> Path:
         - Not set: Auto-detect (prefer development if repo exists and is writable)
     """
     env_mode = os.environ.get('TALUS_ENV', 'auto').lower()
+    if env_mode == 'auto':
+        env_mode = 'development' if _is_development_mode() else 'production'
     
     production_root = Path('/opt/talus_tally')
     repo_root = Path(__file__).resolve().parent.parent.parent
@@ -155,6 +170,28 @@ def get_node_icon(node, blueprint):
         'vehicles': 'truck',
         'vehicle_asset': 'truck',
     }
+
+def _build_velocity_schema_snapshot(blueprint) -> dict:
+    """Build a minimal velocity schema snapshot with option UUIDs for session reuse."""
+    velocity_schema = {'node_types': []}
+    if not blueprint or not getattr(blueprint, 'node_types', None):
+        return velocity_schema
+
+    for node_type in blueprint.node_types:
+        nt_dict = {
+            'id': node_type.id if hasattr(node_type, 'id') else str(node_type),
+        }
+        if hasattr(node_type, '_extra_props') and isinstance(node_type._extra_props, dict):
+            nt_dict['velocityConfig'] = node_type._extra_props.get('velocityConfig', {})
+        elif hasattr(node_type, 'velocityConfig'):
+            nt_dict['velocityConfig'] = node_type.velocityConfig
+
+        if hasattr(node_type, 'properties') and node_type.properties:
+            nt_dict['properties'] = node_type.properties
+
+        velocity_schema['node_types'].append(nt_dict)
+
+    return velocity_schema
 
     if not blueprint:
         return node.properties.get('icon') or node.properties.get('icon_id') or default_icon_map.get(node.blueprint_type_id)
@@ -946,22 +983,7 @@ def reload_blueprint(session_id):
                 logger.warning(f"Orphan detection during blueprint reload failed: {orphan_err}", exc_info=True)
 
         # Cache a velocity schema snapshot with option UUIDs for fast reuse
-        velocity_schema = {'node_types': []}
-        for node_type in blueprint.node_types:
-            nt_dict = {
-                'id': node_type.id if hasattr(node_type, 'id') else str(node_type),
-            }
-            if hasattr(node_type, '_extra_props') and isinstance(node_type._extra_props, dict):
-                nt_dict['velocityConfig'] = node_type._extra_props.get('velocityConfig', {})
-            elif hasattr(node_type, 'velocityConfig'):
-                nt_dict['velocityConfig'] = node_type.velocityConfig
-
-            if hasattr(node_type, 'properties') and node_type.properties:
-                nt_dict['properties'] = node_type.properties
-
-            velocity_schema['node_types'].append(nt_dict)
-
-        session_data['velocity_schema'] = velocity_schema
+        session_data['velocity_schema'] = _build_velocity_schema_snapshot(blueprint)
         
         logger.info(f"[API] Reloaded blueprint for session {session_id}, template_id={template_id}")
         _update_session_activity(session_id)
@@ -1128,14 +1150,15 @@ def _get_indicator_catalog_path(*, prefer_writable: bool = False):
     override = os.environ.get('INDICATOR_CATALOG_PATH')
     if override:
         return override
+    source_catalog = _resolve_assets_subpath(
+        'assets', 'indicators', 'catalog.yaml', prefer_writable=prefer_writable
+    )
+    if _is_development_mode():
+        return str(source_catalog)
     user_catalog = get_user_indicators_dir() / 'catalog.yaml'
     if prefer_writable or user_catalog.exists():
         return str(user_catalog)
-    return str(
-        _resolve_assets_subpath(
-            'assets', 'indicators', 'catalog.yaml', prefer_writable=False
-        )
-    )
+    return str(source_catalog)
 
 
 def _get_icon_catalog_path(*, prefer_writable: bool = False):
@@ -1143,14 +1166,15 @@ def _get_icon_catalog_path(*, prefer_writable: bool = False):
     override = os.environ.get('ICON_CATALOG_PATH')
     if override:
         return override
+    source_catalog = _resolve_assets_subpath(
+        'assets', 'icons', 'catalog.yaml', prefer_writable=prefer_writable
+    )
+    if _is_development_mode():
+        return str(source_catalog)
     user_catalog = get_user_icons_dir() / 'catalog.yaml'
     if prefer_writable or user_catalog.exists():
         return str(user_catalog)
-    return str(
-        _resolve_assets_subpath(
-            'assets', 'icons', 'catalog.yaml', prefer_writable=False
-        )
-    )
+    return str(source_catalog)
 
 
 def _load_icon_catalog():
@@ -1927,6 +1951,7 @@ def create_project():
         # Store graph, blueprint, and create dispatcher with session_id
         session_data['graph'] = graph
         session_data['blueprint'] = blueprint
+        session_data['velocity_schema'] = _build_velocity_schema_snapshot(blueprint)
         session_data['template_id'] = template_id
         session_data['dispatcher'] = CommandDispatcher(graph, session_id=session_id)
         session_data['graph_service'] = GraphService(graph)
@@ -2147,6 +2172,7 @@ def load_graph_into_session(session_id):
         session_data = _sessions[session_id]
         session_data['graph'] = graph
         session_data['blueprint'] = blueprint
+        session_data['velocity_schema'] = _build_velocity_schema_snapshot(blueprint)
         session_data['template_id'] = template_id
         session_data['template_version'] = graph.template_version
         session_data['dispatcher'] = CommandDispatcher(graph, session_id=session_id)
@@ -2313,14 +2339,18 @@ def get_template_schema(template_id):
                     'ui_group': prop_data.get('ui_group'),
                 })
             
-            node_types.append({
+            node_type_dict = {
                 'id': node_type.id,
                 'name': node_type.name,
                 'allowed_children': node_type.allowed_children,
                 'allowed_asset_types': node_type.allowed_asset_types,
                 'icon': node_type._extra_props.get('icon'),
                 'properties': properties
-            })
+            }
+            # Include primary_status_property_id if set
+            if hasattr(node_type, 'primary_status_property_id') and node_type.primary_status_property_id:
+                node_type_dict['primary_status_property_id'] = node_type.primary_status_property_id
+            node_types.append(node_type_dict)
         
         response_payload = {
             'id': blueprint.id,
@@ -2412,8 +2442,9 @@ def editor_get_template(template_id):
                 
                 # Clean up properties
                 for prop in node_type.get('properties', []):
-                    # Remove 'required' field (no longer supported in editor)
-                    prop.pop('required', None)
+                    # Ensure required field is present for editor round-trip stability
+                    if 'required' not in prop:
+                        prop['required'] = False
                     
                     # Ensure label exists
                     if 'label' not in prop:
@@ -2423,6 +2454,79 @@ def editor_get_template(template_id):
                     if 'type' not in prop:
                         logger.warning(f"Property {node_type['id']}.{prop.get('id')} missing type, defaulting to 'text'")
                         prop['type'] = 'text'
+
+                # Person node has strict required properties for manpower features
+                if node_type.get('id') == 'person':
+                    properties = node_type.get('properties', [])
+                    prop_by_id = {prop.get('id'): prop for prop in properties if isinstance(prop, dict)}
+
+                    legacy_daily_capacity = prop_by_id.get('daily_capacity', {}).get('value', 8)
+                    legacy_hourly_rate = prop_by_id.get('hourly_rate', {}).get('value')
+
+                    weekday_capacity_specs = [
+                        ('capacity_monday', 'Capacity Monday (Hours)', 8),
+                        ('capacity_tuesday', 'Capacity Tuesday (Hours)', 8),
+                        ('capacity_wednesday', 'Capacity Wednesday (Hours)', 8),
+                        ('capacity_thursday', 'Capacity Thursday (Hours)', 8),
+                        ('capacity_friday', 'Capacity Friday (Hours)', 8),
+                        ('capacity_saturday', 'Capacity Saturday (Hours)', 0),
+                        ('capacity_sunday', 'Capacity Sunday (Hours)', 0),
+                    ]
+                    weekday_hourly_rate_specs = [
+                        ('hourly_rate_monday', 'Hourly Rate Monday'),
+                        ('hourly_rate_tuesday', 'Hourly Rate Tuesday'),
+                        ('hourly_rate_wednesday', 'Hourly Rate Wednesday'),
+                        ('hourly_rate_thursday', 'Hourly Rate Thursday'),
+                        ('hourly_rate_friday', 'Hourly Rate Friday'),
+                        ('hourly_rate_saturday', 'Hourly Rate Saturday'),
+                        ('hourly_rate_sunday', 'Hourly Rate Sunday'),
+                    ]
+
+                    for prop_id, label, default_value in weekday_capacity_specs:
+                        if prop_id not in prop_by_id:
+                            properties.append({
+                                'id': prop_id,
+                                'label': label,
+                                'type': 'number',
+                                'required': True,
+                                'system_locked': True,
+                                'value': legacy_daily_capacity if legacy_daily_capacity is not None else default_value,
+                            })
+
+                    for prop_id, label in weekday_hourly_rate_specs:
+                        if prop_id not in prop_by_id:
+                            new_prop = {
+                                'id': prop_id,
+                                'label': label,
+                                'type': 'number',
+                                'required': False,
+                                'system_locked': True,
+                            }
+                            if legacy_hourly_rate is not None:
+                                new_prop['value'] = legacy_hourly_rate
+                            properties.append(new_prop)
+
+                    # Remove legacy single-value fields once migrated
+                    node_type['properties'] = [
+                        prop for prop in properties
+                        if prop.get('id') not in {'daily_capacity', 'hourly_rate'}
+                    ]
+
+                    required_person_prop_ids = {
+                        'name',
+                        'email',
+                        'capacity_monday',
+                        'capacity_tuesday',
+                        'capacity_wednesday',
+                        'capacity_thursday',
+                        'capacity_friday',
+                        'capacity_saturday',
+                        'capacity_sunday',
+                    }
+                    for prop in node_type.get('properties', []):
+                        prop_id = prop.get('id')
+                        if prop_id in required_person_prop_ids:
+                            prop['required'] = True
         
         return jsonify(template), 200
     except FileNotFoundError:
@@ -3340,6 +3444,7 @@ def get_icons_config():
         
         with open(catalog_file, 'r') as f:
             catalog_data = yaml.safe_load(f)
+        catalog_data = catalog_data or {}
         
         # Enhance icon data with API URL
         icons = catalog_data.get('icons', [])
@@ -3380,6 +3485,7 @@ def get_indicators_config():
         
         with open(catalog_file, 'r') as f:
             catalog_data = yaml.safe_load(f)
+        catalog_data = catalog_data or {}
         
         # Enhance indicator data with API URLs
         indicator_sets = catalog_data.get('indicator_sets', {})
@@ -3460,6 +3566,7 @@ def get_indicator_file(set_id: str, indicator_id: str):
         # Load catalog to find the actual filename for this indicator
         with open(catalog_file, 'r') as f:
             catalog_data = yaml.safe_load(f)
+        catalog_data = catalog_data or {}
         
         indicator_set = catalog_data.get('indicator_sets', {}).get(set_id, {})
         indicators = indicator_set.get('indicators', [])

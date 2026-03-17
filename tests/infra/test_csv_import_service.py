@@ -102,3 +102,53 @@ def test_prepare_import_accepts_name_binding_when_schema_omits_name():
     assert len(batch.prepared_nodes) == 1
     assert batch.prepared_nodes[0].name == "Meter"
     assert batch.prepared_nodes[0].properties == {"cost": "30"}
+
+
+def test_prepare_import_resolves_select_labels_to_option_ids():
+    def schema_resolver(_node_type_id: str):
+        return [
+            {"id": "priority", "required": False, "type": "select", "options": [
+                {"id": "prio-low", "name": "Low"},
+                {"id": "prio-high", "name": "High"},
+            ]},
+        ]
+
+    service = CSVImportService(schema_resolver)
+    plan = CSVImportPlan(
+        parent_id=uuid.uuid4(),
+        blueprint_type_id="task",
+        column_bindings=[
+            CSVColumnBinding(header="Name", property_id="name"),
+            CSVColumnBinding(header="Priority", property_id="priority"),
+        ],
+    )
+
+    batch = service.prepare_import(plan, io.StringIO("Name,Priority\nWidget,High\n"))
+
+    assert not batch.has_errors
+    assert batch.prepared_nodes[0].properties == {"priority": "prio-high"}
+
+
+def test_prepare_import_resolves_multi_select_labels_to_option_ids():
+    def schema_resolver(_node_type_id: str):
+        return [
+            {"id": "tags", "required": False, "type": "multi_select", "options": [
+                {"id": "tag-red", "name": "Red"},
+                {"id": "tag-blue", "name": "Blue"},
+            ]},
+        ]
+
+    service = CSVImportService(schema_resolver)
+    plan = CSVImportPlan(
+        parent_id=uuid.uuid4(),
+        blueprint_type_id="task",
+        column_bindings=[
+            CSVColumnBinding(header="Name", property_id="name"),
+            CSVColumnBinding(header="Tags", property_id="tags"),
+        ],
+    )
+
+    batch = service.prepare_import(plan, io.StringIO("Name,Tags\nWidget,Red|Blue\n"))
+
+    assert not batch.has_errors
+    assert batch.prepared_nodes[0].properties == {"tags": "tag-red|tag-blue"}

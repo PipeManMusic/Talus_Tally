@@ -9,6 +9,7 @@ interface GanttViewProps {
   sessionId: string | null;
   nodes?: Record<string, any>;
   velocityScores?: Record<string, VelocityScore>;
+  refreshSignal?: number;
   selectedNodeId?: string | null;
   onNodeSelect?: (nodeId: string | null) => void;
 }
@@ -131,7 +132,7 @@ function GanttBarsContent({
   );
 }
 
-export function GanttView({ sessionId, nodes, velocityScores, selectedNodeId, onNodeSelect }: GanttViewProps) {
+export function GanttView({ sessionId, nodes, velocityScores, refreshSignal, selectedNodeId, onNodeSelect }: GanttViewProps) {
   const [data, setData] = useState<GanttPayload | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -171,8 +172,9 @@ export function GanttView({ sessionId, nodes, velocityScores, selectedNodeId, on
   }, [sessionId]);
 
   useEffect(() => {
+    if (!sessionId) return;
     fetchGantt();
-  }, [fetchGantt]);
+  }, [fetchGantt, refreshSignal, sessionId]);
 
   useWebSocket({
     onNodeCreated: fetchGantt,

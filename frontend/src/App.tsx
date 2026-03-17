@@ -56,8 +56,9 @@ const DEBUG_TREE = process.env.NODE_ENV !== 'production';
 const RECENT_FILES_KEY = 'talus-tally:recent-files';
 import { useGraphStore } from './store';
 import { useGraphSync } from './hooks';
-import { apiClient, type Node, type Template, type Graph, type TemplateSchema, type VelocityScore, API_BASE_URL } from './api/client';
+import { apiClient, type Node, type Template, type Graph, type TemplateSchema, type NodeTypeSchema, type VelocityScore, API_BASE_URL } from './api/client';
 import { normalizeGraph } from './utils/graph';
+import { preloadStatusIndicators } from './utils/indicatorCache';
 import { validateTemplateSchema, safeExtractOptions } from './utils/templateValidation';
 
 function App() {
@@ -66,7 +67,7 @@ function App() {
   const [inspectorTab, setInspectorTab] = useState<'properties' | 'filters'>('properties');
   const { filterTabVisible, toggleFilterTabVisible, savedFilterSets, setSavedFilterSets } = useFilterStore();
   const [activeView, setActiveView] = useState<ViewType>('graph');
-  const [activeToolsTab, setActiveToolsTab] = useState<'velocity' | 'blocking' | 'budget' | 'gantt' | 'charts'>('velocity');
+  const [activeToolsTab, setActiveToolsTab] = useState<'velocity' | 'blocking' | 'budget' | 'gantt' | 'manpower' | 'charts'>('velocity');
   const [sessionId, setSessionId] = useState<string | null>(null);
 
   // Debug: log whenever sessionId changes
@@ -118,6 +119,8 @@ function App() {
   const [blockingEdgeCount, setBlockingEdgeCount] = useState(0);
   const [blockingFitSignal, setBlockingFitSignal] = useState(0);
   const [blockingGraphRefreshSignal, setBlockingGraphRefreshSignal] = useState(0);
+  const [ganttRefreshSignal, setGanttRefreshSignal] = useState(0);
+  const [manpowerOverloadCount, setManpowerOverloadCount] = useState(0);
   const [indicatorRefreshSignal, setIndicatorRefreshSignal] = useState(0);
   const [lastFilePath, setLastFilePath] = useState<string | null>(null);
   const [currentTemplateId, setCurrentTemplateId] = useState<string | null>(null);
@@ -259,6 +262,13 @@ function App() {
         if (!isActive) return;
         console.log('[App::INIT] Backend connection OK');
         setBackendError(null); // Clear any previous errors
+
+        // Preload status indicators to avoid repeated HTTP requests
+        try {
+          await preloadStatusIndicators();
+        } catch (err) {
+          console.warn('[App::INIT] Failed to preload indicators:', err);
+        }
         
         // Try to restore existing session from localStorage
         const savedSessionId = localStorage.getItem('talus_tally_session_id');
@@ -558,6 +568,12 @@ function App() {
       return;
     }
 
+    const cachedScore = velocityScores[currentlySelectedNode];
+    if (cachedScore) {
+      setVelocityScore(cachedScore);
+      return;
+    }
+
     try {
       const score = await apiClient.getNodeVelocity(sessionId, currentlySelectedNode);
       setVelocityScore(score);
@@ -565,7 +581,7 @@ function App() {
       console.error('Failed to fetch node velocity:', error);
       setVelocityScore(null);
     }
-  }, [selectedNode, sessionId]);
+  }, [selectedNode, sessionId, velocityScores]);
 
   // Fetch velocity score when selected node changes
   useEffect(() => {
@@ -1541,6 +1557,11 @@ function App() {
     }
   }, [refreshTemplateAndGraph]);
 
+  const handleIconEditorClose = useCallback(() => {
+    setShowIconEditor(false);
+    clearIconCache();
+  }, []);
+
   const toggleInspector = useCallback(() => {
     setInspectorOpen(prev => !prev);
   }, []);
@@ -2169,6 +2190,7 @@ function App() {
         blockingNodeCount={blockingNodeCount}
         blockingEdgeCount={blockingEdgeCount}
         onBlockingFitToView={handleBlockingFitToView}
+        manpowerOverloadCount={manpowerOverloadCount}
       />
 
       {/* Main Content - Conditional based on active view */}
@@ -2184,6 +2206,12 @@ function App() {
               ) : (
                 <TreeView
                   nodes={treeNodes}
+                  nodeTypeSchemas={
+                    templateSchema?.node_types?.reduce<Record<string, NodeTypeSchema>>((acc, nodeType) => {
+                      acc[nodeType.id] = nodeType;
+                      return acc;
+                    }, {})
+                  }
                   velocityScores={velocityScores}
               onSelectNode={setSelectedNode}
               expandAllSignal={expandAllSignal}
@@ -2352,8 +2380,10 @@ function App() {
               onBlockingDirtyChange={setIsDirty}
               blockingFitToViewSignal={blockingFitSignal}
               blockingRefreshSignal={blockingGraphRefreshSignal}
+              ganttRefreshSignal={ganttRefreshSignal}
               blockingViewConfig={templateSchema?.blocking_view}
               templateSchema={templateSchema}
+              onManpowerOverloadChange={setManpowerOverloadCount}
             />
           </div>
         )}
@@ -2419,6 +2449,7 @@ function App() {
                       const graph = normalizeGraph(result.graph ?? result);
                       setCurrentGraph(graph);
                       setIsDirty(result.is_dirty ?? true);
+                      setGanttRefreshSignal((prev) => prev + 1);
                     } catch (error) {
                       console.error('[onPropertyChange] Error normalizing graph:', error);
                       alert('Error updating UI after property change: ' + (error as Error).message);
@@ -2446,6 +2477,7 @@ function App() {
                     const graph = normalizeGraph(result.graph ?? result);
                     setCurrentGraph(graph);
                     setIsDirty(result.is_dirty ?? true);  // Update dirty state from API
+                    setGanttRefreshSignal((prev) => prev + 1);
                     console.log('✓ Asset property updated');
                   })
                   .catch((err) => {
@@ -2612,7 +2644,7 @@ function App() {
       {/* Icon Editor View */}
       {showIconEditor && (
         <div className="absolute inset-0 bg-bg-dark z-50">
-          <IconEditor onClose={() => setShowIconEditor(false)} />
+          <IconEditor onClose={handleIconEditorClose} />
         </div>
       )}
 

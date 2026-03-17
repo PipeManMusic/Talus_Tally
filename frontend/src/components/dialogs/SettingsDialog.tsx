@@ -52,7 +52,7 @@ const recolorPreviewSvg = (svgString: string, color: string): string => {
     });
 
   recolored = recolored.replace(/style="([^"]*)"/g, (_match, styleContent) => {
-    let updatedStyle = String(styleContent)
+    const updatedStyle = String(styleContent)
       .replace(/fill:\s*[^;]+/gi, (fillMatch) => {
         const value = fillMatch.split(':')[1]?.trim().toLowerCase();
         if (value === 'none' || value === 'transparent') {
@@ -78,15 +78,45 @@ interface SettingsDialogProps {
   onClose: () => void;
 }
 
+type TemplateDirKey =
+  | 'custom_blueprint_templates_dir'
+  | 'custom_export_templates_dir'
+  | 'custom_markup_templates_dir';
+
+const TEMPLATE_DIR_FIELDS: Array<{
+  key: TemplateDirKey;
+  label: string;
+  placeholder: string;
+}> = [
+  {
+    key: 'custom_blueprint_templates_dir',
+    label: 'Blueprint Templates',
+    placeholder: 'e.g. /shared/project/blueprints',
+  },
+  {
+    key: 'custom_export_templates_dir',
+    label: 'Export Templates',
+    placeholder: 'e.g. /shared/project/exports',
+  },
+  {
+    key: 'custom_markup_templates_dir',
+    label: 'Markup Templates',
+    placeholder: 'e.g. /shared/project/markups',
+  },
+];
+
 export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
   const [indicatorSize, setIndicatorSize] = useState<number>(14);
   const [indicatorCatalog, setIndicatorCatalog] = useState<IndicatorCatalog | null>(null);
   const [indicatorSvgs, setIndicatorSvgs] = useState<Record<string, string>>({});
   const [catalogError, setCatalogError] = useState<string | null>(null);
-  const [customTemplatesDir, setCustomTemplatesDir] = useState<string>('');
+  const [templateDirs, setTemplateDirs] = useState<Record<TemplateDirKey, string>>({
+    custom_blueprint_templates_dir: '',
+    custom_export_templates_dir: '',
+    custom_markup_templates_dir: '',
+  });
   const [templatesDirSaved, setTemplatesDirSaved] = useState(false);
 
-  // Load settings from localStorage on mount
   useEffect(() => {
     const savedSize = localStorage.getItem('indicator_size');
     if (savedSize) {
@@ -98,11 +128,14 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
     }
   }, []);
 
-  // Load backend settings when dialog opens
   useEffect(() => {
     if (!isOpen) return;
     apiClient.getSettings().then((settings) => {
-      setCustomTemplatesDir(settings.custom_templates_dir || '');
+      setTemplateDirs({
+        custom_blueprint_templates_dir: settings.custom_blueprint_templates_dir || '',
+        custom_export_templates_dir: settings.custom_export_templates_dir || '',
+        custom_markup_templates_dir: settings.custom_markup_templates_dir || '',
+      });
     }).catch(() => {});
   }, [isOpen]);
 
@@ -143,7 +176,7 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
 
         await Promise.all(requests);
         setIndicatorSvgs(svgs);
-      } catch (error) {
+      } catch {
         setCatalogError('Failed to load indicator preview');
       }
     };
@@ -152,7 +185,6 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
   }, [isOpen]);
 
   const applyIndicatorSize = (size: number) => {
-    // Update CSS custom property
     document.documentElement.style.setProperty('--indicator-size', `${size}px`);
   };
 
@@ -177,7 +209,6 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-[var(--color-bg-light)] border border-[var(--color-border-default)] rounded-lg shadow-xl w-[500px] max-h-[80vh] flex flex-col">
-        {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--color-border-default)]">
           <h2 className="text-lg font-semibold text-[var(--color-fg-primary)]">Settings</h2>
           <button
@@ -189,13 +220,10 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
           </button>
         </div>
 
-        {/* Content */}
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
-          {/* Appearance Section */}
           <section>
             <h3 className="text-sm font-semibold text-[var(--color-fg-primary)] mb-3">Appearance</h3>
-            
-            {/* Indicator Size */}
+
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label htmlFor="indicator-size" className="text-sm text-[var(--color-fg-secondary)]">
@@ -203,7 +231,7 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
                 </label>
                 <span className="text-sm text-[var(--color-fg-primary)] font-mono">{indicatorSize}px</span>
               </div>
-              
+
               <div className="flex items-center gap-4">
                 <input
                   id="indicator-size"
@@ -214,15 +242,15 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
                   value={indicatorSize}
                   onChange={handleSizeChange}
                   className="flex-1 h-2 bg-[var(--color-bg-selection)] rounded-lg appearance-none cursor-pointer
-                    [&::-webkit-slider-thumb]:appearance-none 
-                    [&::-webkit-slider-thumb]:w-4 
-                    [&::-webkit-slider-thumb]:h-4 
-                    [&::-webkit-slider-thumb]:rounded-full 
+                    [&::-webkit-slider-thumb]:appearance-none
+                    [&::-webkit-slider-thumb]:w-4
+                    [&::-webkit-slider-thumb]:h-4
+                    [&::-webkit-slider-thumb]:rounded-full
                     [&::-webkit-slider-thumb]:bg-[var(--color-accent-primary)]
                     [&::-webkit-slider-thumb]:cursor-pointer
-                    [&::-moz-range-thumb]:w-4 
-                    [&::-moz-range-thumb]:h-4 
-                    [&::-moz-range-thumb]:rounded-full 
+                    [&::-moz-range-thumb]:w-4
+                    [&::-moz-range-thumb]:h-4
+                    [&::-moz-range-thumb]:rounded-full
                     [&::-moz-range-thumb]:bg-[var(--color-accent-primary)]
                     [&::-moz-range-thumb]:border-0
                     [&::-moz-range-thumb]:cursor-pointer"
@@ -230,7 +258,6 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
                 <span className="text-xs text-[var(--color-fg-secondary)] w-16 text-right">8-32px</span>
               </div>
 
-              {/* Preview */}
               <div className="space-y-3 p-3 bg-[var(--color-bg-dark)] rounded border border-[var(--color-border-default)]">
                 <div className="text-sm text-[var(--color-fg-secondary)]">Preview:</div>
                 {catalogError ? (
@@ -277,56 +304,75 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
             </div>
           </section>
 
-          {/* Templates Section */}
           <section>
             <h3 className="text-sm font-semibold text-[var(--color-fg-primary)] mb-3">Templates</h3>
-
             <div className="space-y-2">
               <label className="text-sm text-[var(--color-fg-secondary)]">
-                Custom Template Folder
+                Template Folders
               </label>
               <p className="text-xs text-[var(--color-fg-secondary)] leading-relaxed">
-                Set a shared folder to collaborate on templates with others.
-                Leave empty to use the default user data directory.
+                Configure separate folders for blueprint, export, and markup templates.
+                Leave any field empty to use the default location for that template type.
               </p>
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={customTemplatesDir}
-                  onChange={(e) => {
-                    setCustomTemplatesDir(e.target.value);
-                    setTemplatesDirSaved(false);
-                  }}
-                  placeholder="e.g. /shared/project/templates"
-                  className="flex-1 bg-[var(--color-bg-dark)] text-[var(--color-fg-primary)] border border-[var(--color-border-default)] rounded-sm px-2 py-1 text-sm font-body focus:border-[var(--color-accent-primary)] focus:outline-none"
-                />
-                <button
-                  onClick={async () => {
-                    try {
-                      const { open } = await import('@tauri-apps/plugin-dialog');
-                      const selected = await open({ directory: true, multiple: false, title: 'Select Templates Folder' });
-                      if (selected && typeof selected === 'string') {
-                        setCustomTemplatesDir(selected);
+
+              {TEMPLATE_DIR_FIELDS.map((entry) => (
+                <div key={entry.key} className="space-y-1">
+                  <div className="text-xs font-medium text-[var(--color-fg-secondary)] uppercase tracking-wide">{entry.label}</div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={templateDirs[entry.key]}
+                      onChange={(e) => {
+                        setTemplateDirs((current) => ({
+                          ...current,
+                          [entry.key]: e.target.value,
+                        }));
                         setTemplatesDirSaved(false);
-                      }
-                    } catch {
-                      // Not in Tauri or dialog cancelled — ignore
-                    }
-                  }}
-                  className="p-1.5 hover:bg-[var(--color-bg-selection)] rounded transition-colors border border-[var(--color-border-default)]"
-                  title="Browse for folder"
-                >
-                  <FolderOpen size={16} className="text-[var(--color-fg-secondary)]" />
-                </button>
-              </div>
+                      }}
+                      placeholder={entry.placeholder}
+                      className="flex-1 bg-[var(--color-bg-dark)] text-[var(--color-fg-primary)] border border-[var(--color-border-default)] rounded-sm px-2 py-1 text-sm font-body focus:border-[var(--color-accent-primary)] focus:outline-none"
+                    />
+                    <button
+                      onClick={async () => {
+                        try {
+                          const { open } = await import('@tauri-apps/plugin-dialog');
+                          const selected = await open({
+                            directory: true,
+                            multiple: false,
+                            title: `Select ${entry.label} Folder`,
+                          });
+                          if (selected && typeof selected === 'string') {
+                            setTemplateDirs((current) => ({
+                              ...current,
+                              [entry.key]: selected,
+                            }));
+                            setTemplatesDirSaved(false);
+                          }
+                        } catch {
+                          // Not in Tauri or dialog cancelled — ignore
+                        }
+                      }}
+                      className="p-1.5 hover:bg-[var(--color-bg-selection)] rounded transition-colors border border-[var(--color-border-default)]"
+                      title={`Browse for ${entry.label} folder`}
+                    >
+                      <FolderOpen size={16} className="text-[var(--color-fg-secondary)]" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+
               <div className="flex items-center gap-2">
                 <button
                   onClick={async () => {
                     try {
-                      await apiClient.updateSettings({ custom_templates_dir: customTemplatesDir || null });
+                      await apiClient.updateSettings({
+                        custom_blueprint_templates_dir: templateDirs.custom_blueprint_templates_dir || null,
+                        custom_export_templates_dir: templateDirs.custom_export_templates_dir || null,
+                        custom_markup_templates_dir: templateDirs.custom_markup_templates_dir || null,
+                      });
                       setTemplatesDirSaved(true);
                     } catch (err) {
-                      console.error('Failed to save template folder setting:', err);
+                      console.error('Failed to save template folder settings:', err);
                     }
                   }}
                   className="px-3 py-1 text-xs bg-[var(--color-accent-primary)] hover:bg-[var(--color-accent-hover)] text-white rounded transition-colors"
@@ -340,6 +386,7 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
             </div>
           </section>
         </div>
+
         <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[var(--color-border-default)]">
           <button
             onClick={handleReset}

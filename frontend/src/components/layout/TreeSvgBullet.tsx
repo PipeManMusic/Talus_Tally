@@ -1,24 +1,19 @@
 import React from 'react';
+import { getCachedIndicatorUrl } from '../../utils/indicatorCache';
 
 // Usage: <TreeSvgBullet type="empty" size={14} />
 // type: one of 'empty', 'partial', 'filled', 'alert'
 // size: px (default 14)
 
-
-
-
-// Use backend API endpoint for SVGs
-const svgMap: Record<string, string> = {
-  empty: '/api/v1/indicators/status/empty',
-  partial: '/api/v1/indicators/status/partial',
-  filled: '/api/v1/indicators/status/filled',
-  alert: '/api/v1/indicators/status/alert',
-};
-
 export function TreeSvgBullet({ type = 'empty', set = 'status', size = 14 }: { type?: string; set?: string; size?: number }) {
-  // Compose the backend API endpoint for the SVG
-  const src = `/api/v1/indicators/${set || 'status'}/${type || 'empty'}`;
+  const setId = set || 'status';
+  const indicatorId = type || 'empty';
   const [error, setError] = React.useState(false);
+
+  // First try to use cached data URL (preloaded indicators)
+  const cachedUrl = getCachedIndicatorUrl(setId, indicatorId);
+  const src = cachedUrl || `/api/v1/indicators/${setId}/${indicatorId}`;
+
   if (error) {
     // Fallback: show a simple circle if SVG fails to load
     return (
@@ -27,10 +22,11 @@ export function TreeSvgBullet({ type = 'empty', set = 'status', size = 14 }: { t
       </svg>
     );
   }
+
   return (
     <img
       src={src}
-      alt={type}
+      alt={indicatorId}
       width={size}
       height={size}
       style={{ display: 'inline-block', verticalAlign: 'middle' }}

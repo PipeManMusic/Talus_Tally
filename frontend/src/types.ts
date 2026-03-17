@@ -13,10 +13,41 @@ export interface GraphPort {
   description?: string;
 }
 
+export type NodeType =
+  | 'project_root'
+  | 'inventory_root'
+  | 'camera_gear_inventory'
+  | 'camera_gear_category'
+  | 'camera_gear_asset'
+  | 'car_parts_inventory'
+  | 'part_category'
+  | 'part_asset'
+  | 'tools_inventory'
+  | 'tool_category'
+  | 'tool_asset'
+  | 'season'
+  | 'episode'
+  | 'task'
+  | 'footage'
+  | 'person'
+  | string;
+
+export interface BaseNodeProperties {
+  name?: string;
+  [key: string]: unknown;
+}
+
+export interface PersonNodeProperties extends BaseNodeProperties {
+  email: string;
+  daily_capacity: number;
+  hourly_rate?: number;
+  system_role?: string;
+}
+
 export interface GraphNode {
   id: string;
   name: string;
-  type: string;
+  type: NodeType;
   position: Position;
   properties?: Record<string, unknown>;
   inputs?: GraphPort[];

@@ -208,7 +208,7 @@ class VelocityEngine:
             logger = logging.getLogger(__name__)
             node_name = self._get_node_properties(node_id).get('name', 'unnamed')
             parent_id = self._get_parent_id(node_id)
-            logger.info(f'[VelocityEngine] node={node_name} type={node_type} parent_id={parent_id} base={calc.base_score} inherited={calc.inherited_score} status={calc.status_score} numerical={calc.numerical_score} total={calc.total_velocity}')
+            logger.debug(f'[VelocityEngine] node={node_name} type={node_type} parent_id={parent_id} base={calc.base_score} inherited={calc.inherited_score} status={calc.status_score} numerical={calc.numerical_score} total={calc.total_velocity}')
         
         self._velocity_cache[node_id] = calc
         self._in_progress_totals.pop(node_id, None)

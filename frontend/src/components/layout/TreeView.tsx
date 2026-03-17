@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, type Dispatch, type SetStateAction, type D
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import { mapNodeIndicator } from '../graph/mapNodeIndicator';
 import { mapNodeIcon, subscribeToIconCache } from '../graph/mapNodeIcon';
+import type { NodeTypeSchema } from '../../api/client';
 import type { TreeNode } from '../../utils/treeUtils';
 import { useFilterStore } from '../../store/filterStore';
 import { evaluateNodeVisibility } from '../../utils/filterEngine';
@@ -91,6 +92,7 @@ function FilteredTreeContent({
   node,
   allowedChildrenList,
   resolveTypeLabel,
+  nodeTypeSchemas,
   velocityScores = {},
   onSelect,
   onExpand,
@@ -104,6 +106,7 @@ function FilteredTreeContent({
   node: TreeNode;
   allowedChildrenList: any[];
   resolveTypeLabel: (type: string) => string;
+  nodeTypeSchemas?: Record<string, NodeTypeSchema>;
   velocityScores?: Record<string, any>;
   onSelect?: (id: string) => void;
   onExpand?: (id: string) => void;
@@ -178,6 +181,7 @@ function FilteredTreeContent({
                       <TreeItem
                         key={child.id}
                         node={child}
+                        nodeTypeSchemas={nodeTypeSchemas}
                         velocityScores={velocityScores}
                         level={level + 1}
                         onSelect={onSelect}
@@ -203,6 +207,7 @@ function FilteredTreeContent({
 
 type TreeItemProps = {
   node: TreeNode;
+  nodeTypeSchemas?: Record<string, NodeTypeSchema>;
   velocityScores?: Record<string, any>;
   level?: number;
   isGhosted?: boolean;
@@ -217,6 +222,7 @@ type TreeItemProps = {
 
 function TreeItem({
   node,
+  nodeTypeSchemas,
   velocityScores = {},
   level = 0,
   isGhosted = false,
@@ -228,11 +234,10 @@ function TreeItem({
   getTypeLabel,
   scrollContainerRef,
 }: TreeItemProps) {
-  const [indicatorSvg, setIndicatorSvg] = useState<string | undefined>(() => (node as any).statusIndicatorSvg ?? undefined);
-  const [indicatorText, setIndicatorText] = useState<string | undefined>(() => (node as any).statusText ?? undefined);
+  const [statusIndicators, setStatusIndicators] = useState<Array<{ key: string; svg?: string; text?: string; color?: string }>>([]);
   const [textColor, setTextColor] = useState<string | undefined>(undefined);
   const [textStyle, setTextStyle] = useState<string | undefined>(undefined);
-  const [indicatorColor, setIndicatorColor] = useState<string | undefined>(undefined);
+  const [primaryIndicatorColor, setPrimaryIndicatorColor] = useState<string | undefined>(undefined);
   const [iconSvg, setIconSvg] = useState<string | undefined>(undefined);
   const [dragOverDropZoneId, setDragOverDropZoneId] = useState<string | null>(null);
   const [reorderDropZone, setReorderDropZone] = useState<'above' | 'below' | null>(null);
@@ -276,14 +281,19 @@ function TreeItem({
     location_scout: 'map-pin',
   };
 
-  const indicatorId = (node as any).indicator_id ?? indicatorDefaults[node.type] ?? undefined;
-  const indicatorSet = (node as any).indicator_set ?? 'status';
+  const nodeTypeSchema = nodeTypeSchemas?.[node.type];
+  const statusProperties = (nodeTypeSchema?.properties || []).filter((property: any) => {
+    if (property?.type !== 'select') {
+      return false;
+    }
+    const setId = property?.indicator_set || 'status';
+    return setId === 'status';
+  });
+  const fallbackIndicatorId = (node as any).indicator_id ?? indicatorDefaults[node.type] ?? undefined;
+  const primaryStatusPropertyId =
+    (nodeTypeSchema as any)?.primary_status_property_id ||
+    statusProperties[0]?.id;
   const iconSourceId = (node as any).icon_id ?? iconDefaults[node.type] ?? node.type ?? undefined;
-
-  useEffect(() => {
-    setIndicatorSvg((node as any).statusIndicatorSvg ?? undefined);
-    setIndicatorText((node as any).statusText ?? undefined);
-  }, [node.statusIndicatorSvg, node.statusText]);
 
   useEffect(() => {
     const unsubscribe = subscribeToIconCache(() => {
@@ -318,45 +328,101 @@ function TreeItem({
 
   useEffect(() => {
     let isMounted = true;
-    if (!indicatorId || !indicatorSet) {
+
+    const indicatorRequests: Array<Promise<any>> = [];
+
+    statusProperties.forEach((property: any) => {
+      const rawValue = (node.properties as Record<string, any> | undefined)?.[property.id];
+      if (rawValue === undefined || rawValue === null || rawValue === '') {
+        return;
+      }
+
+      const option = (property.options || []).find((candidate: any) =>
+        candidate?.name === rawValue || candidate?.id === rawValue
+      );
+      const indicatorId = option?.indicator_id;
+      if (!indicatorId) {
+        return;
+      }
+
+      const indicatorSet = property?.indicator_set || 'status';
+      indicatorRequests.push(
+        mapNodeIndicator({ ...node, indicator_id: indicatorId, indicator_set: indicatorSet }).then((indicator) => ({
+          key: `${property.id}:${indicatorId}`,
+          propertyId: property.id,
+          indicator,
+        }))
+      );
+    });
+
+    if (indicatorRequests.length === 0 && fallbackIndicatorId) {
+      indicatorRequests.push(
+        mapNodeIndicator({ ...node, indicator_id: fallbackIndicatorId, indicator_set: 'status' }).then((indicator) => ({
+          key: `fallback:${fallbackIndicatorId}`,
+          propertyId: undefined,
+          indicator,
+        }))
+      );
+    }
+
+    if (indicatorRequests.length === 0) {
       if (isMounted) {
-        setIndicatorSvg(undefined);
-        setIndicatorText(undefined);
+        setStatusIndicators([]);
+        setPrimaryIndicatorColor(undefined);
+        setTextColor(undefined);
+        setTextStyle(undefined);
       }
       return () => {
         isMounted = false;
       };
     }
 
-    mapNodeIndicator({ ...node, indicator_id: indicatorId, indicator_set: indicatorSet })
-      .then((indicator) => {
-        if (!isMounted || !indicator) return;
-        setIndicatorSvg(indicator.statusIndicatorSvg ?? (node as any).statusIndicatorSvg ?? undefined);
-        setIndicatorText(indicator.statusText ?? (node as any).statusText ?? undefined);
-        setIndicatorColor(indicator.indicatorColor ?? undefined);
-        setTextColor(indicator.textColor ?? indicator.indicatorColor ?? undefined);
-        setTextStyle(indicator.textStyle ?? undefined);
+    Promise.all(indicatorRequests)
+      .then((results) => {
+        if (!isMounted) {
+          return;
+        }
+
+        const renderedIndicators = results
+          .filter((entry) => entry?.indicator)
+          .map((entry) => ({
+            key: entry.key,
+            propertyId: entry.propertyId,
+            svg: entry.indicator.statusIndicatorSvg,
+            text: entry.indicator.statusText,
+            color: entry.indicator.indicatorColor,
+            textColor: entry.indicator.textColor,
+            textStyle: entry.indicator.textStyle,
+          }));
+
+        setStatusIndicators(
+          renderedIndicators.map((entry) => ({
+            key: entry.key,
+            svg: entry.svg,
+            text: entry.text,
+            color: entry.color,
+          }))
+        );
+
+        const primaryEntry = renderedIndicators.find((entry) => entry.propertyId === primaryStatusPropertyId) || renderedIndicators[0];
+        setPrimaryIndicatorColor(primaryEntry?.color);
+        setTextColor(primaryEntry?.textColor ?? primaryEntry?.color ?? undefined);
+        setTextStyle(primaryEntry?.textStyle ?? undefined);
       })
       .catch((err) => {
-        console.warn('[TreeView] Failed to load indicator SVG', indicatorId, err);
+        console.warn('[TreeView] Failed to load status indicators', node.id, err);
         if (isMounted) {
-          setIndicatorSvg((node as any).statusIndicatorSvg ?? undefined);
-          setIndicatorText((node as any).statusText ?? undefined);
+          setStatusIndicators([]);
+          setPrimaryIndicatorColor(undefined);
+          setTextColor(undefined);
+          setTextStyle(undefined);
         }
       });
 
     return () => {
       isMounted = false;
     };
-  }, [node.id, indicatorId, indicatorSet]);
-
-  useEffect(() => {
-    if (!indicatorId || !indicatorSet) {
-      setIndicatorColor(undefined);
-      setTextColor(undefined);
-      setTextStyle(undefined);
-    }
-  }, [indicatorId, indicatorSet]);
+  }, [node.id, node.properties, nodeTypeSchema, primaryStatusPropertyId, fallbackIndicatorId]);
 
   const hasChildren = Array.isArray(node.children) && node.children.length > 0;
   const allowedChildrenList = Array.isArray(node.allowed_children) ? node.allowed_children : [];
@@ -383,8 +449,7 @@ function TreeItem({
 
   const expanded = expandedMap[node.id] ?? false;
   const fallbackColor = 'var(--color-fg-primary)';
-  const iconColor = textColor || indicatorColor || fallbackColor;
-  const indicatorDisplayColor = indicatorColor || textColor || fallbackColor;
+  const iconColor = textColor || primaryIndicatorColor || fallbackColor;
   const targetParentId = parentId === null || typeof parentId === 'undefined' ? null : String(parentId);
 
   const clearDragState = () => {
@@ -761,11 +826,19 @@ function TreeItem({
               <span className="opacity-30">□</span>
             )}
           </span>
-          <span className="status-indicator-svg">
-            {indicatorSvg ? (
-              <span dangerouslySetInnerHTML={{ __html: recolorSvg(indicatorSvg, indicatorDisplayColor) }} />
-            ) : indicatorText ? (
-              <span className="status-indicator-text text-xs opacity-80">{indicatorText}</span>
+          <span className="status-indicator-svg flex items-center gap-1">
+            {statusIndicators.length > 0 ? (
+              statusIndicators.map((indicator) => (
+                <span key={indicator.key}>
+                  {indicator.svg ? (
+                    <span dangerouslySetInnerHTML={{ __html: recolorSvg(indicator.svg, indicator.color || textColor || fallbackColor) }} />
+                  ) : indicator.text ? (
+                    <span className="status-indicator-text text-xs opacity-80">{indicator.text}</span>
+                  ) : (
+                    <span className="status-indicator-text text-xs opacity-40">•</span>
+                  )}
+                </span>
+              ))
             ) : (
               <span className="status-indicator-text text-xs opacity-40">•</span>
             )}
@@ -849,6 +922,7 @@ function TreeItem({
             node={node}
             allowedChildrenList={allowedChildrenList}
             resolveTypeLabel={resolveTypeLabel}
+            nodeTypeSchemas={nodeTypeSchemas}
             velocityScores={velocityScores}
             onSelect={onSelect}
             onExpand={onExpand}
@@ -867,6 +941,7 @@ function TreeItem({
 
 type TreeViewProps = {
   nodes: TreeNode[];
+  nodeTypeSchemas?: Record<string, NodeTypeSchema>;
   velocityScores?: Record<string, any>;
   onSelectNode?: (id: string) => void;
   onExpandNode?: (id: string) => void;
@@ -880,6 +955,7 @@ type TreeViewProps = {
 
 export function TreeView({
   nodes,
+  nodeTypeSchemas,
   velocityScores = {},
   onSelectNode,
   onExpandNode,
@@ -991,6 +1067,7 @@ export function TreeView({
               )}
               <TreeItem
                 node={node}
+                nodeTypeSchemas={nodeTypeSchemas}
                 velocityScores={velocityScores}
                 isGhosted={filterMode === 'ghost' && !isDirectMatch && !hasMatchingDescendant}
                 onSelect={onSelectNode}

@@ -3,10 +3,11 @@ import { VelocityView } from '../components/velocity/VelocityView';
 import { NodeBlockingEditor } from '../components/velocity/NodeBlockingEditor';
 import { BudgetView } from '../components/tools/BudgetView';
 import { GanttView } from '../components/tools/GanttView';
+import { ManpowerView } from '../components/tools/ManpowerView';
 import { ChartsView } from '../components/tools/ChartsView';
 import { apiClient, type Node, type TemplateSchema, type VelocityScore } from '../api/client';
 
-export type ToolsTab = 'velocity' | 'blocking' | 'budget' | 'gantt' | 'charts';
+export type ToolsTab = 'velocity' | 'blocking' | 'budget' | 'gantt' | 'manpower' | 'charts';
 
 interface ToolsViewProps {
   sessionId?: string | null;
@@ -18,8 +19,10 @@ interface ToolsViewProps {
   onBlockingDirtyChange?: (isDirty: boolean) => void;
   blockingFitToViewSignal?: number;
   blockingRefreshSignal?: number;
+  ganttRefreshSignal?: number;
   blockingViewConfig?: TemplateSchema['blocking_view'];
   templateSchema?: TemplateSchema | null;
+  onManpowerOverloadChange?: (count: number) => void;
 }
 
 export function ToolsView({ 
@@ -32,8 +35,10 @@ export function ToolsView({
   onBlockingDirtyChange,
   blockingFitToViewSignal,
   blockingRefreshSignal,
+  ganttRefreshSignal,
   blockingViewConfig,
   templateSchema,
+  onManpowerOverloadChange,
 }: ToolsViewProps) {
   const [velocityScores, setVelocityScores] = useState<Record<string, VelocityScore>>({});
 
@@ -113,8 +118,20 @@ export function ToolsView({
             sessionId={sessionId || null}
             nodes={nodes}
             velocityScores={velocityScores}
+            refreshSignal={ganttRefreshSignal}
             selectedNodeId={selectedNodeId}
             onNodeSelect={onNodeSelect}
+          />
+        )}
+        {activeTab === 'manpower' && (
+          <ManpowerView
+            sessionId={sessionId || null}
+            nodes={nodes}
+            velocityScores={velocityScores}
+            refreshSignal={ganttRefreshSignal}
+            selectedNodeId={selectedNodeId}
+            onNodeSelect={onNodeSelect}
+            onOverloadChange={onManpowerOverloadChange}
           />
         )}
         {activeTab === 'charts' && (

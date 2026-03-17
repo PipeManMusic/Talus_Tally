@@ -7,6 +7,56 @@ from backend.handlers.commands.node_commands import CreateNodeCommand
 from backend.api.broadcaster import emit_property_changed
 
 
+SCHEDULING_TASK_PROPERTY_MACRO = [
+    {
+        "id": "assigned_to",
+        "type": "node_reference",
+        "target_type": "person",
+        "label": "Assigned To",
+        "system_locked": True,
+        "ui_group": "Schedule",
+    },
+    {
+        "id": "estimated_hours",
+        "type": "number",
+        "label": "Estimated Hours",
+        "value": 0,
+        "system_locked": True,
+        "ui_group": "Schedule",
+    },
+    {
+        "id": "actual_hours",
+        "type": "number",
+        "label": "Actual Hours",
+        "value": 0,
+        "system_locked": True,
+        "ui_group": "Schedule",
+    },
+]
+
+
+def inject_scheduling_task_properties(node_type: dict) -> dict:
+    """Inject/refresh canonical scheduling task properties on a node type dict."""
+    if not isinstance(node_type, dict):
+        return node_type
+
+    properties = node_type.get("properties")
+    if not isinstance(properties, list):
+        properties = []
+
+    prop_index = {prop.get("id"): idx for idx, prop in enumerate(properties) if isinstance(prop, dict)}
+
+    for macro_prop in SCHEDULING_TASK_PROPERTY_MACRO:
+        pid = macro_prop["id"]
+        if pid in prop_index:
+            properties[prop_index[pid]] = dict(macro_prop)
+        else:
+            properties.append(dict(macro_prop))
+
+    node_type["properties"] = properties
+    return node_type
+
+
 class ApplyKitCommand(Command):
     """Command to clone a kit's children to a target node."""
     

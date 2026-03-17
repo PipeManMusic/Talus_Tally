@@ -9,13 +9,23 @@ from backend.infra.schema_validator import SchemaValidator
 from backend.infra.user_data_dir import get_user_markups_dir
 
 
+def get_markups_directory() -> Path:
+    from backend.infra.settings import CUSTOM_MARKUP_TEMPLATES_DIR_KEY, get_setting
+
+    custom_dir = get_setting(CUSTOM_MARKUP_TEMPLATES_DIR_KEY)
+    if custom_dir:
+        candidate = Path(str(custom_dir))
+        if candidate.is_dir():
+            return candidate
+    return get_user_markups_dir()
+
+
 class MarkupRegistry:
     """Loads and caches markup profiles from YAML files."""
 
     def __init__(self, base_dir: Optional[str] = None):
-        # Always use user data dir for user-created markups
         if base_dir is None:
-            base_dir = get_user_markups_dir()
+            base_dir = get_markups_directory()
         self.base_dir = str(base_dir)
         self._cache: Dict[str, Dict[str, Any]] = {}
 
@@ -23,17 +33,14 @@ class MarkupRegistry:
         """
         Load a markup profile by id, prioritizing user data dir, falling back to system/repo.
         """
-        from backend.infra.user_data_dir import get_user_markups_dir
         if profile_id in self._cache:
             return self._cache[profile_id]
 
-        user_path = Path(get_user_markups_dir()) / f"{profile_id}.yaml"
+        user_path = Path(self.base_dir) / f"{profile_id}.yaml"
         sys_path = Path(self.base_dir) / f"{profile_id}.yaml"
         file_path = None
         if user_path.exists():
             file_path = user_path
-        elif sys_path.exists():
-            file_path = sys_path
         else:
             raise FileNotFoundError(f"Markup profile not found: {profile_id}")
 
@@ -62,32 +69,11 @@ class MarkupRegistry:
         """
         List all markup profiles, merging user and system/repo markups (user wins on id conflict).
         """
-        from backend.infra.user_data_dir import get_user_markups_dir
         seen = set()
         profiles = []
-        user_dir = Path(get_user_markups_dir())
-        sys_dir = Path(self.base_dir)
-        # User markups
-        if user_dir.exists():
-            for file_path in sorted(user_dir.glob('*.yaml')):
-                try:
-                    with open(file_path, 'r') as f:
-                        data = yaml.safe_load(f) or {}
-                    profile_id = data.get('id')
-                    label = data.get('label') or profile_id
-                    if not profile_id:
-                        continue
-                    profiles.append({
-                        'id': profile_id,
-                        'label': label,
-                        'description': data.get('description', '') or ''
-                    })
-                    seen.add(profile_id)
-                except Exception:
-                    continue
-        # System/repo markups
-        if sys_dir.exists():
-            for file_path in sorted(sys_dir.glob('*.yaml')):
+        base_dir = Path(self.base_dir)
+        if base_dir.exists():
+            for file_path in sorted(base_dir.glob('*.yaml')):
                 try:
                     with open(file_path, 'r') as f:
                         data = yaml.safe_load(f) or {}

@@ -1904,7 +1904,15 @@
           "name": "Junk Yard"
         },
         "children": [
-          "c639f7c5-a900-42d8-92c1-b052c4af2807"
+          "c639f7c5-a900-42d8-92c1-b052c4af2807",
+          "4c345ba6-172c-482e-82bb-51401568ed9e",
+          "edb06427-f627-4317-8158-43c35e909447",
+          "b06e34da-54fa-49f9-afb3-459adffe08dd",
+          "9b8afaf1-ef18-49b2-97ed-81f4ed4e2517",
+          "a76b4529-4ec3-4237-82c9-ed20e314c0de",
+          "b4702aad-39d8-48e0-8889-b4647a855aa7",
+          "e48e77fd-16bd-4981-b00b-444971bffec5",
+          "e6bd014c-ca74-49b4-adef-ae5d99b84e8d"
         ],
         "indicator_id": null,
         "indicator_set": null,
@@ -1928,6 +1936,141 @@
           "prop_1771951966105": "Explorer/Mountaineer/Ranger",
           "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
           "supplier": ""
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
+        "allowed_children": []
+      },
+      {
+        "id": "4c345ba6-172c-482e-82bb-51401568ed9e",
+        "type": "part_asset",
+        "properties": {
+          "name": "Bosch iBooster",
+          "estimated_cost": "200",
+          "part_number": "46000-TLA-A051-M1",
+          "prop_1771951944461": "Honda",
+          "prop_1771951966105": "CRV",
+          "quantity_on_hand": "0",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Honda"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
+        "allowed_children": []
+      },
+      {
+        "id": "edb06427-f627-4317-8158-43c35e909447",
+        "type": "part_asset",
+        "properties": {
+          "name": "DSC Mk60E5 ABS System",
+          "estimated_cost": "150",
+          "part_number": "",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
+        "allowed_children": []
+      },
+      {
+        "id": "b06e34da-54fa-49f9-afb3-459adffe08dd",
+        "type": "part_asset",
+        "properties": {
+          "name": "5.0l Windsor V8",
+          "estimated_cost": "1200",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
+        "allowed_children": []
+      },
+      {
+        "id": "9b8afaf1-ef18-49b2-97ed-81f4ed4e2517",
+        "type": "part_asset",
+        "properties": {
+          "name": "4R70W Transmission",
+          "estimated_cost": "800",
+          "part_number": "",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
+        "allowed_children": []
+      },
+      {
+        "id": "a76b4529-4ec3-4237-82c9-ed20e314c0de",
+        "type": "part_asset",
+        "properties": {
+          "name": "Ranger Steering Column",
+          "estimated_cost": "150",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
+        "allowed_children": []
+      },
+      {
+        "id": "b4702aad-39d8-48e0-8889-b4647a855aa7",
+        "type": "part_asset",
+        "properties": {
+          "name": "8.8 Rear Axel",
+          "estimated_cost": "700",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
+        "allowed_children": []
+      },
+      {
+        "id": "e48e77fd-16bd-4981-b00b-444971bffec5",
+        "type": "part_asset",
+        "properties": {
+          "name": "Mustang Backing Plates",
+          "estimated_cost": "120",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26"
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
+        "allowed_children": []
+      },
+      {
+        "id": "e6bd014c-ca74-49b4-adef-ae5d99b84e8d",
+        "type": "part_asset",
+        "properties": {
+          "name": "Lincoln Navigator Steering Wheel",
+          "estimated_cost": "100",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26"
         },
         "children": [],
         "indicator_id": "empty",
@@ -4397,7 +4540,8 @@
           "name": "Modified Drive Train"
         },
         "children": [
-          "0c2aeed7-bf17-4a96-922a-68bd41be7cbf"
+          "0c2aeed7-bf17-4a96-922a-68bd41be7cbf",
+          "eb106e58-f223-4e49-a47e-4c663a4f3e0c"
         ],
         "indicator_id": null,
         "indicator_set": null,
@@ -4419,6 +4563,25 @@
           "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
           "supplier": "DIYAutoTune",
           "unit_cost": ""
+        },
+        "children": [],
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
+        "allowed_children": []
+      },
+      {
+        "id": "eb106e58-f223-4e49-a47e-4c663a4f3e0c",
+        "type": "part_asset",
+        "properties": {
+          "name": "VR ABS Converter",
+          "estimated_cost": "349.00",
+          "prop_1771951944461": "",
+          "quantity_on_hand": "0",
+          "status": "49ea8160-2c4d-4d91-4800-1c3176029d26",
+          "supplier": "Happy Cactus Garage"
         },
         "children": [],
         "indicator_id": "empty",

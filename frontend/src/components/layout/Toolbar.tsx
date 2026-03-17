@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, Zap, DollarSign, Calendar, ChartColumn } from 'lucide-react';
+import { TrendingUp, Zap, DollarSign, Calendar, Users, ChartColumn } from 'lucide-react';
 
 export interface ToolbarButton {
   id: string;
@@ -10,7 +10,7 @@ export interface ToolbarButton {
 }
 
 export type ViewType = 'graph' | 'tools';
-export type ToolsTab = 'velocity' | 'blocking' | 'budget' | 'gantt' | 'charts';
+export type ToolsTab = 'velocity' | 'blocking' | 'budget' | 'gantt' | 'manpower' | 'charts';
 
 interface ToolbarProps {
   buttons?: ToolbarButton[];
@@ -21,6 +21,7 @@ interface ToolbarProps {
   blockingNodeCount?: number;
   blockingEdgeCount?: number;
   onBlockingFitToView?: () => void;
+  manpowerOverloadCount?: number;
 }
 
 const defaultButtons: ToolbarButton[] = [];
@@ -34,6 +35,7 @@ export function Toolbar({
   blockingNodeCount = 0,
   blockingEdgeCount = 0,
   onBlockingFitToView,
+  manpowerOverloadCount = 0,
 }: ToolbarProps) {
   return (
     <div className="h-toolbar bg-bg-light border-b border-border px-2 flex items-center gap-4">
@@ -87,6 +89,23 @@ export function Toolbar({
           >
             <Calendar size={16} />
             Gantt
+          </button>
+          <button
+            onClick={() => onToolsTabChange('manpower')}
+            className={`px-3 py-1.5 rounded text-sm font-semibold transition-colors flex items-center gap-2 relative ${
+              activeToolsTab === 'manpower'
+                ? 'bg-accent-primary text-fg-primary'
+                : 'text-fg-secondary hover:text-fg-primary'
+            }`}
+            title="Switch to manpower view"
+          >
+            <Users size={16} />
+            Manpower
+            {manpowerOverloadCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-status-danger text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-0.5 leading-none">
+                {manpowerOverloadCount > 99 ? '99+' : manpowerOverloadCount}
+              </span>
+            )}
           </button>
           <button
             onClick={() => onToolsTabChange('charts')}

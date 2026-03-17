@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface DatePickerProps {
-  value?: string; // ISO date string (YYYY-MM-DD)
+  value?: string;
   onChange: (date: string) => void;
   label?: string;
   error?: string;
@@ -13,12 +13,76 @@ function isValidDate(d: Date): boolean {
   return d instanceof Date && !isNaN(d.getTime());
 }
 
-function parseToValidDate(val: string | undefined): Date {
-  if (val) {
-    const d = new Date(val);
-    if (isValidDate(d)) return d;
+function parseIsoDateLocal(value: string | undefined): Date | null {
+  if (!value) return null;
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
+  if (!match) return null;
+
+  const year = Number(match[1]);
+  const monthIndex = Number(match[2]) - 1;
+  const day = Number(match[3]);
+
+  const date = new Date(year, monthIndex, day);
+  if (!isValidDate(date)) return null;
+  if (
+    date.getFullYear() !== year ||
+    date.getMonth() !== monthIndex ||
+    date.getDate() !== day
+  ) {
+    return null;
   }
+
+  return date;
+}
+
+function parseIsoDateTimeLocal(value: string | undefined): Date | null {
+  if (!value) return null;
+  const trimmed = value.trim();
+  const isoDatePart = /^(\d{4}-\d{2}-\d{2})[T\s]/.exec(trimmed)?.[1];
+  if (!isoDatePart) return null;
+  return parseIsoDateLocal(isoDatePart);
+}
+
+function parseUsDateLocal(value: string): Date | null {
+  const match = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(value.trim());
+  if (!match) return null;
+
+  const monthIndex = Number(match[1]) - 1;
+  const day = Number(match[2]);
+  const year = Number(match[3]);
+
+  const date = new Date(year, monthIndex, day);
+  if (!isValidDate(date)) return null;
+  if (
+    date.getFullYear() !== year ||
+    date.getMonth() !== monthIndex ||
+    date.getDate() !== day
+  ) {
+    return null;
+  }
+
+  return date;
+}
+
+function formatIsoDateLocal(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function parseToValidDate(val: string | undefined): Date {
+  const parsed = parseDateValue(val);
+  if (parsed) return parsed;
   return new Date();
+}
+
+function parseDateValue(value: string | undefined): Date | null {
+  return (
+    parseIsoDateLocal(value) ||
+    parseIsoDateTimeLocal(value) ||
+    (value ? parseUsDateLocal(value) : null)
+  );
 }
 
 export function DatePicker({ value, onChange, label, error, disabled }: DatePickerProps) {
@@ -30,18 +94,25 @@ export function DatePicker({ value, onChange, label, error, disabled }: DatePick
 
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
+    'July', 'August', 'September', 'October', 'November', 'December',
   ];
 
-  // Get days in month
-  const getDaysInMonth = (date: Date) => {
-    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-  };
+  const yearOptions = (() => {
+    const selectedYear = currentDate.getFullYear();
+    const startYear = selectedYear - 100;
+    const endYear = selectedYear + 20;
+    const years: number[] = [];
+    for (let year = startYear; year <= endYear; year++) {
+      years.push(year);
+    }
+    return years;
+  })();
 
-  // Get first day of month (0 = Sunday)
-  const getFirstDayOfMonth = (date: Date) => {
-    return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-  };
+  const getDaysInMonth = (date: Date) =>
+    new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+
+  const getFirstDayOfMonth = (date: Date) =>
+    new Date(date.getFullYear(), date.getMonth(), 1).getDay();
 
   const handlePrevMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
@@ -51,28 +122,43 @@ export function DatePicker({ value, onChange, label, error, disabled }: DatePick
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
   };
 
+  const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newMonth = Number(e.target.value);
+    setCurrentDate(new Date(currentDate.getFullYear(), newMonth, 1));
+  };
+
+  const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newYear = Number(e.target.value);
+    setCurrentDate(new Date(newYear, currentDate.getMonth(), 1));
+  };
+
   const handleDateClick = (day: number) => {
     const selectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-    const isoDate = selectedDate.toISOString().split('T')[0];
-    onChange(isoDate);
+    onChange(formatIsoDateLocal(selectedDate));
     setIsOpen(false);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
-    if (val) {
-      const d = new Date(val);
-      if (isValidDate(d)) {
-        onChange(val);
-        setCurrentDate(d);
-      }
-    } else {
-      // User cleared the date
+    if (!val) {
       onChange('');
+      return;
+    }
+
+    const parsedDate = parseDateValue(val);
+    if (parsedDate) {
+      onChange(formatIsoDateLocal(parsedDate));
+      setCurrentDate(parsedDate);
     }
   };
 
-  // Close on outside click
+  useEffect(() => {
+    const parsed = parseDateValue(value);
+    if (parsed) {
+      setCurrentDate(parsed);
+    }
+  }, [value]);
+
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -93,12 +179,11 @@ export function DatePicker({ value, onChange, label, error, disabled }: DatePick
     days.push(i);
   }
 
-  // Format display value
+  const selectedDate = parseDateValue(value);
+
   const displayValue = (() => {
-    if (!value) return '';
-    const d = new Date(value);
-    if (!isValidDate(d)) return '';
-    return d.toLocaleDateString('en-US', {
+    if (!selectedDate) return '';
+    return selectedDate.toLocaleDateString('en-US', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -133,30 +218,55 @@ export function DatePicker({ value, onChange, label, error, disabled }: DatePick
 
         {isOpen && !disabled && (
           <div className="absolute top-full left-0 mt-1 bg-bg-light border border-border rounded-sm shadow-lg z-50 p-3">
-            {/* Month/Year Navigation */}
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between gap-2 mb-3">
               <button
                 onClick={handlePrevMonth}
                 className="p-1 hover:bg-bg-dark rounded transition-colors"
                 type="button"
+                aria-label="Previous month"
               >
                 <ChevronLeft size={16} className="text-fg-primary" />
               </button>
-              <div className="text-sm font-body text-fg-primary">
-                {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+
+              <div className="flex items-center gap-2">
+                <select
+                  value={currentDate.getMonth()}
+                  onChange={handleMonthChange}
+                  className="bg-bg-dark text-fg-primary border border-border rounded px-2 py-1 text-xs"
+                  aria-label="Month"
+                >
+                  {monthNames.map((name, index) => (
+                    <option key={name} value={index}>
+                      {name}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={currentDate.getFullYear()}
+                  onChange={handleYearChange}
+                  className="bg-bg-dark text-fg-primary border border-border rounded px-2 py-1 text-xs"
+                  aria-label="Year"
+                >
+                  {yearOptions.map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
               </div>
+
               <button
                 onClick={handleNextMonth}
                 className="p-1 hover:bg-bg-dark rounded transition-colors"
                 type="button"
+                aria-label="Next month"
               >
                 <ChevronRight size={16} className="text-fg-primary" />
               </button>
             </div>
 
-            {/* Day labels */}
             <div className="grid grid-cols-7 gap-1 mb-2">
-              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
                 <div
                   key={day}
                   className="w-6 h-6 flex items-center justify-center text-xs text-fg-secondary font-body"
@@ -166,17 +276,16 @@ export function DatePicker({ value, onChange, label, error, disabled }: DatePick
               ))}
             </div>
 
-            {/* Calendar days */}
             <div className="grid grid-cols-7 gap-1">
               {days.map((day, index) => {
                 if (day === null) {
                   return <div key={`empty-${index}`} className="w-6 h-6" />;
                 }
 
-                // Check if this is the selected day
-                const isSelected = value && new Date(value).getDate() === day &&
-                  new Date(value).getMonth() === currentDate.getMonth() &&
-                  new Date(value).getFullYear() === currentDate.getFullYear();
+                const isSelected = !!selectedDate &&
+                  selectedDate.getDate() === day &&
+                  selectedDate.getMonth() === currentDate.getMonth() &&
+                  selectedDate.getFullYear() === currentDate.getFullYear();
 
                 return (
                   <button

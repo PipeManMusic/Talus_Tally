@@ -14,7 +14,7 @@ describe('useFilterStore', () => {
     $().clearRules();
     $().setFilterMode('ghost');
     $().setExpanded(false);
-    $().setFilterTabVisible(false);
+    $().setFilterTabVisible(true);
   });
 
   describe('initial state', () => {
@@ -33,8 +33,13 @@ describe('useFilterStore', () => {
       expect($().isExpanded).toBe(false);
     });
 
-    it('has filterTabVisible false by default', () => {
-      expect($().filterTabVisible).toBe(false);
+    it('has filterTabVisible true by default', async () => {
+      vi.resetModules();
+      localStorage.clear();
+
+      const reloadedModule = await import('../store/filterStore');
+
+      expect(reloadedModule.useFilterStore.getState().filterTabVisible).toBe(true);
     });
   });
 
@@ -563,6 +568,7 @@ describe('useFilterStore', () => {
 
   describe('toggleFilterTabVisible', () => {
     it('toggles filterTabVisible from false to true', () => {
+      useFilterStore.setState({ filterTabVisible: false });
       expect($().filterTabVisible).toBe(false);
       $().toggleFilterTabVisible();
       expect($().filterTabVisible).toBe(true);
@@ -575,6 +581,8 @@ describe('useFilterStore', () => {
     });
 
     it('toggles multiple times correctly', () => {
+      useFilterStore.setState({ filterTabVisible: false });
+
       $().toggleFilterTabVisible(); // false -> true
       expect($().filterTabVisible).toBe(true);
       $().toggleFilterTabVisible(); // true -> false
@@ -594,6 +602,8 @@ describe('useFilterStore', () => {
     });
 
     it('persists visibility state to localStorage', () => {
+      useFilterStore.setState({ filterTabVisible: false });
+
       $().toggleFilterTabVisible();
 
       expect(localStorage.getItem(FILTER_TAB_VISIBLE_STORAGE_KEY)).toBe('true');

@@ -5,6 +5,29 @@ import { CurrencyInput } from '../ui/CurrencyInput';
 import { TemplateAwareEditor } from '../ui/TemplateAwareEditor';
 import type { MarkupToken } from '../../services/markupRenderService';
 
+const WEEKDAY_LABELS = [
+  { key: 'monday', short: 'Mon', full: 'Monday' },
+  { key: 'tuesday', short: 'Tue', full: 'Tuesday' },
+  { key: 'wednesday', short: 'Wed', full: 'Wednesday' },
+  { key: 'thursday', short: 'Thu', full: 'Thursday' },
+  { key: 'friday', short: 'Fri', full: 'Friday' },
+  { key: 'saturday', short: 'Sat', full: 'Saturday' },
+  { key: 'sunday', short: 'Sun', full: 'Sunday' },
+] as const;
+
+const PERSON_CAPACITY_PROPERTY_IDS = new Set(
+  WEEKDAY_LABELS.map((day) => `capacity_${day.key}`),
+);
+
+const PERSON_HOURLY_RATE_PROPERTY_IDS = new Set(
+  WEEKDAY_LABELS.map((day) => `hourly_rate_${day.key}`),
+);
+
+const PERSON_SPECIAL_PROPERTY_IDS = new Set([
+  ...PERSON_CAPACITY_PROPERTY_IDS,
+  ...PERSON_HOURLY_RATE_PROPERTY_IDS,
+]);
+
 export interface NodeProperty {
   id: string;
   name: string;
@@ -88,6 +111,8 @@ export function Inspector({
     isLinkedAsset: boolean;
     markupProfile?: string;
   }>({ isOpen: false, propId: '', propName: '', value: '', isLinkedAsset: false });
+  const [personScheduleOpen, setPersonScheduleOpen] = useState(false);
+  const [personScheduleDraft, setPersonScheduleDraft] = useState<Record<string, string>>({});
 
   const handlePropertyChange = (propId: string, value: string | number) => {
     onPropertyChange?.(propId, value);
@@ -104,7 +129,7 @@ export function Inspector({
   }, [nodeId, linkedAsset?.nodeId]);
 
   const makeDraftKey = (propId: string, isLinkedAsset: boolean) =>
-    `${isLinkedAsset ? 'asset' : 'node'}:${propId}`;
+    `${isLinkedAsset ? (linkedAsset?.nodeId ?? 'asset') : (nodeId ?? 'node')}:${isLinkedAsset ? 'asset' : 'node'}:${propId}`;
 
   const commitDraftValue = (propId: string, value: string, isLinkedAsset: boolean) => {
     if (isLinkedAsset) {
@@ -124,6 +149,14 @@ export function Inspector({
     }, 250);
   };
 
+  const flushCommit = (key: string, propId: string, value: string, isLinkedAsset: boolean) => {
+    if (pendingCommits.current[key]) {
+      clearTimeout(pendingCommits.current[key]);
+      delete pendingCommits.current[key];
+    }
+    commitDraftValue(propId, value, isLinkedAsset);
+  };
+
   const openEditor = (
     propId: string, 
     propName: string, 
@@ -140,6 +173,85 @@ export function Inspector({
       isLinkedAsset,
       markupProfile,
     });
+  };
+
+  const isPersonNode = nodeType === 'person';
+  const personPropertyMap = new Map(properties.map((property) => [property.id, property]));
+
+  const getPersonPropertyNumericValue = (propertyId: string, fallback: number) => {
+    const raw = personPropertyMap.get(propertyId)?.value;
+    if (raw === '' || raw === null || raw === undefined) {
+      return fallback;
+    }
+    const parsed = Number(raw);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  };
+
+  const openPersonScheduleEditor = () => {
+    const nextDraft: Record<string, string> = {};
+    WEEKDAY_LABELS.forEach((day) => {
+      const capacityId = `capacity_${day.key}`;
+      const rateId = `hourly_rate_${day.key}`;
+      nextDraft[capacityId] = String(getPersonPropertyNumericValue(capacityId, day.key === 'saturday' || day.key === 'sunday' ? 0 : 8));
+      const rateRaw = personPropertyMap.get(rateId)?.value;
+      nextDraft[rateId] = rateRaw === null || rateRaw === undefined ? '' : String(rateRaw);
+    });
+    setPersonScheduleDraft(nextDraft);
+    setPersonScheduleOpen(true);
+  };
+
+  const savePersonScheduleEditor = () => {
+    WEEKDAY_LABELS.forEach((day) => {
+      const capacityId = `capacity_${day.key}`;
+      const rateId = `hourly_rate_${day.key}`;
+
+      const rawCapacity = Number(personScheduleDraft[capacityId] ?? 0);
+      const safeCapacity = Number.isFinite(rawCapacity)
+        ? Math.max(0, Math.min(24, rawCapacity))
+        : 0;
+      handlePropertyChange(capacityId, safeCapacity);
+
+      const rawRateText = (personScheduleDraft[rateId] ?? '').trim();
+      if (!rawRateText) {
+        handlePropertyChange(rateId, '');
+      } else {
+        const parsedRate = Number(rawRateText);
+        handlePropertyChange(rateId, Number.isFinite(parsedRate) ? parsedRate : '');
+      }
+    });
+
+    setPersonScheduleOpen(false);
+  };
+
+  const copyMondayCapacityToWeekdays = () => {
+    const mondayCapacity = personScheduleDraft['capacity_monday'] ?? '';
+    setPersonScheduleDraft((prev) => ({
+      ...prev,
+      capacity_tuesday: mondayCapacity,
+      capacity_wednesday: mondayCapacity,
+      capacity_thursday: mondayCapacity,
+      capacity_friday: mondayCapacity,
+    }));
+  };
+
+  const copyFridayRateToWeekend = () => {
+    const fridayRate = personScheduleDraft['hourly_rate_friday'] ?? '';
+    setPersonScheduleDraft((prev) => ({
+      ...prev,
+      hourly_rate_saturday: fridayRate,
+      hourly_rate_sunday: fridayRate,
+    }));
+  };
+
+  const copyMondayRateToWeekdays = () => {
+    const mondayRate = personScheduleDraft['hourly_rate_monday'] ?? '';
+    setPersonScheduleDraft((prev) => ({
+      ...prev,
+      hourly_rate_tuesday: mondayRate,
+      hourly_rate_wednesday: mondayRate,
+      hourly_rate_thursday: mondayRate,
+      hourly_rate_friday: mondayRate,
+    }));
   };
 
   const closeEditor = () => {
@@ -188,6 +300,42 @@ export function Inspector({
           </div>
         </div>
 
+        {/* Person Weekly Schedule Summary */}
+        {isPersonNode && (
+          <div className="mb-4 rounded border border-border bg-bg-dark/30 p-3">
+            <div className="flex items-center justify-between gap-3 mb-2">
+              <div>
+                <div className="text-sm font-semibold text-fg-primary">Weekly Availability</div>
+                <div className="text-xs text-fg-secondary">Capacity is limited to 0–24 hours per day</div>
+              </div>
+              <button
+                onClick={openPersonScheduleEditor}
+                className="px-3 py-1.5 bg-accent-primary text-fg-primary rounded hover:bg-accent-hover transition-colors text-xs font-semibold"
+              >
+                Edit Week
+              </button>
+            </div>
+            <div className="grid grid-cols-7 gap-1 text-center text-xs">
+              {WEEKDAY_LABELS.map((day) => {
+                const capacityId = `capacity_${day.key}`;
+                const rateId = `hourly_rate_${day.key}`;
+                const capacity = getPersonPropertyNumericValue(
+                  capacityId,
+                  day.key === 'saturday' || day.key === 'sunday' ? 0 : 8,
+                );
+                const rate = personPropertyMap.get(rateId)?.value;
+                return (
+                  <div key={day.key} className="bg-bg-light rounded border border-border px-1 py-2">
+                    <div className="text-fg-secondary font-semibold">{day.short}</div>
+                    <div className="text-fg-primary font-mono">{capacity}h</div>
+                    <div className="text-fg-muted">{rate !== '' && rate !== null && rate !== undefined ? `$${rate}` : '—'}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Properties — grouped by section */}
         {(() => {
           // Ordered group names — properties are rendered within each group
@@ -202,8 +350,12 @@ export function Inspector({
           ];
 
           // Bucket properties by group
+          const sourceProperties = isPersonNode
+            ? properties.filter((property) => !PERSON_SPECIAL_PROPERTY_IDS.has(property.id))
+            : properties;
+
           const groups: Record<string, NodeProperty[]> = {};
-          for (const prop of properties) {
+          for (const prop of sourceProperties) {
             const g = prop.group ?? 'Details';
             (groups[g] ??= []).push(prop);
           }
@@ -213,6 +365,10 @@ export function Inspector({
           // Append any custom ui_group values not in the canonical list
           for (const g of Object.keys(groups)) {
             if (!orderedGroups.includes(g)) orderedGroups.push(g);
+          }
+
+          if (orderedGroups.length === 0) {
+            return null;
           }
 
           // Helper to render a single property field
@@ -232,7 +388,7 @@ export function Inspector({
                       scheduleCommit(draftKey, prop.id, nextValue, false);
                     }}
                     onBlur={(e) => {
-                      commitDraftValue(prop.id, e.target.value, false);
+                      flushCommit(draftKey, prop.id, e.target.value, false);
                     }}
                     required={prop.required}
                   />
@@ -248,7 +404,7 @@ export function Inspector({
                       scheduleCommit(draftKey, prop.id, nextValue, false);
                     }}
                     onBlur={(e) => {
-                      commitDraftValue(prop.id, e.target.value, false);
+                      flushCommit(draftKey, prop.id, e.target.value, false);
                     }}
                     required={prop.required}
                   />
@@ -263,7 +419,7 @@ export function Inspector({
                       scheduleCommit(draftKey, prop.id, nextValue, false);
                     }}
                     onBlur={(e) => {
-                      commitDraftValue(prop.id, e.target.value, false);
+                      flushCommit(draftKey, prop.id, e.target.value, false);
                     }}
                     required={prop.required}
                   />
@@ -279,7 +435,7 @@ export function Inspector({
                       scheduleCommit(draftKey, prop.id, nextValue, false);
                     }}
                     onBlur={(e) => {
-                      commitDraftValue(prop.id, e.target.value, false);
+                      flushCommit(draftKey, prop.id, e.target.value, false);
                     }}
                     required={prop.required}
                   />
@@ -306,7 +462,7 @@ export function Inspector({
                         scheduleCommit(draftKey, prop.id, nextValue, false);
                       }}
                       onBlur={(e) => {
-                        commitDraftValue(prop.id, e.target.value, false);
+                        flushCommit(draftKey, prop.id, e.target.value, false);
                       }}
                       className="w-full bg-bg-dark text-fg-primary border border-border rounded-sm px-2 py-1 text-sm font-body focus:border-accent-primary focus:outline-none resize-none"
                       rows={3}
@@ -575,7 +731,7 @@ export function Inspector({
                           scheduleCommit(assetDraftKey, prop.id, nextValue, true);
                         }}
                         onBlur={(e) => {
-                          commitDraftValue(prop.id, e.target.value, true);
+                          flushCommit(assetDraftKey, prop.id, e.target.value, true);
                         }}
                         required={prop.required}
                       />
@@ -591,7 +747,7 @@ export function Inspector({
                           scheduleCommit(assetDraftKey, prop.id, nextValue, true);
                         }}
                         onBlur={(e) => {
-                          commitDraftValue(prop.id, e.target.value, true);
+                          flushCommit(assetDraftKey, prop.id, e.target.value, true);
                         }}
                         required={prop.required}
                       />
@@ -606,7 +762,7 @@ export function Inspector({
                           scheduleCommit(assetDraftKey, prop.id, nextValue, true);
                         }}
                         onBlur={(e) => {
-                          commitDraftValue(prop.id, e.target.value, true);
+                          flushCommit(assetDraftKey, prop.id, e.target.value, true);
                         }}
                         required={prop.required}
                       />
@@ -622,7 +778,7 @@ export function Inspector({
                           scheduleCommit(assetDraftKey, prop.id, nextValue, true);
                         }}
                         onBlur={(e) => {
-                          commitDraftValue(prop.id, e.target.value, true);
+                          flushCommit(assetDraftKey, prop.id, e.target.value, true);
                         }}
                         required={prop.required}
                       />
@@ -649,7 +805,7 @@ export function Inspector({
                             scheduleCommit(assetDraftKey, prop.id, nextValue, true);
                           }}
                           onBlur={(e) => {
-                            commitDraftValue(prop.id, e.target.value, true);
+                              flushCommit(assetDraftKey, prop.id, e.target.value, true);
                           }}
                           className="w-full bg-bg-dark text-fg-primary border border-border rounded-sm px-2 py-1 text-sm font-body focus:border-accent-primary focus:outline-none resize-none"
                           rows={3}
@@ -716,6 +872,120 @@ export function Inspector({
           template={undefined}
           markupProfile={editorState.markupProfile}
         />
+
+        {/* Person Weekly Schedule Dialog */}
+        {personScheduleOpen && isPersonNode && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+            <div className="w-full max-w-3xl bg-bg-light border border-border rounded-lg shadow-xl">
+              <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+                <div>
+                  <h3 className="text-base font-semibold text-fg-primary">Weekly Capacity &amp; Hourly Rates</h3>
+                  <p className="text-xs text-fg-secondary">Use this table to manage person availability and overtime rates by day.</p>
+                </div>
+                <button
+                  onClick={() => setPersonScheduleOpen(false)}
+                  className="px-3 py-1.5 text-xs text-fg-secondary hover:text-fg-primary hover:bg-bg-dark rounded"
+                >
+                  Close
+                </button>
+              </div>
+
+              <div className="p-4 overflow-auto max-h-[70vh]">
+                <div className="mb-3 flex flex-wrap gap-2">
+                  <button
+                    onClick={copyMondayCapacityToWeekdays}
+                    className="px-2.5 py-1.5 text-xs bg-bg-dark border border-border rounded text-fg-primary hover:bg-bg-selection transition-colors"
+                  >
+                    Copy Mon Capacity → Tue–Fri
+                  </button>
+                  <button
+                    onClick={copyMondayRateToWeekdays}
+                    className="px-2.5 py-1.5 text-xs bg-bg-dark border border-border rounded text-fg-primary hover:bg-bg-selection transition-colors"
+                  >
+                    Copy Mon Rate → Tue–Fri
+                  </button>
+                  <button
+                    onClick={copyFridayRateToWeekend}
+                    className="px-2.5 py-1.5 text-xs bg-bg-dark border border-border rounded text-fg-primary hover:bg-bg-selection transition-colors"
+                  >
+                    Copy Fri Rate → Weekend
+                  </button>
+                </div>
+                <table className="w-full text-sm border-separate border-spacing-0">
+                  <thead>
+                    <tr>
+                      <th className="text-left text-fg-secondary px-3 py-2 border-b border-border">Day</th>
+                      <th className="text-left text-fg-secondary px-3 py-2 border-b border-border">Capacity (hours, 0-24)</th>
+                      <th className="text-left text-fg-secondary px-3 py-2 border-b border-border">Hourly Rate</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {WEEKDAY_LABELS.map((day) => {
+                      const capacityId = `capacity_${day.key}`;
+                      const rateId = `hourly_rate_${day.key}`;
+                      return (
+                        <tr key={day.key}>
+                          <td className="px-3 py-2 border-b border-border text-fg-primary font-medium">{day.full}</td>
+                          <td className="px-3 py-2 border-b border-border">
+                            <input
+                              type="number"
+                              min={0}
+                              max={24}
+                              step={0.25}
+                              value={personScheduleDraft[capacityId] ?? ''}
+                              onChange={(event) => {
+                                const nextValue = event.target.value;
+                                const parsed = Number(nextValue);
+                                if (nextValue === '') {
+                                  setPersonScheduleDraft((prev) => ({ ...prev, [capacityId]: '' }));
+                                  return;
+                                }
+                                const clamped = Number.isFinite(parsed)
+                                  ? Math.max(0, Math.min(24, parsed))
+                                  : 0;
+                                setPersonScheduleDraft((prev) => ({ ...prev, [capacityId]: String(clamped) }));
+                              }}
+                              className="w-full px-2 py-1 bg-bg-dark border border-border rounded text-fg-primary"
+                            />
+                          </td>
+                          <td className="px-3 py-2 border-b border-border">
+                            <input
+                              type="number"
+                              min={0}
+                              step={0.01}
+                              value={personScheduleDraft[rateId] ?? ''}
+                              onChange={(event) => {
+                                const nextValue = event.target.value;
+                                setPersonScheduleDraft((prev) => ({ ...prev, [rateId]: nextValue }));
+                              }}
+                              className="w-full px-2 py-1 bg-bg-dark border border-border rounded text-fg-primary"
+                              placeholder="Optional"
+                            />
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="px-4 py-3 border-t border-border flex items-center justify-end gap-2">
+                <button
+                  onClick={() => setPersonScheduleOpen(false)}
+                  className="px-3 py-1.5 text-sm text-fg-secondary hover:text-fg-primary hover:bg-bg-dark rounded transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={savePersonScheduleEditor}
+                  className="px-3 py-1.5 text-sm bg-accent-primary text-fg-primary rounded hover:bg-accent-hover transition-colors font-semibold"
+                >
+                  Save Week
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </aside>
   );

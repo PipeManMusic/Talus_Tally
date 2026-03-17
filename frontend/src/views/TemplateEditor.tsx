@@ -167,7 +167,93 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
     setOrphanInfo(null);
 
     try {
-      const validation: ValidationResult = await apiClient.validateTemplate(currentTemplate);
+      const normalizedTemplate: Template = JSON.parse(JSON.stringify(currentTemplate));
+      const personNode = normalizedTemplate.node_types.find((nodeType) => nodeType.id === 'person');
+      if (personNode) {
+        personNode.base_type = 'asset';
+        personNode.allowed_children = [];
+        personNode.features = [];
+
+        personNode.properties = personNode.properties.map((property) => {
+          if (
+            property.id === 'name' ||
+            property.id === 'email' ||
+            property.id === 'capacity_monday' ||
+            property.id === 'capacity_tuesday' ||
+            property.id === 'capacity_wednesday' ||
+            property.id === 'capacity_thursday' ||
+            property.id === 'capacity_friday' ||
+            property.id === 'capacity_saturday' ||
+            property.id === 'capacity_sunday'
+          ) {
+            return { ...property, required: true };
+          }
+          return property;
+        });
+      }
+
+      const personValidationErrors: string[] = [];
+      const personNodeType = normalizedTemplate.node_types.find((nodeType) => nodeType.id === 'person');
+      if (personNodeType) {
+        const personPropMap = new Map(personNodeType.properties.map((property) => [property.id, property]));
+        const requiredPersonProperties = [
+          { id: 'email', type: 'text' },
+          { id: 'capacity_monday', type: 'number' },
+          { id: 'capacity_tuesday', type: 'number' },
+          { id: 'capacity_wednesday', type: 'number' },
+          { id: 'capacity_thursday', type: 'number' },
+          { id: 'capacity_friday', type: 'number' },
+          { id: 'capacity_saturday', type: 'number' },
+          { id: 'capacity_sunday', type: 'number' },
+        ] as const;
+
+        requiredPersonProperties.forEach(({ id, type }) => {
+          const property = personPropMap.get(id);
+          if (!property) {
+            personValidationErrors.push(`person node type is missing required property '${id}'`);
+            return;
+          }
+          if (!property.label || !property.label.trim()) {
+            personValidationErrors.push(`person.${id} must have a non-empty label`);
+          }
+          if (property.type !== type) {
+            personValidationErrors.push(`person.${id} must be type '${type}'`);
+          }
+          if (property.required !== true) {
+            personValidationErrors.push(`person.${id} must be marked required`);
+          }
+        });
+
+        const optionalPersonProperties = [
+          { id: 'hourly_rate_monday', type: 'number' },
+          { id: 'hourly_rate_tuesday', type: 'number' },
+          { id: 'hourly_rate_wednesday', type: 'number' },
+          { id: 'hourly_rate_thursday', type: 'number' },
+          { id: 'hourly_rate_friday', type: 'number' },
+          { id: 'hourly_rate_saturday', type: 'number' },
+          { id: 'hourly_rate_sunday', type: 'number' },
+          { id: 'system_role', type: 'text' },
+        ] as const;
+
+        optionalPersonProperties.forEach(({ id, type }) => {
+          const property = personPropMap.get(id);
+          if (!property) {
+            return;
+          }
+          if (property.type !== type) {
+            personValidationErrors.push(`person.${id} must be type '${type}'`);
+          }
+        });
+      }
+
+      if (personValidationErrors.length > 0) {
+        setValidationErrors(personValidationErrors);
+        setError('Template has person schema validation errors');
+        setLoading(false);
+        return;
+      }
+
+      const validation: ValidationResult = await apiClient.validateTemplate(normalizedTemplate);
       if (!validation.is_valid) {
         setValidationErrors(validation.errors);
         setError('Template has validation errors');
@@ -179,9 +265,9 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
       const isNew = !templates.some(t => t.id === currentTemplate.id);
       let result;
       if (isNew) {
-        result = await apiClient.createTemplate(currentTemplate);
+        result = await apiClient.createTemplate(normalizedTemplate);
       } else {
-        result = await apiClient.updateTemplate(currentTemplate.id, currentTemplate);
+        result = await apiClient.updateTemplate(currentTemplate.id, normalizedTemplate);
       }
 
       if (result?.orphan_info && result.orphan_info.total_orphaned_nodes > 0) {

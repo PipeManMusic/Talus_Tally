@@ -23,6 +23,7 @@ export interface NodeType {
   allowed_children: string[];
   allowed_asset_types?: string[];
   velocityConfig?: VelocityNodeConfig;
+  primary_status_property_id?: string; // Which status property controls node text color/style
   properties: Property[];
   features?: string[];
   icon?: string;
@@ -35,6 +36,9 @@ export interface Property {
   id: string;
   label: string;
   type: string;
+  required?: boolean;
+  value?: string | number | boolean;
+  target_type?: string;
   options?: Array<{ name: string; indicator_id?: string }>;
   markup_profile?: string;
   description?: string;
@@ -44,6 +48,19 @@ export interface Property {
   ui_group?: string;
   semantic_role?: string;
 }
+
+const resolveIndicatorSetId = (
+  property: Property,
+  indicatorsConfig: IndicatorsConfig | null,
+): string => {
+  if (property.indicator_set && indicatorsConfig?.indicator_sets?.[property.indicator_set]) {
+    return property.indicator_set;
+  }
+  if (indicatorsConfig?.indicator_sets?.status) {
+    return 'status';
+  }
+  return Object.keys(indicatorsConfig?.indicator_sets || {})[0] || 'status';
+};
 
 interface NodeTypeEditorProps {
   nodeTypes: NodeType[];
@@ -210,15 +227,15 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
   // Pre-load SVGs for indicators already selected in node type properties
   useEffect(() => {
     if (!indicatorsConfig) return;
-    
-    const statusIndicators = indicatorsConfig.indicator_sets['status']?.indicators || [];
-    
+
     nodeTypes.forEach(nodeType => {
       nodeType.properties.forEach(property => {
+        const setId = resolveIndicatorSetId(property, indicatorsConfig);
+        const setIndicators = indicatorsConfig.indicator_sets[setId]?.indicators || [];
         if (property.type === 'select' && property.options) {
           property.options.forEach(option => {
             if (option.indicator_id) {
-              const indicatorMeta = statusIndicators.find(ind => ind.id === option.indicator_id);
+              const indicatorMeta = setIndicators.find(ind => ind.id === option.indicator_id);
               if (indicatorMeta?.url && !indicatorSvgCache[option.indicator_id]) {
                 fetchIndicatorSvg(option.indicator_id, indicatorMeta.url);
               }
@@ -232,6 +249,11 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
 
   const normalizeAllowedChildren = (children: string[]) =>
     Array.from(new Set(children.filter(Boolean)));
+
+  const getNodeTypeEditorKey = (nodeTypeIndex: number) => `node-type-${nodeTypeIndex}`;
+
+  const getPropertyEditorKey = (nodeTypeIndex: number, propertyIndex: number) =>
+    `${nodeTypeIndex}::${propertyIndex}`;
 
   const addNodeType = () => {
     if (loading) {
@@ -259,13 +281,227 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
     onChange([...nodeTypes, newNodeType])
       .then(() => {
         console.log('✓ Node type added successfully');
-        setExpandedNodeType(newNodeType.id);
+        setExpandedNodeType(getNodeTypeEditorKey(nodeTypes.length));
       })
       .catch((err) => {
         console.error(`✗ Failed to add node type: ${err instanceof Error ? err.message : String(err)}`);
         setErrors(prev => ({
           ...prev,
           [newNodeType.id]: `Failed to add: ${err instanceof Error ? err.message : 'Unknown error'}`,
+        }));
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+
+  const addPersonNodeType = () => {
+    if (loading) {
+      console.warn('Add operation already in progress');
+      return;
+    }
+
+    const canonicalPersonProperties: Property[] = [
+      {
+        id: 'name',
+        label: 'Full Name',
+        type: 'text',
+        required: true,
+        system_locked: true,
+      },
+      {
+        id: 'email',
+        label: 'Email',
+        type: 'text',
+        required: true,
+        system_locked: true,
+      },
+      {
+        id: 'capacity_monday',
+        label: 'Capacity Monday (Hours)',
+        type: 'number',
+        required: true,
+        value: 8,
+        system_locked: true,
+      },
+      {
+        id: 'capacity_tuesday',
+        label: 'Capacity Tuesday (Hours)',
+        type: 'number',
+        required: true,
+        value: 8,
+        system_locked: true,
+      },
+      {
+        id: 'capacity_wednesday',
+        label: 'Capacity Wednesday (Hours)',
+        type: 'number',
+        required: true,
+        value: 8,
+        system_locked: true,
+      },
+      {
+        id: 'capacity_thursday',
+        label: 'Capacity Thursday (Hours)',
+        type: 'number',
+        required: true,
+        value: 8,
+        system_locked: true,
+      },
+      {
+        id: 'capacity_friday',
+        label: 'Capacity Friday (Hours)',
+        type: 'number',
+        required: true,
+        value: 8,
+        system_locked: true,
+      },
+      {
+        id: 'capacity_saturday',
+        label: 'Capacity Saturday (Hours)',
+        type: 'number',
+        required: true,
+        value: 0,
+        system_locked: true,
+      },
+      {
+        id: 'capacity_sunday',
+        label: 'Capacity Sunday (Hours)',
+        type: 'number',
+        required: true,
+        value: 0,
+        system_locked: true,
+      },
+      {
+        id: 'hourly_rate_monday',
+        label: 'Hourly Rate Monday',
+        type: 'number',
+        required: false,
+        system_locked: true,
+      },
+      {
+        id: 'hourly_rate_tuesday',
+        label: 'Hourly Rate Tuesday',
+        type: 'number',
+        required: false,
+        system_locked: true,
+      },
+      {
+        id: 'hourly_rate_wednesday',
+        label: 'Hourly Rate Wednesday',
+        type: 'number',
+        required: false,
+        system_locked: true,
+      },
+      {
+        id: 'hourly_rate_thursday',
+        label: 'Hourly Rate Thursday',
+        type: 'number',
+        required: false,
+        system_locked: true,
+      },
+      {
+        id: 'hourly_rate_friday',
+        label: 'Hourly Rate Friday',
+        type: 'number',
+        required: false,
+        system_locked: true,
+      },
+      {
+        id: 'hourly_rate_saturday',
+        label: 'Hourly Rate Saturday',
+        type: 'number',
+        required: false,
+        system_locked: true,
+      },
+      {
+        id: 'hourly_rate_sunday',
+        label: 'Hourly Rate Sunday',
+        type: 'number',
+        required: false,
+        system_locked: true,
+      },
+      {
+        id: 'system_role',
+        label: 'System Role',
+        type: 'text',
+        required: false,
+        system_locked: true,
+      },
+    ];
+
+    const canonicalIds = new Set(canonicalPersonProperties.map((property) => property.id));
+    const existingPerson = nodeTypes.find((nodeType) => nodeType.id === 'person');
+    const customPersonProperties = (existingPerson?.properties || []).filter(
+      (property) => !canonicalIds.has(property.id),
+    );
+
+    const personNodeType: NodeType = {
+      id: 'person',
+      label: 'Person',
+      allowed_children: [],
+      properties: [...canonicalPersonProperties, ...customPersonProperties],
+      features: [],
+      icon: 'user',
+      shape: 'circle',
+      color: '#3b82f6',
+      base_type: 'asset',
+    };
+
+    const personnelAssetsNodeType: NodeType = {
+      id: 'personnel_assets',
+      label: 'Personnel Assets',
+      allowed_children: ['person'],
+      properties: [
+        {
+          id: 'name',
+          label: 'Name',
+          type: 'text',
+          required: true,
+        },
+      ],
+      icon: 'users',
+      shape: 'rounded',
+      color: '#60a5fa',
+      base_type: 'asset',
+    };
+
+    const withPersonAndParent = nodeTypes
+      .filter((nodeType) => nodeType.id !== 'person' && nodeType.id !== 'personnel_assets')
+      .map((nodeType) => {
+        if (nodeType.id === 'inventory_root') {
+          const filteredChildren = (nodeType.allowed_children || []).filter((childId) => childId !== 'person');
+          return {
+            ...nodeType,
+            allowed_children: normalizeAllowedChildren([...filteredChildren, 'personnel_assets']),
+          };
+        }
+        if (nodeType.id === 'project_root') {
+          const filteredChildren = (nodeType.allowed_children || []).filter((childId) => childId !== 'person');
+          return {
+            ...nodeType,
+            allowed_children: normalizeAllowedChildren(filteredChildren),
+          };
+        }
+        return nodeType;
+      });
+
+    const nextNodeTypes = [...withPersonAndParent, personnelAssetsNodeType, personNodeType];
+
+    setLoading(true);
+    onChange(nextNodeTypes)
+      .then(() => {
+        console.log('✓ Person node type normalized successfully');
+        const nextPersonIndex = nextNodeTypes.findIndex((nodeType) => nodeType.id === 'person');
+        if (nextPersonIndex >= 0) {
+          setExpandedNodeType(getNodeTypeEditorKey(nextPersonIndex));
+        }
+      })
+      .catch((err) => {
+        console.error(`✗ Failed to add person node type: ${err instanceof Error ? err.message : String(err)}`);
+        setErrors((prev) => ({
+          ...prev,
+          person: `Failed to add person: ${err instanceof Error ? err.message : 'Unknown error'}`,
         }));
       })
       .finally(() => {
@@ -347,10 +583,6 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
   };
 
   const updateNodeType = (id: string, updates: Partial<NodeType>) => {
-    if (updates.id && expandedNodeType === id) {
-      setExpandedNodeType(updates.id);
-    }
-    
     const newNodeTypes = displayNodeTypes.map(nt =>
       nt.id === id ? { ...nt, ...updates } : nt
     );
@@ -448,11 +680,20 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
       return;
     }
     
-    const newNodeTypes = displayNodeTypes.map(nt =>
-      nt.id === nodeTypeId
-        ? { ...nt, properties: nt.properties.filter(p => p.id !== propertyId) }
-        : nt
-    );
+    const newNodeTypes = displayNodeTypes.map(nt => {
+      if (nt.id !== nodeTypeId) {
+        return nt;
+      }
+
+      const nextProperties = nt.properties.filter(p => p.id !== propertyId);
+      const shouldClearPrimary = nt.primary_status_property_id === propertyId;
+
+      return {
+        ...nt,
+        properties: nextProperties,
+        primary_status_property_id: shouldClearPrimary ? undefined : nt.primary_status_property_id,
+      };
+    });
     
     // Optimistic update
     setPendingUpdates(prev => ({
@@ -478,10 +719,6 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
   };
 
   const updateProperty = (nodeTypeId: string, propertyId: string, updates: Partial<Property>) => {
-    if ((updates as { id?: string }).id && editingProperty === propertyId) {
-      setEditingProperty((updates as { id?: string }).id || null);
-    }
-    
     const newNodeTypes = displayNodeTypes.map(nt =>
       nt.id === nodeTypeId
         ? {
@@ -548,25 +785,39 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
         </div>
       </div>
 
-      {/* Add Node Type Button */}
-      <button
-        onClick={addNodeType}
-        className="w-full px-4 py-2 flex items-center justify-center gap-2 bg-accent-primary text-fg-primary rounded hover:bg-accent-hover transition-colors font-semibold"
-      >
-        <Plus size={18} />
-        Add Node Type
-      </button>
+      {/* Add Node Type Buttons */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+        <button
+          onClick={addNodeType}
+          className="w-full px-4 py-2 flex items-center justify-center gap-2 bg-accent-primary text-fg-primary rounded hover:bg-accent-hover transition-colors font-semibold"
+        >
+          <Plus size={18} />
+          Add Node Type
+        </button>
+        <button
+          onClick={addPersonNodeType}
+          className="w-full px-4 py-2 flex items-center justify-center gap-2 bg-blue-500/20 text-blue-300 border border-blue-500/40 rounded hover:bg-blue-500/30 transition-colors font-semibold"
+        >
+          <Plus size={18} />
+          Add Person Node
+        </button>
+      </div>
+      {!nodeTypes.some((nodeType) => nodeType.id === 'person') && (
+        <div className="text-xs text-fg-secondary px-1">
+          Need manpower planning? Click <span className="font-semibold text-blue-300">Add Person Node</span> to add the built-in person schema.
+        </div>
+      )}
 
       {/* Node Types List */}
       <div className="space-y-2">
-        {displayNodeTypes.map((nodeType) => (
-          <div key={nodeType.id} className="bg-bg-light border border-border rounded overflow-hidden">
+        {displayNodeTypes.map((nodeType, nodeTypeIndex) => (
+          <div key={getNodeTypeEditorKey(nodeTypeIndex)} className="bg-bg-light border border-border rounded overflow-hidden">
             {/* Node Type Header */}
             <div className="flex items-center justify-between p-4 hover:bg-bg-dark/50 transition-colors cursor-pointer"
-              onClick={() => setExpandedNodeType(expandedNodeType === nodeType.id ? null : nodeType.id)}>
+              onClick={() => setExpandedNodeType(expandedNodeType === getNodeTypeEditorKey(nodeTypeIndex) ? null : getNodeTypeEditorKey(nodeTypeIndex))}>
               <div className="flex items-center gap-3 flex-1">
                 <button className="p-0 -m-1 hover:bg-bg-dark rounded">
-                  {expandedNodeType === nodeType.id ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                  {expandedNodeType === getNodeTypeEditorKey(nodeTypeIndex) ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                 </button>
                 <div>
                   <h3 className="font-semibold text-fg-primary">{nodeType.label}</h3>
@@ -594,7 +845,7 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
             )}
 
             {/* Node Type Details */}
-            {expandedNodeType === nodeType.id && (
+            {expandedNodeType === getNodeTypeEditorKey(nodeTypeIndex) && (
               <div className="border-t border-border p-4 space-y-4 bg-bg-dark/50">
                 {/* Node Type ID */}
                 <div>
@@ -624,12 +875,16 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
                   <select
                     value={nodeType.base_type || 'standard'}
                     onChange={(e) => updateNodeType(nodeType.id, { base_type: e.target.value })}
-                    className="w-full px-3 py-2 bg-bg-light border border-border rounded-md text-fg-primary"
+                    disabled={nodeType.id === 'person'}
+                    className={`w-full px-3 py-2 bg-bg-light border border-border rounded-md text-fg-primary${nodeType.id === 'person' ? ' opacity-70 cursor-not-allowed' : ''}`}
                   >
                     {metaSchema?.node_classes?.map((nc: { id: string; name: string }) => (
                       <option key={nc.id} value={nc.id}>{nc.name}</option>
                     ))}
                   </select>
+                  {nodeType.id === 'person' && (
+                    <p className="text-xs text-fg-muted mt-1">Person nodes are always asset-class nodes.</p>
+                  )}
                 </div>
 
                 {/* Icon (optional) */}
@@ -715,6 +970,9 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
                 {/* Allowed Children */}
                 <div>
                   <label className="block text-sm text-fg-secondary mb-2">Allowed Children</label>
+                  {nodeType.id === 'person' ? (
+                    <p className="text-xs text-fg-muted">Person nodes cannot have children.</p>
+                  ) : (
                   <div className="space-y-2">
                     {nodeType.allowed_children.map((childId, idx) => (
                       <div key={idx} className="flex items-center gap-2">
@@ -773,6 +1031,7 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
                       + Add Child Type
                     </button>
                   </div>
+                  )}
                 </div>
 
                 {/* Allowed Asset Types (for asset reference nodes) */}
@@ -845,6 +1104,7 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
                 </div>
 
                 {/* Built-in Features Section */}
+                {nodeType.id !== 'person' && (
                 <div className="mt-4 pt-4 border-t border-border">
                   <div className="flex items-center gap-2 mb-3">
                     <h4 className="font-semibold text-fg-primary">Built-in Features</h4>
@@ -889,6 +1149,7 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
                     </label>
                   </div>
                 </div>
+                )}
 
                 {/* Velocity Configuration Section */}
                 <div className="mt-4 pt-4 border-t border-border">
@@ -971,13 +1232,55 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
                     </button>
                   </div>
 
+                  {(() => {
+                    const statusProperties = nodeType.properties.filter((property) => {
+                      if (property.type !== 'select') {
+                        return false;
+                      }
+                      const setId = property.indicator_set || 'status';
+                      return setId === 'status';
+                    });
+
+                    if (statusProperties.length === 0) {
+                      return null;
+                    }
+
+                    const primaryStatusPropertyId = nodeType.primary_status_property_id || statusProperties[0]?.id;
+
+                    return (
+                      <div className="mb-3 rounded border border-border/70 bg-bg-dark/20 p-2">
+                        <label className="text-xs text-fg-secondary mb-2 block">Primary status (controls node text color/style)</label>
+                        <div className="flex flex-wrap gap-3">
+                          {statusProperties.map((statusProperty) => (
+                            <label key={statusProperty.id} className="inline-flex items-center gap-2 text-xs text-fg-primary">
+                              <input
+                                type="checkbox"
+                                checked={primaryStatusPropertyId === statusProperty.id}
+                                onChange={(event) => {
+                                  updateNodeType(nodeType.id, {
+                                    primary_status_property_id: event.target.checked ? statusProperty.id : undefined,
+                                  });
+                                }}
+                                className="rounded"
+                              />
+                              <span>{statusProperty.label || statusProperty.id}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
+
                   {nodeType.properties.length === 0 ? (
                     <p className="text-sm text-fg-secondary">No properties defined</p>
                   ) : (
                     <div className="space-y-3">
-                      {nodeType.properties.map((prop, propIndex) => (
+                      {nodeType.properties.map((prop, propIndex) => {
+                        const propertyEditorKey = getPropertyEditorKey(nodeTypeIndex, propIndex);
+
+                        return (
                         <PropertyEditor
-                          key={`${nodeType.id}-${prop.id}`}
+                          key={propertyEditorKey}
                           property={prop}
                           onUpdate={(updates) =>
                             updateProperty(nodeType.id, prop.id, updates)
@@ -985,9 +1288,9 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
                           onRemove={() =>
                             removeProperty(nodeType.id, prop.id)
                           }
-                          isExpanded={editingProperty === prop.id}
+                          isExpanded={editingProperty === propertyEditorKey}
                           onToggleExpand={() =>
-                            setEditingProperty(editingProperty === prop.id ? null : prop.id)
+                            setEditingProperty(editingProperty === propertyEditorKey ? null : propertyEditorKey)
                           }
                           indicatorsConfig={indicatorsConfig}
                           indicatorSvgCache={indicatorSvgCache}
@@ -995,7 +1298,8 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
                           markupProfiles={markupProfiles}
                           metaSchema={metaSchema}
                         />
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -1085,10 +1389,10 @@ const PropertyEditor = memo(function PropertyEditor({
           {/* Property ID */}
           <div>
             <label className="text-xs text-fg-secondary mb-1 block">ID</label>
-            {property.indicator_set === 'status' || property.system_locked ? (
+            {property.system_locked ? (
               <input
                 type="text"
-                value={property.indicator_set === 'status' ? 'status' : property.id}
+                value={property.id}
                 disabled
                 className="w-full px-2 py-1 bg-bg-light border border-border rounded text-fg-primary text-sm font-mono opacity-70 cursor-not-allowed"
               />
@@ -1283,7 +1587,26 @@ const PropertyEditor = memo(function PropertyEditor({
           {/* Select Options (for select type) */}
           {property.type === 'select' && (
             <div>
-              <label className="text-xs text-fg-secondary mb-2 block">Options (with optional status indicator)</label>
+              <label className="text-xs text-fg-secondary mb-2 block">Options (with optional indicator)</label>
+              {indicatorsConfig && (
+                <div className="mb-2">
+                  <label className="text-xs text-fg-secondary mb-1 block">Indicator Set</label>
+                  <select
+                    value={resolveIndicatorSetId(property, indicatorsConfig)}
+                    onChange={(e) => {
+                      const newSetId = e.target.value;
+                      onUpdate({ indicator_set: newSetId });
+                    }}
+                    className="w-full px-2 py-1 bg-bg-light border border-border rounded text-fg-primary text-sm"
+                  >
+                    {Object.entries(indicatorsConfig.indicator_sets || {}).map(([setId, setData]) => (
+                      <option key={setId} value={setId}>
+                        {setId} - {setData.description || 'Indicator set'}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div className="space-y-3">
                 {(property.options || []).map((option, idx) => (
                   <div key={idx} className="border border-border/50 rounded p-2 space-y-2 bg-bg-dark/20">
@@ -1313,7 +1636,7 @@ const PropertyEditor = memo(function PropertyEditor({
                     {/* Indicator selection for this option */}
                     {indicatorsConfig && (
                       <div>
-                        <label className="text-xs text-fg-secondary mb-1 block">Status Indicator Icon</label>
+                        <label className="text-xs text-fg-secondary mb-1 block">Indicator Icon</label>
                         <div className="flex items-center gap-2">
                           <select
                             value={option.indicator_id || ''}
@@ -1325,7 +1648,8 @@ const PropertyEditor = memo(function PropertyEditor({
                               
                               // Fetch SVG for the selected indicator
                               if (newIndicatorId) {
-                                const indicatorMeta = indicatorsConfig.indicator_sets['status']?.indicators?.find(ind => ind.id === newIndicatorId);
+                                const setId = resolveIndicatorSetId(property, indicatorsConfig);
+                                const indicatorMeta = indicatorsConfig.indicator_sets[setId]?.indicators?.find(ind => ind.id === newIndicatorId);
                                 if (indicatorMeta?.url) {
                                   fetchIndicatorSvg(newIndicatorId, indicatorMeta.url);
                                 }
@@ -1334,14 +1658,19 @@ const PropertyEditor = memo(function PropertyEditor({
                             className="flex-1 px-2 py-1 bg-bg-light border border-border rounded text-fg-primary text-sm"
                           >
                             <option value="">None - no indicator</option>
-                            {indicatorsConfig.indicator_sets['status']?.indicators?.map(ind => (
+                            {(() => {
+                              const setId = resolveIndicatorSetId(property, indicatorsConfig);
+                              const indicators = indicatorsConfig.indicator_sets[setId]?.indicators || [];
+                              return indicators.map(ind => (
                               <option key={ind.id} value={ind.id}>
                                 {ind.id} - {ind.description}
                               </option>
-                            ))}
+                              ));
+                            })()}
                           </select>
                           {option.indicator_id && indicatorSvgCache[option.indicator_id] && (() => {
-                            const theme = indicatorsConfig.indicator_sets['status']?.default_theme?.[option.indicator_id];
+                            const setId = resolveIndicatorSetId(property, indicatorsConfig);
+                            const theme = indicatorsConfig.indicator_sets[setId]?.default_theme?.[option.indicator_id];
                             const indicatorColor = theme?.indicator_color || '#e0e0e0';
                             const textColor = theme?.text_color || '#e0e0e0';
                             const textStyle = theme?.text_style;
