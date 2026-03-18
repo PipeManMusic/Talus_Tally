@@ -336,12 +336,33 @@ export interface GanttPayload {
 export interface ManpowerResource {
   name: string;
   capacity: number;
-  load: Record<string, number>;
+  overtime_capacity?: number;
+  capacity_by_day?: Record<string, number>;
+  overtime_capacity_by_day?: Record<string, number>;
+  load: Record<string, {
+    total: number;
+    tasks: Array<{
+      id: string;
+      name: string;
+      hours: number;
+    }>;
+  }>;
+}
+
+export interface ManpowerUnallocatedTask {
+  node_id: string;
+  name: string;
+  start_date: string;
+  end_date: string;
+  estimated_hours: number;
+  unallocated_hours: number;
+  assigned_to: string[];
 }
 
 export interface ManpowerPayload {
   date_columns: string[];
   resources: Record<string, ManpowerResource>;
+  unallocated_tasks?: ManpowerUnallocatedTask[];
   timestamp: number;
 }
 

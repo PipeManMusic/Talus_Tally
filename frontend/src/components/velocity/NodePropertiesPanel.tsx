@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { X, Lock, Trash2 } from 'lucide-react';
 import { Input } from '../ui/Input';
 import { Select } from '../ui/Select';
@@ -20,14 +20,14 @@ interface NodePropertiesPanelProps {
   nodes: Record<string, NodeType>;
   blockedByNodes: string[];  // Node IDs that are blocking the selected node
   blocksNodes: string[];     // Node IDs that the selected node blocks
-  onPropertyChange: (nodeId: string, propKey: string, value: string | number) => void;
+  onPropertyChange: (nodeId: string, propKey: string, value: string | number | Record<string, any>) => void;
   onClearBlocks: (nodeId: string) => void;  // Clear all blocking relationships from this node
   /** Optional property definitions from the template schema for the selected node's type. */
   propertyDefinitions?: PropertyDefinition[];
   /** Orphaned property key-value pairs (read-only, from metadata). */
   orphanedProperties?: Record<string, string | number>;
-  /** Called when the user clicks the trash icon on an orphaned property. */
-  onOrphanedPropertyDelete?: (propKey: string) => void;
+  /** All nodes (needed to look up assignee names for Daily Overrides). */
+  allNodes?: Record<string, import('../../api/client').Node>;
 }
 
 export function NodePropertiesPanel({
@@ -40,6 +40,7 @@ export function NodePropertiesPanel({
   propertyDefinitions,
   orphanedProperties,
   onOrphanedPropertyDelete,
+  allNodes,
 }: NodePropertiesPanelProps) {
   if (!selectedNodeId || !nodes[selectedNodeId]) {
     return (
@@ -53,6 +54,80 @@ export function NodePropertiesPanel({
 
   const selectNode = nodes[selectedNodeId];
   const nodeLabel = selectNode.properties?.name || selectedNodeId;
+
+  // --- Daily Overrides helpers ---
+  const parseAssignedToIds = (value: any): string[] => {
+    if (Array.isArray(value)) return value.map(String).filter(Boolean);
+    if (typeof value === 'string') {
+      const s = value.trim();
+      if (!s) return [];
+      if (s.startsWith('[')) { try { const p = JSON.parse(s); if (Array.isArray(p)) return p.map(String); } catch {} }
+      if (s.includes(',')) return s.split(',').map(s => s.trim()).filter(Boolean);
+      return [s];
+    }
+    return [];
+  };
+
+  const generateDateRange = (start: string, end: string): string[] => {
+    const dates: string[] = [];
+    const startD = new Date(start + 'T00:00:00');
+    const endD = new Date(end + 'T00:00:00');
+    if (isNaN(startD.getTime()) || isNaN(endD.getTime())) return [];
+    const cur = new Date(startD);
+    while (cur <= endD) {
+      dates.push(cur.toISOString().slice(0, 10));
+      cur.setDate(cur.getDate() + 1);
+    }
+    return dates;
+  };
+
+  const nodeProps = selectNode.properties || {};
+  const startDateStr = typeof nodeProps.start_date === 'string' ? nodeProps.start_date : '';
+  const endDateStr = typeof nodeProps.end_date === 'string' ? nodeProps.end_date : '';
+  const assigneeIds = parseAssignedToIds(nodeProps.assigned_to);
+
+  const showDailyOverrides = !!startDateStr && !!endDateStr && assigneeIds.length > 0;
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const dateRange = useMemo(
+    () => (showDailyOverrides ? generateDateRange(startDateStr, endDateStr) : []),
+    [showDailyOverrides, startDateStr, endDateStr]
+  );
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const assigneeNames = useMemo(() => {
+    const lookup = allNodes || nodes;
+    return assigneeIds.reduce<Record<string, string>>((acc, id) => {
+      const person = lookup[id];
+      acc[id] = person?.properties?.name || id;
+      return acc;
+    }, {});
+  }, [assigneeIds, allNodes, nodes]);
+
+  const getRawManualAllocations = (): Record<string, Record<string, number>> => {
+    const raw = nodeProps.manual_allocations;
+    if (raw && typeof raw === 'object' && !Array.isArray(raw)) return raw as Record<string, Record<string, number>>;
+    if (typeof raw === 'string') { try { return JSON.parse(raw) as Record<string, Record<string, number>>; } catch {} }
+    return {};
+  };
+
+  const handleManualOverrideChange = (date: string, personId: string, inputValue: string) => {
+    const current = getRawManualAllocations();
+    const updated: Record<string, Record<string, number>> = JSON.parse(JSON.stringify(current));
+    if (inputValue === '' || inputValue === null) {
+      if (updated[date]) {
+        delete updated[date][personId];
+        if (Object.keys(updated[date]).length === 0) delete updated[date];
+      }
+    } else {
+      const num = parseFloat(inputValue);
+      if (!isNaN(num)) {
+        if (!updated[date]) updated[date] = {};
+        updated[date][personId] = num;
+      }
+    }
+    onPropertyChange(selectedNodeId, 'manual_allocations', updated);
+  };
 
   const getSelectOptions = (def?: PropertyDefinition) => {
     if (!def?.options || !Array.isArray(def.options)) {
@@ -241,6 +316,44 @@ export function NodePropertiesPanel({
           blocksNodes.length === 0 && (
           <div className="text-xs text-fg-secondary text-center py-8">
             No properties or blocking info
+          </div>
+        )}
+
+        {/* Daily Overrides Section */}
+        {showDailyOverrides && dateRange.length > 0 && (
+          <div className="mt-4 pt-4 border-t border-border">
+            <div className="text-xs font-semibold text-fg-secondary px-2 py-1 border-b border-border mb-2">
+              Daily Overrides
+            </div>
+            <div className="text-xs text-fg-secondary bg-bg-dark/50 rounded px-2 py-1.5 mb-2">
+              Hardcode hours for specific days. Remaining hours distribute automatically.
+            </div>
+            {assigneeIds.map(personId => (
+              <div key={personId} className="mb-3">
+                <div className="text-xs font-medium text-fg-primary mb-1 truncate">{assigneeNames[personId]}</div>
+                <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${Math.min(dateRange.length, 4)}, 1fr)` }}>
+                  {dateRange.map(date => {
+                    const manualAllocations = getRawManualAllocations();
+                    const currentValue = manualAllocations[date]?.[personId];
+                    const displayValue = currentValue !== undefined ? String(currentValue) : '';
+                    return (
+                      <div key={date} className="flex flex-col items-center">
+                        <div className="text-[10px] text-fg-muted mb-0.5">{date.slice(5)}</div>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.5"
+                          value={displayValue}
+                          placeholder="Auto"
+                          onChange={e => handleManualOverrideChange(date, personId, e.target.value)}
+                          className="w-full bg-bg-dark text-fg-primary border border-border rounded px-1 py-0.5 text-xs focus:border-accent-primary focus:outline-none text-center placeholder-fg-muted"
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         )}
 

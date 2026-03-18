@@ -117,3 +117,42 @@ def test_create_node_default_status_initialized():
     node = graph.get_node(node_id)
     assert node is not None
     assert node.properties.get("status") is not None
+
+
+def test_update_property_command_rejects_orphaned_node_edits():
+    """Orphaned nodes are read-only until template/schema is fixed."""
+    graph = ProjectGraph()
+    node = Node(blueprint_type_id="task", name="Locked Node")
+    node.metadata = {'orphaned': True}
+    graph.add_node(node)
+
+    dispatcher = CommandDispatcher(graph)
+    cmd = UpdatePropertyCommand(
+        node_id=node.id,
+        property_id='description',
+        old_value='',
+        new_value='new',
+    )
+
+    with pytest.raises(ValueError, match='Cannot edit orphaned node'):
+        dispatcher.execute(cmd)
+
+
+def test_update_property_command_rejects_orphaned_property_edits():
+    """Orphaned properties can only be deleted, not edited."""
+    graph = ProjectGraph()
+    node = Node(blueprint_type_id="task", name="Node")
+    node.properties = {'legacy_field': 'old'}
+    node.metadata = {'orphaned_properties': {'legacy_field': 'old'}}
+    graph.add_node(node)
+
+    dispatcher = CommandDispatcher(graph)
+    cmd = UpdatePropertyCommand(
+        node_id=node.id,
+        property_id='legacy_field',
+        old_value='old',
+        new_value='new',
+    )
+
+    with pytest.raises(ValueError, match="Cannot edit orphaned property"):
+        dispatcher.execute(cmd)

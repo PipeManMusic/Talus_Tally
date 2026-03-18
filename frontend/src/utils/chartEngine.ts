@@ -14,11 +14,18 @@ function toGroupName(value: unknown): string {
   if (value === null || value === undefined) {
     return 'Unassigned';
   }
-  if (Array.isArray(value)) {
-    return value.length > 0 ? value.join(', ') : 'Unassigned';
-  }
   const asString = String(value).trim();
   return asString.length > 0 ? asString : 'Unassigned';
+}
+
+function toGroupNames(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    if (value.length === 0) {
+      return ['Unassigned'];
+    }
+    return value.map((item) => toGroupName(item));
+  }
+  return [toGroupName(value)];
 }
 
 function toNumber(value: unknown): number {
@@ -41,16 +48,35 @@ export function aggregateChartData(
   aggregationMode: ChartAggregationMode = 'sum',
 ): ChartAggregatePoint[] {
   const totals = new Map<string, { sum: number; count: number }>();
+  const nodeById = new Map<string, any>();
 
   nodes.forEach((node) => {
-    const groupValue = toGroupName(node?.properties?.[xAxisProp]);
+    if (node?.id) {
+      nodeById.set(String(node.id), node);
+    }
+  });
+
+  nodes.forEach((node) => {
     const nextValue = yAxisProp === '_count'
       ? 1
       : toNumber(node?.properties?.[yAxisProp]);
-    const existing = totals.get(groupValue) ?? { sum: 0, count: 0 };
-    existing.sum += nextValue;
-    existing.count += 1;
-    totals.set(groupValue, existing);
+
+    const rawGroups = toGroupNames(node?.properties?.[xAxisProp]);
+    rawGroups.forEach((rawGroup) => {
+      let groupValue = rawGroup;
+
+      if (xAxisProp === 'assigned_to' && rawGroup !== 'Unassigned') {
+        const assignedNode = nodeById.get(rawGroup);
+        const assignedName = String(assignedNode?.name ?? '').trim();
+        const assignedEmail = String(assignedNode?.properties?.email ?? '').trim();
+        groupValue = assignedName || assignedEmail || rawGroup;
+      }
+
+      const existing = totals.get(groupValue) ?? { sum: 0, count: 0 };
+      existing.sum += nextValue;
+      existing.count += 1;
+      totals.set(groupValue, existing);
+    });
   });
 
   return Array.from(totals.entries())
@@ -67,7 +93,8 @@ export function aggregateChartData(
 }
 
 export function getAvailableProperties(nodes: any[]): AvailableChartProperties {
-  const stats = new Map<string, { seen: number; numericVotes: number; stringVotes: number }>();
+  const stringKeys = new Set<string>();
+  const numberKeys = new Set<string>();
 
   nodes.forEach((node) => {
     const properties = node?.properties;
@@ -76,42 +103,40 @@ export function getAvailableProperties(nodes: any[]): AvailableChartProperties {
     }
 
     Object.entries(properties).forEach(([key, rawValue]) => {
-      const current = stats.get(key) ?? { seen: 0, numericVotes: 0, stringVotes: 0 };
-      current.seen += 1;
-
       if (typeof rawValue === 'number' && Number.isFinite(rawValue)) {
-        current.numericVotes += 1;
-      } else if (typeof rawValue === 'string') {
+        numberKeys.add(key);
+        return;
+      }
+
+      if (typeof rawValue === 'string') {
         const trimmed = rawValue.trim();
         if (trimmed.length > 0) {
           const numericCandidate = Number(trimmed.replace(/,/g, ''));
           if (Number.isFinite(numericCandidate)) {
-            current.numericVotes += 1;
+            numberKeys.add(key);
           } else {
-            current.stringVotes += 1;
+            stringKeys.add(key);
           }
         }
-      } else if (typeof rawValue === 'boolean') {
-        current.stringVotes += 1;
+        return;
       }
 
-      stats.set(key, current);
+      if (Array.isArray(rawValue)) {
+        const nonEmpty = rawValue.filter((item) => item !== null && item !== undefined && String(item).trim() !== '');
+        if (nonEmpty.length > 0 && nonEmpty.every((item) => typeof item === 'string')) {
+          stringKeys.add(key);
+        }
+        return;
+      }
+
+      if (typeof rawValue === 'boolean') {
+        stringKeys.add(key);
+      }
     });
   });
 
-  const strings: string[] = [];
-  const numbers: string[] = [];
-
-  stats.forEach((value, key) => {
-    if (value.numericVotes > 0) {
-      numbers.push(key);
-    }
-
-    // Keep sparse fields available for grouping even when most values are empty/null.
-    if (value.stringVotes > 0 || (value.numericVotes === 0 && value.stringVotes === 0 && value.seen > 0)) {
-      strings.push(key);
-    }
-  });
+  const strings = Array.from(stringKeys);
+  const numbers = Array.from(numberKeys);
 
   strings.sort((a, b) => a.localeCompare(b));
   numbers.sort((a, b) => a.localeCompare(b));

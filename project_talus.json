@@ -30,7 +30,7 @@
         ],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "hexagon",
         "schema_color": "#6366f1",
         "allowed_children": [
@@ -59,7 +59,7 @@
         ],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#8b5cf6",
         "allowed_children": [
@@ -72,10 +72,17 @@
         "type": "episode",
         "properties": {
           "name": "Intro",
+          "actual_hours": "",
+          "agile_status": "To Do",
+          "assigned_to": [
+            "8d655fac-ca83-4374-bf94-732984f3a853"
+          ],
           "description": "",
-          "end_date": "2026-03-27",
+          "end_date": "",
           "episode_number": 1,
-          "start_date": "2026-03-12",
+          "estimated_hours": "",
+          "manual_allocations": "[object Object]",
+          "start_date": "",
           "status": "3094f28b-3fc3-2667-5ae1-933b041d78ed",
           "synopsis": "The who what where and why of Project Talus"
         },
@@ -85,7 +92,7 @@
         ],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "video-camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
@@ -109,7 +116,7 @@
         ],
         "indicator_id": "filled",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -128,7 +135,7 @@
         "children": [],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "camera",
+        "icon_id": null,
         "allowed_children": []
       },
       {
@@ -143,7 +150,7 @@
         ],
         "indicator_id": "filled",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -164,7 +171,7 @@
         "children": [],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "clipboard-document-list",
+        "icon_id": null,
         "allowed_children": []
       },
       {
@@ -172,8 +179,15 @@
         "type": "episode",
         "properties": {
           "name": "Diagnostics",
+          "actual_hours": "",
+          "agile_status": "To Do",
+          "assigned_to": [
+            "8d655fac-ca83-4374-bf94-732984f3a853"
+          ],
           "description": "[SCENE]Studio\n[HOOK]Have you ever wondered how to make sure your vintage car purchase is ready to be a reliable daily driver and won't leave you on the side of the road with a tow truck bill or worse? Then stay tuned for Project Talus\n[VISUAL]Intro clip\n",
           "episode_number": 2,
+          "estimated_hours": "",
+          "manual_allocations": "",
           "status": "3094f28b-3fc3-2667-5ae1-933b041d78ed"
         },
         "children": [
@@ -219,7 +233,7 @@
         ],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "video-camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
@@ -246,7 +260,7 @@
         ],
         "indicator_id": "filled",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -264,7 +278,7 @@
         "children": [],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "camera",
+        "icon_id": null,
         "allowed_children": []
       },
       {
@@ -280,7 +294,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -300,7 +314,7 @@
         "children": [],
         "indicator_id": "filled",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -319,7 +333,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -338,7 +352,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -357,7 +371,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -377,7 +391,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -397,7 +411,7 @@
         "children": [],
         "indicator_id": "filled",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -417,7 +431,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -437,7 +451,7 @@
         "children": [],
         "indicator_id": "filled",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -457,7 +471,7 @@
         "children": [],
         "indicator_id": "filled",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -477,7 +491,7 @@
         "children": [],
         "indicator_id": "filled",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -497,7 +511,7 @@
         "children": [],
         "indicator_id": "filled",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -517,7 +531,7 @@
         "children": [],
         "indicator_id": "filled",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -537,7 +551,7 @@
         "children": [],
         "indicator_id": "filled",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -558,7 +572,7 @@
         ],
         "indicator_id": "filled",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -577,7 +591,7 @@
         "children": [],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "cog",
+        "icon_id": null,
         "allowed_children": []
       },
       {
@@ -592,7 +606,7 @@
         ],
         "indicator_id": "filled",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -610,7 +624,7 @@
         "children": [],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "cog",
+        "icon_id": null,
         "allowed_children": []
       },
       {
@@ -625,7 +639,7 @@
         ],
         "indicator_id": "filled",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -643,7 +657,7 @@
         "children": [],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "cog",
+        "icon_id": null,
         "allowed_children": []
       },
       {
@@ -658,7 +672,7 @@
         ],
         "indicator_id": "filled",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -676,7 +690,7 @@
         "children": [],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "cog",
+        "icon_id": null,
         "allowed_children": []
       },
       {
@@ -690,7 +704,7 @@
         "children": [],
         "indicator_id": "filled",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -710,7 +724,7 @@
         "children": [],
         "indicator_id": "filled",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -730,7 +744,7 @@
         "children": [],
         "indicator_id": "filled",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -750,7 +764,7 @@
         "children": [],
         "indicator_id": "filled",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -770,7 +784,7 @@
         "children": [],
         "indicator_id": "filled",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -790,7 +804,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -809,7 +823,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -828,7 +842,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -847,7 +861,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -872,7 +886,7 @@
         ],
         "indicator_id": "filled",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -891,7 +905,7 @@
         "children": [],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "camera",
+        "icon_id": null,
         "allowed_children": []
       },
       {
@@ -903,7 +917,7 @@
         "children": [],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "camera",
+        "icon_id": null,
         "allowed_children": []
       },
       {
@@ -916,7 +930,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -935,7 +949,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -954,7 +968,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -973,7 +987,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -992,7 +1006,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -1011,7 +1025,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -1030,7 +1044,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -1049,7 +1063,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -1069,7 +1083,7 @@
         "children": [],
         "indicator_id": "filled",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -1089,7 +1103,7 @@
         "children": [],
         "indicator_id": "filled",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -1116,7 +1130,7 @@
         ],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "video-camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
@@ -1141,7 +1155,7 @@
         ],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -1159,7 +1173,7 @@
         "children": [],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "camera",
+        "icon_id": null,
         "allowed_children": []
       },
       {
@@ -1173,7 +1187,7 @@
         "children": [],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "cog",
+        "icon_id": null,
         "allowed_children": []
       },
       {
@@ -1188,7 +1202,7 @@
         ],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -1209,7 +1223,7 @@
         "children": [],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "cog",
+        "icon_id": null,
         "allowed_children": []
       },
       {
@@ -1225,7 +1239,7 @@
         ],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -1244,7 +1258,7 @@
         "children": [],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "cog",
+        "icon_id": null,
         "allowed_children": []
       },
       {
@@ -1257,7 +1271,7 @@
         "children": [],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "cog",
+        "icon_id": null,
         "allowed_children": []
       },
       {
@@ -1273,7 +1287,7 @@
         ],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -1292,7 +1306,7 @@
         "children": [],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "cog",
+        "icon_id": null,
         "allowed_children": []
       },
       {
@@ -1305,7 +1319,7 @@
         "children": [],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "cog",
+        "icon_id": null,
         "allowed_children": []
       },
       {
@@ -1318,7 +1332,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -1338,7 +1352,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "video-camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
@@ -1361,7 +1375,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "video-camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
@@ -1384,7 +1398,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "video-camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
@@ -1407,7 +1421,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "video-camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
@@ -1424,13 +1438,22 @@
         "type": "episode",
         "properties": {
           "name": "Interior",
+          "actual_hours": "",
+          "agile_status": "To Do",
+          "assigned_to": [
+            "8d655fac-ca83-4374-bf94-732984f3a853"
+          ],
+          "end_date": null,
           "episode_number": 8,
+          "estimated_hours": "",
+          "manual_allocations": null,
+          "start_date": null,
           "status": "3094f28b-3fc3-2667-5ae1-933b041d78ed"
         },
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "video-camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
@@ -1453,7 +1476,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "video-camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
@@ -1484,7 +1507,7 @@
         ],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#8b5cf6",
         "allowed_children": [
@@ -1502,7 +1525,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "video-camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
@@ -1524,7 +1547,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "video-camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
@@ -1546,7 +1569,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "video-camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
@@ -1568,7 +1591,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "video-camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
@@ -1590,7 +1613,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "video-camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
@@ -1612,7 +1635,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "video-camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
@@ -1634,7 +1657,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "video-camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
@@ -1656,7 +1679,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "video-camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
@@ -1677,17 +1700,19 @@
         "children": [
           "0f71cdf1-f7b1-4ce9-bf97-dc55b20eb208",
           "82584abf-2b5c-45f1-80c7-34e9d508f69c",
-          "141251af-850d-4868-a75a-16bd0afc90a6"
+          "141251af-850d-4868-a75a-16bd0afc90a6",
+          "d593c50d-31dd-43bd-bc8a-788e2416bfc3"
         ],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "archive-box",
+        "icon_id": null,
         "schema_shape": "hexagon",
         "schema_color": "#a78bfa",
         "allowed_children": [
           "camera_gear_inventory",
           "car_parts_inventory",
-          "tools_inventory"
+          "tools_inventory",
+          "personnel_assets"
         ]
       },
       {
@@ -1703,7 +1728,7 @@
         ],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "camera",
+        "icon_id": null,
         "schema_shape": "rounded",
         "schema_color": "#60a5fa",
         "allowed_children": [
@@ -1726,7 +1751,7 @@
         ],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#3b82f6",
         "allowed_children": [
@@ -1745,7 +1770,7 @@
         "children": [],
         "indicator_id": "available",
         "indicator_set": "status",
-        "icon_id": "camera",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#0ea5e9",
         "allowed_children": []
@@ -1762,7 +1787,7 @@
         "children": [],
         "indicator_id": "available",
         "indicator_set": "status",
-        "icon_id": "camera",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#0ea5e9",
         "allowed_children": []
@@ -1779,7 +1804,7 @@
         "children": [],
         "indicator_id": "available",
         "indicator_set": "status",
-        "icon_id": "camera",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#0ea5e9",
         "allowed_children": []
@@ -1795,7 +1820,7 @@
         "children": [],
         "indicator_id": "available",
         "indicator_set": "status",
-        "icon_id": "camera",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#0ea5e9",
         "allowed_children": []
@@ -1811,7 +1836,7 @@
         "children": [],
         "indicator_id": "available",
         "indicator_set": "status",
-        "icon_id": "camera",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#0ea5e9",
         "allowed_children": []
@@ -1827,7 +1852,7 @@
         "children": [],
         "indicator_id": "available",
         "indicator_set": "status",
-        "icon_id": "camera",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#0ea5e9",
         "allowed_children": []
@@ -1841,7 +1866,7 @@
         "children": [],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#3b82f6",
         "allowed_children": [
@@ -1857,7 +1882,7 @@
         "children": [],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#3b82f6",
         "allowed_children": [
@@ -1890,7 +1915,7 @@
         ],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "hexagon",
         "schema_color": "#ef4444",
         "allowed_children": [
@@ -1916,7 +1941,7 @@
         ],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "rounded",
         "schema_color": "#f87171",
         "allowed_children": [
@@ -1940,7 +1965,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -1961,7 +1986,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -1978,7 +2003,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -1994,7 +2019,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2011,7 +2036,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2027,7 +2052,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2043,7 +2068,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2059,7 +2084,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2075,7 +2100,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2093,7 +2118,7 @@
         ],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "rounded",
         "schema_color": "#f87171",
         "allowed_children": [
@@ -2117,7 +2142,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2139,7 +2164,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2160,7 +2185,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2177,7 +2202,7 @@
         ],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "rounded",
         "schema_color": "#f87171",
         "allowed_children": [
@@ -2201,7 +2226,7 @@
         "children": [],
         "indicator_id": "filled",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2223,7 +2248,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2246,7 +2271,7 @@
         ],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "rounded",
         "schema_color": "#f87171",
         "allowed_children": [
@@ -2269,7 +2294,7 @@
         "children": [],
         "indicator_id": "filled",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2291,7 +2316,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2312,7 +2337,7 @@
         "children": [],
         "indicator_id": "filled",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2333,7 +2358,7 @@
         "children": [],
         "indicator_id": "filled",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2354,7 +2379,7 @@
         "children": [],
         "indicator_id": "filled",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2376,7 +2401,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2398,7 +2423,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2419,7 +2444,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2452,7 +2477,7 @@
         ],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "rounded",
         "schema_color": "#f87171",
         "allowed_children": [
@@ -2475,7 +2500,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2496,7 +2521,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2517,7 +2542,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2538,7 +2563,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2559,7 +2584,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2578,7 +2603,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2597,7 +2622,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2616,7 +2641,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2637,7 +2662,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2658,7 +2683,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2679,7 +2704,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2701,7 +2726,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2723,7 +2748,7 @@
         "children": [],
         "indicator_id": "filled",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2745,7 +2770,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2766,7 +2791,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2787,7 +2812,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2809,7 +2834,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2831,7 +2856,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2848,7 +2873,7 @@
         ],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "rounded",
         "schema_color": "#f87171",
         "allowed_children": [
@@ -2872,7 +2897,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2894,7 +2919,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2924,7 +2949,7 @@
         ],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "rounded",
         "schema_color": "#f87171",
         "allowed_children": [
@@ -2948,7 +2973,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2970,7 +2995,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -2992,7 +3017,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3014,7 +3039,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3036,7 +3061,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3058,7 +3083,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3080,7 +3105,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3102,7 +3127,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3124,7 +3149,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3146,7 +3171,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3168,7 +3193,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3190,7 +3215,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3212,7 +3237,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3234,7 +3259,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3256,7 +3281,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3281,7 +3306,7 @@
         ],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "rounded",
         "schema_color": "#f87171",
         "allowed_children": [
@@ -3305,7 +3330,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3325,7 +3350,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3349,7 +3374,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3371,7 +3396,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3393,7 +3418,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3415,7 +3440,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3438,7 +3463,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3461,7 +3486,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3483,7 +3508,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3502,7 +3527,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3536,7 +3561,7 @@
         ],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "rounded",
         "schema_color": "#f87171",
         "allowed_children": [
@@ -3561,7 +3586,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3583,7 +3608,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3605,7 +3630,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3627,7 +3652,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3649,7 +3674,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3671,7 +3696,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3693,7 +3718,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3716,7 +3741,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3738,7 +3763,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3760,7 +3785,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3782,7 +3807,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3804,7 +3829,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3826,7 +3851,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3848,7 +3873,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3870,7 +3895,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3892,7 +3917,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3914,7 +3939,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3936,7 +3961,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3958,7 +3983,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -3974,7 +3999,7 @@
         ],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "rounded",
         "schema_color": "#f87171",
         "allowed_children": [
@@ -3996,7 +4021,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -4012,7 +4037,7 @@
         ],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "rounded",
         "schema_color": "#f87171",
         "allowed_children": [
@@ -4033,7 +4058,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -4049,7 +4074,7 @@
         ],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "rounded",
         "schema_color": "#f87171",
         "allowed_children": [
@@ -4070,7 +4095,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -4092,7 +4117,7 @@
         ],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "rounded",
         "schema_color": "#f87171",
         "allowed_children": [
@@ -4116,7 +4141,7 @@
         "children": [],
         "indicator_id": "filled",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -4137,7 +4162,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -4158,7 +4183,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -4181,7 +4206,7 @@
         "children": [],
         "indicator_id": "filled",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -4203,7 +4228,7 @@
         "children": [],
         "indicator_id": "filled",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -4225,7 +4250,7 @@
         "children": [],
         "indicator_id": "filled",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -4247,7 +4272,7 @@
         "children": [],
         "indicator_id": "filled",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -4269,7 +4294,7 @@
         ],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "rounded",
         "schema_color": "#f87171",
         "allowed_children": [
@@ -4293,7 +4318,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -4314,7 +4339,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -4336,7 +4361,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -4357,7 +4382,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -4378,7 +4403,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -4399,7 +4424,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -4420,7 +4445,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -4439,7 +4464,7 @@
         ],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "rounded",
         "schema_color": "#f87171",
         "allowed_children": [
@@ -4462,7 +4487,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -4484,7 +4509,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -4506,7 +4531,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -4528,7 +4553,7 @@
         "children": [],
         "indicator_id": "partial",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -4545,7 +4570,7 @@
         ],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "rounded",
         "schema_color": "#f87171",
         "allowed_children": [
@@ -4567,7 +4592,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -4586,7 +4611,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#fb7185",
         "allowed_children": []
@@ -4603,7 +4628,7 @@
         ],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "hexagon",
         "schema_color": "#84cc16",
         "allowed_children": [
@@ -4630,7 +4655,7 @@
         ],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "rounded",
         "schema_color": "#bfdbfe",
         "allowed_children": [
@@ -4651,7 +4676,7 @@
         "children": [],
         "indicator_id": "available",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#86efac",
         "allowed_children": []
@@ -4670,7 +4695,7 @@
         "children": [],
         "indicator_id": "available",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#86efac",
         "allowed_children": []
@@ -4690,7 +4715,7 @@
         "children": [],
         "indicator_id": "available",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#86efac",
         "allowed_children": []
@@ -4709,7 +4734,7 @@
         "children": [],
         "indicator_id": "available",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#86efac",
         "allowed_children": []
@@ -4728,7 +4753,7 @@
         "children": [],
         "indicator_id": "available",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#86efac",
         "allowed_children": []
@@ -4748,7 +4773,7 @@
         "children": [],
         "indicator_id": "available",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#86efac",
         "allowed_children": []
@@ -4767,7 +4792,7 @@
         "children": [],
         "indicator_id": "available",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#86efac",
         "allowed_children": []
@@ -4787,7 +4812,7 @@
         "children": [],
         "indicator_id": "available",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#86efac",
         "allowed_children": []
@@ -4806,7 +4831,7 @@
         "children": [],
         "indicator_id": "available",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#86efac",
         "allowed_children": []
@@ -4826,7 +4851,7 @@
         "children": [],
         "indicator_id": "available",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#86efac",
         "allowed_children": []
@@ -4848,7 +4873,7 @@
         ],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "rounded",
         "schema_color": "#bfdbfe",
         "allowed_children": [
@@ -4871,7 +4896,7 @@
         "children": [],
         "indicator_id": "available",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#86efac",
         "allowed_children": []
@@ -4892,7 +4917,7 @@
         "children": [],
         "indicator_id": "available",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#86efac",
         "allowed_children": []
@@ -4913,7 +4938,7 @@
         "children": [],
         "indicator_id": "available",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#86efac",
         "allowed_children": []
@@ -4933,7 +4958,7 @@
         "children": [],
         "indicator_id": "available",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#86efac",
         "allowed_children": []
@@ -4955,7 +4980,7 @@
         "children": [],
         "indicator_id": "available",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#86efac",
         "allowed_children": []
@@ -4976,7 +5001,7 @@
         "children": [],
         "indicator_id": "available",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#86efac",
         "allowed_children": []
@@ -4996,9 +5021,57 @@
         "children": [],
         "indicator_id": "available",
         "indicator_set": "status",
-        "icon_id": "cog",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#86efac",
+        "allowed_children": []
+      },
+      {
+        "id": "d593c50d-31dd-43bd-bc8a-788e2416bfc3",
+        "type": "personnel_assets",
+        "properties": {
+          "name": "Human Resources"
+        },
+        "children": [
+          "8d655fac-ca83-4374-bf94-732984f3a853"
+        ],
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_shape": "rounded",
+        "schema_color": "#60a5fa",
+        "allowed_children": [
+          "person"
+        ]
+      },
+      {
+        "id": "8d655fac-ca83-4374-bf94-732984f3a853",
+        "type": "person",
+        "properties": {
+          "name": "Daniel Worth",
+          "capacity_friday": 0.5,
+          "capacity_monday": 0.5,
+          "capacity_saturday": 8,
+          "capacity_sunday": 8,
+          "capacity_thursday": 0.5,
+          "capacity_tuesday": 0.5,
+          "capacity_wednesday": 0.5,
+          "email": "pipemanmusic@gmail.com",
+          "hourly_rate_friday": "",
+          "hourly_rate_monday": "",
+          "hourly_rate_saturday": "",
+          "hourly_rate_sunday": "",
+          "hourly_rate_thursday": "",
+          "hourly_rate_tuesday": "",
+          "hourly_rate_wednesday": "",
+          "system_role": "Manager"
+        },
+        "children": [],
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_shape": "circle",
+        "schema_color": "#3b82f6",
         "allowed_children": []
       },
       {
@@ -5019,7 +5092,7 @@
         ],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#8b5cf6",
         "allowed_children": [
@@ -5038,7 +5111,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "video-camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
@@ -5060,7 +5133,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "video-camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
@@ -5082,7 +5155,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "video-camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
@@ -5104,7 +5177,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "video-camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
@@ -5126,7 +5199,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "video-camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
@@ -5148,7 +5221,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "video-camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
@@ -5170,7 +5243,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "video-camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
@@ -5195,7 +5268,7 @@
         ],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#8b5cf6",
         "allowed_children": [
@@ -5215,7 +5288,7 @@
         ],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "video-camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
@@ -5237,7 +5310,7 @@
         "children": [],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "cog",
+        "icon_id": null,
         "allowed_children": []
       },
       {
@@ -5254,7 +5327,7 @@
         ],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "video-camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
@@ -5276,7 +5349,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -5295,7 +5368,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -5314,7 +5387,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
@@ -5338,7 +5411,7 @@
         ],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#8b5cf6",
         "allowed_children": [
@@ -5356,7 +5429,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "video-camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
@@ -5378,7 +5451,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "video-camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
@@ -5400,7 +5473,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "video-camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
@@ -5422,7 +5495,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "video-camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
@@ -5446,7 +5519,7 @@
         ],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#8b5cf6",
         "allowed_children": [
@@ -5464,7 +5537,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "video-camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
@@ -5486,7 +5559,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#8b5cf6",
         "allowed_children": [
@@ -5506,7 +5579,7 @@
         ],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#8b5cf6",
         "allowed_children": [
@@ -5526,7 +5599,7 @@
         ],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "video-camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
@@ -5548,7 +5621,7 @@
         "children": [],
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": "cog",
+        "icon_id": null,
         "allowed_children": []
       },
       {
@@ -5561,7 +5634,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#8b5cf6",
         "allowed_children": [
@@ -5579,7 +5652,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#8b5cf6",
         "allowed_children": [
@@ -5597,7 +5670,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#8b5cf6",
         "allowed_children": [
@@ -5617,7 +5690,7 @@
         ],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "film",
+        "icon_id": null,
         "schema_shape": "circle",
         "schema_color": "#8b5cf6",
         "allowed_children": [
@@ -5635,7 +5708,7 @@
         "children": [],
         "indicator_id": "empty",
         "indicator_set": "status",
-        "icon_id": "video-camera",
+        "icon_id": null,
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
@@ -5725,7 +5798,7 @@
     "99ad04e7-9c4d-4168-8cc8-a001eab7783e": true,
     "5295e53d-c829-4469-8abf-3def09bd19f8": true,
     "12c924fd-d375-49a4-ae43-7828f9cb73bd": true,
-    "80d65e64-ef89-4b52-b87a-fcfa65e6206d": true,
+    "80d65e64-ef89-4b52-b87a-fcfa65e6206d": false,
     "4467317c-b664-45b4-afcc-41e1cc9404df": true,
     "8b7f14a7-69c8-4ad4-b4b8-072ed20b4ec6": true,
     "50077053-5b8e-42fa-9c14-b1659e86d746": true,
@@ -5735,7 +5808,7 @@
     "b74c027e-53d0-45fa-ac9c-52906da8baa6": true,
     "eabde8c2-206c-401d-be76-3f00b764ad1a": true,
     "fb04ceae-e213-462b-805e-a94fead8b824": true,
-    "0f71cdf1-f7b1-4ce9-bf97-dc55b20eb208": true,
+    "0f71cdf1-f7b1-4ce9-bf97-dc55b20eb208": false,
     "be07bc50-f298-4e9b-a7b0-9c5b5e7db4c8": true,
     "73915ba5-984d-409a-8405-fb30c07c8260": true,
     "9a789eb9-bd48-49f0-a8a9-95a47472dc39": true,
@@ -5745,7 +5818,7 @@
     "49b3f657-b698-4e67-9fec-931979b34a7a": true,
     "eec8276a-0913-44e9-af8b-d2862066c331": true,
     "cf708f0f-91c4-40ff-822f-034cf5c2b2c8": true,
-    "82584abf-2b5c-45f1-80c7-34e9d508f69c": true,
+    "82584abf-2b5c-45f1-80c7-34e9d508f69c": false,
     "05943ed2-50fa-4169-aade-ba55965950fb": true,
     "c639f7c5-a900-42d8-92c1-b052c4af2807": true,
     "318d9929-d908-4319-b908-fbeba4a8e7ff": true,
@@ -5862,7 +5935,7 @@
     "a6a6c972-0c4b-444d-9013-f33f729a701e": true,
     "2be1250e-7c5c-47f3-a93e-9258718dbe90": true,
     "0c2aeed7-bf17-4a96-922a-68bd41be7cbf": true,
-    "141251af-850d-4868-a75a-16bd0afc90a6": true,
+    "141251af-850d-4868-a75a-16bd0afc90a6": false,
     "b1fe1049-5d9e-44c4-8d25-31965d40995d": true,
     "1b7ac27b-401d-4645-a4d2-8670e8c07cce": true,
     "98fc1da2-b9fb-4ad9-a0c0-477937617e32": true,
@@ -5882,7 +5955,7 @@
     "81419774-5375-4113-b0c0-c40d81b3ec12": true,
     "9f000dc0-6bb6-4afb-ab1d-09c7ba9854b5": true,
     "57dcde39-3e80-46b4-9ecc-00a477baa234": true,
-    "80050417-1151-4cae-8431-ac5e047f58e9": true,
+    "80050417-1151-4cae-8431-ac5e047f58e9": false,
     "12054bd3-0528-42c7-b0da-282ebc1665e0": true,
     "79b90636-06fa-4d2c-a450-020d6ee6e3d1": true,
     "98892dce-57c4-4799-b3f7-81009b2b8ddf": true,
@@ -5890,29 +5963,30 @@
     "25b3658e-e54a-433a-aaa4-ab3d734227b0": true,
     "c3b68e0f-aaaf-4d37-9a8c-469eef9e4149": true,
     "947eaf8e-2b46-4fa3-90b0-4d3b929de5c4": true,
-    "a5dc3b1e-7511-465f-ac9a-be44698bd43f": true,
+    "a5dc3b1e-7511-465f-ac9a-be44698bd43f": false,
     "d83d81ec-5a38-4a2c-a27e-90256b02daa8": true,
     "19ac3489-a9fd-4121-bd0e-6b51d2e0a4ed": true,
     "f1700f82-f825-4fa3-b39a-a0243e7671ae": true,
     "be3a81d5-a4de-42cc-a610-ff2f0408a192": true,
     "437b6993-f27e-453b-8fb6-7cda0e4343df": true,
     "1fcee437-7ade-4251-855b-c64a09fea4bb": true,
-    "96b21b54-a2ca-4657-bbf6-86b5db20c3ab": true,
+    "96b21b54-a2ca-4657-bbf6-86b5db20c3ab": false,
     "43ed49db-e0e8-443e-b8d9-e1e5b9f863c4": true,
     "256d04e9-d7c8-46eb-874a-33ae15350332": true,
     "fbde829f-51a7-40b6-b5fd-2e0d9949d522": true,
     "d9a36323-51d7-42f9-bd45-fd2413a04c68": true,
-    "cfe70a3a-5e60-4ec2-8921-5f369386ac87": true,
+    "cfe70a3a-5e60-4ec2-8921-5f369386ac87": false,
     "b6d309c7-23ca-4580-9dd9-05e8375272f8": true,
     "adf08ecd-117a-48ff-a0b1-2646369c6c66": true,
-    "10662246-98d6-4f4a-b2da-914525e41c51": true,
+    "10662246-98d6-4f4a-b2da-914525e41c51": false,
     "d93b8930-899a-4955-b897-263ddf0c4b14": true,
     "c07c498c-79c4-4c66-8e6b-f4b82423599d": true,
     "bc043205-a612-46cd-a016-64f3167b6481": true,
     "f3589ed8-5310-4eed-bac4-cb8829426db0": true,
     "4f164917-dbd0-40b7-b293-5ac7347e9ff0": true,
-    "3472fd21-b7dc-4476-a727-df51f70c46b1": true,
-    "c3cad0c4-fc19-4bd3-9995-a3978886fc9c": true
+    "3472fd21-b7dc-4476-a727-df51f70c46b1": false,
+    "c3cad0c4-fc19-4bd3-9995-a3978886fc9c": true,
+    "d593c50d-31dd-43bd-bc8a-788e2416bfc3": true
   },
   "blocking_relationships": [
     {

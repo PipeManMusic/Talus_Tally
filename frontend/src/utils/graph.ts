@@ -86,6 +86,7 @@ export function normalizeGraph(graphLike: any): Graph {
             ...nestedNode.properties,
           },
           children: [],
+          metadata: nestedNode.metadata,
           indicator_id: nestedNode.indicator_id,
           indicator_set: nestedNode.indicator_set,
           icon_id: nestedNode.icon_id,

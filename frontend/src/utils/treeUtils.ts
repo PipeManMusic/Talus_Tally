@@ -7,6 +7,11 @@ export interface TreeNode {
   name: string;
   type: string;
   properties: Record<string, any>;
+  metadata?: {
+    orphaned?: boolean;
+    orphaned_properties?: Record<string, any>;
+    [key: string]: any;
+  };
   allowed_children: string[];
   children: TreeNode[];
   selected?: boolean;
@@ -40,6 +45,7 @@ export function convertNodesToTree(
       name: node.properties?.name || node.type,
       type: node.type || 'project',
       properties: node.properties || {},
+      metadata: node.metadata,
       indicator_id: node.indicator_id ?? undefined,
       indicator_set: node.indicator_set ?? undefined,
       icon_id: node.icon_id ?? undefined,

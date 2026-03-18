@@ -254,6 +254,20 @@ class UpdatePropertyCommand(Command):
         if self.graph:
             node = self.graph.get_node(self.node_id)
             if node:
+                metadata = getattr(node, 'metadata', {}) or {}
+                if metadata.get('orphaned'):
+                    raise ValueError(
+                        f"Cannot edit orphaned node {self.node_id}. "
+                        f"Fix the template or delete the orphaned data."
+                    )
+
+                orphaned_props = metadata.get('orphaned_properties', {})
+                if self.property_id in orphaned_props:
+                    raise ValueError(
+                        f"Cannot edit orphaned property '{self.property_id}' on node {self.node_id}. "
+                        f"Delete it or restore it in the template."
+                    )
+
                 # Update property in node's properties dict
                 if not hasattr(node, 'properties'):
                     node.properties = {}

@@ -64,6 +64,13 @@ interface Edge {
   to: string;
 }
 
+interface NodeData {
+  id: string;
+  label: string;
+  x: number;
+  y: number;
+}
+
 interface Props {
   sessionId: string | null;
   nodes: Record<string, NodeType>;
@@ -98,6 +105,7 @@ export function NodeBlockingEditor({ sessionId, nodes, velocityScores = {}, sele
   const [parentNodeIds, setParentNodeIds] = useState<Record<string, string | undefined>>({});
   const [iconSvgs, setIconSvgs] = useState<Record<string, string | undefined>>({});
   const [iconCacheVersion, setIconCacheVersion] = useState(0);
+  const fitToViewRef = useRef<() => void>(() => {});
 
   const typeSchemaMap = useMemo(() => {
     const map = new Map<string, { color?: string; shape?: string }>();
@@ -166,6 +174,9 @@ export function NodeBlockingEditor({ sessionId, nodes, velocityScores = {}, sele
       ? nodeSizeConfig.minScale + (nodeSizeConfig.maxScale - nodeSizeConfig.minScale) * t
       : nodeSizeConfig.maxScale - (nodeSizeConfig.maxScale - nodeSizeConfig.minScale) * t;
   }, [getEffectiveMaxDepth, nodeDepths, nodeSizeConfig.direction, nodeSizeConfig.maxScale, nodeSizeConfig.minScale]);
+
+  const MIN_CANVAS_SCALE = 0.02;
+  const MAX_CANVAS_SCALE = 20;
 
   const clampNumber = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
@@ -564,13 +575,41 @@ export function NodeBlockingEditor({ sessionId, nodes, velocityScores = {}, sele
 
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
-    // Invert so scroll up = zoom in, scroll down = zoom out
-    const zoomFactor = 1.1;
-    const newScale = e.deltaY < 0 ? scale * zoomFactor : scale / zoomFactor;
-    setScale(Math.max(0.1, Math.min(10, newScale)));
+
+    if (!svgRef.current) {
+      return;
+    }
+
+    const rect = svgRef.current.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    // Use whichever wheel axis carries the dominant scroll intent. This keeps
+    // direction stable across mice/trackpads where Shift may emit deltaX.
+    const rawDelta = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+    if (rawDelta === 0) {
+      return;
+    }
+
+    // Scroll up (negative delta) zooms in. Holding Shift doubles zoom speed.
+    const normalizedUnits = Math.abs(rawDelta) / 100;
+    const zoomPerUnit = e.shiftKey ? 1.2 : 1.1;
+    const signedExponent = rawDelta < 0 ? normalizedUnits : -normalizedUnits;
+    const scaleMultiplier = Math.pow(zoomPerUnit, signedExponent);
+    const nextScaleUnclamped = scale * scaleMultiplier;
+    const nextScale = Math.max(MIN_CANVAS_SCALE, Math.min(MAX_CANVAS_SCALE, nextScaleUnclamped));
+
+    // Keep the world-point under cursor stationary during zoom.
+    const worldX = (mouseX - pan.x) / scale;
+    const worldY = (mouseY - pan.y) / scale;
+    const nextPanX = mouseX - worldX * nextScale;
+    const nextPanY = mouseY - worldY * nextScale;
+
+    setScale(nextScale);
+    setPan({ x: nextPanX, y: nextPanY });
   };
 
-  const fitToView = () => {
+  const fitToView = useCallback(() => {
     if (nodePositions.length === 0 || !svgRef.current) return;
 
     // Calculate bounds of all nodes
@@ -594,27 +633,46 @@ export function NodeBlockingEditor({ sessionId, nodes, velocityScores = {}, sele
     const svgRect = svgRef.current.getBoundingClientRect();
     const svgWidth = svgRect.width;
     const svgHeight = svgRect.height;
+    if (svgWidth < 2 || svgHeight < 2) {
+      return;
+    }
 
     const boundsWidth = maxX - minX;
     const boundsHeight = maxY - minY;
 
-    // Add 20% padding
-    const padding = 1.2;
-    const scaleX = (svgWidth / (boundsWidth * padding));
-    const scaleY = (svgHeight / (boundsHeight * padding));
-    const newScale = Math.min(scaleX, scaleY);
+    const safeBoundsWidth = Math.max(boundsWidth, 1);
+    const safeBoundsHeight = Math.max(boundsHeight, 1);
+    const scaleX = svgWidth / safeBoundsWidth;
+    const scaleY = svgHeight / safeBoundsHeight;
+    // Slightly bias outward so boundary nodes are guaranteed visible.
+    const fitScale = Math.min(scaleX, scaleY) * 0.98;
+    const newScale = Math.max(MIN_CANVAS_SCALE, Math.min(MAX_CANVAS_SCALE, fitScale));
 
     // Center the view
     const centeredX = (svgWidth / 2) - ((minX + boundsWidth / 2) * newScale);
     const centeredY = (svgHeight / 2) - ((minY + boundsHeight / 2) * newScale);
 
-    setScale(Math.max(0.1, Math.min(10, newScale)));
+    setScale(newScale);
     setPan({ x: centeredX, y: centeredY });
-  };
+  }, [MAX_CANVAS_SCALE, MIN_CANVAS_SCALE, getNodeScale, nodePositions, nodeSizeConfig.baseHeight, nodeSizeConfig.baseWidth]);
+
+  useEffect(() => {
+    fitToViewRef.current = fitToView;
+  }, [fitToView]);
 
   useEffect(() => {
     if (fitToViewSignal === undefined) return;
-    fitToView();
+
+    // Run immediately and retry once after the frame/paint so toolbar clicks that
+    // happen during layout changes still settle on correct bounds.
+    fitToViewRef.current();
+    const rafId = window.requestAnimationFrame(() => fitToViewRef.current());
+    const timeoutId = window.setTimeout(() => fitToViewRef.current(), 80);
+
+    return () => {
+      window.cancelAnimationFrame(rafId);
+      window.clearTimeout(timeoutId);
+    };
   }, [fitToViewSignal]);
 
   if (!sessionId) {
@@ -695,37 +753,78 @@ export function NodeBlockingEditor({ sessionId, nodes, velocityScores = {}, sele
 
           {/* Draw edges */}
           <g transform={`translate(${pan.x}, ${pan.y}) scale(${scale})`}>
-            {/* Family connection wires (parent-child) */}
-            {nodePositions.map((nodeData) => {
-              const parentId = parentNodeIds[nodeData.id] ?? nodes[nodeData.id]?.parent_id;
-              if (!parentId) return null;
+            {/* Family connection wires — top-down genogram brackets */}
+            {(() => {
+              // Build parent → [children] map from current positions.
+              const parentToChildren = new Map<string, string[]>();
+              nodePositions.forEach((nodeData) => {
+                const pid = parentNodeIds[nodeData.id] ?? nodes[nodeData.id]?.parent_id;
+                if (!pid || !nodePositions.find(n => n.id === pid)) return;
+                if (!parentToChildren.has(pid)) parentToChildren.set(pid, []);
+                parentToChildren.get(pid)!.push(nodeData.id);
+              });
 
-              const parentNode = nodePositions.find(n => n.id === parentId);
-              if (!parentNode) return null;
+              const lineStyle = {
+                stroke: '#4b5563' as const,
+                strokeWidth: 1.5,
+                opacity: 0.8,
+                pointerEvents: 'none' as const,
+              };
+              const result: React.ReactElement[] = [];
 
-              const parentSize = getNodeSize(parentNode.id);
-              const childSize = getNodeSize(nodeData.id);
+              parentToChildren.forEach((childIds, pid) => {
+                const parentPos = nodePositions.find(n => n.id === pid);
+                if (!parentPos) return;
 
-              const x1 = parentNode.x + parentSize.width;
-              const y1 = parentNode.y + parentSize.height / 2;
-              const x2 = nodeData.x;
-              const y2 = nodeData.y + childSize.height / 2;
+                const parentSize = getNodeSize(pid);
+                // Parent's bottom-center.
+                const pMidX = parentPos.x + parentSize.width / 2;
+                const pBottom = parentPos.y + parentSize.height;
 
-              return (
-                <line
-                  key={`family-${nodeData.id}`}
-                  x1={x1}
-                  y1={y1}
-                  x2={x2}
-                  y2={y2}
-                  stroke="#6b7280"
-                  strokeWidth="1"
-                  strokeDasharray="3,3"
-                  opacity="0.5"
-                  pointerEvents="none"
-                />
-              );
-            })}
+                const children = childIds
+                  .map(cid => {
+                    const cp = nodePositions.find(n => n.id === cid);
+                    if (!cp) return null;
+                    const cs = getNodeSize(cid);
+                    return { id: cid, midX: cp.x + cs.width / 2, top: cp.y };
+                  })
+                  .filter((c): c is { id: string; midX: number; top: number } => c !== null);
+
+                if (children.length === 0) return;
+
+                // Elbow Y is the midpoint between parent bottom and children tops.
+                const childTop = Math.min(...children.map(c => c.top));
+                const elbowY = (pBottom + childTop) / 2;
+
+                // 1 — Vertical arm from parent bottom down to elbow Y.
+                result.push(
+                  <line key={`fa-${pid}`} x1={pMidX} y1={pBottom} x2={pMidX} y2={elbowY} {...lineStyle} />,
+                );
+
+                // 2 — Horizontal bus at elbow Y spanning all children centers.
+                const minChildX = Math.min(...children.map(c => c.midX));
+                const maxChildX = Math.max(...children.map(c => c.midX));
+                result.push(
+                  <line
+                    key={`fh-${pid}`}
+                    x1={Math.min(pMidX, minChildX)}
+                    y1={elbowY}
+                    x2={Math.max(pMidX, maxChildX)}
+                    y2={elbowY}
+                    {...lineStyle}
+                  />,
+                );
+
+                // 3 — Vertical branch from elbow Y down to each child's top-center.
+                children.forEach(c => {
+                  result.push(
+                    <line key={`fb-${c.id}`} x1={c.midX} y1={elbowY} x2={c.midX} y2={c.top} {...lineStyle} />,
+                  );
+                });
+              });
+
+              return result;
+            })()}
 
             {/* Blocking relationship wires */}
             {edges.map((edge) => {
@@ -749,15 +848,21 @@ export function NodeBlockingEditor({ sessionId, nodes, velocityScores = {}, sele
               const fromSize = getNodeSize(edge.from);
               const toSize = getNodeSize(edge.to);
 
-              const x1 = fromNode.x + fromSize.width;
+              // Blocking edges connect side-to-side so they stay visually distinct from
+              // the vertical family tree lines. Pick left or right edge based on relative position.
+              const fromCenterX = fromNode.x + fromSize.width / 2;
+              const toCenterX = toNode.x + toSize.width / 2;
+              const x1 = fromCenterX <= toCenterX ? fromNode.x + fromSize.width : fromNode.x;
               const y1 = fromNode.y + fromSize.height / 2;
-              const x2 = toNode.x;
+              const x2 = fromCenterX <= toCenterX ? toNode.x : toNode.x + toSize.width;
               const y2 = toNode.y + toSize.height / 2;
 
-              // Quadratic bezier for curve
-              const controlX = (x1 + x2) / 2;
-              const controlY = (y1 + y2) / 2 - 40;
-              const pathData = `M ${x1} ${y1} Q ${controlX} ${controlY} ${x2} ${y2}`;
+              // Cubic bezier — bulge outward so lines don't cross the family wires.
+              const dx = Math.abs(x2 - x1);
+              const bulge = Math.max(dx * 0.5, 60);
+              const cx1 = x1 + (x1 <= x2 ? bulge : -bulge);
+              const cx2 = x2 + (x1 <= x2 ? -bulge : bulge);
+              const pathData = `M ${x1} ${y1} C ${cx1} ${y1} ${cx2} ${y2} ${x2} ${y2}`;
 
               return (
                 <g key={edgeId}>
@@ -819,6 +924,11 @@ export function NodeBlockingEditor({ sessionId, nodes, velocityScores = {}, sele
               const typeSchema = typeSchemaMap.get(node.type);
               const resolvedColor = node.schema_color ?? typeSchema?.color;
               const shapeType = getShapeType(node.schema_shape ?? typeSchema?.shape);
+              const orphanedReason = typeof (node as any).metadata?.orphaned_reason === 'string'
+                ? ((node as any).metadata.orphaned_reason as string).toLowerCase()
+                : '';
+              const isOrphaned = Boolean((node as any).metadata?.orphaned)
+                && (orphanedReason.includes('not found in current template') || orphanedReason.includes('removed from template'));
               const neutralFill = resolvedColor
                 ? mixHexColors(resolvedColor, '#000000', 0.45)
                 : '#0f172a';
@@ -829,6 +939,8 @@ export function NodeBlockingEditor({ sessionId, nodes, velocityScores = {}, sele
               const isSelected = selectedNodeId === nodeData.id;
               const strokeColor = isSelected || hoveredNode === nodeData.id || drawingWire?.from === nodeData.id
                 ? '#3b82f6'
+                : isOrphaned
+                  ? '#ef4444'
                 : resolvedColor
                   ? mixHexColors(resolvedColor, '#000000', 0.6)
                   : '#4b5563';
@@ -940,7 +1052,7 @@ export function NodeBlockingEditor({ sessionId, nodes, velocityScores = {}, sele
               const handleRadius = Math.max(5, Math.min(10, nodeSize.height * 0.08));
 
               return (
-                <g key={nodeData.id} transform={`translate(${nodeData.x}, ${nodeData.y})`} opacity={isGhosted ? 0.28 : 1}>
+                <g key={nodeData.id} transform={`translate(${nodeData.x}, ${nodeData.y})`} opacity={isGhosted ? 0.28 : isOrphaned ? 0.78 : 1}>
                   {/* Main node body */}
                   {showBaseShape && renderBaseShape()}
                   {renderNodeShape()}
@@ -994,6 +1106,20 @@ export function NodeBlockingEditor({ sessionId, nodes, velocityScores = {}, sele
                       fill="#ffffff"
                     >
                       ← {parentName.length > 14 ? parentName.substring(0, 12) + '...' : parentName}
+                    </text>
+                  )}
+
+                  {isOrphaned && (
+                    <text
+                      x={nodeSize.width - 10}
+                      y={14}
+                      textAnchor="middle"
+                      fontSize="12"
+                      fontWeight="700"
+                      className="pointer-events-none select-none"
+                      fill="#fca5a5"
+                    >
+                      ⚠
                     </text>
                   )}
 

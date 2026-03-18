@@ -18,15 +18,77 @@ export function DebugPanel({ treeNodes, expandedMap, logs = [], totalLogs }: Deb
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
 
-  const formatLogsForCopy = () => {
-    if (logs.length === 0) return 'No logs captured yet.';
-    return logs
+  const formatEntriesForCopy = (entries: DebugLogEntry[]) => {
+    if (entries.length === 0) return 'No logs captured yet.';
+    return entries
       .map((entry) => `[${entry.time}] ${entry.level.toUpperCase()} ${entry.message}`)
       .join('\n');
   };
 
+  const getLastTemplateDeleteTraceEntries = () => {
+    const prefix = '[TemplateEditor::DELETE]';
+    const requestMarker = `${prefix} Delete requested`;
+    const endMarkers = [
+      `${prefix} Delete API/update succeeded`,
+      `${prefix} Delete API/update failed`,
+      `${prefix} User cancelled deletion`,
+    ];
+
+    const lastRequestIndex = [...logs]
+      .map((entry, index) => ({ entry, index }))
+      .reverse()
+      .find(({ entry }) => entry.message.includes(requestMarker))?.index;
+
+    if (lastRequestIndex === undefined) {
+      return logs.filter((entry) => entry.message.includes(prefix));
+    }
+
+    let endIndex = logs.length - 1;
+    for (let i = lastRequestIndex; i < logs.length; i += 1) {
+      if (endMarkers.some((marker) => logs[i].message.includes(marker))) {
+        endIndex = i;
+        break;
+      }
+    }
+
+    return logs.slice(lastRequestIndex, endIndex + 1);
+  };
+
+  const formatLogsForCopy = () => {
+    return formatEntriesForCopy(logs);
+  };
+
+  const formatLastTemplateDeleteTraceForCopy = () => {
+    const entries = getLastTemplateDeleteTraceEntries();
+    if (entries.length === 0) {
+      return 'No TemplateEditor::DELETE logs captured yet.';
+    }
+    return formatEntriesForCopy(entries);
+  };
+
   const handleCopyLogs = async () => {
     const text = formatLogsForCopy();
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        return;
+      }
+    } catch (err) {
+      // fall back to execCommand
+    }
+
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+  };
+
+  const handleCopyTemplateDeleteTrace = async () => {
+    const text = formatLastTemplateDeleteTraceForCopy();
     try {
       if (navigator?.clipboard?.writeText) {
         await navigator.clipboard.writeText(text);
@@ -66,12 +128,21 @@ export function DebugPanel({ treeNodes, expandedMap, logs = [], totalLogs }: Deb
         <div style={{ padding: 8 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
             <div><b>Debug Logs</b></div>
-            <button
-              style={{ background: '#333', color: '#fff', border: '1px solid #555', borderRadius: 4, padding: '2px 6px', cursor: 'pointer', fontSize: 11 }}
-              onClick={handleCopyLogs}
-            >
-              Copy Logs
-            </button>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <button
+                style={{ background: '#333', color: '#fff', border: '1px solid #555', borderRadius: 4, padding: '2px 6px', cursor: 'pointer', fontSize: 11 }}
+                onClick={handleCopyTemplateDeleteTrace}
+                title="Copy only the last TemplateEditor delete trace"
+              >
+                Copy Last Delete Trace
+              </button>
+              <button
+                style={{ background: '#333', color: '#fff', border: '1px solid #555', borderRadius: 4, padding: '2px 6px', cursor: 'pointer', fontSize: 11 }}
+                onClick={handleCopyLogs}
+              >
+                Copy Logs
+              </button>
+            </div>
           </div>
           <div style={{ color: '#8ecae6', fontSize: 10, marginBottom: 4 }}>
             Showing {logs.length} of {totalLogs ?? logs.length} captured entries

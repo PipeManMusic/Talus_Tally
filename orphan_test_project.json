@@ -1,0 +1,101 @@
+{
+  "_comment": "Test fixture for orphan detection. Template: orphan_test. This project was created with a prior version of the template that included 'ot_legacy_widget' and extra task properties 'risk_level'/'sprint_estimate'. Loading this file should immediately trigger orphan detection.",
+  "graph": {
+    "id": "orphan-test-graph",
+    "template_id": "orphan_test",
+    "nodes": [
+      {
+        "id": "ot-root-0001-0000-0000-000000000001",
+        "type": "ot_root",
+        "properties": {
+          "name": "Orphan Detection Test Project",
+          "budget": "50000"
+        },
+        "children": [
+          "ot-mlst-0002-0000-0000-000000000002",
+          "ot-widg-0005-0000-0000-000000000005"
+        ],
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_shape": "hexagon",
+        "schema_color": "#6366f1",
+        "allowed_children": ["ot_milestone", "ot_task"]
+      },
+      {
+        "id": "ot-mlst-0002-0000-0000-000000000002",
+        "type": "ot_milestone",
+        "properties": {
+          "name": "Phase 1 — Foundation",
+          "status": "In Progress",
+          "target_date": "2026-04-01"
+        },
+        "children": [
+          "ot-task-0003-0000-0000-000000000003",
+          "ot-task-0004-0000-0000-000000000004"
+        ],
+        "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_shape": "circle",
+        "schema_color": "#8b5cf6",
+        "allowed_children": ["ot_task"]
+      },
+      {
+        "id": "ot-task-0003-0000-0000-000000000003",
+        "type": "ot_task",
+        "properties": {
+          "name": "Set up repo",
+          "status": "Done",
+          "assignee": "Alice",
+          "notes": "Completed ahead of schedule."
+        },
+        "children": [],
+        "indicator_id": "filled",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_shape": "circle",
+        "schema_color": "#22c55e",
+        "allowed_children": []
+      },
+      {
+        "id": "ot-task-0004-0000-0000-000000000004",
+        "type": "ot_task",
+        "properties": {
+          "name": "Spec out architecture",
+          "status": "In Progress",
+          "assignee": "Bob",
+          "notes": "Reviewing options.",
+          "risk_level": "High",
+          "sprint_estimate": "5"
+        },
+        "_comment": "ORPHANED PROPERTIES: 'risk_level' and 'sprint_estimate' are no longer in the template. These should be flagged as orphaned properties on load.",
+        "children": [],
+        "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_shape": "circle",
+        "schema_color": "#f59e0b",
+        "allowed_children": []
+      },
+      {
+        "id": "ot-widg-0005-0000-0000-000000000005",
+        "type": "ot_legacy_widget",
+        "properties": {
+          "name": "Old Widget Panel",
+          "widget_mode": "advanced",
+          "widget_version": "2.3.1",
+          "legacy_config": "auto"
+        },
+        "_comment": "ORPHANED NODE: type 'ot_legacy_widget' was removed from the template. This entire node should be flagged as orphaned and be read-only.",
+        "children": [],
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_shape": "roundedSquare",
+        "schema_color": "#ef4444",
+        "allowed_children": []
+      }
+    ]
+  }
+}

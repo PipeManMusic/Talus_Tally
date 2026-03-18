@@ -55,6 +55,14 @@ FEATURE_MACROS: Dict[str, List[Dict[str, Any]]] = {
             "system_locked": True,
             "ui_group": "Schedule",
         },
+        {
+            "id": "manual_allocations",
+            "label": "Manual Allocations",
+            "type": "object",
+            "value": {},
+            "system_locked": True,
+            "ui_group": "Schedule",
+        },
     ],
     "budgeting": [
         {

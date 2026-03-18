@@ -37,6 +37,7 @@ export const debugPanelConfig: DebugPanelConfig = {
     'File Open',
     'DEBUG',
     'TreeView',
+    'TemplateEditor::DELETE',
   ],
 
   // High-volume noise tags to suppress by default.

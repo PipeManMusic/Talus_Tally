@@ -9,6 +9,7 @@ from backend.infra.settings import (
     save_settings,
 )
 from backend.infra.template_persistence import get_templates_directory
+from backend.infra.user_data_dir import get_user_templates_dir
 
 
 def test_load_settings_migrates_legacy_template_directory(tmp_path, monkeypatch):
@@ -65,3 +66,23 @@ def test_directory_helpers_use_custom_directories_when_present(tmp_path, monkeyp
     assert get_templates_directory() == str(blueprints_dir)
     assert get_export_templates_directory() == exports_dir
     assert get_markups_directory() == markups_dir
+
+
+def test_templates_directory_uses_workspace_fallback_when_no_custom_setting(tmp_path, monkeypatch):
+    workspace_templates = tmp_path / "data" / "templates"
+    workspace_templates.mkdir(parents=True)
+
+    monkeypatch.setattr("backend.infra.settings.get_setting", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        "backend.infra.template_persistence._get_workspace_templates_dir",
+        lambda: str(workspace_templates),
+    )
+
+    assert get_templates_directory() == str(workspace_templates)
+
+
+def test_templates_directory_falls_back_to_user_dir_when_no_custom_or_workspace(monkeypatch):
+    monkeypatch.setattr("backend.infra.settings.get_setting", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr("backend.infra.template_persistence._get_workspace_templates_dir", lambda: None)
+
+    assert get_templates_directory() == str(get_user_templates_dir())

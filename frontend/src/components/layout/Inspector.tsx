@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Input } from '../ui/Input';
 import { Select } from '../ui/Select';
 import { CurrencyInput } from '../ui/CurrencyInput';
@@ -23,16 +23,22 @@ const PERSON_HOURLY_RATE_PROPERTY_IDS = new Set(
   WEEKDAY_LABELS.map((day) => `hourly_rate_${day.key}`),
 );
 
+const PERSON_OVERTIME_CAPACITY_PROPERTY_IDS = new Set(
+  WEEKDAY_LABELS.map((day) => `overtime_capacity_${day.key}`),
+);
+
 const PERSON_SPECIAL_PROPERTY_IDS = new Set([
   ...PERSON_CAPACITY_PROPERTY_IDS,
   ...PERSON_HOURLY_RATE_PROPERTY_IDS,
+  ...PERSON_OVERTIME_CAPACITY_PROPERTY_IDS,
+  'overtime_capacity',
 ]);
 
 export interface NodeProperty {
   id: string;
   name: string;
   type: 'text' | 'number' | 'select' | 'textarea' | 'currency' | 'date' | 'checkbox' | 'editor';
-  value: string | number;
+  value: string | number | boolean | string[] | null | undefined;
   options?: Array<{ value: string; label: string }>;
   required?: boolean;
   markupTokens?: MarkupToken[];
@@ -70,9 +76,11 @@ interface InspectorProps {
   nodeName?: string;
   nodeType?: string;
   properties: NodeProperty[];
-  onPropertyChange?: (propId: string, value: string | number) => void;
+  isReadOnly?: boolean;
+  readOnlyReason?: string;
+  onPropertyChange?: (propId: string, value: string | number | string[]) => void;
   linkedAsset?: LinkedAssetMetadata;
-  onLinkedAssetPropertyChange?: (propId: string, value: string | number) => void;
+  onLinkedAssetPropertyChange?: (propId: string, value: string | number | string[]) => void;
   orphanedProperties?: Record<string, string | number>;
   onOrphanedPropertyDelete?: (propKey: string) => void;
   blockedByNodes?: string[];
@@ -89,6 +97,8 @@ export function Inspector({
   nodeName,
   nodeType,
   properties,
+  isReadOnly = false,
+  readOnlyReason,
   onPropertyChange,
   linkedAsset,
   onLinkedAssetPropertyChange,
@@ -113,13 +123,112 @@ export function Inspector({
   }>({ isOpen: false, propId: '', propName: '', value: '', isLinkedAsset: false });
   const [personScheduleOpen, setPersonScheduleOpen] = useState(false);
   const [personScheduleDraft, setPersonScheduleDraft] = useState<Record<string, string>>({});
+  const [pendingAssigneeByProp, setPendingAssigneeByProp] = useState<Record<string, string>>({});
 
-  const handlePropertyChange = (propId: string, value: string | number) => {
+  const handlePropertyChange = (propId: string, value: string | number | string[]) => {
     onPropertyChange?.(propId, value);
   };
 
-  const handleLinkedAssetPropertyChange = (propId: string, value: string | number) => {
+  const handleLinkedAssetPropertyChange = (propId: string, value: string | number | string[]) => {
     onLinkedAssetPropertyChange?.(propId, value);
+  };
+
+  const parseAssignedToValue = (rawValue: unknown): string[] => {
+    if (Array.isArray(rawValue)) {
+      return rawValue
+        .map((entry) => String(entry ?? '').trim())
+        .filter((entry) => entry.length > 0);
+    }
+
+    if (typeof rawValue === 'string') {
+      const trimmed = rawValue.trim();
+      if (!trimmed) return [];
+
+      if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+        try {
+          const parsed = JSON.parse(trimmed);
+          if (Array.isArray(parsed)) {
+            return parsed
+              .map((entry) => String(entry ?? '').trim())
+              .filter((entry) => entry.length > 0);
+          }
+        } catch {
+          // fall through to csv parsing
+        }
+      }
+
+      if (trimmed.includes(',')) {
+        return trimmed
+          .split(',')
+          .map((entry) => entry.trim())
+          .filter((entry) => entry.length > 0);
+      }
+
+      return [trimmed];
+    }
+
+    if (rawValue === null || rawValue === undefined) {
+      return [];
+    }
+
+    const asString = String(rawValue).trim();
+    return asString ? [asString] : [];
+  };
+
+  const assignablePeople = useMemo(() => {
+    return Object.values(nodes)
+      .filter((node: any) => node?.type === 'person')
+      .map((node: any) => {
+        const id = String(node.id);
+        const name = String(node?.properties?.name ?? node?.name ?? '').trim();
+        const email = String(node?.properties?.email ?? '').trim();
+        const label = name || email || id;
+        return { value: id, label };
+      })
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [nodes]);
+
+  const assigneeLabelById = useMemo(() => {
+    const map = new Map<string, string>();
+    assignablePeople.forEach((person) => {
+      map.set(person.value, person.label);
+    });
+    return map;
+  }, [assignablePeople]);
+
+  const parseManualAllocationsValue = (rawValue: unknown): Record<string, Record<string, number>> => {
+    let source: unknown = rawValue;
+    if (typeof source === 'string') {
+      const trimmed = source.trim();
+      if (!trimmed) return {};
+      try {
+        source = JSON.parse(trimmed);
+      } catch {
+        return {};
+      }
+    }
+
+    if (!source || typeof source !== 'object' || Array.isArray(source)) {
+      return {};
+    }
+
+    const parsed: Record<string, Record<string, number>> = {};
+    Object.entries(source as Record<string, unknown>).forEach(([dateKey, dayAllocations]) => {
+      if (!dayAllocations || typeof dayAllocations !== 'object' || Array.isArray(dayAllocations)) {
+        return;
+      }
+      const dayMap: Record<string, number> = {};
+      Object.entries(dayAllocations as Record<string, unknown>).forEach(([personId, hoursRaw]) => {
+        const hours = Number(hoursRaw);
+        if (Number.isFinite(hours)) {
+          dayMap[personId] = hours;
+        }
+      });
+      if (Object.keys(dayMap).length > 0) {
+        parsed[dateKey] = dayMap;
+      }
+    });
+    return parsed;
   };
 
   useEffect(() => {
@@ -189,13 +298,21 @@ export function Inspector({
 
   const openPersonScheduleEditor = () => {
     const nextDraft: Record<string, string> = {};
+    const legacyOvertimeRaw = personPropertyMap.get('overtime_capacity')?.value;
+    const legacyOvertime = legacyOvertimeRaw === '' || legacyOvertimeRaw === null || legacyOvertimeRaw === undefined
+      ? 0
+      : getPersonPropertyNumericValue('overtime_capacity', 0);
     WEEKDAY_LABELS.forEach((day) => {
       const capacityId = `capacity_${day.key}`;
       const rateId = `hourly_rate_${day.key}`;
+      const overtimeId = `overtime_capacity_${day.key}`;
       nextDraft[capacityId] = String(getPersonPropertyNumericValue(capacityId, day.key === 'saturday' || day.key === 'sunday' ? 0 : 8));
       const rateRaw = personPropertyMap.get(rateId)?.value;
       nextDraft[rateId] = rateRaw === null || rateRaw === undefined ? '' : String(rateRaw);
+      nextDraft[overtimeId] = String(getPersonPropertyNumericValue(overtimeId, legacyOvertime));
     });
+    const otRaw = personPropertyMap.get('overtime_capacity')?.value;
+    nextDraft['overtime_capacity'] = otRaw === null || otRaw === undefined ? '0' : String(otRaw);
     setPersonScheduleDraft(nextDraft);
     setPersonScheduleOpen(true);
   };
@@ -204,6 +321,7 @@ export function Inspector({
     WEEKDAY_LABELS.forEach((day) => {
       const capacityId = `capacity_${day.key}`;
       const rateId = `hourly_rate_${day.key}`;
+      const overtimeId = `overtime_capacity_${day.key}`;
 
       const rawCapacity = Number(personScheduleDraft[capacityId] ?? 0);
       const safeCapacity = Number.isFinite(rawCapacity)
@@ -218,7 +336,20 @@ export function Inspector({
         const parsedRate = Number(rawRateText);
         handlePropertyChange(rateId, Number.isFinite(parsedRate) ? parsedRate : '');
       }
+
+      const rawOvertime = Number(personScheduleDraft[overtimeId] ?? 0);
+      const safeOvertime = Number.isFinite(rawOvertime)
+        ? Math.max(0, Math.min(24, rawOvertime))
+        : 0;
+      handlePropertyChange(overtimeId, safeOvertime);
     });
+
+    const overtimeTotal = WEEKDAY_LABELS.reduce((sum, day) => {
+      const overtimeId = `overtime_capacity_${day.key}`;
+      const parsed = Number(personScheduleDraft[overtimeId] ?? 0);
+      return sum + (Number.isFinite(parsed) ? Math.max(0, Math.min(24, parsed)) : 0);
+    }, 0);
+    handlePropertyChange('overtime_capacity', overtimeTotal / WEEKDAY_LABELS.length);
 
     setPersonScheduleOpen(false);
   };
@@ -231,6 +362,17 @@ export function Inspector({
       capacity_wednesday: mondayCapacity,
       capacity_thursday: mondayCapacity,
       capacity_friday: mondayCapacity,
+    }));
+  };
+
+  const copyMondayOvertimeToWeekdays = () => {
+    const mondayOvertime = personScheduleDraft['overtime_capacity_monday'] ?? '';
+    setPersonScheduleDraft((prev) => ({
+      ...prev,
+      overtime_capacity_tuesday: mondayOvertime,
+      overtime_capacity_wednesday: mondayOvertime,
+      overtime_capacity_thursday: mondayOvertime,
+      overtime_capacity_friday: mondayOvertime,
     }));
   };
 
@@ -285,7 +427,21 @@ export function Inspector({
       </div>
 
       {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 pb-3">
+      <div
+        className={`flex-1 overflow-y-auto overflow-x-hidden px-3 pb-3 ${
+          isReadOnly
+            ? '[&_input:disabled]:text-fg-primary [&_input:disabled]:bg-bg-dark/80 [&_input:disabled]:border-border [&_textarea:disabled]:text-fg-primary [&_textarea:disabled]:bg-bg-dark/80 [&_textarea:disabled]:border-border [&_select:disabled]:text-fg-primary [&_select:disabled]:bg-bg-dark/80 [&_select:disabled]:border-border'
+            : ''
+        }`}
+      >
+        {isReadOnly && (
+          <div className="mb-4 rounded border border-orange-500/40 bg-orange-500/10 px-3 py-2 text-xs text-orange-300">
+            <div className="font-semibold text-orange-200">Orphaned Node (Read-only)</div>
+            <div>This node is outside the current template schema and cannot be edited until the template is fixed or orphaned data is removed.</div>
+            {readOnlyReason && <div className="mt-1 opacity-90">Reason: {readOnlyReason}</div>}
+          </div>
+        )}
+
         {/* Node Info */}
         <div className="mb-3">
           <div className="text-xs text-fg-secondary mb-1">Node Type</div>
@@ -311,6 +467,7 @@ export function Inspector({
               <button
                 onClick={openPersonScheduleEditor}
                 className="px-3 py-1.5 bg-accent-primary text-fg-primary rounded hover:bg-accent-hover transition-colors text-xs font-semibold"
+                disabled={isReadOnly}
               >
                 Edit Week
               </button>
@@ -376,9 +533,118 @@ export function Inspector({
             const displayValue = prop.value;
             const draftKey = makeDraftKey(prop.id, false);
             const draftValue = draftValues[draftKey] ?? String(displayValue ?? '');
+            const isAssigneeField = prop.id === 'assigned_to';
+            const isManualAllocationsField = prop.id === 'manual_allocations';
+            const assignedIds = isAssigneeField ? parseAssignedToValue(displayValue) : [];
+            const pendingAssignee = pendingAssigneeByProp[prop.id] ?? '';
+            const manualAllocations = isManualAllocationsField ? parseManualAllocationsValue(displayValue) : {};
+            const manualDates = isManualAllocationsField
+              ? Object.keys(manualAllocations).sort((a, b) => a.localeCompare(b))
+              : [];
             return (
               <div key={prop.id}>
-                {prop.type === 'text' && (
+                {isAssigneeField && (
+                  <div>
+                    <label className="block text-sm text-fg-secondary mb-1">
+                      {prop.name}
+                    </label>
+                    <div className="flex gap-2 mb-2">
+                      <select
+                        value={pendingAssignee}
+                        onChange={(event) => {
+                          const nextValue = event.target.value;
+                          setPendingAssigneeByProp((prev) => ({ ...prev, [prop.id]: nextValue }));
+                        }}
+                        className="flex-1 bg-bg-dark text-fg-primary border border-border rounded-sm px-2 py-1 text-sm"
+                        disabled={isReadOnly}
+                      >
+                        <option value="">Select person…</option>
+                        {assignablePeople
+                          .filter((person) => !assignedIds.includes(person.value))
+                          .map((person) => (
+                            <option key={person.value} value={person.value}>
+                              {person.label}
+                            </option>
+                          ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!pendingAssignee) return;
+                          if (assignedIds.includes(pendingAssignee)) return;
+                          handlePropertyChange(prop.id, [...assignedIds, pendingAssignee]);
+                          setPendingAssigneeByProp((prev) => ({ ...prev, [prop.id]: '' }));
+                        }}
+                        className="px-3 py-1 bg-accent-primary text-fg-primary rounded hover:bg-accent-hover transition-colors text-sm font-semibold"
+                        disabled={isReadOnly || !pendingAssignee}
+                      >
+                        Add
+                      </button>
+                    </div>
+                    {assignedIds.length === 0 ? (
+                      <div className="text-xs text-fg-muted">No people assigned</div>
+                    ) : (
+                      <div className="flex flex-wrap gap-2">
+                        {assignedIds.map((assigneeId) => (
+                          <span
+                            key={assigneeId}
+                            className="inline-flex items-center gap-2 bg-bg-dark border border-border rounded px-2 py-1 text-xs text-fg-primary"
+                          >
+                            <span>{assigneeLabelById.get(assigneeId) ?? assigneeId}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handlePropertyChange(
+                                  prop.id,
+                                  assignedIds.filter((id) => id !== assigneeId),
+                                );
+                              }}
+                              className="text-fg-secondary hover:text-fg-primary"
+                              title="Remove assignee"
+                              disabled={isReadOnly}
+                            >
+                              ✕
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+                {isManualAllocationsField && (
+                  <div>
+                    <label className="block text-sm text-fg-secondary mb-1">
+                      {prop.name}
+                    </label>
+                    <div className="rounded border border-border bg-bg-dark/40 p-2 space-y-2">
+                      {manualDates.length === 0 ? (
+                        <div className="text-xs text-fg-muted">No manual allocations set.</div>
+                      ) : (
+                        manualDates.map((dateKey) => {
+                          const personEntries = Object.entries(manualAllocations[dateKey])
+                            .sort(([a], [b]) => a.localeCompare(b));
+                          return (
+                            <div key={dateKey} className="rounded border border-border/60 bg-bg-dark px-2 py-1.5">
+                              <div className="text-xs font-semibold text-fg-secondary mb-1">{dateKey}</div>
+                              <div className="space-y-1">
+                                {personEntries.map(([personId, hours]) => (
+                                  <div key={`${dateKey}-${personId}`} className="flex items-center justify-between gap-2 text-xs">
+                                    <span className="text-fg-primary truncate">{assigneeLabelById.get(personId) ?? personId}</span>
+                                    <span className="text-fg-secondary font-mono">{hours.toFixed(1)}h</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                    <div className="mt-1 text-xs text-fg-muted">
+                      Edit per-day allocations in the Manpower view task rows.
+                    </div>
+                  </div>
+                )}
+                {prop.type === 'text' && !isAssigneeField && !isManualAllocationsField && (
                   <Input
                     label={prop.name}
                     value={draftValue}
@@ -391,9 +657,10 @@ export function Inspector({
                       flushCommit(draftKey, prop.id, e.target.value, false);
                     }}
                     required={prop.required}
+                    disabled={isReadOnly}
                   />
                 )}
-                {prop.type === 'number' && (
+                {prop.type === 'number' && !isAssigneeField && !isManualAllocationsField && (
                   <Input
                     label={prop.name}
                     type="number"
@@ -407,9 +674,10 @@ export function Inspector({
                       flushCommit(draftKey, prop.id, e.target.value, false);
                     }}
                     required={prop.required}
+                    disabled={isReadOnly}
                   />
                 )}
-                {prop.type === 'currency' && (
+                {prop.type === 'currency' && !isAssigneeField && !isManualAllocationsField && (
                   <CurrencyInput
                     label={prop.name}
                     value={draftValue}
@@ -422,9 +690,10 @@ export function Inspector({
                       flushCommit(draftKey, prop.id, e.target.value, false);
                     }}
                     required={prop.required}
+                    disabled={isReadOnly}
                   />
                 )}
-                {prop.type === 'date' && (
+                {prop.type === 'date' && !isAssigneeField && !isManualAllocationsField && (
                   <Input
                     label={prop.name}
                     type="date"
@@ -438,18 +707,20 @@ export function Inspector({
                       flushCommit(draftKey, prop.id, e.target.value, false);
                     }}
                     required={prop.required}
+                    disabled={isReadOnly}
                   />
                 )}
-                {prop.type === 'select' && prop.options && (
+                {prop.type === 'select' && prop.options && !isAssigneeField && !isManualAllocationsField && (
                   <Select
                     label={prop.name}
                     value={String(displayValue)}
                     onChange={(e) => handlePropertyChange(prop.id, e.target.value)}
                     options={prop.options}
                     required={prop.required}
+                    disabled={isReadOnly}
                   />
                 )}
-                {prop.type === 'textarea' && (
+                {prop.type === 'textarea' && !isAssigneeField && !isManualAllocationsField && (
                   <div>
                     <label className="block text-sm text-fg-secondary mb-1">
                       {prop.name}
@@ -467,10 +738,11 @@ export function Inspector({
                       className="w-full bg-bg-dark text-fg-primary border border-border rounded-sm px-2 py-1 text-sm font-body focus:border-accent-primary focus:outline-none resize-none"
                       rows={3}
                       required={prop.required}
+                      disabled={isReadOnly}
                     />
                   </div>
                 )}
-                {prop.type === 'checkbox' && (
+                {prop.type === 'checkbox' && !isAssigneeField && !isManualAllocationsField && (
                   <div className="flex items-center gap-2">
                     <input
                       type="checkbox"
@@ -480,6 +752,7 @@ export function Inspector({
                         handlePropertyChange(prop.id, e.target.checked ? 'true' : 'false')
                       }
                       className="w-4 h-4 cursor-pointer accent-accent-primary"
+                      disabled={isReadOnly}
                     />
                     <label
                       htmlFor={`checkbox-${prop.id}`}
@@ -489,7 +762,7 @@ export function Inspector({
                     </label>
                   </div>
                 )}
-                {prop.type === 'editor' && (
+                {prop.type === 'editor' && !isAssigneeField && !isManualAllocationsField && (
                   <div>
                     <label className="block text-sm text-fg-secondary mb-1">
                       {prop.name}
@@ -501,6 +774,7 @@ export function Inspector({
                       <button
                         onClick={() => openEditor(prop.id, prop.name, displayValue, false, prop.markupProfile)}
                         className="px-3 py-1 bg-accent-primary text-fg-primary rounded hover:bg-accent-hover transition-colors text-sm font-semibold"
+                        disabled={isReadOnly}
                       >
                         Edit
                       </button>
@@ -677,16 +951,17 @@ export function Inspector({
                 <div key={key} className="relative">
                   <label className="block text-sm text-fg-secondary mb-1">{key}</label>
                   <div className="flex gap-2 items-center">
-                    <div className="flex-1 bg-bg-dark/50 text-fg-primary/70 border border-orange-500/30 rounded-sm px-2 py-1 text-sm">
+                    <div className="flex-1 bg-bg-dark/80 text-fg-primary border border-orange-500/40 rounded-sm px-2 py-1 text-sm font-medium">
                       {String(value)}
                     </div>
                     {onOrphanedPropertyDelete && (
                       <button
                         onClick={() => onOrphanedPropertyDelete(key)}
-                        className="px-3 py-1 bg-status-danger/20 text-status-danger rounded hover:bg-status-danger/30 transition-colors text-sm font-semibold"
+                        className="h-8 w-8 inline-flex items-center justify-center bg-status-danger/20 text-status-danger rounded hover:bg-status-danger/30 transition-colors text-sm font-semibold"
                         title="Delete orphaned property"
+                        aria-label="Delete orphaned property"
                       >
-                        Delete
+                        🗑️
                       </button>
                     )}
                   </div>
@@ -905,6 +1180,12 @@ export function Inspector({
                     Copy Mon Rate → Tue–Fri
                   </button>
                   <button
+                    onClick={copyMondayOvertimeToWeekdays}
+                    className="px-2.5 py-1.5 text-xs bg-bg-dark border border-border rounded text-fg-primary hover:bg-bg-selection transition-colors"
+                  >
+                    Copy Mon OT → Tue–Fri
+                  </button>
+                  <button
                     onClick={copyFridayRateToWeekend}
                     className="px-2.5 py-1.5 text-xs bg-bg-dark border border-border rounded text-fg-primary hover:bg-bg-selection transition-colors"
                   >
@@ -916,6 +1197,7 @@ export function Inspector({
                     <tr>
                       <th className="text-left text-fg-secondary px-3 py-2 border-b border-border">Day</th>
                       <th className="text-left text-fg-secondary px-3 py-2 border-b border-border">Capacity (hours, 0-24)</th>
+                      <th className="text-left text-fg-secondary px-3 py-2 border-b border-border">OT Capacity (hours, 0-24)</th>
                       <th className="text-left text-fg-secondary px-3 py-2 border-b border-border">Hourly Rate</th>
                     </tr>
                   </thead>
@@ -923,6 +1205,7 @@ export function Inspector({
                     {WEEKDAY_LABELS.map((day) => {
                       const capacityId = `capacity_${day.key}`;
                       const rateId = `hourly_rate_${day.key}`;
+                      const overtimeId = `overtime_capacity_${day.key}`;
                       return (
                         <tr key={day.key}>
                           <td className="px-3 py-2 border-b border-border text-fg-primary font-medium">{day.full}</td>
@@ -944,6 +1227,28 @@ export function Inspector({
                                   ? Math.max(0, Math.min(24, parsed))
                                   : 0;
                                 setPersonScheduleDraft((prev) => ({ ...prev, [capacityId]: String(clamped) }));
+                              }}
+                              className="w-full px-2 py-1 bg-bg-dark border border-border rounded text-fg-primary"
+                            />
+                          </td>
+                          <td className="px-3 py-2 border-b border-border">
+                            <input
+                              type="number"
+                              min={0}
+                              max={24}
+                              step={0.25}
+                              value={personScheduleDraft[overtimeId] ?? '0'}
+                              onChange={(event) => {
+                                const nextValue = event.target.value;
+                                const parsed = Number(nextValue);
+                                if (nextValue === '') {
+                                  setPersonScheduleDraft((prev) => ({ ...prev, [overtimeId]: '' }));
+                                  return;
+                                }
+                                const clamped = Number.isFinite(parsed)
+                                  ? Math.max(0, Math.min(24, parsed))
+                                  : 0;
+                                setPersonScheduleDraft((prev) => ({ ...prev, [overtimeId]: String(clamped) }));
                               }}
                               className="w-full px-2 py-1 bg-bg-dark border border-border rounded text-fg-primary"
                             />

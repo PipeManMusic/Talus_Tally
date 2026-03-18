@@ -1,0 +1,336 @@
+blocking_view:
+  node_size:
+    base_height: 100
+    base_width: 160
+    direction: down
+    max_depth: 6
+    max_scale: 1.3
+    min_scale: 0.7
+description: A base template for managing development of a piece of software.
+id: software_development
+name: Software Development
+node_types:
+- allowed_asset_types: []
+  allowed_children:
+  - release
+  - personnel_assets
+  icon: computer-desktop
+  id: root
+  label: Program Name
+  properties:
+  - id: name
+    label: Name
+    required: false
+    type: text
+- allowed_asset_types: []
+  allowed_children:
+  - person
+  base_type: asset
+  color: '#60a5fa'
+  icon: users
+  id: personnel_assets
+  label: Personnel Assets
+  properties:
+  - id: name
+    label: Name
+    required: true
+    type: text
+  shape: rounded
+- allowed_asset_types: []
+  allowed_children: []
+  base_type: asset
+  color: '#3b82f6'
+  features: []
+  icon: user
+  id: person
+  label: Person
+  properties:
+  - id: name
+    label: Full Name
+    required: true
+    system_locked: true
+    type: text
+  - id: email
+    label: Email
+    required: true
+    system_locked: true
+    type: text
+  - id: capacity_monday
+    label: Capacity Monday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 8
+  - id: capacity_tuesday
+    label: Capacity Tuesday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 8
+  - id: capacity_wednesday
+    label: Capacity Wednesday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 8
+  - id: capacity_thursday
+    label: Capacity Thursday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 8
+  - id: capacity_friday
+    label: Capacity Friday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 8
+  - id: capacity_saturday
+    label: Capacity Saturday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 0
+  - id: capacity_sunday
+    label: Capacity Sunday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 0
+  - id: hourly_rate_monday
+    label: Hourly Rate Monday
+    required: false
+    system_locked: true
+    type: number
+  - id: hourly_rate_tuesday
+    label: Hourly Rate Tuesday
+    required: false
+    system_locked: true
+    type: number
+  - id: hourly_rate_wednesday
+    label: Hourly Rate Wednesday
+    required: false
+    system_locked: true
+    type: number
+  - id: hourly_rate_thursday
+    label: Hourly Rate Thursday
+    required: false
+    system_locked: true
+    type: number
+  - id: hourly_rate_friday
+    label: Hourly Rate Friday
+    required: false
+    system_locked: true
+    type: number
+  - id: hourly_rate_saturday
+    label: Hourly Rate Saturday
+    required: false
+    system_locked: true
+    type: number
+  - id: hourly_rate_sunday
+    label: Hourly Rate Sunday
+    required: false
+    system_locked: true
+    type: number
+  - id: overtime_capacity
+    label: Overtime Capacity (Hours)
+    required: false
+    system_locked: true
+    type: number
+    value: 0
+  - id: overtime_capacity_monday
+    label: Overtime Capacity Monday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    value: 0
+  - id: overtime_capacity_tuesday
+    label: Overtime Capacity Tuesday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    value: 0
+  - id: overtime_capacity_wednesday
+    label: Overtime Capacity Wednesday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    value: 0
+  - id: overtime_capacity_thursday
+    label: Overtime Capacity Thursday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    value: 0
+  - id: overtime_capacity_friday
+    label: Overtime Capacity Friday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    value: 0
+  - id: overtime_capacity_saturday
+    label: Overtime Capacity Saturday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    value: 0
+  - id: overtime_capacity_sunday
+    label: Overtime Capacity Sunday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    value: 0
+  - id: system_role
+    label: System Role
+    required: false
+    system_locked: true
+    type: text
+  shape: circle
+- allowed_asset_types: []
+  allowed_children: []
+  features:
+  - scheduling
+  icon: check
+  id: feature
+  label: Feature
+  properties:
+  - id: name
+    label: Name
+    required: false
+    type: text
+  - id: start_date
+    label: Start Date
+    type: date
+    system_locked: true
+    ui_group: Schedule
+    semantic_role: gantt_start
+  - id: end_date
+    label: End Date
+    type: date
+    system_locked: true
+    ui_group: Schedule
+    semantic_role: gantt_end
+  - id: assigned_to
+    label: Assigned To
+    type: node_reference
+    target_type: person
+    system_locked: true
+    ui_group: Schedule
+  - id: estimated_hours
+    label: Estimated Hours
+    type: number
+    value: 0
+    system_locked: true
+    ui_group: Schedule
+  - id: actual_hours
+    label: Actual Hours
+    type: number
+    value: 0
+    system_locked: true
+    ui_group: Schedule
+  - id: manual_allocations
+    label: Manual Allocations
+    type: object
+    value: &id001 {}
+    system_locked: true
+    ui_group: Schedule
+- allowed_asset_types: []
+  allowed_children:
+  - feature
+  - bug
+  features:
+  - scheduling
+  icon: arrow-up-on-square-stack
+  id: release
+  label: Release
+  properties:
+  - id: name
+    label: Name
+    required: false
+    type: text
+  - id: start_date
+    label: Start Date
+    type: date
+    system_locked: true
+    ui_group: Schedule
+    semantic_role: gantt_start
+  - id: end_date
+    label: End Date
+    type: date
+    system_locked: true
+    ui_group: Schedule
+    semantic_role: gantt_end
+  - id: assigned_to
+    label: Assigned To
+    type: node_reference
+    target_type: person
+    system_locked: true
+    ui_group: Schedule
+  - id: estimated_hours
+    label: Estimated Hours
+    type: number
+    value: 0
+    system_locked: true
+    ui_group: Schedule
+  - id: actual_hours
+    label: Actual Hours
+    type: number
+    value: 0
+    system_locked: true
+    ui_group: Schedule
+  - id: manual_allocations
+    label: Manual Allocations
+    type: object
+    value: *id001
+    system_locked: true
+    ui_group: Schedule
+- allowed_asset_types: []
+  allowed_children: []
+  features:
+  - scheduling
+  icon: bug-ant
+  id: bug
+  label: Bug
+  properties:
+  - id: name
+    label: Name
+    required: false
+    type: text
+  - id: start_date
+    label: Start Date
+    type: date
+    system_locked: true
+    ui_group: Schedule
+    semantic_role: gantt_start
+  - id: end_date
+    label: End Date
+    type: date
+    system_locked: true
+    ui_group: Schedule
+    semantic_role: gantt_end
+  - id: assigned_to
+    label: Assigned To
+    type: node_reference
+    target_type: person
+    system_locked: true
+    ui_group: Schedule
+  - id: estimated_hours
+    label: Estimated Hours
+    type: number
+    value: 0
+    system_locked: true
+    ui_group: Schedule
+  - id: actual_hours
+    label: Actual Hours
+    type: number
+    value: 0
+    system_locked: true
+    ui_group: Schedule
+  - id: manual_allocations
+    label: Manual Allocations
+    type: object
+    value: *id001
+    system_locked: true
+    ui_group: Schedule
+uuid: 2dac86dd-3f6b-401d-ba03-67372db4ec4d
+version: 0.1.0

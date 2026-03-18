@@ -123,6 +123,10 @@ describe('NodeTypeEditor', () => {
       );
     }
 
+    const originalConfirm = window.confirm;
+    const confirmMock = vi.fn(() => true);
+    (window as Window & { confirm: typeof window.confirm }).confirm = confirmMock;
+
     render(<Harness />);
 
     await waitFor(() => expect(apiClientMock.getMetaSchema).toHaveBeenCalled());
@@ -183,7 +187,9 @@ describe('NodeTypeEditor', () => {
       );
     }
 
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const originalConfirm = window.confirm;
+    const confirmMock = vi.fn(() => true);
+    (window as Window & { confirm: typeof window.confirm }).confirm = confirmMock;
 
     render(<Harness />);
 
@@ -209,7 +215,161 @@ describe('NodeTypeEditor', () => {
       expect(screen.getByTestId('primary-status-value').textContent).toBe('');
     });
 
-    expect(confirmSpy).toHaveBeenCalled();
-    confirmSpy.mockRestore();
+    expect(confirmMock).toHaveBeenCalled();
+    (window as Window & { confirm: typeof window.confirm }).confirm = originalConfirm;
   });
+
+  it('removes deleted node type references from allowed_children', async () => {
+    const user = userEvent.setup();
+
+    function Harness() {
+      const [nodeTypes, setNodeTypes] = useState<NodeType[]>([
+        {
+          id: 'root',
+          label: 'Root',
+          allowed_children: ['task', 'legacy_widget'],
+          properties: [
+            {
+              id: 'name',
+              label: 'Name',
+              type: 'text',
+            },
+          ],
+        },
+        {
+          id: 'task',
+          label: 'Task',
+          allowed_children: [],
+          properties: [
+            {
+              id: 'name',
+              label: 'Name',
+              type: 'text',
+            },
+          ],
+        },
+        {
+          id: 'legacy_widget',
+          label: 'Legacy Widget',
+          allowed_children: [],
+          properties: [
+            {
+              id: 'name',
+              label: 'Name',
+              type: 'text',
+            },
+          ],
+        },
+      ]);
+
+      return (
+        <>
+          <NodeTypeEditor nodeTypes={nodeTypes} onChange={async (next) => setNodeTypes(next)} />
+          <div data-testid="root-allowed-children">{nodeTypes[0]?.allowed_children?.join(',') || ''}</div>
+          <div data-testid="node-type-count">{nodeTypes.length}</div>
+        </>
+      );
+    }
+
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+    render(<Harness />);
+
+    await waitFor(() => expect(apiClientMock.getMetaSchema).toHaveBeenCalled());
+
+    const legacyHeading = await screen.findByRole('heading', { name: 'Legacy Widget' });
+    let legacyCard: HTMLElement | null = legacyHeading.parentElement;
+    while (legacyCard && !String(legacyCard.className).includes('bg-bg-light border border-border rounded')) {
+      legacyCard = legacyCard.parentElement;
+    }
+    expect(legacyCard).not.toBeNull();
+
+    const deleteButton = Array.from(legacyCard!.querySelectorAll('button')).find((button) =>
+      String(button.className).includes('text-status-danger')
+    ) as HTMLButtonElement | undefined;
+    expect(deleteButton).toBeDefined();
+    await user.click(deleteButton!);
+    await user.click(screen.getByRole('button', { name: 'Delete Node Type' }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('node-type-count').textContent).toBe('2');
+      expect(screen.getByTestId('root-allowed-children').textContent).toBe('task');
+    });
+  });
+
+  it('deletes node type even when another node has non-array allowed_children', async () => {
+    const user = userEvent.setup();
+
+    function Harness() {
+      const [nodeTypes, setNodeTypes] = useState<NodeType[]>([
+        {
+          id: 'root',
+          label: 'Root',
+          allowed_children: [] as string[],
+          properties: [
+            {
+              id: 'name',
+              label: 'Name',
+              type: 'text',
+            },
+          ],
+        },
+        {
+          id: 'bad_shape',
+          label: 'Bad Shape Node',
+          allowed_children: 'task' as unknown as string[],
+          properties: [
+            {
+              id: 'name',
+              label: 'Name',
+              type: 'text',
+            },
+          ],
+        },
+        {
+          id: 'task',
+          label: 'Task',
+          allowed_children: [],
+          properties: [
+            {
+              id: 'name',
+              label: 'Name',
+              type: 'text',
+            },
+          ],
+        },
+      ]);
+
+      return (
+        <>
+          <NodeTypeEditor nodeTypes={nodeTypes} onChange={async (next) => setNodeTypes(next)} />
+          <div data-testid="node-type-count">{nodeTypes.length}</div>
+        </>
+      );
+    }
+
+    render(<Harness />);
+
+    await waitFor(() => expect(apiClientMock.getMetaSchema).toHaveBeenCalled());
+
+    const taskHeading = await screen.findByRole('heading', { name: 'Task' });
+    let taskCard: HTMLElement | null = taskHeading.parentElement;
+    while (taskCard && !String(taskCard.className).includes('bg-bg-light border border-border rounded')) {
+      taskCard = taskCard.parentElement;
+    }
+    expect(taskCard).not.toBeNull();
+
+    const deleteButton = Array.from(taskCard!.querySelectorAll('button')).find((button) =>
+      String(button.className).includes('text-status-danger')
+    ) as HTMLButtonElement | undefined;
+    expect(deleteButton).toBeDefined();
+    await user.click(deleteButton!);
+    await user.click(screen.getByRole('button', { name: 'Delete Node Type' }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('node-type-count').textContent).toBe('2');
+      expect(screen.queryByRole('heading', { name: 'Task' })).toBeNull();
+    });
+  });
+
 });

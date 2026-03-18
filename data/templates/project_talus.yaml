@@ -23,24 +23,31 @@ node_types:
   properties:
   - id: name
     label: Project Name
+    required: false
     type: text
   - id: vehicle
     label: Vehicle Name
+    required: false
     type: text
   - id: vin
     label: VIN
+    required: false
     type: text
   - id: purchase_date
     label: Purchase Date
+    required: false
     type: date
   - id: budget
     label: Estimated Budget
+    required: false
     type: currency
   - id: actual_cost
     label: Actual Cost
+    required: false
     type: currency
   - id: project_lead
     label: Project Lead
+    required: false
     type: text
   shape: hexagon
   velocityConfig:
@@ -57,6 +64,7 @@ node_types:
   properties:
   - id: name
     label: Assets
+    required: false
     type: text
   shape: hexagon
 - allowed_asset_types: []
@@ -68,6 +76,7 @@ node_types:
   properties:
   - id: name
     label: Camera Gear Inventory
+    required: false
     type: text
   shape: rounded
 - allowed_asset_types: []
@@ -80,6 +89,7 @@ node_types:
   - description: e.g., Cameras, Lenses, Accessories, Audio
     id: name
     label: Category Name
+    required: false
     type: text
   shape: roundedSquare
 - allowed_asset_types: []
@@ -91,6 +101,7 @@ node_types:
   properties:
   - id: name
     label: Name
+    required: false
     type: text
   shape: rounded
 - allowed_asset_types: []
@@ -188,6 +199,12 @@ node_types:
     required: false
     system_locked: true
     type: number
+  - id: overtime_capacity
+    label: Overtime Capacity (Hours)
+    required: false
+    system_locked: true
+    type: number
+    value: 0
   - id: system_role
     label: System Role
     required: false
@@ -202,18 +219,23 @@ node_types:
   properties:
   - id: name
     label: Equipment Name
+    required: false
     type: text
   - id: model
     label: Model Name
+    required: false
     type: text
   - id: serial
     label: Serial Number
+    required: false
     type: text
   - id: purchase_date
     label: Purchase Date
+    required: false
     type: date
   - id: acquisition_cost
     label: Acquisition Cost
+    required: false
     type: currency
   - id: status
     indicator_set: status
@@ -227,9 +249,11 @@ node_types:
       name: Maintenance
     - indicator_id: empty
       name: Retired
+    required: false
     type: select
   - id: notes
     label: Notes
+    required: false
     type: text
   shape: circle
 - allowed_asset_types: []
@@ -242,6 +266,7 @@ node_types:
   properties:
   - id: name
     label: Car Parts Inventory
+    required: false
     type: text
   shape: hexagon
 - allowed_asset_types: []
@@ -255,6 +280,7 @@ node_types:
   - description: e.g., Engine, Suspension, Body, Interior, Electrical
     id: name
     label: Category Name
+    required: false
     type: text
   shape: rounded
 - allowed_asset_types: []
@@ -266,15 +292,19 @@ node_types:
   properties:
   - id: name
     label: Part Name
+    required: false
     type: text
   - id: part_number
     label: OEM Part Number
+    required: false
     type: text
   - id: supplier
     label: Vendor/Source
+    required: false
     type: text
   - id: unit_cost
     label: Unit Cost
+    required: false
     type: currency
     velocityConfig:
       enabled: true
@@ -282,6 +312,7 @@ node_types:
       multiplierFactor: -0.01
   - id: quantity_on_hand
     label: Quantity On Hand
+    required: false
     type: number
   - id: status
     indicator_set: status
@@ -295,6 +326,7 @@ node_types:
       name: Arrived
     - indicator_id: filled
       name: Installed
+    required: false
     type: select
     velocityConfig:
       enabled: true
@@ -306,6 +338,7 @@ node_types:
         Wishlist: -1
   - id: notes
     label: Notes
+    required: false
     type: text
   shape: circle
 - allowed_asset_types: []
@@ -317,6 +350,7 @@ node_types:
   properties:
   - id: name
     label: Tools Inventory
+    required: false
     type: text
   shape: hexagon
 - allowed_asset_types: []
@@ -329,6 +363,7 @@ node_types:
   - description: e.g., Power Tools, Hand Tools, Diagnostic Equipment, Safety
     id: name
     label: Category Name
+    required: false
     type: text
   shape: rounded
 - allowed_asset_types: []
@@ -339,18 +374,23 @@ node_types:
   properties:
   - id: name
     label: Tool Name
+    required: false
     type: text
   - id: make_model
     label: Make / Model
+    required: false
     type: text
   - id: serial_number
     label: Serial Number
+    required: false
     type: text
   - id: purchase_date
     label: Purchase Date
+    required: false
     type: date
   - id: acquisition_cost
     label: Acquisition Cost
+    required: false
     type: currency
   - id: status
     indicator_set: status
@@ -364,6 +404,7 @@ node_types:
       name: Maintenance
     - indicator_id: empty
       name: Retired
+    required: false
     type: select
     velocityConfig:
       enabled: true
@@ -375,9 +416,11 @@ node_types:
         Retired: 0
   - id: last_service_date
     label: Last Service Date
+    required: false
     type: date
   - id: notes
     label: Notes
+    required: false
     type: text
   shape: circle
   velocityConfig:
@@ -393,9 +436,11 @@ node_types:
   properties:
   - id: name
     label: Season Name
+    required: false
     type: text
   - id: year
     label: Release Year
+    required: false
     type: number
   - id: status
     indicator_set: status
@@ -410,6 +455,7 @@ node_types:
     - id: 34423cc2-d2c5-c699-fa1c-605ca72ee331
       indicator_id: filled
       name: Released
+    required: false
     type: select
     velocityConfig:
       enabled: true
@@ -436,15 +482,18 @@ node_types:
   properties:
   - id: name
     label: Episode Title
+    required: false
     type: text
   - id: episode_number
     label: 'Episode #'
+    required: false
     type: number
   - description: 'Click Edit to write a detailed description. Use SCENE:, SPEAKER:,
       [ACTION], NOTE: prefixes to structure content.'
     id: description
     label: script
     markup_profile: script_default
+    required: false
     type: editor
   - id: status
     indicator_set: status
@@ -458,6 +507,7 @@ node_types:
       name: Editing
     - indicator_id: filled
       name: Uploaded
+    required: false
     type: select
     velocityConfig:
       enabled: true
@@ -481,16 +531,20 @@ node_types:
   properties:
   - id: name
     label: Clip Name
+    required: false
     type: text
   - id: filename
     label: File Name
+    required: false
     type: text
   - description: Paste the 'Copy Link' URL from Dropbox here.
     id: dropbox_link
     label: Dropbox Share Link
+    required: false
     type: text
   - id: notes
     label: Shoot Notes
+    required: false
     type: editor
   - id: status
     indicator_set: status
@@ -502,6 +556,7 @@ node_types:
       name: In Production
     - indicator_id: filled
       name: Complete
+    required: false
     type: select
     velocityConfig:
       enabled: true
@@ -519,18 +574,23 @@ node_types:
   properties:
   - id: name
     label: Location Name
+    required: false
     type: text
   - id: address
     label: Address
+    required: false
     type: text
   - id: notes
     label: Scout Notes
+    required: false
     type: text
   - id: permits_needed
     label: Permits Required
+    required: false
     type: checkbox
   - id: scouted_date
     label: Scout Date
+    required: false
     type: date
   shape: rounded
 - allowed_asset_types: []
@@ -546,9 +606,11 @@ node_types:
   properties:
   - id: name
     label: Task Name
+    required: false
     type: text
   - id: description
     label: Description
+    required: false
     type: text
   - id: status
     indicator_set: status
@@ -562,15 +624,19 @@ node_types:
       name: Blocked
     - indicator_id: filled
       name: Done
+    required: false
     type: select
   - id: estimated_hours
     label: Est. Hours
+    required: false
     type: number
   - id: approved
     label: Approved for Production
+    required: false
     type: checkbox
   - id: notes
     label: Notes
+    required: false
     type: editor
   shape: roundedSquare
 - allowed_asset_types:
@@ -581,15 +647,19 @@ node_types:
   properties:
   - id: name
     label: Asset Name
+    required: false
     type: text
   - id: asset_id
     label: Linked Camera Gear
+    required: false
     type: text
   - id: role
     label: Role/Purpose
+    required: false
     type: text
   - id: quantity
     label: Quantity Needed
+    required: false
     type: number
 - allowed_asset_types:
   - part_asset
@@ -599,15 +669,19 @@ node_types:
   properties:
   - id: name
     label: Asset Name
+    required: false
     type: text
   - id: asset_id
     label: Linked Car Part
+    required: false
     type: text
   - id: role
     label: Role/Purpose
+    required: false
     type: text
   - id: quantity
     label: Quantity Needed
+    required: false
     type: number
 - allowed_asset_types:
   - tool_asset
@@ -617,15 +691,19 @@ node_types:
   properties:
   - id: name
     label: Asset Name
+    required: false
     type: text
   - id: asset_id
     label: Linked Tool
+    required: false
     type: text
   - id: role
     label: Role/Purpose
+    required: false
     type: text
   - id: quantity
     label: Quantity Needed
+    required: false
     type: number
   velocityConfig:
     baseScore: -1
@@ -637,15 +715,26 @@ node_types:
   properties:
   - id: name
     label: Asset Reference
+    required: false
     type: text
   - id: asset_id
     label: Linked Asset
+    required: false
     type: text
   - id: role
     label: Role/Purpose in Task
+    required: false
     type: text
   - id: quantity
     label: Quantity Needed
+    required: false
     type: number
+- id: node_type_1773847596886
+  label: New Node Type
+  allowed_children: []
+  properties:
+  - id: name
+    label: Name
+    type: text
 uuid: 574ecd39-bad3-4e44-b6e4-247d00cc5eca
 version: 0.2.1

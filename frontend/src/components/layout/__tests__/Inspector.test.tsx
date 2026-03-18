@@ -53,6 +53,7 @@ describe('Inspector', () => {
       { id: 'name', name: 'Full Name', type: 'text', value: 'Alex' },
       { id: 'email', name: 'Email', type: 'text', value: 'alex@example.com' },
       { id: 'capacity_monday', name: 'Capacity Monday (Hours)', type: 'number', value: 8 },
+      { id: 'overtime_capacity_monday', name: 'Overtime Capacity Monday (Hours)', type: 'number', value: 2 },
       { id: 'hourly_rate_monday', name: 'Hourly Rate Monday', type: 'number', value: 95 },
     ];
 
@@ -71,8 +72,83 @@ describe('Inspector', () => {
 
     fireEvent.click(screen.getByText('Edit Week'));
     expect(screen.getByText('Copy Mon Capacity → Tue–Fri')).toBeInTheDocument();
+    expect(screen.getByText('Copy Mon OT → Tue–Fri')).toBeInTheDocument();
     expect(screen.getByText('Copy Mon Rate → Tue–Fri')).toBeInTheDocument();
     expect(screen.getByText('Copy Fri Rate → Weekend')).toBeInTheDocument();
+    expect(screen.getByText('OT Capacity (hours, 0-24)')).toBeInTheDocument();
+  });
+
+  it('supports adding and removing multiple assignees for assigned_to', () => {
+    const onPropertyChange = vi.fn();
+    const taskProperties: NodeProperty[] = [
+      { id: 'name', name: 'Name', type: 'text', value: 'Task A' },
+      { id: 'assigned_to', name: 'Assigned To', type: 'text', value: ['person-1'] },
+    ];
+
+    const nodes = {
+      'person-1': { id: 'person-1', type: 'person', properties: { name: 'Alice Johnson', email: 'alice@example.com' } },
+      'person-2': { id: 'person-2', type: 'person', properties: { name: '', email: 'bob@example.com' } },
+    };
+
+    render(
+      <Inspector
+        nodeId="task-1"
+        nodeName="Task A"
+        nodeType="task"
+        properties={taskProperties}
+        nodes={nodes}
+        onPropertyChange={onPropertyChange}
+      />,
+    );
+
+    fireEvent.change(screen.getByDisplayValue('Select person…'), {
+      target: { value: 'person-2' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Add' }));
+
+    expect(onPropertyChange).toHaveBeenCalledWith('assigned_to', ['person-1', 'person-2']);
+
+    fireEvent.click(screen.getByTitle('Remove assignee'));
+    expect(onPropertyChange).toHaveBeenCalledWith('assigned_to', []);
+  });
+
+  it('renders manual_allocations as a readable per-day summary', () => {
+    const taskProperties: NodeProperty[] = [
+      { id: 'name', name: 'Name', type: 'text', value: 'Task A' },
+      {
+        id: 'manual_allocations',
+        name: 'Manual Allocations',
+        type: 'text',
+        value: {
+          '2026-03-17': { 'person-1': 2.5 },
+          '2026-03-18': { 'person-2': 1 },
+        },
+      },
+    ];
+
+    const nodes = {
+      'person-1': { id: 'person-1', type: 'person', properties: { name: 'Alice Johnson', email: 'alice@example.com' } },
+      'person-2': { id: 'person-2', type: 'person', properties: { name: '', email: 'bob@example.com' } },
+    };
+
+    render(
+      <Inspector
+        nodeId="task-1"
+        nodeName="Task A"
+        nodeType="task"
+        properties={taskProperties}
+        nodes={nodes}
+      />,
+    );
+
+    expect(screen.getByText('Manual Allocations')).toBeInTheDocument();
+    expect(screen.getByText('2026-03-17')).toBeInTheDocument();
+    expect(screen.getByText('2026-03-18')).toBeInTheDocument();
+    expect(screen.getByText('Alice Johnson')).toBeInTheDocument();
+    expect(screen.getByText('bob@example.com')).toBeInTheDocument();
+    expect(screen.getByText('2.5h')).toBeInTheDocument();
+    expect(screen.getByText('1.0h')).toBeInTheDocument();
+    expect(screen.getByText('Edit per-day allocations in the Manpower view task rows.')).toBeInTheDocument();
   });
 
   describe('Velocity Section', () => {

@@ -45,7 +45,7 @@ describe('useManpowerPayload', () => {
           name: 'Alex',
           capacity: 8,
           load: {
-            '2026-01-01': 4,
+            '2026-01-01': { total: 4, tasks: [] },
           },
         },
       },

@@ -26,17 +26,52 @@ def _resolve_directory_setting(setting_key: str, default_path: Path) -> str:
     return str(default_path)
 
 
+def _get_workspace_templates_dir() -> Optional[str]:
+    """
+    Resolve repository-local templates directory when running from source.
+
+    Precedence:
+    1) TALUS_BLUEPRINT_TEMPLATES_DIR env var (if it points to an existing dir)
+    2) <repo>/data/templates if it exists
+    """
+    env_override = os.environ.get("TALUS_BLUEPRINT_TEMPLATES_DIR")
+    if env_override:
+        candidate = Path(env_override).expanduser().resolve()
+        if candidate.is_dir():
+            return str(candidate)
+
+    repo_candidate = Path(__file__).resolve().parents[2] / "data" / "templates"
+    if repo_candidate.is_dir():
+        return str(repo_candidate)
+
+    return None
+
+
 def get_templates_directory() -> str:
     """
     Returns the templates directory.
 
     If the user has configured a custom templates directory (via Settings),
     that path is returned – enabling shared/collaborative template folders.
+
+    If no custom setting is present and we are running from source with a
+    repository-local `data/templates` folder, use that workspace directory.
+
     Otherwise falls back to the XDG user-data default.
     """
-    from backend.infra.settings import CUSTOM_BLUEPRINT_TEMPLATES_DIR_KEY
+    from backend.infra.settings import CUSTOM_BLUEPRINT_TEMPLATES_DIR_KEY, get_setting
 
-    return _resolve_directory_setting(CUSTOM_BLUEPRINT_TEMPLATES_DIR_KEY, get_user_templates_dir())
+    custom_dir = get_setting(CUSTOM_BLUEPRINT_TEMPLATES_DIR_KEY)
+    if custom_dir:
+        candidate = Path(str(custom_dir)).expanduser().resolve()
+        if candidate.is_dir():
+            return str(candidate)
+
+    workspace_templates_dir = _get_workspace_templates_dir()
+    if workspace_templates_dir:
+        return workspace_templates_dir
+
+    return str(get_user_templates_dir())
 
 
 class TemplatePersistence:

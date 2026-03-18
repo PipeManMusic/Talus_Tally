@@ -9,7 +9,7 @@ Similarly, when properties are removed from node types, existing property values
 become "orphaned properties" - preserved but read-only in the UI.
 """
 
-from typing import List, Dict, Any, Set
+from typing import List, Dict, Any, Set, Iterable, Tuple, Union
 import logging
 
 logger = logging.getLogger(__name__)
@@ -17,6 +17,67 @@ logger = logging.getLogger(__name__)
 
 class OrphanManager:
     """Manages orphaning of nodes and properties when template definitions change."""
+
+    @staticmethod
+    def _iter_graph_nodes(graph: Any) -> Iterable[Tuple[str, Any]]:
+        """Yield (node_id, node_ref) for dict-graphs, list-graphs, or ProjectGraph objects."""
+        if graph is None:
+            return []
+
+        # Dict style graph: {'nodes': {'id': node_dict}} or {'nodes': [node_dict, ...]}
+        if isinstance(graph, dict):
+            nodes = graph.get('nodes', {})
+            if isinstance(nodes, dict):
+                return list(nodes.items())
+            if isinstance(nodes, list):
+                result: List[Tuple[str, Any]] = []
+                for idx, node in enumerate(nodes):
+                    node_id = str(node.get('id', idx)) if isinstance(node, dict) else str(idx)
+                    result.append((node_id, node))
+                return result
+            return []
+
+        # ProjectGraph style: graph.nodes is Dict[UUID, Node]
+        graph_nodes = getattr(graph, 'nodes', None)
+        if isinstance(graph_nodes, dict):
+            return [(str(node_id), node) for node_id, node in graph_nodes.items()]
+
+        return []
+
+    @staticmethod
+    def _get_node_type(node: Any) -> str:
+        if isinstance(node, dict):
+            return node.get('type') or node.get('blueprint_type_id') or 'unknown'
+        return getattr(node, 'blueprint_type_id', None) or getattr(node, 'type', None) or 'unknown'
+
+    @staticmethod
+    def _get_node_name(node: Any, fallback: str = 'Untitled') -> str:
+        if isinstance(node, dict):
+            return node.get('label') or node.get('name') or node.get('properties', {}).get('name') or fallback
+        return getattr(node, 'name', None) or getattr(node, 'properties', {}).get('name') or fallback
+
+    @staticmethod
+    def _get_node_properties(node: Any) -> Dict[str, Any]:
+        if isinstance(node, dict):
+            props = node.get('properties', {})
+            return props if isinstance(props, dict) else {}
+        props = getattr(node, 'properties', None)
+        return props if isinstance(props, dict) else {}
+
+    @staticmethod
+    def _get_node_metadata(node: Any) -> Dict[str, Any]:
+        if isinstance(node, dict):
+            metadata = node.get('metadata')
+            if not isinstance(metadata, dict):
+                metadata = {}
+                node['metadata'] = metadata
+            return metadata
+
+        metadata = getattr(node, 'metadata', None)
+        if not isinstance(metadata, dict):
+            metadata = {}
+            setattr(node, 'metadata', metadata)
+        return metadata
     
     @staticmethod
     def find_orphaned_node_types(
@@ -64,16 +125,15 @@ class OrphanManager:
         affected_count = 0
         
         # Check all nodes in graph
-        for node_id, node_data in graph.get('nodes', {}).items():
-            node_type = node_data.get('type')
+        for node_id, node_data in OrphanManager._iter_graph_nodes(graph):
+            node_type = OrphanManager._get_node_type(node_data)
             
             if node_type in orphaned_types:
                 # Mark as orphaned
-                if 'metadata' not in node_data:
-                    node_data['metadata'] = {}
-                
-                node_data['metadata']['orphaned'] = True
-                node_data['metadata']['orphaned_reason'] = (
+                metadata = OrphanManager._get_node_metadata(node_data)
+
+                metadata['orphaned'] = True
+                metadata['orphaned_reason'] = (
                     f"Node type '{node_type}' removed from template"
                 )
                 
@@ -102,14 +162,15 @@ class OrphanManager:
         """
         orphaned = []
         
-        for node_id, node_data in graph.get('nodes', {}).items():
-            if node_data.get('metadata', {}).get('orphaned'):
+        for node_id, node_data in OrphanManager._iter_graph_nodes(graph):
+            metadata = OrphanManager._get_node_metadata(node_data)
+            if metadata.get('orphaned'):
                 orphaned.append({
                     'id': node_id,
-                    'type': node_data.get('type'),
-                    'label': node_data.get('label', 'Untitled'),
-                    'metadata': node_data.get('metadata', {}),
-                    'properties': node_data.get('properties', {})
+                    'type': OrphanManager._get_node_type(node_data),
+                    'label': OrphanManager._get_node_name(node_data),
+                    'metadata': metadata,
+                    'properties': OrphanManager._get_node_properties(node_data)
                 })
         
         return orphaned
@@ -192,24 +253,25 @@ class OrphanManager:
         """
         orphaned_count = 0
         
-        for node in graph.get('nodes', []):
-            node_type = node.get('type')
+        for _, node in OrphanManager._iter_graph_nodes(graph):
+            node_type = OrphanManager._get_node_type(node)
             if node_type in orphaned_props_by_type:
                 orphaned_keys = orphaned_props_by_type[node_type]
+                node_props = OrphanManager._get_node_properties(node)
+                node_metadata = OrphanManager._get_node_metadata(node)
                 
                 # Initialize orphaned_properties in metadata if needed
-                if 'metadata' not in node:
-                    node['metadata'] = {}
-                if 'orphaned_properties' not in node['metadata']:
-                    node['metadata']['orphaned_properties'] = {}
+                if 'orphaned_properties' not in node_metadata:
+                    node_metadata['orphaned_properties'] = {}
                 
                 # Move orphaned property values to metadata
                 for key in orphaned_keys:
-                    if key in node.get('properties', {}):
-                        value = node['properties'][key]
-                        node['metadata']['orphaned_properties'][key] = value
+                    if key in node_props:
+                        value = node_props[key]
+                        node_metadata['orphaned_properties'][key] = value
                         # Keep in properties for backward compat, but mark as orphaned
-                        logger.info(f"Marked property '{key}' as orphaned in node {node['id']}")
+                        node_id = node.get('id') if isinstance(node, dict) else str(getattr(node, 'id', 'unknown'))
+                        logger.info(f"Marked property '{key}' as orphaned in node {node_id}")
                         orphaned_count += 1
         
         return orphaned_count
@@ -225,4 +287,79 @@ class OrphanManager:
         Returns:
             Dict of orphaned property key-value pairs
         """
-        return node.get('metadata', {}).get('orphaned_properties', {})
+        metadata: Dict[str, Any]
+        if isinstance(node, dict):
+            metadata = node.get('metadata', {}) or {}
+        else:
+            metadata = getattr(node, 'metadata', {}) or {}
+        return metadata.get('orphaned_properties', {})
+
+    @staticmethod
+    def reconcile_graph_with_template(graph: Any, template: Dict[str, Any]) -> Dict[str, Union[int, List[str]]]:
+        """
+        Reconcile existing graph data against a single template definition.
+
+        This is used when loading an existing project to identify already-orphaned
+        node types/properties relative to the currently loaded template.
+        """
+        node_types = template.get('node_types', []) if isinstance(template, dict) else []
+        template_type_ids = {nt.get('id') for nt in node_types if nt.get('id')}
+
+        allowed_props_by_type: Dict[str, Set[str]] = {}
+        for node_type in node_types:
+            type_id = node_type.get('id')
+            if not type_id:
+                continue
+            allowed_props = {'name'}
+            for prop in node_type.get('properties', []) or []:
+                prop_key = prop.get('id') or prop.get('key')
+                if prop_key:
+                    allowed_props.add(prop_key)
+            allowed_props_by_type[type_id] = allowed_props
+
+        orphaned_node_ids: List[str] = []
+        orphaned_properties_count = 0
+
+        for node_id, node in OrphanManager._iter_graph_nodes(graph):
+            node_type = OrphanManager._get_node_type(node)
+            metadata = OrphanManager._get_node_metadata(node)
+            properties = OrphanManager._get_node_properties(node)
+
+            if node_type not in template_type_ids:
+                metadata['orphaned'] = True
+                metadata['orphaned_reason'] = (
+                    f"Node type '{node_type}' not found in current template"
+                )
+                orphaned_node_ids.append(node_id)
+                continue
+
+            # Node type exists in template: clear stale orphaned-node marker if previously set
+            if metadata.get('orphaned'):
+                metadata.pop('orphaned', None)
+                metadata.pop('orphaned_reason', None)
+
+            allowed_props = allowed_props_by_type.get(node_type, {'name'})
+            existing_orphaned = metadata.get('orphaned_properties')
+            orphaned_props = dict(existing_orphaned) if isinstance(existing_orphaned, dict) else {}
+
+            for key, value in properties.items():
+                if key not in allowed_props:
+                    if key not in orphaned_props:
+                        orphaned_properties_count += 1
+                    orphaned_props[key] = value
+
+            # If template now supports a previously orphaned property, remove stale marker
+            for key in list(orphaned_props.keys()):
+                if key in allowed_props:
+                    orphaned_props.pop(key, None)
+
+            if orphaned_props:
+                metadata['orphaned_properties'] = orphaned_props
+            else:
+                metadata.pop('orphaned_properties', None)
+
+        return {
+            'orphaned_node_ids': orphaned_node_ids,
+            'affected_nodes': len(orphaned_node_ids),
+            'affected_properties': orphaned_properties_count,
+        }

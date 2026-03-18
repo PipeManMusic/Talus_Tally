@@ -1,0 +1,65 @@
+description: Template for testing mixed orphan detection. The companion project file
+  orphan_test_project.json contains an 'ot_legacy_widget' node (type removed from
+  this template) and an 'ot_task' node with 'risk_level'/'sprint_estimate' properties
+  removed from the current ot_task schema.
+id: orphan_test
+name: Orphan Test Template
+node_types:
+- allowed_asset_types: []
+  allowed_children:
+  - ot_milestone
+  icon: layers
+  id: ot_root
+  label: Test Project
+  properties:
+  - id: name
+    label: Project Name
+    required: true
+    type: text
+  - id: budget
+    label: Budget
+    required: false
+    type: number
+- allowed_asset_types: []
+  allowed_children:
+  - ot_task
+  icon: flag
+  id: ot_milestone
+  label: Milestone
+  properties:
+  - id: name
+    label: Milestone Name
+    required: true
+    type: text
+  - id: status
+    label: Status
+    required: false
+    type: text
+  - id: target_date
+    label: Target Date
+    required: false
+    type: date
+- allowed_asset_types: []
+  allowed_children: []
+  icon: checklist
+  id: ot_task
+  label: Task
+  properties:
+  - id: name
+    label: Task Name
+    required: true
+    type: text
+  - id: status
+    label: Status
+    required: false
+    type: text
+  - id: assignee
+    label: Assignee
+    required: false
+    type: text
+  - id: notes
+    label: Notes
+    required: false
+    type: text
+uuid: ef83575c-2e31-43c8-bf17-4f12cf2c0253
+version: '1.0'

@@ -232,6 +232,14 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
           { id: 'hourly_rate_friday', type: 'number' },
           { id: 'hourly_rate_saturday', type: 'number' },
           { id: 'hourly_rate_sunday', type: 'number' },
+          { id: 'overtime_capacity', type: 'number' },
+          { id: 'overtime_capacity_monday', type: 'number' },
+          { id: 'overtime_capacity_tuesday', type: 'number' },
+          { id: 'overtime_capacity_wednesday', type: 'number' },
+          { id: 'overtime_capacity_thursday', type: 'number' },
+          { id: 'overtime_capacity_friday', type: 'number' },
+          { id: 'overtime_capacity_saturday', type: 'number' },
+          { id: 'overtime_capacity_sunday', type: 'number' },
           { id: 'system_role', type: 'text' },
         ] as const;
 
@@ -341,30 +349,63 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
   // latest value without depending on it (which would recreate the callback
   // on every save and break memo on NodeTypeEditor, resetting child state).
   const currentTemplateRef = useRef(currentTemplate);
+  const latestNodeTypesRequestRef = useRef(0);
   useEffect(() => {
     currentTemplateRef.current = currentTemplate;
   }, [currentTemplate]);
 
   const handleNodeTypesChange = useCallback(async (nodeTypes: NodeType[]) => {
+    const requestId = latestNodeTypesRequestRef.current + 1;
+    latestNodeTypesRequestRef.current = requestId;
+    const previousTemplate = currentTemplateRef.current;
+
+    // Normalize node types so stale/malformed allowed_children references
+    // don't cause backend validation failures after deletes/renames.
+    const validTypeIds = new Set(nodeTypes.map((nodeType) => nodeType.id));
+    const normalizedNodeTypes = nodeTypes.map((nodeType) => {
+      const rawChildren = Array.isArray(nodeType.allowed_children)
+        ? nodeType.allowed_children
+        : [];
+      const cleanedChildren = Array.from(new Set(
+        rawChildren.filter((childId) => !!childId && childId !== nodeType.id && validTypeIds.has(childId))
+      ));
+      return {
+        ...nodeType,
+        allowed_children: cleanedChildren,
+      };
+    });
+
     // Update local state (optimistic)
-    updateCurrentTemplate({ node_types: nodeTypes });
+    updateCurrentTemplate({ node_types: normalizedNodeTypes });
 
     // Persist change to backend
-    const template = currentTemplateRef.current;
+    const template = previousTemplate;
     if (template) {
       setLoading(true);
       setError(null);
       try {
-        const updated = { ...template, node_types: nodeTypes };
+        const updated = { ...template, node_types: normalizedNodeTypes };
         const result = await apiClient.updateTemplate(updated.id, updated);
+        if (requestId !== latestNodeTypesRequestRef.current) {
+          return;
+        }
         setCurrentTemplate(result?.template ?? updated);
         setOriginalTemplate(JSON.parse(JSON.stringify(result?.template ?? updated)));
         setSavedSuccessfully(true);
         setTimeout(() => setSavedSuccessfully(false), 3000);
       } catch (err) {
+        if (requestId !== latestNodeTypesRequestRef.current) {
+          return;
+        }
+        if (previousTemplate) {
+          setCurrentTemplate(previousTemplate);
+        }
         setError(err instanceof Error ? err.message : 'Failed to update template');
+        throw err;
       } finally {
-        setLoading(false);
+        if (requestId === latestNodeTypesRequestRef.current) {
+          setLoading(false);
+        }
       }
     }
   }, [updateCurrentTemplate]);
@@ -773,6 +814,7 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
         <div className="bg-bg-dark border border-border rounded p-6">
           <h2 className="text-lg font-semibold text-fg-primary mb-4">Node Types</h2>
           <NodeTypeEditor
+            key={currentTemplate.node_types.map((nodeType) => nodeType.id).join('|')}
             nodeTypes={currentTemplate.node_types}
             onChange={handleNodeTypesChange}
           />

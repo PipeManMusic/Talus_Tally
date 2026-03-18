@@ -2,6 +2,7 @@ import { useState, memo, useEffect, useRef } from 'react';
 import { Plus, Trash2, ChevronDown, ChevronUp, AlertCircle, Info, Lock } from 'lucide-react';
 import { apiClient, API_BASE_URL } from '../api/client';
 import { ColorPicker } from '../components/ui/ColorPicker';
+import { Modal } from '../components/ui/Modal';
 import type { IconCatalog, IndicatorsConfig, IndicatorTheme } from '../api/client';
 import type { MetaSchema } from '../api/client';
 
@@ -137,6 +138,11 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
   const [indicatorSvgCache, setIndicatorSvgCache] = useState<Record<string, string>>({});
   const [markupProfiles, setMarkupProfiles] = useState<Array<{ id: string; label: string }>>([]);
   const deletingRef = useRef<boolean>(false);
+  const [pendingNodeTypeDelete, setPendingNodeTypeDelete] = useState<{
+    displayedId: string;
+    sourceId: string;
+    nodeTypeLabel: string;
+  } | null>(null);
 
   // Merge props with pending optimistic updates for display
   const displayNodeTypes = nodeTypes.map(nt => ({
@@ -422,6 +428,70 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
         system_locked: true,
       },
       {
+        id: 'overtime_capacity',
+        label: 'Overtime Capacity (Hours)',
+        type: 'number',
+        required: false,
+        value: 0,
+        system_locked: true,
+      },
+      {
+        id: 'overtime_capacity_monday',
+        label: 'Overtime Capacity Monday (Hours)',
+        type: 'number',
+        required: false,
+        value: 0,
+        system_locked: true,
+      },
+      {
+        id: 'overtime_capacity_tuesday',
+        label: 'Overtime Capacity Tuesday (Hours)',
+        type: 'number',
+        required: false,
+        value: 0,
+        system_locked: true,
+      },
+      {
+        id: 'overtime_capacity_wednesday',
+        label: 'Overtime Capacity Wednesday (Hours)',
+        type: 'number',
+        required: false,
+        value: 0,
+        system_locked: true,
+      },
+      {
+        id: 'overtime_capacity_thursday',
+        label: 'Overtime Capacity Thursday (Hours)',
+        type: 'number',
+        required: false,
+        value: 0,
+        system_locked: true,
+      },
+      {
+        id: 'overtime_capacity_friday',
+        label: 'Overtime Capacity Friday (Hours)',
+        type: 'number',
+        required: false,
+        value: 0,
+        system_locked: true,
+      },
+      {
+        id: 'overtime_capacity_saturday',
+        label: 'Overtime Capacity Saturday (Hours)',
+        type: 'number',
+        required: false,
+        value: 0,
+        system_locked: true,
+      },
+      {
+        id: 'overtime_capacity_sunday',
+        label: 'Overtime Capacity Sunday (Hours)',
+        type: 'number',
+        required: false,
+        value: 0,
+        system_locked: true,
+      },
+      {
         id: 'system_role',
         label: 'System Role',
         type: 'text',
@@ -509,77 +579,153 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
       });
   };
 
-  const removeNodeType = (id: string) => {
+  const executeNodeTypeDelete = (displayedId: string, sourceId: string, nodeTypeLabel: string) => {
     // Prevent concurrent deletions
     if (deletingRef.current || loading) {
       console.warn('Delete operation already in progress, ignoring duplicate call');
+      console.warn('[TemplateEditor::DELETE] Delete ignored due to in-progress operation', {
+        deletingInProgress: deletingRef.current,
+        loading,
+      });
       return;
     }
-    
-    // Prevent deletion if only one node type remains
-    if (nodeTypes.length <= 1) {
+
+    deletingRef.current = true;
+
+    console.log('[TemplateEditor::DELETE] Deletion confirmed', {
+      label: nodeTypeLabel,
+      displayedId,
+      sourceId,
+    });
+
+    const pendingRenamedId = pendingUpdates[sourceId]?.id;
+    const idsToDelete = new Set(
+      [sourceId, displayedId, pendingRenamedId]
+        .filter((value): value is string => typeof value === 'string' && value.length > 0)
+    );
+
+    let filtered: NodeType[];
+    try {
+      filtered = nodeTypes
+        .filter(nt => !idsToDelete.has(nt.id))
+        .map(nt => {
+          const currentChildren = Array.isArray(nt.allowed_children) ? nt.allowed_children : [];
+          const nextChildren = normalizeAllowedChildren(
+            currentChildren.filter((childId) => !idsToDelete.has(childId))
+          );
+          const unchanged =
+            nextChildren.length === currentChildren.length &&
+            nextChildren.every((childId, idx) => childId === currentChildren[idx]);
+          if (unchanged) {
+            return nt;
+          }
+          return {
+            ...nt,
+            allowed_children: nextChildren,
+          };
+        });
+      console.log('[TemplateEditor::DELETE] Prepared filtered node type payload', {
+        originalCount: nodeTypes.length,
+        filteredCount: filtered.length,
+        deletedSourceId: sourceId,
+        idsToDelete: Array.from(idsToDelete),
+      });
+    } catch (err) {
+      console.error(`✗ Failed to prepare node type deletion: ${err instanceof Error ? err.message : String(err)}`);
       setErrors(prev => ({
         ...prev,
-        [id]: 'At least one node type is required',
+        [sourceId]: `Failed to delete: ${err instanceof Error ? err.message : 'Unknown error'}`,
       }));
-      return;
-    }
-    
-    const nodeType = nodeTypes.find(nt => nt.id === id);
-    if (!nodeType) {
-      console.error(`Node type ${id} not found`);
-      return;
-    }
-    
-    const nodeTypeLabel = nodeType.label || id;
-    
-    // Set flag to prevent double-clicks
-    deletingRef.current = true;
-    
-    // Show confirmation BEFORE any state changes
-    const confirmed = window.confirm(
-      `Delete "${nodeTypeLabel}" node type?\n\n` +
-      `⚠️ IMPORTANT: If any nodes of this type exist in active projects:\n\n` +
-      `• They will become "orphaned nodes"\n` +
-      `• Orphaned nodes are preserved with all their data\n` +
-      `• You can still view and edit their properties\n` +
-      `• You can delete them if no longer needed\n` +
-      `• Children CANNOT be added to orphaned nodes\n` +
-      `• They exist outside the template structure\n\n` +
-      `This protects your data while allowing template evolution.\n\n` +
-      `Continue with deletion?`
-    );
-    
-    // CRITICAL: Only proceed if user explicitly confirmed
-    if (confirmed !== true) {
-      console.log(`Deletion of ${nodeTypeLabel} cancelled by user`);
       deletingRef.current = false;
       return;
     }
-    
-    // User confirmed - proceed with deletion
-    console.log(`Deleting node type: ${nodeTypeLabel}`);
-    const filtered = nodeTypes.filter(nt => nt.id !== id);
+
     setLoading(true);
-    
+
     onChange(filtered)
       .then(() => {
-        console.log(`✓ Node type ${nodeTypeLabel} deleted successfully`);
+        console.log('[TemplateEditor::DELETE] Delete API/update succeeded', {
+          label: nodeTypeLabel,
+          displayedId,
+          sourceId,
+        });
         const newErrors = { ...errors };
-        delete newErrors[id];
+        delete newErrors[sourceId];
         setErrors(newErrors);
+        setPendingUpdates(prev => {
+          const next = { ...prev };
+          delete next[sourceId];
+          return next;
+        });
       })
       .catch((err) => {
         console.error(`✗ Failed to delete node type: ${err instanceof Error ? err.message : String(err)}`);
+        console.error('[TemplateEditor::DELETE] Delete API/update failed', {
+          displayedId,
+          sourceId,
+          error: err instanceof Error ? err.message : String(err),
+        });
         setErrors(prev => ({
           ...prev,
-          [id]: `Failed to delete: ${err instanceof Error ? err.message : 'Unknown error'}`,
+          [sourceId]: `Failed to delete: ${err instanceof Error ? err.message : 'Unknown error'}`,
         }));
       })
       .finally(() => {
         setLoading(false);
         deletingRef.current = false;
       });
+  };
+
+  const removeNodeType = (id: string) => {
+    console.log('[TemplateEditor::DELETE] Delete requested for displayed node type id:', id);
+
+    // Prevent concurrent deletions
+    if (deletingRef.current || loading) {
+      console.warn('Delete operation already in progress, ignoring duplicate call');
+      console.warn('[TemplateEditor::DELETE] Delete ignored due to in-progress operation', {
+        deletingInProgress: deletingRef.current,
+        loading,
+      });
+      return;
+    }
+    
+    const pendingIdEntry = Object.entries(pendingUpdates).find(([, updates]) => updates?.id === id);
+    const sourceId = pendingIdEntry?.[0] || id;
+    console.log('[TemplateEditor::DELETE] Resolved delete IDs', { displayedId: id, sourceId });
+
+    // Prevent deletion if only one node type remains
+    if (nodeTypes.length <= 1) {
+      console.warn('[TemplateEditor::DELETE] Delete blocked: only one node type remains');
+      setErrors(prev => ({
+        ...prev,
+        [sourceId]: 'At least one node type is required',
+      }));
+      return;
+    }
+    
+    const nodeType = nodeTypes.find(nt => nt.id === sourceId);
+    if (!nodeType) {
+      console.error(`Node type ${id} (resolved source: ${sourceId}) not found`);
+      console.error('[TemplateEditor::DELETE] Source node type not found in current nodeTypes array', {
+        displayedId: id,
+        sourceId,
+        nodeTypeIds: nodeTypes.map((nt) => nt.id),
+      });
+      return;
+    }
+    
+    const nodeTypeLabel = nodeType.label || id;
+
+    setPendingNodeTypeDelete({
+      displayedId: id,
+      sourceId,
+      nodeTypeLabel,
+    });
+    console.log('[TemplateEditor::DELETE] Awaiting modal confirmation', {
+      label: nodeTypeLabel,
+      displayedId: id,
+      sourceId,
+    });
   };
 
   const updateNodeType = (id: string, updates: Partial<NodeType>) => {
@@ -1308,6 +1454,48 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
           </div>
         ))}
       </div>
+
+      <Modal
+        isOpen={!!pendingNodeTypeDelete}
+        onClose={() => {
+          if (pendingNodeTypeDelete) {
+            console.log('[TemplateEditor::DELETE] User cancelled deletion');
+          }
+          setPendingNodeTypeDelete(null);
+        }}
+        title="Delete Node Type"
+        actions={(
+          <>
+            <button
+              onClick={() => {
+                console.log('[TemplateEditor::DELETE] User cancelled deletion');
+                setPendingNodeTypeDelete(null);
+              }}
+              className="px-3 py-2 text-sm border border-border rounded text-fg-primary hover:bg-bg-dark transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                if (!pendingNodeTypeDelete) return;
+                const { displayedId, sourceId, nodeTypeLabel } = pendingNodeTypeDelete;
+                setPendingNodeTypeDelete(null);
+                executeNodeTypeDelete(displayedId, sourceId, nodeTypeLabel);
+              }}
+              className="px-3 py-2 text-sm rounded bg-status-danger text-white hover:opacity-90 transition-opacity"
+            >
+              Delete Node Type
+            </button>
+          </>
+        )}
+      >
+        <p className="text-sm text-fg-primary mb-3">
+          Delete "{pendingNodeTypeDelete?.nodeTypeLabel || 'this node type'}"?
+        </p>
+        <p className="text-xs text-fg-secondary">
+          Existing project nodes of this type become orphaned and remain read-only until template or data is cleaned up.
+        </p>
+      </Modal>
     </div>
   );
 }

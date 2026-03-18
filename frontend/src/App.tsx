@@ -67,7 +67,7 @@ function App() {
   const [inspectorTab, setInspectorTab] = useState<'properties' | 'filters'>('properties');
   const { filterTabVisible, toggleFilterTabVisible, savedFilterSets, setSavedFilterSets } = useFilterStore();
   const [activeView, setActiveView] = useState<ViewType>('graph');
-  const [activeToolsTab, setActiveToolsTab] = useState<'velocity' | 'blocking' | 'budget' | 'gantt' | 'manpower' | 'charts'>('velocity');
+  const [activeToolsTab, setActiveToolsTab] = useState<'velocity' | 'blocking' | 'budget' | 'gantt' | 'manpower' | 'charts' | 'agile'>('velocity');
   const [sessionId, setSessionId] = useState<string | null>(null);
 
   // Debug: log whenever sessionId changes
@@ -467,6 +467,7 @@ function App() {
         id: node.id,
         name: node.properties?.name || node.type,
         type: (node.type as any) || 'project',
+        metadata: node.metadata,
         indicator_id: node.indicator_id ?? undefined,
         indicator_set: node.indicator_set ?? undefined,
         icon_id: iconId,
@@ -489,6 +490,7 @@ function App() {
                 selected: false,
                 parent_id: node.id,
                 properties: {},
+                metadata: undefined,
               };
         }) || []
       };
@@ -846,15 +848,109 @@ function App() {
     return currentSelectedNodeId ? storeNodes[currentSelectedNodeId] : null;
   }, [currentSelectedNodeId, storeNodes]);
 
+  const isKnownTemplateNodeType = useMemo(() => {
+    if (!currentSelectedNodeData || !templateSchema?.node_types) {
+      return false;
+    }
+    return templateSchema.node_types.some((nodeType) => nodeType.id === currentSelectedNodeData.type);
+  }, [currentSelectedNodeData, templateSchema]);
+
+  const currentNodeOrphanedReason = useMemo(() => {
+    const reason = currentSelectedNodeData?.metadata?.orphaned_reason;
+    return typeof reason === 'string' ? reason : undefined;
+  }, [currentSelectedNodeData]);
+
+  const isCurrentNodeOrphaned = useMemo(() => {
+    const explicitlyMarked = currentSelectedNodeData?.metadata?.orphaned === true;
+    if (!explicitlyMarked) {
+      return false;
+    }
+
+    if (!isKnownTemplateNodeType) {
+      return true;
+    }
+
+    const reason = (currentNodeOrphanedReason || '').toLowerCase();
+    return reason.includes('not found in current template') || reason.includes('removed from template');
+  }, [currentNodeOrphanedReason, currentSelectedNodeData, isKnownTemplateNodeType]);
+
+  const currentNodeOrphanedProperties = useMemo(() => {
+    if (!currentSelectedNodeData) {
+      return undefined;
+    }
+
+    const fromMetadata = currentSelectedNodeData.metadata?.orphaned_properties;
+    const merged: Record<string, string | number> =
+      fromMetadata && typeof fromMetadata === 'object' ? { ...fromMetadata as Record<string, string | number> } : {};
+
+    if (templateSchema?.node_types) {
+      const nodeTypeSchema = templateSchema.node_types.find((nodeType) => nodeType.id === currentSelectedNodeData.type);
+      if (nodeTypeSchema) {
+        const allowedKeys = new Set<string>(['name', ...nodeTypeSchema.properties.map((property) => property.id)]);
+        const runtimeNonTemplateKeys = new Set<string>(['position']);
+        Object.entries(currentSelectedNodeData.properties || {}).forEach(([key, value]) => {
+          if (allowedKeys.has(key) || runtimeNonTemplateKeys.has(key)) {
+            return;
+          }
+          if (typeof value === 'string' || typeof value === 'number') {
+            merged[key] = value;
+          }
+        });
+      }
+    }
+
+    return Object.keys(merged).length > 0 ? merged : undefined;
+  }, [currentSelectedNodeData, templateSchema]);
+
   const currentNodeProperties = useMemo(() => {
-    if (!currentSelectedNodeData || !templateSchema) {
+    if (!currentSelectedNodeData) {
       return [];
+    }
+
+    const rawProperties = currentSelectedNodeData.properties || {};
+
+    // Fallback for orphaned/unknown node types (or when schema is unavailable):
+    // expose existing stored properties so users can recover data.
+    if (!templateSchema) {
+      return Object.entries(rawProperties).map(([key, value]) => {
+        const normalizedValue = value ?? '';
+        const fallbackType: NodeProperty['type'] =
+          typeof normalizedValue === 'number'
+            ? 'number'
+            : typeof normalizedValue === 'boolean'
+              ? 'checkbox'
+              : 'text';
+        return {
+          id: key,
+          name: key,
+          type: fallbackType,
+          value: normalizedValue,
+          required: key === 'name',
+          group: key === 'name' ? 'Identity' : 'Details',
+        };
+      });
     }
 
     // Find the node type schema
     const nodeTypeSchema = templateSchema.node_types.find(nt => nt.id === currentSelectedNodeData.type);
     if (!nodeTypeSchema) {
-      return [];
+      return Object.entries(rawProperties).map(([key, value]) => {
+        const normalizedValue = value ?? '';
+        const fallbackType: NodeProperty['type'] =
+          typeof normalizedValue === 'number'
+            ? 'number'
+            : typeof normalizedValue === 'boolean'
+              ? 'checkbox'
+              : 'text';
+        return {
+          id: key,
+          name: key,
+          type: fallbackType,
+          value: normalizedValue,
+          required: key === 'name',
+          group: key === 'name' ? 'Identity' : 'Details',
+        };
+      });
     }
 
     // Start with name as the first editable property
@@ -1348,7 +1444,7 @@ function App() {
       return;
     }
 
-    const templateId = parsed.template_id || null;
+    const templateId = parsed.template_id || parsed.graph?.template_id || null;
     let finalGraph = normalizedGraph;
 
     // Ensure we have a valid session for this file
@@ -1388,6 +1484,18 @@ function App() {
       console.log('✓ Graph loaded into backend session');
       finalGraph = normalizeGraph(loadResult.graph ?? loadResult);
       setCurrentTemplateId(templateId);
+
+      const orphanInfo = loadResult?.orphan_info;
+      const orphanedNodes = Number(orphanInfo?.total_orphaned_nodes ?? 0);
+      const orphanedProperties = Number(orphanInfo?.total_orphaned_properties ?? 0);
+      if (orphanedNodes > 0 || orphanedProperties > 0) {
+        alert(
+          `This project contains orphaned data under the current template.\n\n` +
+          `Orphaned nodes: ${orphanedNodes}\n` +
+          `Orphaned properties: ${orphanedProperties}\n\n` +
+          `The data was preserved. Orphaned nodes and properties are read-only until the template is fixed or the orphaned data is deleted.`
+        );
+      }
       
       if (templateId) {
         try {
@@ -2375,6 +2483,18 @@ function App() {
               nodes={storeNodes} 
               selectedNodeId={selectedNode}
               onNodeSelect={setSelectedNode}
+              onNodePropertyChange={async ({ nodeId, propertyId, oldValue, newValue }) => {
+                const result = await safeExecuteCommand('UpdateProperty', {
+                  node_id: nodeId,
+                  property_id: propertyId,
+                  old_value: oldValue,
+                  new_value: newValue,
+                });
+                const graph = normalizeGraph(result.graph ?? result);
+                setCurrentGraph(graph);
+                setIsDirty(result.is_dirty ?? true);
+                setGanttRefreshSignal((prev) => prev + 1);
+              }}
               activeTab={activeToolsTab}
               onBlockingCountsChange={handleBlockingCountsChange}
               onBlockingDirtyChange={setIsDirty}
@@ -2432,10 +2552,16 @@ function App() {
               nodeType={currentSelectedNodeData?.type || undefined}
               properties={currentNodeProperties}
               linkedAsset={activeView === 'graph' && currentLinkedAsset ? currentLinkedAsset : undefined}
-              orphanedProperties={activeView === 'graph' ? currentSelectedNodeData?.metadata?.orphaned_properties as Record<string, string | number> | undefined : undefined}
+              orphanedProperties={activeView === 'graph' ? currentNodeOrphanedProperties : undefined}
+              isReadOnly={activeView === 'graph' ? isCurrentNodeOrphaned : false}
+              readOnlyReason={activeView === 'graph' ? currentNodeOrphanedReason : undefined}
               onPropertyChange={(propId, value) => {
                 if (!currentSelectedNodeData) {
                   alert('No node selected');
+                  return;
+                }
+                if (isCurrentNodeOrphaned) {
+                  alert('This node is orphaned and read-only until the template is fixed or orphaned data is deleted.');
                   return;
                 }
                 safeExecuteCommand('UpdateProperty', {

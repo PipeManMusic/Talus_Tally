@@ -4,6 +4,8 @@ Tests for Orphan Manager functionality.
 
 import pytest
 from backend.infra.orphan_manager import OrphanManager
+from backend.core.graph import ProjectGraph
+from backend.core.node import Node
 
 
 def test_find_orphaned_node_types():
@@ -292,3 +294,76 @@ def test_get_orphaned_properties_empty():
     orphaned = OrphanManager.get_orphaned_properties(node)
     
     assert orphaned == {}
+
+
+def test_reconcile_graph_with_template_marks_orphaned_nodes_and_properties():
+    """Existing project data should be reconciled against the current template on load."""
+    graph = ProjectGraph(template_id='test_template', template_version='1.0.0')
+
+    scene_node = Node(blueprint_type_id='scene', name='Scene 1')
+    scene_node.properties = {
+        'name': 'Scene 1',
+        'description': 'Kept',
+        'legacy_field': 'stale value',
+    }
+    graph.add_node(scene_node)
+
+    removed_type_node = Node(blueprint_type_id='person', name='Person 1')
+    removed_type_node.properties = {'name': 'Person 1'}
+    graph.add_node(removed_type_node)
+
+    template = {
+        'id': 'test_template',
+        'node_types': [
+            {
+                'id': 'scene',
+                'properties': [
+                    {'id': 'name'},
+                    {'id': 'description'},
+                ],
+            }
+        ],
+    }
+
+    result = OrphanManager.reconcile_graph_with_template(graph, template)
+
+    assert result['affected_nodes'] == 1
+    assert str(removed_type_node.id) in result['orphaned_node_ids']
+    assert result['affected_properties'] == 1
+
+    assert removed_type_node.metadata.get('orphaned') is True
+    assert 'not found in current template' in removed_type_node.metadata.get('orphaned_reason', '')
+
+    assert scene_node.metadata.get('orphaned') is not True
+    assert scene_node.metadata['orphaned_properties']['legacy_field'] == 'stale value'
+
+
+def test_reconcile_graph_with_template_accepts_property_key_definitions():
+    """Template properties may be defined with key instead of id and should not be orphaned."""
+    graph = ProjectGraph(template_id='test_template', template_version='1.0.0')
+
+    scene_node = Node(blueprint_type_id='scene', name='Scene 1')
+    scene_node.properties = {
+        'name': 'Scene 1',
+        'description': 'Kept',
+    }
+    graph.add_node(scene_node)
+
+    template = {
+        'id': 'test_template',
+        'node_types': [
+            {
+                'id': 'scene',
+                'properties': [
+                    {'key': 'name'},
+                    {'key': 'description'},
+                ],
+            }
+        ],
+    }
+
+    result = OrphanManager.reconcile_graph_with_template(graph, template)
+
+    assert result['affected_nodes'] == 0
+    assert result['affected_properties'] == 0
+    assert 'orphaned_properties' not in scene_node.metadata

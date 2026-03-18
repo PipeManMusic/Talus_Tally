@@ -5,15 +5,22 @@ import { BudgetView } from '../components/tools/BudgetView';
 import { GanttView } from '../components/tools/GanttView';
 import { ManpowerView } from '../components/tools/ManpowerView';
 import { ChartsView } from '../components/tools/ChartsView';
+import { AgileView } from '../components/tools/AgileView';
 import { apiClient, type Node, type TemplateSchema, type VelocityScore } from '../api/client';
 
-export type ToolsTab = 'velocity' | 'blocking' | 'budget' | 'gantt' | 'manpower' | 'charts';
+export type ToolsTab = 'velocity' | 'blocking' | 'budget' | 'gantt' | 'manpower' | 'charts' | 'agile';
 
 interface ToolsViewProps {
   sessionId?: string | null;
   nodes?: Record<string, Node>;
   selectedNodeId?: string | null;
   onNodeSelect?: (nodeId: string | null) => void;
+  onNodePropertyChange?: (args: {
+    nodeId: string;
+    propertyId: string;
+    oldValue: unknown;
+    newValue: unknown;
+  }) => Promise<void>;
   activeTab?: ToolsTab;
   onBlockingCountsChange?: (nodeCount: number, edgeCount: number) => void;
   onBlockingDirtyChange?: (isDirty: boolean) => void;
@@ -30,6 +37,7 @@ export function ToolsView({
   nodes = {}, 
   selectedNodeId,
   onNodeSelect,
+  onNodePropertyChange,
   activeTab = 'velocity',
   onBlockingCountsChange,
   onBlockingDirtyChange,
@@ -139,6 +147,16 @@ export function ToolsView({
             nodes={nodes}
             velocityScores={velocityScores}
             templateSchema={templateSchema}
+          />
+        )}
+        {activeTab === 'agile' && (
+          <AgileView
+            nodes={nodes}
+            velocityScores={velocityScores}
+            sessionId={sessionId}
+            selectedNodeId={selectedNodeId}
+            onNodeSelect={onNodeSelect}
+            onNodePropertyChange={onNodePropertyChange}
           />
         )}
       </div>

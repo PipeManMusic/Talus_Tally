@@ -13,5 +13,6 @@ class Node:
         self.name: str = name
         self.created_at: datetime = datetime.now()
         self.properties: Dict[str, Any] = {}
+        self.metadata: Dict[str, Any] = {}
         self.children: List[UUID] = []
         self.parent_id: Optional[UUID] = None

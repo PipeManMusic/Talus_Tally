@@ -2035,7 +2035,7 @@ def load_graph_into_session(session_id):
             }), 400
         
         graph_data = data['graph']
-        template_id = data.get('template_id')
+        template_id = data.get('template_id') or graph_data.get('template_id')
         blocking_relationships = data.get('blocking_relationships') or []
         project_file_path = data.get('project_file_path')  # Optional path for file watching
 
@@ -2043,7 +2043,7 @@ def load_graph_into_session(session_id):
         from backend.core.graph import ProjectGraph
         
         # Extract template info from saved data
-        saved_template_version = data.get('template_version')
+        saved_template_version = data.get('template_version') or graph_data.get('template_version')
         
         # Default to '0.0.0' if template_version is missing (legacy project)
         if not saved_template_version:
@@ -2077,6 +2077,8 @@ def load_graph_into_session(session_id):
                 id=node_uuid
             )
             node.properties = dict(properties)
+            raw_metadata = node_data.get('metadata', {})
+            node.metadata = dict(raw_metadata) if isinstance(raw_metadata, dict) else {}
             graph.add_node(node)
 
             children = node_data.get('children') or node_data.get('child_ids') or node_data.get('childIds') or []
@@ -2125,12 +2127,41 @@ def load_graph_into_session(session_id):
         
         # Load blueprint if template_id provided
         blueprint = None
+        orphan_info = {
+            'orphaned_sessions': [],
+            'total_orphaned_nodes': 0,
+            'total_orphaned_properties': 0,
+        }
         if template_id:
             try:
                 loader = SchemaLoader()
                 blueprint = loader.load(f'{template_id}.yaml')
                 current_version = blueprint.version if hasattr(blueprint, 'version') else '0.1.0'
                 logger.info(f"[API] Loaded blueprint for template_id={template_id}, version={current_version}")
+
+                # Reconcile loaded graph against current template to mark orphaned nodes/properties.
+                # This covers opening existing project files after template changes.
+                try:
+                    from backend.infra.template_persistence import TemplatePersistence
+                    persistence = TemplatePersistence()
+                    template_dict = persistence.load_template(template_id)
+                    reconcile_result = OrphanManager.reconcile_graph_with_template(graph, template_dict)
+                    if reconcile_result['affected_nodes'] > 0 or reconcile_result['affected_properties'] > 0:
+                        orphan_info['orphaned_sessions'].append({
+                            'session_id': session_id,
+                            'orphaned_count': reconcile_result['affected_nodes'],
+                            'orphaned_node_ids': reconcile_result['orphaned_node_ids'],
+                            'orphaned_property_count': reconcile_result['affected_properties'],
+                        })
+                        orphan_info['total_orphaned_nodes'] = reconcile_result['affected_nodes']
+                        orphan_info['total_orphaned_properties'] = reconcile_result['affected_properties']
+                        logger.info(
+                            "[API] Reconciled loaded graph with template: %s orphaned nodes, %s orphaned properties",
+                            reconcile_result['affected_nodes'],
+                            reconcile_result['affected_properties'],
+                        )
+                except Exception as orphan_err:
+                    logger.warning("[API] Failed to reconcile graph orphans during load: %s", orphan_err, exc_info=True)
                 
                 # Check if migration is needed
                 if graph.template_version and graph.template_version != current_version:
@@ -2210,7 +2241,8 @@ def load_graph_into_session(session_id):
         return jsonify({
             'session_id': session_id,
             'graph': serialized,
-            'template_id': template_id
+            'template_id': template_id,
+            'orphan_info': orphan_info,
         }), 200
         
     except Exception as e:
@@ -2668,13 +2700,6 @@ def editor_update_template(template_id):
                         
                         # Get graph for this session
                         graph = session_data.get('graph', {})
-                        if not isinstance(graph, dict):
-                            logger.warning(
-                                "Skipping orphan marking for session %s: unsupported graph type %s",
-                                session_id,
-                                type(graph).__name__,
-                            )
-                            continue
 
                         orphaned_node_count = 0
                         orphaned_prop_count = 0
@@ -3371,6 +3396,7 @@ def _serialize_graph(graph, blueprint=None):
             'blueprint_type_id': node.blueprint_type_id,
             'name': node.name,
             'properties': node.properties,
+            'metadata': getattr(node, 'metadata', {}) if isinstance(getattr(node, 'metadata', {}), dict) else {},
             'children': [serialize_node(child, branch_visited, new_ancestry) for child in child_nodes]
         }
 

@@ -84,6 +84,9 @@ export default function CustomNode({ data, selected }: NodeProps<CustomNodeData>
   const inputs = (nodeData.properties?.inputs || []) as Array<{name?: string}>;
   const outputs = (nodeData.properties?.outputs || []) as Array<{name?: string}>;
   const indicatorTheme = nodeData.indicator_theme;
+  const orphanedReason = typeof nodeData.metadata?.orphaned_reason === 'string' ? nodeData.metadata.orphaned_reason.toLowerCase() : '';
+  const isOrphaned = Boolean(nodeData.metadata?.orphaned)
+    && (orphanedReason.includes('not found in current template') || orphanedReason.includes('removed from template'));
   const textColor = indicatorTheme?.text_color;
   const textStyle = indicatorTheme?.text_style;
   const indicatorColor = indicatorTheme?.indicator_color;
@@ -132,14 +135,17 @@ export default function CustomNode({ data, selected }: NodeProps<CustomNodeData>
     <div
       className={`custom-node ${selected ? 'selected' : ''}`}
       data-shape={nodeData.schema_shape}
+      title={isOrphaned ? 'Orphaned node' : undefined}
       style={{
-        background: bgColor,
-        border: selected ? '2px solid #e63946' : '2px solid #a8dadc',
+        background: isOrphaned ? 'rgba(127, 29, 29, 0.45)' : bgColor,
+        border: selected ? '2px solid #e63946' : isOrphaned ? '2px solid #e63946' : '2px solid #a8dadc',
         borderRadius,
         padding: '12px 8px',
         minWidth: '100px',
         color: '#f1faee',
         boxShadow: selected ? '0 0 8px rgba(230, 57, 70, 0.5)' : 'none',
+        opacity: isOrphaned ? 0.82 : 1,
+        filter: isOrphaned ? 'saturate(0.85)' : 'none',
         transition: 'all 0.2s ease',
       }}
     >
@@ -171,10 +177,11 @@ export default function CustomNode({ data, selected }: NodeProps<CustomNodeData>
 
       {/* Node content */}
       <div className="flex flex-col items-center gap-1">
+        {isOrphaned && <div className="text-[10px] font-semibold text-status-danger">⚠ Orphaned</div>}
         <div 
-          className="text-xs font-semibold text-center truncate w-full"
+          className={`text-xs font-semibold text-center truncate w-full ${isOrphaned ? 'text-status-danger' : ''}`}
           style={{
-            color: textColor,
+            color: isOrphaned ? undefined : textColor,
             fontWeight: textStyle === 'bold' ? 'bold' : 'semibold',
             textDecoration: textStyle === 'strikethrough' ? 'line-through' : 'none',
           }}

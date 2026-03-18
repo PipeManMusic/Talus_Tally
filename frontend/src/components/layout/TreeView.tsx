@@ -248,6 +248,11 @@ function TreeItem({
   const [iconCacheVersion, setIconCacheVersion] = useState(0);
   const rowRef = useRef<HTMLDivElement>(null);
   const isSelected = node.selected === true;
+  const orphanedReason = typeof node.metadata?.orphaned_reason === 'string' ? node.metadata.orphaned_reason.toLowerCase() : '';
+  const hasTemplateType = !nodeTypeSchemas || Boolean(nodeTypeSchemas[node.type]);
+  const isOrphaned = Boolean(node.metadata?.orphaned) && (
+    !hasTemplateType || orphanedReason.includes('not found in current template') || orphanedReason.includes('removed from template')
+  );
 
   const parentId = (node as any).parent_id ?? null;
   const indicatorDefaults: Record<string, string> = {
@@ -677,6 +682,7 @@ function TreeItem({
   const rowClasses = [
     'relative flex w-full items-center gap-1 px-2 py-1.5 rounded-sm cursor-pointer transition-colors border-l-2 border-transparent',
     isGhosted ? 'opacity-30' : '',
+    isOrphaned ? 'bg-status-danger/10 border-l-status-danger/60' : '',
     isSelected
       ? 'bg-bg-selection border-l-4 border-accent-primary shadow-inner ring-1 ring-accent-primary/60'
       : isMoveTarget
@@ -714,6 +720,7 @@ function TreeItem({
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
+        title={isOrphaned ? 'Orphaned node' : undefined}
       >
         {isSelected && (
           <span
@@ -846,13 +853,14 @@ function TreeItem({
         </span>
 
         <span
-          className="text-sm truncate"
+          className={`text-sm truncate flex items-center gap-1 ${isOrphaned ? 'text-status-danger/90' : ''}`}
           style={{
-            color: textColor,
+            color: isOrphaned ? undefined : textColor,
             fontWeight: textStyle === 'bold' ? 'bold' : 'normal',
             textDecoration: textStyle === 'strikethrough' ? 'line-through' : 'none',
           }}
         >
+          {isOrphaned && <span className="text-xs text-status-danger" aria-hidden="true">⚠</span>}
           {node.name || node.type || node.id}
         </span>
 

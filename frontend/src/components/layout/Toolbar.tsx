@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, Zap, DollarSign, Calendar, Users, ChartColumn } from 'lucide-react';
+import { TrendingUp, Zap, DollarSign, Calendar, Users, ChartColumn, Kanban } from 'lucide-react';
 
 export interface ToolbarButton {
   id: string;
@@ -10,7 +10,7 @@ export interface ToolbarButton {
 }
 
 export type ViewType = 'graph' | 'tools';
-export type ToolsTab = 'velocity' | 'blocking' | 'budget' | 'gantt' | 'manpower' | 'charts';
+export type ToolsTab = 'velocity' | 'blocking' | 'budget' | 'gantt' | 'manpower' | 'charts' | 'agile';
 
 interface ToolbarProps {
   buttons?: ToolbarButton[];
@@ -118,6 +118,18 @@ export function Toolbar({
           >
             <ChartColumn size={16} />
             Charts
+          </button>
+          <button
+            onClick={() => onToolsTabChange('agile')}
+            className={`px-3 py-1.5 rounded text-sm font-semibold transition-colors flex items-center gap-2 ${
+              activeToolsTab === 'agile'
+                ? 'bg-accent-primary text-fg-primary'
+                : 'text-fg-secondary hover:text-fg-primary'
+            }`}
+            title="Switch to Agile Kanban view"
+          >
+            <Kanban size={16} />
+            Agile
           </button>
         </div>
       )}

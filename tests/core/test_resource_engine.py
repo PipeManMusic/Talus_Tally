@@ -1,4 +1,13 @@
+import pytest
 from backend.core.resource_engine import calculate_manpower_load
+
+
+def _load_total(resource, day):
+    return resource["load"][day]["total"]
+
+
+def _load_tasks(resource, day):
+    return resource["load"][day]["tasks"]
 
 
 def test_calculate_manpower_load_distributes_hours_across_date_span():
@@ -41,9 +50,13 @@ def test_calculate_manpower_load_distributes_hours_across_date_span():
     person = payload["resources"]["person-1"]
     assert person["name"] == "Bob"
     assert person["capacity"] == 8
-    assert person["load"]["2024-01-01"] == 4
-    assert person["load"]["2024-01-02"] == 4
-    assert person["load"]["2024-01-03"] == 4
+    # Remainder math: 12h over 3 days = 4h/day each
+    assert _load_total(person, "2024-01-01") == 4.0
+    assert _load_total(person, "2024-01-02") == 4.0
+    assert _load_total(person, "2024-01-03") == 4.0
+    assert _load_tasks(person, "2024-01-01") == [
+        {"id": "task-1", "name": "Task A", "hours": 4.0}
+    ]
 
 
 def test_calculate_manpower_load_skips_invalid_tasks_and_references():
@@ -92,6 +105,339 @@ def test_calculate_manpower_load_skips_invalid_tasks_and_references():
     assert payload["resources"]["person-1"]["capacity"] == 6
     assert payload["date_columns"] == ["2024-01-01", "2024-01-02"]
     assert payload["resources"]["person-1"]["load"] == {
-        "2024-01-01": 0.0,
-        "2024-01-02": 0.0,
+        "2024-01-01": {"total": 0.0, "tasks": []},
+        "2024-01-02": {"total": 0.0, "tasks": []},
     }
+
+
+def test_calculate_manpower_load_supports_multi_assignee_formats_and_splits_hours():
+    nodes = [
+        {
+            "id": "project-1",
+            "type": "project_root",
+            "properties": {
+                "name": "Master Project",
+                "start_date": "2024-01-01",
+                "end_date": "2024-01-02",
+            },
+        },
+        {
+            "id": "person-1",
+            "type": "person",
+            "properties": {
+                "name": "Alex",
+                "daily_capacity": 8,
+            },
+        },
+        {
+            "id": "person-2",
+            "type": "person",
+            "properties": {
+                "name": "Blair",
+                "daily_capacity": 8,
+            },
+        },
+        {
+            "id": "task-array",
+            "type": "task",
+            "properties": {
+                "assigned_to": ["person-1", "person-2"],
+                "estimated_hours": 8,
+                "start_date": "2024-01-01",
+                "end_date": "2024-01-02",
+            },
+        },
+        {
+            "id": "task-json",
+            "type": "task",
+            "properties": {
+                "assigned_to": '["person-1"]',
+                "estimated_hours": 4,
+                "start_date": "2024-01-01",
+                "end_date": "2024-01-02",
+            },
+        },
+        {
+            "id": "task-csv",
+            "type": "task",
+            "properties": {
+                "assigned_to": "person-2, person-missing",
+                "estimated_hours": 2,
+                "start_date": "2024-01-01",
+                "end_date": "2024-01-02",
+            },
+        },
+    ]
+
+    payload = calculate_manpower_load(nodes)
+
+    assert payload["date_columns"] == ["2024-01-01", "2024-01-02"]
+
+    # Remainder math: each person gets equal share evenly distributed over days.
+    # task-array: 8h / 2 = 4h each / 2 days = 2h/person/day
+    # task-json: 4h / 1 (person-1 only) / 2 days = 2h/day for person-1
+    # task-csv: 2h / 1 valid (person-2 only) / 2 days = 1h/day for person-2
+    # person-1 total: (2 + 2) = 4h/day
+    # person-2 total: (2 + 1) = 3h/day
+    assert _load_total(payload["resources"]["person-1"], "2024-01-01") == 4.0
+    assert _load_total(payload["resources"]["person-1"], "2024-01-02") == 4.0
+    assert _load_total(payload["resources"]["person-2"], "2024-01-01") == 3.0
+    assert _load_total(payload["resources"]["person-2"], "2024-01-02") == 3.0
+
+
+def test_calculate_manpower_load_includes_schedulable_non_task_nodes():
+    nodes = [
+        {
+            "id": "project-1",
+            "type": "project_root",
+            "properties": {
+                "start_date": "2024-01-01",
+                "end_date": "2024-01-02",
+            },
+        },
+        {
+            "id": "person-1",
+            "type": "person",
+            "properties": {
+                "name": "Alex",
+                "daily_capacity": 8,
+            },
+        },
+        {
+            "id": "episode-1",
+            "type": "episode",
+            "properties": {
+                "assigned_to": "person-1",
+                "estimated_hours": 6,
+                "start_date": "2024-01-01",
+                "end_date": "2024-01-02",
+            },
+        },
+    ]
+
+    payload = calculate_manpower_load(nodes)
+
+    assert payload["date_columns"] == ["2024-01-01", "2024-01-02"]
+    # Remainder math: 6h over 2 days = 3h/day each
+    assert _load_total(payload["resources"]["person-1"], "2024-01-01") == 3.0
+    assert _load_total(payload["resources"]["person-1"], "2024-01-02") == 3.0
+
+
+def test_calculate_manpower_load_derives_bounds_from_non_task_nodes_when_project_dates_missing():
+    nodes = [
+        {
+            "id": "project-1",
+            "type": "project_root",
+            "properties": {
+                "name": "Master Project",
+            },
+        },
+        {
+            "id": "person-1",
+            "type": "person",
+            "properties": {
+                "name": "Alex",
+                "daily_capacity": 8,
+            },
+        },
+        {
+            "id": "episode-1",
+            "type": "episode",
+            "properties": {
+                "assigned_to": "person-1",
+                "estimated_hours": 6,
+                "start_date": "2024-02-10",
+                "end_date": "2024-02-12",
+            },
+        },
+    ]
+
+    payload = calculate_manpower_load(nodes)
+
+    assert payload["date_columns"] == ["2024-02-10", "2024-02-11", "2024-02-12"]
+    # Remainder math: 6h over 3 days = 2h/day each
+    assert _load_total(payload["resources"]["person-1"], "2024-02-10") == 2.0
+    assert _load_total(payload["resources"]["person-1"], "2024-02-11") == 2.0
+    assert _load_total(payload["resources"]["person-1"], "2024-02-12") == 2.0
+
+
+def test_calculate_manpower_load_uses_weekday_and_weekend_capacities_per_day():
+    nodes = [
+        {
+            "id": "project-1",
+            "type": "project_root",
+            "properties": {
+                "start_date": "2024-02-09",  # Friday
+                "end_date": "2024-02-11",    # Sunday
+            },
+        },
+        {
+            "id": "person-1",
+            "type": "person",
+            "properties": {
+                "name": "Alex",
+                "capacity_monday": 0.5,
+                "capacity_tuesday": 0.5,
+                "capacity_wednesday": 0.5,
+                "capacity_thursday": 0.5,
+                "capacity_friday": 0.5,
+                "capacity_saturday": 8,
+                "capacity_sunday": 8,
+            },
+        },
+        {
+            "id": "episode-1",
+            "type": "episode",
+            "properties": {
+                "assigned_to": "person-1",
+                "estimated_hours": 6,
+                "start_date": "2024-02-09",
+                "end_date": "2024-02-11",
+            },
+        },
+    ]
+
+    payload = calculate_manpower_load(nodes)
+    resource = payload["resources"]["person-1"]
+
+    assert payload["date_columns"] == ["2024-02-09", "2024-02-10", "2024-02-11"]
+    assert resource["capacity_by_day"]["2024-02-09"] == 0.5
+    assert resource["capacity_by_day"]["2024-02-10"] == 8.0
+    assert resource["capacity_by_day"]["2024-02-11"] == 8.0
+    # Remainder math: 6h over 3 days = 2h/day (capacity info is for UI coloring, not allocation)
+    assert _load_total(resource, "2024-02-09") == 2.0
+    assert _load_total(resource, "2024-02-10") == 2.0
+    assert _load_total(resource, "2024-02-11") == 2.0
+
+
+def test_calculate_manpower_load_uses_day_specific_overtime_capacity_per_day():
+    nodes = [
+        {
+            "id": "project-1",
+            "type": "project_root",
+            "properties": {
+                "start_date": "2024-02-09",  # Friday
+                "end_date": "2024-02-10",    # Saturday
+            },
+        },
+        {
+            "id": "person-1",
+            "type": "person",
+            "properties": {
+                "name": "Alex",
+                "capacity_friday": 4,
+                "capacity_saturday": 4,
+                "overtime_capacity_friday": 2,
+                "overtime_capacity_saturday": 0,
+            },
+        },
+    ]
+
+    payload = calculate_manpower_load(nodes)
+    resource = payload["resources"]["person-1"]
+
+    assert resource["overtime_capacity_by_day"]["2024-02-09"] == 2.0
+    assert resource["overtime_capacity_by_day"]["2024-02-10"] == 0.0
+
+
+def test_calculate_manpower_load_reports_unallocated_hours_when_window_capacity_is_insufficient():
+    nodes = [
+        {
+            "id": "project-1",
+            "type": "project_root",
+            "properties": {
+                "start_date": "2024-02-05",  # Monday
+                "end_date": "2024-02-09",    # Friday
+            },
+        },
+        {
+            "id": "person-1",
+            "type": "person",
+            "properties": {
+                "name": "Alex",
+                "capacity_monday": 0.5,
+                "capacity_tuesday": 0.5,
+                "capacity_wednesday": 0.5,
+                "capacity_thursday": 0.5,
+                "capacity_friday": 0.5,
+                "capacity_saturday": 8,
+                "capacity_sunday": 8,
+            },
+        },
+        {
+            "id": "task-1",
+            "type": "episode",
+            "properties": {
+                "name": "Heavy Task",
+                "assigned_to": "person-1",
+                "estimated_hours": 8,
+                "start_date": "2024-02-05",
+                "end_date": "2024-02-09",
+            },
+        },
+    ]
+
+    payload = calculate_manpower_load(nodes)
+    resource = payload["resources"]["person-1"]
+
+    # Remainder math: 8h over 5 days = 1.6h/day (ignores capacity limits)
+    assert _load_total(resource, "2024-02-05") == pytest.approx(1.6)
+    assert _load_total(resource, "2024-02-06") == pytest.approx(1.6)
+    assert _load_total(resource, "2024-02-07") == pytest.approx(1.6)
+    assert _load_total(resource, "2024-02-08") == pytest.approx(1.6)
+    assert _load_total(resource, "2024-02-09") == pytest.approx(1.6)
+
+    # No unallocated tasks — remainder math always fully distributes hours
+    assert payload["unallocated_tasks"] == []
+
+
+def test_calculate_manpower_load_respects_manual_allocations():
+    """Manual overrides hardcode hours for specific days; remaining hours spread evenly over the rest."""
+    nodes = [
+        {
+            "id": "project-1",
+            "type": "project_root",
+            "properties": {
+                "start_date": "2024-01-01",
+                "end_date": "2024-01-04",
+            },
+        },
+        {
+            "id": "person-1",
+            "type": "person",
+            "properties": {
+                "name": "Alice",
+                "daily_capacity": 8,
+            },
+        },
+        {
+            "id": "task-1",
+            "type": "task",
+            "properties": {
+                "name": "Manual Task",
+                "assigned_to": "person-1",
+                "estimated_hours": 10,
+                "start_date": "2024-01-01",
+                "end_date": "2024-01-04",
+                # Hardcode 3h on day 1; remaining 7h split over days 2-4 = 7/3 each
+                "manual_allocations": {"2024-01-01": {"person-1": 3}},
+            },
+        },
+    ]
+
+    payload = calculate_manpower_load(nodes)
+    person = payload["resources"]["person-1"]
+
+    # Day 1: manual override = 3h
+    assert _load_total(person, "2024-01-01") == pytest.approx(3.0)
+    # Days 2-4: (10 - 3) / 3 = 7/3 each
+    assert _load_total(person, "2024-01-02") == pytest.approx(7 / 3)
+    assert _load_total(person, "2024-01-03") == pytest.approx(7 / 3)
+    assert _load_total(person, "2024-01-04") == pytest.approx(7 / 3)
+    assert _load_tasks(person, "2024-01-01") == [
+        {"id": "task-1", "name": "Manual Task", "hours": 3.0}
+    ]
+    # Total should equal estimated_hours
+    total = sum(_load_total(person, d) for d in ["2024-01-01", "2024-01-02", "2024-01-03", "2024-01-04"])
+    assert total == pytest.approx(10.0)
+
