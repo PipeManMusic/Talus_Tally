@@ -1,525 +1,111 @@
 # Talus Tally
 
-Talus Tally is a graph-based project management application designed to visualize, organize, and accelerate complex workflows. It combines intuitive graph interfaces with robust backend automation for teams and individuals.
+**Talus Tally gives technical teams a control tower for complex project execution.**
 
-## Quick Start
-
-Talus Tally ships with platform-specific build scripts so local and CI builds produce identical installers.
-
-- **Ubuntu/Debian:** `./build-deb.sh`
-- **macOS:** `./build-macos.sh`
-- **Windows:** `pwsh ./build-windows.ps1`
-
-Each script installs dependencies (Node, backend bundle, Tauri shell), copies runtime assets, and emits a one-click installer inside `build/<platform>/` (Linux outputs a `.deb` beside the script).
-
-The backend bundle plus shared assets/data are staged automatically via `scripts/prepare_tauri_resources.py`, which runs whenever `npm run stage:resources` (or any `tauri build`) executes.
-
-## Documentation
-
-- [Development Guide](docs/development/DEV_ENVIRONMENT.md)
-- [Frontend Quick Start](docs/development/FRONTEND_QUICK_START.md)
-- [Architecture Overview](docs/architecture/VELOCITY_SYSTEM_DESIGN.md)
-- [Backend Formatting](docs/architecture/BACKEND_FORMATTING_ARCHITECTURE.md)
-- [API Contract](docs/api/API_CONTRACT.md)
-- [Component Library Guide](docs/guides/COMPONENT_LIBRARY_GUIDE.md)
-- [Integration Guide](docs/guides/INTEGRATION_GUIDE.md)
-- [Archive & Roadmaps](docs/archive/)
-
-For more guides and technical references, see the `docs/` directory.
-
-# 📂 User Data Directory (XDG-compliant)
-
-Talus Tally now stores all user-created templates, icons, indicators, and markup profiles in a user-writable data directory, following the XDG Base Directory Specification:
-
-- **Linux:** `${XDG_DATA_HOME:-$HOME/.local/share}/talus_tally/`
-    - Templates: `.../talus_tally/templates/`
-    - Icons: `.../talus_tally/icons/`
-    - Indicators: `.../talus_tally/indicators/`
-    - Markups: `.../talus_tally/markups/`
-
-**How it works:**
-- When saving, the backend always writes to the user data directory.
-- When loading, the backend merges user and system templates/icons/indicators/markups, with user data taking priority if IDs conflict.
-- System and repo-provided templates remain available as read-only fallbacks.
-
-**Migration:**
-If you have existing templates or assets in the old system locations, copy them to your user data directory to make them editable.
-
-**Why:**
-- This ensures all user-created content is always writable, portable, and never blocked by system permissions.
-- Follows best practices for Linux desktop apps and works in multi-user environments.
-
-See also: [backend/infra/user_data_dir.py](backend/infra/user_data_dir.py)
-# Talus Tally - Real-Time Project Management System
-
-A modern, WebSocket-enabled project management system built on Flask and Socket.IO, providing real-time collaboration features for managing complex project hierarchies.
-
-## ✨ Features
-
-- **Real-Time Collaboration** - Multiple users collaborate simultaneously with instant updates via WebSocket
-- **Graph-Based Data Model** - Flexible hierarchical structure for projects, phases, tasks, and parts
-- **REST API** - Complete REST API for programmatic access
-- **WebSocket Events** - Real-time event streaming for all changes
-- **Session Management** - Multi-client session coordination with metadata tracking
-- **Undo/Redo Support** - Full command history with undo/redo capabilities
-- **Template System** - Pre-built project templates with customizable schemas
-- **Indicator System** - Visual status indicators with theming support
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Python 3.10+
-- pip or conda
-
-
-### Installation
-
-```bash
-# Clone repository
-cd "Talus Tally"
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-```
-
-## 🖥️ Development Environment & Tauri Desktop App (Debian/Ubuntu)
-
-
-### 1. System Dependencies
-
-```bash
-# Install Node.js (v18+ recommended)
-sudo apt update
-sudo apt install -y nodejs npm
-
-# Install Rust (required for Tauri)
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-# Follow prompts, then restart your shell or run:
-source $HOME/.cargo/env
-
-# Enable universe repo (Ubuntu only, required for libwebkit2gtk-4.0-dev)
-sudo apt install -y software-properties-common
-sudo add-apt-repository universe
-sudo apt update
-
-# Install additional build tools
-sudo apt install -y libwebkit2gtk-4.0-dev build-essential curl wget libssl-dev libgtk-3-dev squashfs-tools
-```
-
-
-### 2. Frontend & Tauri Setup
-
-```bash
-cd frontend
-
-# Install JS dependencies
-npm install
-
-sudo npm install -g @tauri-apps/cli
-
-# Install Tauri CLI globally (if not already)
-# Note: You may need to run this command with sudo to avoid permission errors:
-sudo npm install -g @tauri-apps/cli
-
-# You only need to copy the app icon once unless you update it.
-
-# Copy app icon for Tauri build
-cp ../assets/icons/TalusTallyIcon.png src-tauri/icons/TalusTallyIcon.png
-
-# Run the Tauri desktop app in dev mode
-npm run desktop:dev
-```
-
-- The app will open as a native desktop window.
-- For production build: `npm run desktop:build` (this command runs the backend bundler and resource staging automatically via `npm run stage:resources`).
-- Custom app icon will be used if TalusTallyIcon.png is present in src-tauri/icons/ and referenced in tauri.conf.json.
-```
-
-### Running Tests
-
-```bash
-# Run all tests
-pytest tests/ -v
-
-# Run specific test file
-pytest tests/api/test_flask_endpoints.py -v
-
-# Run with coverage
-pytest tests/ --cov=backend
-
-# Current Results: 87 tests passing (96.7% pass rate)
-```
-
-## 📋 Project Structure
-
-```
-├── backend/                      # Backend implementation
-│   ├── api/                      # REST API and WebSocket handlers
-│   │   ├── routes.py            # REST API endpoints
-│   │   ├── socketio_handlers.py # WebSocket event handlers
-│   │   ├── broadcaster.py       # Event broadcasting system
-│   │   ├── session.py           # Session management
-│   │   └── graph_service.py     # Graph data access
-│   ├── core/                    # Core data structures
-│   │   ├── graph.py             # Node graph implementation
-│   │   └── node.py              # Node data model
-│   ├── handlers/                # Command handling
-│   │   ├── dispatcher.py        # Command dispatcher
-│   │   ├── command.py           # Command base class
-│   │   └── commands/            # Command implementations
-│   ├── infra/                   # Infrastructure
-│   │   ├── persistence.py       # File I/O operations
-│   │   ├── logging.py           # Logging system
-│   │   ├── schema_loader.py     # Template loading
-│   │   └── velocity.py          # Project scoring
-│   └── app.py                   # Flask application setup
-├── tests/                        # Test suite (87 tests)
-│   ├── api/                     # API tests
-│   ├── core/                    # Core data structure tests
-│   ├── handlers/                # Command handler tests
-│   ├── infra/                   # Infrastructure tests
-│   └── ui/                      # UI integration tests
-├── data/                        # Project data and templates
-│   ├── definitions/             # Schema definitions
-│   └── templates/               # Project templates
-├── assets/                      # UI assets
-│   ├── fonts/                   # Font files
-│   ├── icons/                   # Icon SVGs
-│   └── indicators/              # Status indicator SVGs
-└── docs/                        # Documentation
-    ├── MASTER_PLAN.md           # Overall architecture
-    ├── API_CONTRACT.md          # API reference
-    └── PHASE_*.md               # Implementation phases
-```
-
-## 🔌 API Reference
-
-### REST API Endpoints
-
-**Projects**
-```bash
-POST /api/v1/projects
-    Create a new project from template
-    Body: { template_id: "restomod", project_name: "My Project" }
-    Returns: { session_id, project_id, graph }
-
-GET /api/v1/projects/<id>
-    Get project data
-    Returns: { project_id, template_id, graph }
-```
-
-**Commands**
-```bash
-POST /api/v1/commands/execute
-    Execute a command in a session
-    Body: { session_id, command_type: "CreateNode", data: {...} }
-    Returns: { success, command_id, graph }
-```
-
-**Sessions**
-```bash
-GET /api/v1/sessions
-    List all active sessions
-    Returns: { sessions: [ {session_id, created_at, ...} ] }
-
-GET /api/v1/sessions/<id>/info
-    Get session metadata and stats
-    Returns: { session_id, created_at, last_activity, active_clients, ... }
-
-POST /api/v1/sessions/<id>/undo
-    Undo last command
-    Returns: { success, graph }
-
-POST /api/v1/sessions/<id>/redo
-    Redo last undone command
-    Returns: { success, graph }
-```
-
-**Templates**
-```bash
-GET /api/v1/templates/<id>/schema
-    Get template schema and available node types
-    Returns: { template_id, node_types: [...], ... }
-```
-
-### WebSocket Events
-
-**Connection Management**
-```javascript
-socket.emit('join_session', { session_id: '...' })
-socket.emit('leave_session', { session_id: '...' })
-```
-
-**Receiving Events**
-```javascript
-socket.on('node-created', (data) => { /* handle */ })
-socket.on('node-deleted', (data) => { /* handle */ })
-socket.on('property-changed', (data) => { /* handle */ })
-socket.on('command:undo', (data) => { /* handle */ })
-socket.on('command:redo', (data) => { /* handle */ })
-```
-
-## 🧪 Testing
-
-The project includes comprehensive test coverage with 87 tests:
-
-- **REST API Tests** (53) - All endpoint functionality
-- **Socket.IO Tests** (14) - WebSocket event handling
-- **Session Tests** (10) - Multi-client coordination
-- **E2E Tests** (10) - Complete workflow integration
-
-### Test Status
-```
-PASSED: 87
-FAILED: 3 (known Flask-SocketIO test client limitations)
-TOTAL:  90
-PASS RATE: 96.7%
-```
-
-The 3 failing tests are due to Flask-SocketIO test client limitations with room-based broadcasts. Production code is fully functional (verified through state changes).
-
-## 📚 Implementation Phases
-
-### ✅ Phase 1: REST API Foundation
-- Flask REST API implementation
-- Project and graph management
-- Command execution system
-- 53 tests - all passing
-
-### ✅ Phase 2.1: Socket.IO Foundation
-- WebSocket event infrastructure
-- 14 event types defined
-- Room-based broadcasting
-- 14 tests - all passing
-
-### ✅ Phase 2.2: Event Integration
-- Commands emit events
-- Graph changes broadcast
-- Undo/Redo support
-- 10 tests - all passing
-
-### ✅ Phase 2.3: Session Management
-- Multi-client coordination
-- Session lifecycle management
-- Metadata tracking
-- 77 tests total - all passing
-
-### ✅ Phase 2.4: E2E Integration Testing
-- Complete workflow testing
-- Multi-client scenarios
-- REST + WebSocket integration
-- 87 tests total - 10/13 E2E passing
-
-### 🔄 Phase 2.5: Documentation (Ready to Start)
-- API documentation
-- Deployment guide
-- Integration examples
-- Architecture diagrams
-
-## 🏗️ Architecture Overview
-
-```
-┌─────────────────────────────────────────────┐
-│         WebSocket Clients (Real-time)       │
-│  ┌──────────────────────────────────────┐   │
-│  │ Browser / Desktop / Mobile           │   │
-│  └──────────────┬───────────────────────┘   │
-└─────────────────┼────────────────────────────┘
-                  │ WebSocket (events)
-                  │
-    ┌─────────────▼──────────────────────┐
-    │  Socket.IO Server                  │
-    │  (Flask-SocketIO)                  │
-    ├─────────────────────────────────────┤
-    │ Event Handler Dispatcher            │
-    │ Session Room Manager                │
-    │ Client Join/Leave Tracking          │
-    └─────────────┬──────────────────────┘
-                  │
-    ┌─────────────▼──────────────────────┐
-    │  Flask REST API                     │
-    ├─────────────────────────────────────┤
-    │ Projects   Commands   Sessions      │
-    │ Templates  Graph      Undo/Redo     │
-    └─────────────┬──────────────────────┘
-                  │
-    ┌─────────────▼──────────────────────┐
-    │  Command Dispatcher                 │
-    │  (Executes commands, emits events)  │
-    └─────────────┬──────────────────────┘
-                  │
-    ┌─────────────▼──────────────────────┐
-    │  Node Graph                         │
-    │  (In-memory graph structure)        │
-    └─────────────┬──────────────────────┘
-                  │
-    ┌─────────────▼──────────────────────┐
-    │  Persistence Layer                  │
-    │  (File I/O, Database access)        │
-    └─────────────────────────────────────┘
-```
-
-## 💾 Configuration
-
-### Environment Variables
-
-```bash
-FLASK_ENV=development          # development or production
-DEBUG=False                     # Enable/disable debug mode
-SOCKETIO_LOGGER=False          # Socket.IO logging
-SESSION_TIMEOUT=3600           # Session timeout (seconds)
-```
-
-### Flask Configuration
-
-Edit `backend/app.py` to modify:
-- CORS settings
-- Socket.IO namespace
-- Session manager parameters
-- Template/schema locations
-
-## 🔒 Security Considerations
-
-- CORS enabled for `/api/v1/` endpoints
-- Session-based request validation
-- No authentication layer (add before production)
-- WebSocket messages validated
-- SQL injection N/A (no SQL queries)
-
-**TODO Before Production:**
-- Add user authentication
-- Implement authorization checks
-- Add rate limiting
-- Enable HTTPS/WSS
-- Add request validation schemas
-- Implement audit logging
-
-## 📈 Performance
-
-- **Event Latency:** < 50ms
-- **Concurrent Connections:** 1000+ supported
-- **Commands/Sec:** ~100 per session
-- **Memory:** ~1-2KB per session
-
-## 🐛 Known Issues
-
-1. **Flask-SocketIO Test Client** (3 E2E tests)
-   - Test client doesn't receive room-based broadcasts
-   - Workaround: Validate via state changes
-   - Production code: Fully functional
-
-2. **Session Persistence**
-   - Currently in-memory only (lost on restart)
-   - Next: Add Redis backend
-
-3. **Error Recovery**
-   - Manual reconnection required
-   - Next: Add exponential backoff
-
-## 🚦 Troubleshooting
-
-### WebSocket Connection Fails
-```javascript
-// Check browser console for errors
-// Verify server is running on correct port
-// Check CORS settings in backend/app.py
-socket.on('connect_error', (error) => console.log(error))
-```
-
-### Commands Execute but Events Don't Arrive
-```javascript
-// Ensure client joined session room
-socket.emit('join_session', { session_id: sessionId })
-// Verify room is broadcast target
-socket.on('message', (data) => console.log('Event:', data))
-```
-
-### Session Not Found
-```bash
-# Verify session exists
-curl http://localhost:5000/api/v1/sessions
-
-# Check session timeout
-# Default: 1 hour
-```
-
-## 📝 Development Notes
-
-### Adding New Commands
-1. Create command class in `backend/handlers/commands/`
-2. Implement `execute()` method
-3. Add to `COMMAND_REGISTRY` in dispatcher
-4. Add test in `tests/handlers/`
-5. Commands automatically emit events
-
-### Adding New Events
-1. Define event type in `socketio_handlers.py`
-2. Emit using `Broadcaster.emit_event()`
-3. Add handler in client
-4. Test with `test_e2e_integration.py` patterns
-
-### Running with Debug Output
-```bash
-# Flask debug mode
-export FLASK_ENV=development
-export FLASK_DEBUG=1
-python run_app.py
-
-# Socket.IO debug mode
-export SOCKETIO_LOGGER=True
-```
-
-## 🤝 Contributing
-
-When contributing:
-1. Run tests: `pytest tests/ -v`
-2. Check coverage: `pytest tests/ --cov=backend`
-3. Follow existing code style
-4. Add tests for new features
-5. Update documentation
-
-## 📄 License
-
-[Add license info]
-
-## 📞 Support
-
-For issues or questions:
-1. Check [docs/MASTER_PLAN.md](docs/MASTER_PLAN.md)
-2. Review test examples in `tests/api/`
-3. Check implementation details in [PHASE_2_OVERVIEW.md](PHASE_2_OVERVIEW.md)
-
-## 🎯 What's Next?
-
-**Phase 2.5 (Documentation)**
-- Complete OpenAPI documentation
-- Integration guide
-- Deployment guide
-
-**Phase 3 (Production Hardening)**
-- User authentication
-- Authorization system
-- Error recovery
-- Performance optimization
-
-## 📊 Project Stats
-
-| Metric | Value |
-|--------|-------|
-| REST Endpoints | 12+ |
-| WebSocket Events | 14+ |
-| Test Coverage | 87 tests |
-| Pass Rate | 96.7% |
-| Code Files | 50+ |
-| Documentation | 10+ docs |
-| Lines of Code | 5000+ |
+It is a graph-first project command center for high-dependency, multi-phase work where standard task boards lose critical context.
 
 ---
 
-**Status:** ✅ Production Ready - Phase 2 Complete
-**Last Updated:** January 2026
-**Current Phase:** Phase 2.5 (Documentation)
+## Why Talus Tally
+
+Most project tools are optimized for lightweight task tracking. Talus Tally is designed for operational complexity:
+
+- **System-level visibility** with dependency-aware graph hierarchy
+- **Operational clarity** from unified context, status signals, and node detail
+- **Repeatable delivery** through template-driven schemas
+- **Governance-friendly flexibility** through deep properties and customization
+
+If your projects involve many moving parts (phases, teams, blockers, handoffs, assets), Talus Tally is built for that reality.
+
+---
+
+## Screenshots
+
+### Main Workspace
+
+![Talus Tally main workspace](docs/images/readme/01-main-workspace.png)
+
+### Project Tree + Property Panel
+
+![Talus Tally project tree and property panel](docs/images/readme/02-project-tree-and-graph.png)
+
+### Template Editor
+
+![Talus Tally template editor](docs/images/readme/03-template-editor.png)
+
+---
+
+## What You Can Do Today
+
+- Launch structured initiatives from reusable templates
+- Model complex delivery as hierarchical, property-rich nodes
+- Keep execution aligned to schema-backed definitions
+- Run in a focused standalone desktop environment
+
+---
+
+## Platform Status
+
+### Current
+
+Talus Tally is currently delivered as a **standalone Tauri desktop application** (Linux/macOS/Windows build targets), with a bundled frontend + backend runtime.
+
+This enables immediate team adoption without standing up server infrastructure.
+
+### Roadmap
+
+The long-term direction is a **full web/backend stack for distributed enterprise usage**, including:
+
+- Distributed multi-user workflows
+- Corporate-grade deployment and operations
+- Cross-team collaboration at enterprise scale
+
+The roadmap preserves Talus Tally's depth while adding centralized deployment and broader collaboration.
+
+In short: **desktop power now, enterprise distribution next.**
+
+---
+
+## Quick Start
+
+### Run Desktop App in Development
+
+```bash
+cd frontend
+npm install
+npm run desktop:dev
+```
+
+### Build Installers
+
+From the repository root:
+
+- Linux/Debian: `./build-deb.sh`
+- macOS: `./build-macos.sh`
+- Windows: `pwsh ./build-windows.ps1`
+
+---
+
+## Documentation
+
+- [Developer Environment Setup](docs/development/DEV_ENVIRONMENT.md)
+- [Frontend Quick Start](docs/development/FRONTEND_QUICK_START.md)
+- [API Contract](docs/api/API_CONTRACT.md)
+- [Integration Guide](docs/guides/INTEGRATION_GUIDE.md)
+
+---
+
+## Ideal Use Cases
+
+Talus Tally is a strong fit for teams managing:
+
+- Product and engineering delivery roadmaps
+- Complex build, restoration, or manufacturing workflows
+- Multi-phase operational execution with interdependent workstreams
+- Any project environment where hierarchy and dependency visibility are critical
+
+---
+
+## Contributing
+
+Issues, ideas, and feedback are welcome. If you are evaluating Talus Tally for serious operational use, open an issue and share your use case.
