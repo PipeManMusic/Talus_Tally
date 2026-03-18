@@ -1,5 +1,5 @@
 Package: talus-tally
-Version: 0.1.5
+Version: 0.1.6~alpha1
 Architecture: amd64
 Installed-Size: 500000
 Maintainer: Talus Tally Dev <dev@talusstally.local>

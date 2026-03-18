@@ -1,3 +1,12 @@
+talus-tally (0.1.6~alpha1-1) jammy; urgency=medium
+
+  * Alpha 0.1.6 prerelease
+  * Rewrite top-level README for product-first GitHub onboarding
+  * Add real UI screenshots to README for first-look evaluation
+  * Finalize orphan UX and inspector readability updates
+
+ -- Talus Tally Dev <dev@talusstally.local>  Wed, 18 Mar 2026 00:00:00 +0000
+
 talus-tally (0.1.5-1) jammy; urgency=medium
 
   * Alpha 0.1.5 desktop prerelease
