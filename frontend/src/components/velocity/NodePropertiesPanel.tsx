@@ -26,6 +26,7 @@ interface NodePropertiesPanelProps {
   propertyDefinitions?: PropertyDefinition[];
   /** Orphaned property key-value pairs (read-only, from metadata). */
   orphanedProperties?: Record<string, string | number>;
+  onOrphanedPropertyDelete?: (propKey: string) => void;
   /** All nodes (needed to look up assignee names for Daily Overrides). */
   allNodes?: Record<string, import('../../api/client').Node>;
 }

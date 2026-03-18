@@ -269,7 +269,7 @@ export function Inspector({
   const openEditor = (
     propId: string, 
     propName: string, 
-    value: string | number, 
+    value: string | number | boolean | string[] | null | undefined, 
     isLinkedAsset = false,
     markupProfile?: string
   ) => {
@@ -278,7 +278,7 @@ export function Inspector({
       isOpen: true,
       propId,
       propName,
-      value: String(value),
+      value: value == null ? '' : String(value),
       isLinkedAsset,
       markupProfile,
     });

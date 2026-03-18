@@ -182,7 +182,7 @@ export function ManpowerView({
         seen.add(node.id);
         tasks.push({
           id: node.id,
-          name: String(node.name || node.properties?.name || node.id),
+          name: String(node.properties?.name || node.id),
         });
       });
 
