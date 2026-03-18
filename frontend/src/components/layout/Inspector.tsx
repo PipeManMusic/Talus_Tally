@@ -949,7 +949,7 @@ export function Inspector({
             <div className="space-y-3">
               {Object.entries(orphanedProperties).map(([key, value]) => (
                 <div key={key} className="relative">
-                  <label className="block text-sm text-fg-secondary mb-1">{key}</label>
+                  <label className="block text-sm text-orange-300 mb-1">{key}</label>
                   <div className="flex gap-2 items-center">
                     <div className="flex-1 bg-bg-dark/80 text-fg-primary border border-orange-500/40 rounded-sm px-2 py-1 text-sm font-medium">
                       {String(value)}
