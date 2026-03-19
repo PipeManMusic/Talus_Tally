@@ -118,7 +118,7 @@ describe('ManpowerView', () => {
             id: 'task-2',
             type: 'task',
             name: 'Task B',
-            properties: { assigned_to: ['person-1'], estimated_hours: 1 },
+            properties: { name: 'Task B', assigned_to: ['person-1'], estimated_hours: 1 },
           } as any,
         }}
       />,

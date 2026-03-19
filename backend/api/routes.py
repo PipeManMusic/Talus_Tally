@@ -3824,3 +3824,75 @@ def apply_migrations(session_id):
                 'message': f'Failed to apply migrations: {str(e)}'
             }
         }), 500
+
+
+@api_bp.route('/sessions/<session_id>/recalculate-orphan-status', methods=['POST'])
+def recalculate_orphan_status(session_id):
+    """Reload blueprint and recalculate orphaned node/property status.
+    
+    This endpoint triggers the RecalculateOrphanStatusCommand to:
+    1. Load the current blueprint from disk
+    2. Compare with the old blueprint in the session
+    3. Detect removed node types and properties
+    4. Mark affected nodes/properties as orphaned
+    """
+    session_data = _get_session_data(session_id)
+    if not session_data:
+        return jsonify({
+            'error': {
+                'code': 'SESSION_NOT_FOUND',
+                'message': f'Session {session_id} not found'
+            }
+        }), 404
+    
+    try:
+        graph = session_data.get('graph')
+        blueprint = session_data.get('blueprint')
+        template_id = session_data.get('template_id')
+        
+        if not graph:
+            return jsonify({
+                'error': {
+                    'code': 'INCOMPLETE_SESSION',
+                    'message': 'Graph not loaded in session'
+                }
+            }), 400
+        
+        if not template_id:
+            return jsonify({
+                'error': {
+                    'code': 'MISSING_TEMPLATE',
+                    'message': 'Template ID not found in session'
+                }
+            }), 400
+        
+        # Execute the RecalculateOrphanStatusCommand
+        from backend.handlers.commands.node_commands import RecalculateOrphanStatusCommand
+        
+        command = RecalculateOrphanStatusCommand(
+            graph=graph,
+            blueprint=blueprint,
+            session_id=session_id,
+            template_id=template_id
+        )
+        
+        orphan_info = command.execute()
+        
+        if orphan_info.get('total_affected', 0) > 0:
+            _mark_session_dirty(session_id)
+            logger.info(f"[API] Orphan status recalculated for session {session_id}: {orphan_info}")
+        
+        return jsonify({
+            'status': 'success',
+            'session_id': session_id,
+            'orphan_info': orphan_info
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"[API] Failed to recalculate orphan status: {e}", exc_info=True)
+        return jsonify({
+            'error': {
+                'code': 'RECALCULATION_FAILED',
+                'message': f'Failed to recalculate orphan status: {str(e)}'
+            }
+        }), 500

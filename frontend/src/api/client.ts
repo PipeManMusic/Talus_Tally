@@ -357,12 +357,25 @@ export interface ManpowerUnallocatedTask {
   estimated_hours: number;
   unallocated_hours: number;
   assigned_to: string[];
+  status?: 'under' | 'over';
+}
+
+export interface ManpowerTaskAllocation {
+  node_id: string;
+  name: string;
+  person_id: string;
+  target_hours: number;
+  allocated_hours: number;
+  status: 'under' | 'over' | 'full';
 }
 
 export interface ManpowerPayload {
   date_columns: string[];
   resources: Record<string, ManpowerResource>;
   unallocated_tasks?: ManpowerUnallocatedTask[];
+  task_allocations?: ManpowerTaskAllocation[];
+  updated_tasks?: number;
+  total_tasks?: number;
   timestamp: number;
 }
 
@@ -1135,6 +1148,17 @@ export class APIClient {
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.error?.message || 'Failed to get manpower data');
+    }
+    return response.json();
+  }
+
+  async recalculateManpower(sessionId: string): Promise<ManpowerPayload> {
+    const response = await fetch(`${this.baseUrl}/api/v1/sessions/${sessionId}/manpower/recalculate`, {
+      method: 'POST',
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || 'Failed to recalculate manpower data');
     }
     return response.json();
   }

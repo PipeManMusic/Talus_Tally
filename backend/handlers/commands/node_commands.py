@@ -564,3 +564,98 @@ class DeleteOrphanedPropertyCommand(Command):
         if 'orphaned_properties' not in metadata:
             metadata['orphaned_properties'] = {}
         metadata['orphaned_properties'][self.property_key] = self.old_value
+
+
+class RecalculateOrphanStatusCommand(Command):
+    """Command to reload the blueprint and recalculate orphaned node/property status."""
+
+    def __init__(self, graph=None, blueprint=None, session_id=None, template_id=None):
+        """
+        Initialize the command.
+
+        Args:
+            graph: The ProjectGraph to analyze
+            blueprint: The current Blueprint (old blueprint for comparison)
+            session_id: Optional session ID for event broadcasting
+            template_id: The template ID to reload from disk
+        """
+        self.graph = graph
+        self.blueprint = blueprint
+        self.session_id = session_id
+        self.template_id = template_id
+        self.orphan_info = {
+            'orphaned_nodes': [],
+            'orphaned_properties': {},
+            'total_affected': 0,
+        }
+
+    def execute(self) -> dict:
+        """
+        Execute the command by reloading blueprint and recalculating orphaned status.
+
+        Returns:
+            Dict with orphan recalculation results
+        """
+        if not self.graph or not self.template_id:
+            return self.orphan_info
+
+        try:
+            # Build old template dict for comparison
+            old_template_dict = None
+            if self.blueprint:
+                old_template_dict = {
+                    'id': self.blueprint.id,
+                    'name': self.blueprint.name,
+                    'version': self.blueprint.version,
+                    'node_types': []
+                }
+                for nt in self.blueprint.node_types:
+                    nt_dict = {
+                        'id': nt.id,
+                        'name': nt.name,
+                        'allowed_children': nt.allowed_children,
+                        'properties': nt.properties or [],
+                    }
+                    old_template_dict['node_types'].append(nt_dict)
+
+            # Load new template dict from disk
+            new_template_dict = None
+            try:
+                from backend.infra.template_persistence import TemplatePersistence
+                persistence = TemplatePersistence()
+                new_template_dict = persistence.load_template(self.template_id)
+            except Exception as e:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.warning(f"Could not load template dict for orphan detection: {e}")
+                return self.orphan_info
+
+            # Run orphan detection if we have both templates
+            if old_template_dict and new_template_dict:
+                orphan_mgr = OrphanManager()
+                removed_types = orphan_mgr.find_orphaned_node_types(old_template_dict, new_template_dict)
+                orphaned_props_by_type = orphan_mgr.find_orphaned_properties(old_template_dict, new_template_dict)
+
+                if removed_types or orphaned_props_by_type:
+                    # Mark nodes as orphaned
+                    if removed_types:
+                        result = orphan_mgr.mark_orphaned_nodes(self.graph, removed_types)
+                        self.orphan_info['orphaned_nodes'] = result.get('orphaned_node_ids', [])
+                        self.orphan_info['total_affected'] += result.get('affected_count', 0)
+
+                    # Mark properties as orphaned
+                    if orphaned_props_by_type:
+                        orphaned_prop_count = orphan_mgr.mark_orphaned_properties(self.graph, orphaned_props_by_type)
+                        self.orphan_info['orphaned_properties'] = orphaned_props_by_type
+                        self.orphan_info['total_affected'] += orphaned_prop_count
+
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"RecalculateOrphanStatusCommand failed: {e}", exc_info=True)
+
+        return self.orphan_info
+
+    def undo(self) -> None:
+        """Undo is not supported for this command as it modifies metadata directly."""
+        pass

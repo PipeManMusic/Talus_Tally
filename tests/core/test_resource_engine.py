@@ -1,5 +1,5 @@
 import pytest
-from backend.core.resource_engine import calculate_manpower_load
+from backend.core.resource_engine import calculate_manpower_load, recalculate_manpower_allocations
 
 
 def _load_total(resource, day):
@@ -50,12 +50,33 @@ def test_calculate_manpower_load_distributes_hours_across_date_span():
     person = payload["resources"]["person-1"]
     assert person["name"] == "Bob"
     assert person["capacity"] == 8
-    # Remainder math: 12h over 3 days = 4h/day each
-    assert _load_total(person, "2024-01-01") == 4.0
-    assert _load_total(person, "2024-01-02") == 4.0
-    assert _load_total(person, "2024-01-03") == 4.0
-    assert _load_tasks(person, "2024-01-01") == [
-        {"id": "task-1", "name": "Task A", "hours": 4.0}
+    # Manual-only mode: no auto-distribution unless recalc is explicitly requested.
+    assert _load_total(person, "2024-01-01") == 0.0
+    assert _load_total(person, "2024-01-02") == 0.0
+    assert _load_total(person, "2024-01-03") == 0.0
+    assert _load_tasks(person, "2024-01-01") == []
+
+    assert payload["task_allocations"] == [
+        {
+            "node_id": "task-1",
+            "name": "Task A",
+            "person_id": "person-1",
+            "target_hours": 12.0,
+            "allocated_hours": 0.0,
+            "status": "under",
+        }
+    ]
+    assert payload["unallocated_tasks"] == [
+        {
+            "node_id": "task-1",
+            "name": "Task A",
+            "start_date": "2024-01-01",
+            "end_date": "2024-01-03",
+            "estimated_hours": 12.0,
+            "unallocated_hours": 12.0,
+            "assigned_to": ["person-1"],
+            "status": "under",
+        }
     ]
 
 
@@ -173,16 +194,16 @@ def test_calculate_manpower_load_supports_multi_assignee_formats_and_splits_hour
 
     assert payload["date_columns"] == ["2024-01-01", "2024-01-02"]
 
-    # Remainder math: each person gets equal share evenly distributed over days.
-    # task-array: 8h / 2 = 4h each / 2 days = 2h/person/day
-    # task-json: 4h / 1 (person-1 only) / 2 days = 2h/day for person-1
-    # task-csv: 2h / 1 valid (person-2 only) / 2 days = 1h/day for person-2
-    # person-1 total: (2 + 2) = 4h/day
-    # person-2 total: (2 + 1) = 3h/day
-    assert _load_total(payload["resources"]["person-1"], "2024-01-01") == 4.0
-    assert _load_total(payload["resources"]["person-1"], "2024-01-02") == 4.0
-    assert _load_total(payload["resources"]["person-2"], "2024-01-01") == 3.0
-    assert _load_total(payload["resources"]["person-2"], "2024-01-02") == 3.0
+    assert _load_total(payload["resources"]["person-1"], "2024-01-01") == 0.0
+    assert _load_total(payload["resources"]["person-1"], "2024-01-02") == 0.0
+    assert _load_total(payload["resources"]["person-2"], "2024-01-01") == 0.0
+    assert _load_total(payload["resources"]["person-2"], "2024-01-02") == 0.0
+
+    status_map = {(entry["node_id"], entry["person_id"]): entry["status"] for entry in payload["task_allocations"]}
+    assert status_map[("task-array", "person-1")] == "under"
+    assert status_map[("task-array", "person-2")] == "under"
+    assert status_map[("task-json", "person-1")] == "under"
+    assert status_map[("task-csv", "person-2")] == "under"
 
 
 def test_calculate_manpower_load_includes_schedulable_non_task_nodes():
@@ -218,9 +239,8 @@ def test_calculate_manpower_load_includes_schedulable_non_task_nodes():
     payload = calculate_manpower_load(nodes)
 
     assert payload["date_columns"] == ["2024-01-01", "2024-01-02"]
-    # Remainder math: 6h over 2 days = 3h/day each
-    assert _load_total(payload["resources"]["person-1"], "2024-01-01") == 3.0
-    assert _load_total(payload["resources"]["person-1"], "2024-01-02") == 3.0
+    assert _load_total(payload["resources"]["person-1"], "2024-01-01") == 0.0
+    assert _load_total(payload["resources"]["person-1"], "2024-01-02") == 0.0
 
 
 def test_calculate_manpower_load_derives_bounds_from_non_task_nodes_when_project_dates_missing():
@@ -255,10 +275,9 @@ def test_calculate_manpower_load_derives_bounds_from_non_task_nodes_when_project
     payload = calculate_manpower_load(nodes)
 
     assert payload["date_columns"] == ["2024-02-10", "2024-02-11", "2024-02-12"]
-    # Remainder math: 6h over 3 days = 2h/day each
-    assert _load_total(payload["resources"]["person-1"], "2024-02-10") == 2.0
-    assert _load_total(payload["resources"]["person-1"], "2024-02-11") == 2.0
-    assert _load_total(payload["resources"]["person-1"], "2024-02-12") == 2.0
+    assert _load_total(payload["resources"]["person-1"], "2024-02-10") == 0.0
+    assert _load_total(payload["resources"]["person-1"], "2024-02-11") == 0.0
+    assert _load_total(payload["resources"]["person-1"], "2024-02-12") == 0.0
 
 
 def test_calculate_manpower_load_uses_weekday_and_weekend_capacities_per_day():
@@ -304,10 +323,9 @@ def test_calculate_manpower_load_uses_weekday_and_weekend_capacities_per_day():
     assert resource["capacity_by_day"]["2024-02-09"] == 0.5
     assert resource["capacity_by_day"]["2024-02-10"] == 8.0
     assert resource["capacity_by_day"]["2024-02-11"] == 8.0
-    # Remainder math: 6h over 3 days = 2h/day (capacity info is for UI coloring, not allocation)
-    assert _load_total(resource, "2024-02-09") == 2.0
-    assert _load_total(resource, "2024-02-10") == 2.0
-    assert _load_total(resource, "2024-02-11") == 2.0
+    assert _load_total(resource, "2024-02-09") == 0.0
+    assert _load_total(resource, "2024-02-10") == 0.0
+    assert _load_total(resource, "2024-02-11") == 0.0
 
 
 def test_calculate_manpower_load_uses_day_specific_overtime_capacity_per_day():
@@ -380,19 +398,27 @@ def test_calculate_manpower_load_reports_unallocated_hours_when_window_capacity_
     payload = calculate_manpower_load(nodes)
     resource = payload["resources"]["person-1"]
 
-    # Remainder math: 8h over 5 days = 1.6h/day (ignores capacity limits)
-    assert _load_total(resource, "2024-02-05") == pytest.approx(1.6)
-    assert _load_total(resource, "2024-02-06") == pytest.approx(1.6)
-    assert _load_total(resource, "2024-02-07") == pytest.approx(1.6)
-    assert _load_total(resource, "2024-02-08") == pytest.approx(1.6)
-    assert _load_total(resource, "2024-02-09") == pytest.approx(1.6)
-
-    # No unallocated tasks — remainder math always fully distributes hours
-    assert payload["unallocated_tasks"] == []
+    assert _load_total(resource, "2024-02-05") == 0.0
+    assert _load_total(resource, "2024-02-06") == 0.0
+    assert _load_total(resource, "2024-02-07") == 0.0
+    assert _load_total(resource, "2024-02-08") == 0.0
+    assert _load_total(resource, "2024-02-09") == 0.0
+    assert payload["unallocated_tasks"] == [
+        {
+            "node_id": "task-1",
+            "name": "Heavy Task",
+            "start_date": "2024-02-05",
+            "end_date": "2024-02-09",
+            "estimated_hours": 8.0,
+            "unallocated_hours": 8.0,
+            "assigned_to": ["person-1"],
+            "status": "under",
+        }
+    ]
 
 
 def test_calculate_manpower_load_respects_manual_allocations():
-    """Manual overrides hardcode hours for specific days; remaining hours spread evenly over the rest."""
+    """Manual allocations are used exactly as entered and are not auto-filled."""
     nodes = [
         {
             "id": "project-1",
@@ -430,14 +456,62 @@ def test_calculate_manpower_load_respects_manual_allocations():
 
     # Day 1: manual override = 3h
     assert _load_total(person, "2024-01-01") == pytest.approx(3.0)
-    # Days 2-4: (10 - 3) / 3 = 7/3 each
-    assert _load_total(person, "2024-01-02") == pytest.approx(7 / 3)
-    assert _load_total(person, "2024-01-03") == pytest.approx(7 / 3)
-    assert _load_total(person, "2024-01-04") == pytest.approx(7 / 3)
+    assert _load_total(person, "2024-01-02") == 0.0
+    assert _load_total(person, "2024-01-03") == 0.0
+    assert _load_total(person, "2024-01-04") == 0.0
     assert _load_tasks(person, "2024-01-01") == [
         {"id": "task-1", "name": "Manual Task", "hours": 3.0}
     ]
-    # Total should equal estimated_hours
+    # Total remains only what user explicitly entered
     total = sum(_load_total(person, d) for d in ["2024-01-01", "2024-01-02", "2024-01-03", "2024-01-04"])
-    assert total == pytest.approx(10.0)
+    assert total == pytest.approx(3.0)
+
+
+def test_recalculate_manpower_allocations_populates_weekdays_only_manual_entries():
+    nodes = [
+        {
+            "id": "project-1",
+            "type": "project_root",
+            "properties": {
+                "start_date": "2024-02-09",  # Friday
+                "end_date": "2024-02-11",    # Sunday
+            },
+        },
+        {
+            "id": "person-1",
+            "type": "person",
+            "properties": {
+                "name": "Alex",
+                "capacity_friday": 8,
+                "capacity_saturday": 8,
+                "capacity_sunday": 8,
+            },
+        },
+        {
+            "id": "task-1",
+            "type": "task",
+            "properties": {
+                "name": "Task A",
+                "assigned_to": "person-1",
+                "estimated_hours": 6,
+                "start_date": "2024-02-09",
+                "end_date": "2024-02-11",
+            },
+        },
+    ]
+
+    result = recalculate_manpower_allocations(nodes)
+    assert result == {"updated_tasks": 1, "total_tasks": 1}
+
+    payload = calculate_manpower_load(nodes)
+    person = payload["resources"]["person-1"]
+    assert _load_total(person, "2024-02-09") == pytest.approx(6.0)
+    assert _load_total(person, "2024-02-10") == 0.0
+    assert _load_total(person, "2024-02-11") == 0.0
+
+    allocation = payload["task_allocations"][0]
+    assert allocation["status"] == "full"
+    assert allocation["target_hours"] == pytest.approx(6.0)
+    assert allocation["allocated_hours"] == pytest.approx(6.0)
+    assert payload["unallocated_tasks"] == []
 

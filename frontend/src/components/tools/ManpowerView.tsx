@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useMemo, useState } from 'react';
-import { AlertCircle, Users } from 'lucide-react';
+import { AlertCircle, RefreshCcw, Users } from 'lucide-react';
 
 import { apiClient, type Node, type VelocityScore } from '../../api/client';
 import { useManpowerPayload } from '../../hooks/useManpowerPayload';
@@ -31,6 +31,12 @@ interface SelectedCellState {
 interface PersonTaskRow {
   id: string;
   name: string;
+}
+
+interface TaskAllocationStatus {
+  status: 'under' | 'over' | 'full';
+  allocatedHours: number;
+  targetHours: number;
 }
 
 function formatHours(value: number): string {
@@ -126,6 +132,7 @@ export function ManpowerView({
     refreshSignal,
   });
   const [isSavingAllocation, setIsSavingAllocation] = useState(false);
+  const [isRecalculating, setIsRecalculating] = useState(false);
   // Per-cell inline draft: key = `${taskId}:${date}`. Auto-saved to API on input blur.
   const [inlineDrafts, setInlineDrafts] = useState<Record<string, string>>({});
   const [collapsedPersons, setCollapsedPersons] = useState<Set<string>>(new Set());
@@ -155,6 +162,17 @@ export function ManpowerView({
   };
 
   const nodeMap = useMemo(() => nodes ?? {}, [nodes]);
+  const allocationStatusMap = useMemo(() => {
+    const map = new Map<string, TaskAllocationStatus>();
+    (data?.task_allocations ?? []).forEach((allocation) => {
+      map.set(`${allocation.node_id}:${allocation.person_id}`, {
+        status: allocation.status,
+        allocatedHours: allocation.allocated_hours,
+        targetHours: allocation.target_hours,
+      });
+    });
+    return map;
+  }, [data?.task_allocations]);
 
   // Collect all unique tasks per person, including assigned tasks not yet represented in dated load buckets.
   const personTaskMap = useMemo(() => {
@@ -250,6 +268,21 @@ export function ManpowerView({
     }
   };
 
+  const handleRecalculate = async () => {
+    if (!sessionId) {
+      return;
+    }
+    setIsRecalculating(true);
+    try {
+      await apiClient.recalculateManpower(sessionId);
+      await refresh();
+    } catch (recalculateError) {
+      console.error('Failed to recalculate manpower allocations:', recalculateError);
+    } finally {
+      setIsRecalculating(false);
+    }
+  };
+
   // Count person-days that are overbooked (exceed capacity + overtime_capacity)
   const overloadedDayCount = data
     ? resources.reduce(
@@ -324,17 +357,29 @@ export function ManpowerView({
               <div className="text-fg-secondary">
                 Assigned: <span className="text-fg-primary">{formatHours(totalAssigned)}</span>
               </div>
+              <button
+                type="button"
+                onClick={handleRecalculate}
+                disabled={isRecalculating || loading}
+                className="inline-flex items-center gap-1.5 rounded border border-border px-2.5 py-1.5 text-xs font-semibold text-fg-primary hover:bg-bg-dark/60 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Recalculate weekday-only manual allocations"
+              >
+                <RefreshCcw size={14} className={isRecalculating ? 'animate-spin' : ''} />
+                {isRecalculating ? 'Recalculating…' : 'Recalculate'}
+              </button>
             </div>
           </div>
           {unallocatedTasks.length > 0 && (
             <div className="mt-3 rounded border border-status-danger/40 bg-status-danger/10 px-3 py-2 text-xs text-status-danger">
               <div className="font-semibold">
-                {unallocatedTasks.length} task{unallocatedTasks.length === 1 ? '' : 's'} exceed available capacity in their scheduled date range
+                {unallocatedTasks.length} task{unallocatedTasks.length === 1 ? '' : 's'} {unallocatedTasks.length === 1 ? 'is' : 'are'} not fully allocated
               </div>
               <div className="mt-1 space-y-1">
                 {unallocatedTasks.slice(0, 3).map((task) => (
                   <div key={task.node_id}>
-                    {task.name}: {formatHours(task.unallocated_hours)}h unallocated ({task.start_date} → {task.end_date})
+                    {task.name}: {task.unallocated_hours >= 0
+                      ? `${formatHours(task.unallocated_hours)}h under`
+                      : `${formatHours(Math.abs(task.unallocated_hours))}h over`} ({task.start_date} → {task.end_date})
                   </div>
                 ))}
                 {unallocatedTasks.length > 3 && <div>…and {unallocatedTasks.length - 3} more</div>}
@@ -423,6 +468,17 @@ export function ManpowerView({
                     {/* Task sub-rows — one per task, inline editable */}
                     {!isCollapsed && personTasks.map((task) => {
                       const isTaskSelected = selectedNodeId === task.id;
+                      const taskStatus = allocationStatusMap.get(`${task.id}:${personId}`);
+                      const badgeClass = taskStatus?.status === 'full'
+                        ? 'bg-emerald-500/20 text-emerald-200 border-emerald-400/40'
+                        : taskStatus?.status === 'over'
+                          ? 'bg-orange-500/20 text-orange-200 border-orange-400/40'
+                          : 'bg-status-danger/20 text-status-danger border-status-danger/40';
+                      const badgeLabel = taskStatus?.status === 'full'
+                        ? 'Full'
+                        : taskStatus?.status === 'over'
+                          ? 'Over'
+                          : 'Under';
                       return (
                         <tr
                           key={task.id}
@@ -437,6 +493,14 @@ export function ManpowerView({
                             <div className="flex items-center gap-1.5 pl-6">
                               <span className="text-fg-secondary shrink-0">└</span>
                               <span className="text-fg-primary truncate">{task.name}</span>
+                              {taskStatus && (
+                                <span
+                                  className={`ml-auto shrink-0 rounded border px-1.5 py-0.5 text-[10px] font-semibold ${badgeClass}`}
+                                  title={`Allocated ${formatHours(taskStatus.allocatedHours)}h / Target ${formatHours(taskStatus.targetHours)}h`}
+                                >
+                                  {badgeLabel}
+                                </span>
+                              )}
                             </div>
                           </td>
                           <td className="px-3 py-2 border-b border-r border-border text-center text-fg-secondary">—</td>

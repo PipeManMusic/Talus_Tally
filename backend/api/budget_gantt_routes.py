@@ -164,3 +164,31 @@ def get_manpower(session_id: str):
     except Exception as e:
         logger.error(f'Error calculating manpower: {e}')
         return jsonify({'error': f'Failed to calculate manpower: {str(e)}'}), 500
+
+
+@budget_gantt_bp.route('/sessions/<session_id>/manpower/recalculate', methods=['POST'])
+def recalculate_manpower(session_id: str):
+    """Explicitly regenerate manual manpower allocations, then return fresh payload."""
+    try:
+        graph_nodes, session_data = _get_graph_nodes(session_id)
+
+        if graph_nodes is None:
+            if session_data is None:
+                return jsonify({'error': 'Session not found'}), 404
+            return jsonify({
+                'updated_tasks': 0,
+                'total_tasks': 0,
+                'timestamp': int(time.time() * 1000),
+            })
+
+        from backend.core.resource_engine import calculate_manpower_load, recalculate_manpower_allocations
+
+        recalc_result = recalculate_manpower_allocations(list(graph_nodes.values()))
+        payload = calculate_manpower_load(list(graph_nodes.values()))
+        payload.update(recalc_result)
+        payload['timestamp'] = int(time.time() * 1000)
+        return jsonify(payload)
+
+    except Exception as e:
+        logger.error(f'Error recalculating manpower: {e}')
+        return jsonify({'error': f'Failed to recalculate manpower: {str(e)}'}), 500

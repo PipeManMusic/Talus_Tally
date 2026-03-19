@@ -16,6 +16,7 @@ node_types:
   - inventory_root
   - season
   - task
+  - personnel_assets
   color: '#6366f1'
   icon: film
   id: project_root
@@ -92,125 +93,6 @@ node_types:
     required: false
     type: text
   shape: roundedSquare
-- allowed_asset_types: []
-  allowed_children:
-  - person
-  color: '#60a5fa'
-  id: personnel_assets
-  label: Personnel Assets
-  properties:
-  - id: name
-    label: Name
-    required: false
-    type: text
-  shape: rounded
-- allowed_asset_types: []
-  allowed_children: []
-  base_type: asset
-  color: '#3b82f6'
-  icon: user
-  id: person
-  label: Person
-  properties:
-  - id: name
-    label: Full Name
-    required: true
-    system_locked: true
-    type: text
-  - id: email
-    label: Email
-    required: true
-    system_locked: true
-    type: text
-  - id: capacity_monday
-    label: Capacity Monday (Hours)
-    required: true
-    system_locked: true
-    type: number
-    value: 8
-  - id: capacity_tuesday
-    label: Capacity Tuesday (Hours)
-    required: true
-    system_locked: true
-    type: number
-    value: 8
-  - id: capacity_wednesday
-    label: Capacity Wednesday (Hours)
-    required: true
-    system_locked: true
-    type: number
-    value: 8
-  - id: capacity_thursday
-    label: Capacity Thursday (Hours)
-    required: true
-    system_locked: true
-    type: number
-    value: 8
-  - id: capacity_friday
-    label: Capacity Friday (Hours)
-    required: true
-    system_locked: true
-    type: number
-    value: 8
-  - id: capacity_saturday
-    label: Capacity Saturday (Hours)
-    required: true
-    system_locked: true
-    type: number
-    value: 0
-  - id: capacity_sunday
-    label: Capacity Sunday (Hours)
-    required: true
-    system_locked: true
-    type: number
-    value: 0
-  - id: hourly_rate_monday
-    label: Hourly Rate Monday
-    required: false
-    system_locked: true
-    type: number
-  - id: hourly_rate_tuesday
-    label: Hourly Rate Tuesday
-    required: false
-    system_locked: true
-    type: number
-  - id: hourly_rate_wednesday
-    label: Hourly Rate Wednesday
-    required: false
-    system_locked: true
-    type: number
-  - id: hourly_rate_thursday
-    label: Hourly Rate Thursday
-    required: false
-    system_locked: true
-    type: number
-  - id: hourly_rate_friday
-    label: Hourly Rate Friday
-    required: false
-    system_locked: true
-    type: number
-  - id: hourly_rate_saturday
-    label: Hourly Rate Saturday
-    required: false
-    system_locked: true
-    type: number
-  - id: hourly_rate_sunday
-    label: Hourly Rate Sunday
-    required: false
-    system_locked: true
-    type: number
-  - id: overtime_capacity
-    label: Overtime Capacity (Hours)
-    required: false
-    system_locked: true
-    type: number
-    value: 0
-  - id: system_role
-    label: System Role
-    required: false
-    system_locked: true
-    type: text
-  shape: circle
 - allowed_asset_types: []
   allowed_children: []
   color: '#0ea5e9'
@@ -477,6 +359,8 @@ node_types:
   - uses_car_part
   - uses_tool
   color: '#06b6d4'
+  features:
+  - scheduling
   id: episode
   label: Episode
   properties:
@@ -517,6 +401,42 @@ node_types:
         Planning: -1
         Shooting: 1
         Uploaded: -1
+  - id: start_date
+    label: Start Date
+    type: date
+    system_locked: true
+    ui_group: Schedule
+    semantic_role: gantt_start
+  - id: end_date
+    label: End Date
+    type: date
+    system_locked: true
+    ui_group: Schedule
+    semantic_role: gantt_end
+  - id: assigned_to
+    label: Assigned To
+    type: node_reference
+    target_type: person
+    system_locked: true
+    ui_group: Schedule
+  - id: estimated_hours
+    label: Estimated Hours
+    type: number
+    value: 0
+    system_locked: true
+    ui_group: Schedule
+  - id: actual_hours
+    label: Actual Hours
+    type: number
+    value: 0
+    system_locked: true
+    ui_group: Schedule
+  - id: manual_allocations
+    label: Manual Allocations
+    type: object
+    value: {}
+    system_locked: true
+    ui_group: Schedule
   shape: roundedSquare
 - allowed_asset_types:
   - camera_gear_asset
@@ -729,12 +649,178 @@ node_types:
     label: Quantity Needed
     required: false
     type: number
-- id: node_type_1773847596886
-  label: New Node Type
+- allowed_asset_types: []
   allowed_children: []
+  id: node_type_1773847596886
+  label: New Node Type
   properties:
   - id: name
     label: Name
+    required: false
     type: text
+- allowed_asset_types: []
+  allowed_children:
+  - person
+  base_type: asset
+  color: '#60a5fa'
+  icon: users
+  id: personnel_assets
+  label: Personnel Assets
+  properties:
+  - id: name
+    label: Name
+    required: true
+    type: text
+  shape: rounded
+- allowed_asset_types: []
+  allowed_children: []
+  base_type: asset
+  color: '#3b82f6'
+  features: []
+  icon: user
+  id: person
+  label: Person
+  properties:
+  - id: name
+    label: Full Name
+    required: true
+    system_locked: true
+    type: text
+  - id: email
+    label: Email
+    required: true
+    system_locked: true
+    type: text
+  - id: capacity_monday
+    label: Capacity Monday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 8
+  - id: capacity_tuesday
+    label: Capacity Tuesday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 8
+  - id: capacity_wednesday
+    label: Capacity Wednesday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 8
+  - id: capacity_thursday
+    label: Capacity Thursday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 8
+  - id: capacity_friday
+    label: Capacity Friday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 8
+  - id: capacity_saturday
+    label: Capacity Saturday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 0
+  - id: capacity_sunday
+    label: Capacity Sunday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 0
+  - id: hourly_rate_monday
+    label: Hourly Rate Monday
+    required: false
+    system_locked: true
+    type: number
+  - id: hourly_rate_tuesday
+    label: Hourly Rate Tuesday
+    required: false
+    system_locked: true
+    type: number
+  - id: hourly_rate_wednesday
+    label: Hourly Rate Wednesday
+    required: false
+    system_locked: true
+    type: number
+  - id: hourly_rate_thursday
+    label: Hourly Rate Thursday
+    required: false
+    system_locked: true
+    type: number
+  - id: hourly_rate_friday
+    label: Hourly Rate Friday
+    required: false
+    system_locked: true
+    type: number
+  - id: hourly_rate_saturday
+    label: Hourly Rate Saturday
+    required: false
+    system_locked: true
+    type: number
+  - id: hourly_rate_sunday
+    label: Hourly Rate Sunday
+    required: false
+    system_locked: true
+    type: number
+  - id: overtime_capacity
+    label: Overtime Capacity (Hours)
+    required: false
+    system_locked: true
+    type: number
+    value: 0
+  - id: overtime_capacity_monday
+    label: Overtime Capacity Monday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    value: 0
+  - id: overtime_capacity_tuesday
+    label: Overtime Capacity Tuesday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    value: 0
+  - id: overtime_capacity_wednesday
+    label: Overtime Capacity Wednesday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    value: 0
+  - id: overtime_capacity_thursday
+    label: Overtime Capacity Thursday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    value: 0
+  - id: overtime_capacity_friday
+    label: Overtime Capacity Friday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    value: 0
+  - id: overtime_capacity_saturday
+    label: Overtime Capacity Saturday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    value: 0
+  - id: overtime_capacity_sunday
+    label: Overtime Capacity Sunday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    value: 0
+  - id: system_role
+    label: System Role
+    required: false
+    system_locked: true
+    type: text
+  shape: circle
 uuid: 574ecd39-bad3-4e44-b6e4-247d00cc5eca
 version: 0.2.1
