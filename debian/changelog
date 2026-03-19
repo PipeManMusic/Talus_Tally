@@ -1,3 +1,11 @@
+talus-tally (0.1.6.1~alpha1-1) jammy; urgency=medium
+
+  * Hotfix 0.1.6.1 alpha
+  * Add orphan status recalculation command
+  * Fix manload calculation in resource engine
+
+ -- Talus Tally Dev <dev@talusstally.local>  Wed, 19 Mar 2026 00:00:00 +0000
+
 talus-tally (0.1.6~alpha1-1) jammy; urgency=medium
 
   * Alpha 0.1.6 prerelease
