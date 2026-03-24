@@ -30,10 +30,15 @@ test('Node type deletion persists to backend', async ({ page }) => {
   }
 
   await targetButton.scrollIntoViewIfNeeded();
-  await Promise.all([
-    page.waitForEvent('dialog').then((dialog) => dialog.accept()),
-    targetButton.click(),
-  ]);
+  await targetButton.click();
+
+  const confirmModal = page
+    .locator('div')
+    .filter({ hasText: /Delete Node Type/ })
+    .filter({ hasText: /become orphaned/i })
+    .first();
+  await expect(confirmModal).toBeVisible({ timeout: 10000 });
+  await confirmModal.getByRole('button', { name: 'Delete Node Type', exact: true }).click();
 
   await page.locator('button:has-text("Save")').first().click();
 

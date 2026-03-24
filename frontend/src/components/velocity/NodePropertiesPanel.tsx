@@ -106,7 +106,7 @@ export function NodePropertiesPanel({
   }, [assigneeIds, allNodes, nodes]);
 
   const getRawManualAllocations = (): Record<string, Record<string, number>> => {
-    const raw = nodeProps.manual_allocations;
+    const raw = nodeProps.allocations;
     if (raw && typeof raw === 'object' && !Array.isArray(raw)) return raw as Record<string, Record<string, number>>;
     if (typeof raw === 'string') { try { return JSON.parse(raw) as Record<string, Record<string, number>>; } catch {} }
     return {};
@@ -127,7 +127,7 @@ export function NodePropertiesPanel({
         updated[date][personId] = num;
       }
     }
-    onPropertyChange(selectedNodeId, 'manual_allocations', updated);
+    onPropertyChange(selectedNodeId, 'allocations', updated);
   };
 
   const getSelectOptions = (def?: PropertyDefinition) => {

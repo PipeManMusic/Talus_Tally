@@ -250,7 +250,6 @@ class UpdatePropertyCommand(Command):
     
     def execute(self) -> None:
         """Execute the command by updating the property."""
-        print(f"DEBUG UpdatePropertyCommand.execute: node_id={self.node_id}, property_id={self.property_id}, new_value={self.new_value}, has_graph_service={self.graph_service is not None}")
         if self.graph:
             node = self.graph.get_node(self.node_id)
             if node:
@@ -272,7 +271,6 @@ class UpdatePropertyCommand(Command):
                 if not hasattr(node, 'properties'):
                     node.properties = {}
                 node.properties[self.property_id] = self.new_value
-                print(f"DEBUG: Updated node property, node.properties={node.properties}")
                 
                 # Emit property-changed event
                 if self.session_id:
@@ -286,14 +284,11 @@ class UpdatePropertyCommand(Command):
                 
                 # Notify API subscribers of the change
                 if self.graph_service:
-                    print(f"DEBUG: Calling graph_service.notify_property_changed")
                     self.graph_service.notify_property_changed(
                         self.node_id,
                         self.property_id,
                         self.new_value
                     )
-                else:
-                    print(f"DEBUG: No graph_service provided")
     
     def undo(self) -> None:
         """Undo the command by restoring the old value."""
@@ -303,6 +298,20 @@ class UpdatePropertyCommand(Command):
                 if not hasattr(node, 'properties'):
                     node.properties = {}
                 node.properties[self.property_id] = self.old_value
+                print(f"DEBUG: Restored node property, node.properties={node.properties}")
+                
+                # Emit property-changed event for undo
+                if self.session_id:
+                    print(f"DEBUG: Emitting property-changed event for undo")
+                    emit_property_changed(
+                        self.session_id,
+                        str(self.node_id),
+                        self.property_id,
+                        self.new_value,  # Old value from frontend perspective
+                        self.old_value   # New value from frontend perspective
+                    )
+                else:
+                    print(f"DEBUG: No session_id, skipping emit_property_changed")
 
 class MoveNodeCommand(Command):
     """Command to move a node to a different parent with validation."""
@@ -461,9 +470,16 @@ class MoveNodeCommand(Command):
                 if node.id not in old_parent.children:
                     old_parent.children.append(node.id)
                 node.parent_id = self.old_parent_id
+                
+                # Emit events for undo
+                if self.session_id:
+                    emit_node_unlinked(self.session_id, str(self.new_parent_id), str(self.node_id))
+                    emit_node_linked(self.session_id, str(self.old_parent_id), str(self.node_id))
         else:
             # Node had no parent before, restore that state
             node.parent_id = None
+            if self.session_id:
+                emit_node_unlinked(self.session_id, str(self.new_parent_id), str(self.node_id))
 
 
 class ReorderNodeCommand(Command):
@@ -564,6 +580,16 @@ class DeleteOrphanedPropertyCommand(Command):
         if 'orphaned_properties' not in metadata:
             metadata['orphaned_properties'] = {}
         metadata['orphaned_properties'][self.property_key] = self.old_value
+        
+        # Emit property-changed event for undo
+        if self.session_id:
+            emit_property_changed(
+                self.session_id,
+                str(self.node_id),
+                self.property_key,
+                None,
+                self.old_value,
+            )
 
 
 class RecalculateOrphanStatusCommand(Command):

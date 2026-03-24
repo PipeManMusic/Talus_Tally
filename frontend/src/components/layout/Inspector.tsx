@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { Input } from '../ui/Input';
 import { Select } from '../ui/Select';
 import { CurrencyInput } from '../ui/CurrencyInput';
@@ -38,7 +38,14 @@ export interface NodeProperty {
   id: string;
   name: string;
   type: 'text' | 'number' | 'select' | 'textarea' | 'currency' | 'date' | 'checkbox' | 'editor';
-  value: string | number | boolean | string[] | null | undefined;
+  value:
+    | string
+    | number
+    | boolean
+    | string[]
+    | Record<string, unknown>
+    | null
+    | undefined;
   options?: Array<{ value: string; label: string }>;
   required?: boolean;
   markupTokens?: MarkupToken[];
@@ -78,9 +85,9 @@ interface InspectorProps {
   properties: NodeProperty[];
   isReadOnly?: boolean;
   readOnlyReason?: string;
-  onPropertyChange?: (propId: string, value: string | number | string[]) => void;
+  onPropertyChange?: (propId: string, value: string | number | string[] | Record<string, Record<string, number>>) => void;
   linkedAsset?: LinkedAssetMetadata;
-  onLinkedAssetPropertyChange?: (propId: string, value: string | number | string[]) => void;
+  onLinkedAssetPropertyChange?: (propId: string, value: string | number | string[] | Record<string, Record<string, number>>) => void;
   orphanedProperties?: Record<string, string | number>;
   onOrphanedPropertyDelete?: (propKey: string) => void;
   blockedByNodes?: string[];
@@ -92,7 +99,7 @@ interface InspectorProps {
   velocityScore?: VelocityScore;
 }
 
-export function Inspector({
+export const Inspector = memo(function Inspector({
   nodeId,
   nodeName,
   nodeType,
@@ -113,6 +120,7 @@ export function Inspector({
 }: InspectorProps) {
   const [draftValues, setDraftValues] = useState<Record<string, string>>({});
   const pendingCommits = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const manualAllocationCellRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const [editorState, setEditorState] = useState<{
     isOpen: boolean;
     propId: string;
@@ -124,12 +132,19 @@ export function Inspector({
   const [personScheduleOpen, setPersonScheduleOpen] = useState(false);
   const [personScheduleDraft, setPersonScheduleDraft] = useState<Record<string, string>>({});
   const [pendingAssigneeByProp, setPendingAssigneeByProp] = useState<Record<string, string>>({});
+  const [manualAllocationsEditor, setManualAllocationsEditor] = useState<{
+    isOpen: boolean;
+    propId: string;
+    assignedIds: string[];
+    dateRange: string[];
+    draft: Record<string, string>;
+  }>({ isOpen: false, propId: '', assignedIds: [], dateRange: [], draft: {} });
 
-  const handlePropertyChange = (propId: string, value: string | number | string[]) => {
+  const handlePropertyChange = (propId: string, value: string | number | string[] | Record<string, Record<string, number>>) => {
     onPropertyChange?.(propId, value);
   };
 
-  const handleLinkedAssetPropertyChange = (propId: string, value: string | number | string[]) => {
+  const handleLinkedAssetPropertyChange = (propId: string, value: string | number | string[] | Record<string, Record<string, number>>) => {
     onLinkedAssetPropertyChange?.(propId, value);
   };
 
@@ -204,7 +219,12 @@ export function Inspector({
       try {
         source = JSON.parse(trimmed);
       } catch {
-        return {};
+        try {
+          // Fallback for non-JSON single-quoted map strings.
+          source = JSON.parse(trimmed.replace(/'/g, '"'));
+        } catch {
+          return {};
+        }
       }
     }
 
@@ -231,10 +251,296 @@ export function Inspector({
     return parsed;
   };
 
+  const isManualAllocationsUnparseable = (rawValue: unknown): boolean => {
+    if (rawValue === null || rawValue === undefined || typeof rawValue !== 'string') {
+      return false;
+    }
+    const trimmed = rawValue.trim();
+    if (!trimmed) {
+      return false;
+    }
+
+    try {
+      JSON.parse(trimmed);
+      return false;
+    } catch {
+      try {
+        JSON.parse(trimmed.replace(/'/g, '"'));
+        return false;
+      } catch {
+        return true;
+      }
+    }
+  };
+
+  const getDateRange = (startDateRaw: unknown, endDateRaw: unknown): string[] => {
+    const startDate = String(startDateRaw ?? '').trim();
+    const endDate = String(endDateRaw ?? '').trim();
+    if (!startDate || !endDate) {
+      return [];
+    }
+
+    const parseYmd = (value: string) => {
+      const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!match) {
+        return null;
+      }
+      const year = Number(match[1]);
+      const month = Number(match[2]);
+      const day = Number(match[3]);
+      if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day)) {
+        return null;
+      }
+      if (month < 1 || month > 12 || day < 1 || day > 31) {
+        return null;
+      }
+      return { year, month, day };
+    };
+
+    const startParts = parseYmd(startDate);
+    const endParts = parseYmd(endDate);
+    if (!startParts || !endParts) {
+      return [];
+    }
+
+    const startUtc = Date.UTC(startParts.year, startParts.month - 1, startParts.day);
+    const endUtc = Date.UTC(endParts.year, endParts.month - 1, endParts.day);
+    if (startUtc > endUtc) {
+      return [];
+    }
+
+    const oneDayMs = 24 * 60 * 60 * 1000;
+    const dates: string[] = [];
+    for (let cursor = startUtc; cursor <= endUtc; cursor += oneDayMs) {
+      const current = new Date(cursor);
+      const year = current.getUTCFullYear();
+      const month = String(current.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(current.getUTCDate()).padStart(2, '0');
+      dates.push(`${year}-${month}-${day}`);
+    }
+
+    return dates;
+  };
+
+  const makeManualAllocationCellKey = (date: string, personId: string) => `${date}:${personId}`;
+  const allocationEpsilon = 0.05;
+  const slugify = (value: string) =>
+    value
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+  const normalizeManualAllocationsForAssignees = (
+    current: Record<string, Record<string, number>>,
+    assignedIds: string[],
+  ): Record<string, Record<string, number>> => {
+    const normalized: Record<string, Record<string, number>> = {};
+
+    Object.entries(current).forEach(([dateKey, dayAllocations]) => {
+      const dayMap: Record<string, number> = {};
+      const remainingAssigned = new Set(assignedIds);
+      const unmatchedEntries: Array<{ key: string; value: number; keySlug: string }> = [];
+
+      assignedIds.forEach((personId) => {
+        const direct = dayAllocations?.[personId];
+        if (typeof direct === 'number' && Number.isFinite(direct)) {
+          dayMap[personId] = direct;
+          remainingAssigned.delete(personId);
+        }
+      });
+
+      Object.entries(dayAllocations ?? {}).forEach(([key, rawValue]) => {
+        if (!Number.isFinite(rawValue)) {
+          return;
+        }
+        if (assignedIds.includes(key)) {
+          return;
+        }
+        unmatchedEntries.push({ key, value: rawValue, keySlug: slugify(key) });
+      });
+
+      if (remainingAssigned.size > 0 && unmatchedEntries.length > 0) {
+        for (const personId of Array.from(remainingAssigned)) {
+          const label = assigneeLabelById.get(personId) ?? personId;
+          const targetSlug = slugify(label);
+          if (!targetSlug) {
+            continue;
+          }
+
+          const candidateIndexes = unmatchedEntries
+            .map((entry, index) => ({ entry, index }))
+            .filter(({ entry }) =>
+              entry.keySlug === targetSlug
+              || entry.keySlug.includes(targetSlug)
+              || targetSlug.includes(entry.keySlug),
+            )
+            .map(({ index }) => index);
+
+          if (candidateIndexes.length === 1) {
+            const idx = candidateIndexes[0];
+            console.info(
+              `Legacy allocation migration: matched key "${unmatchedEntries[idx].key}" to person "${label}" (${personId}) via slug on day ${dateKey}`,
+            );
+            dayMap[personId] = unmatchedEntries[idx].value;
+            unmatchedEntries.splice(idx, 1);
+            remainingAssigned.delete(personId);
+          }
+        }
+      }
+
+      if (remainingAssigned.size > 0 && unmatchedEntries.length > 0) {
+        console.warn(
+          `Legacy allocation migration: ${unmatchedEntries.length} unmatched entries remain for day ${dateKey}`,
+          'person IDs:', Array.from(remainingAssigned),
+          'unmatched keys:', unmatchedEntries.map((e) => e.key),
+        );
+      }
+
+      if (Object.keys(dayMap).length > 0) {
+        normalized[dateKey] = dayMap;
+      }
+    });
+
+    return normalized;
+  };
+  const todayKey = useMemo(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }, []);
+
+  const openManualAllocationsEditor = (
+    propId: string,
+    assignedIds: string[],
+    dateRange: string[],
+    current: Record<string, Record<string, number>>,
+  ) => {
+    const canonicalCurrent = normalizeManualAllocationsForAssignees(current, assignedIds);
+
+    const draft: Record<string, string> = {};
+    dateRange.forEach((dateKey) => {
+      assignedIds.forEach((personId) => {
+        const currentValue = canonicalCurrent[dateKey]?.[personId];
+        draft[makeManualAllocationCellKey(dateKey, personId)] =
+          currentValue === undefined ? '' : String(currentValue);
+      });
+    });
+    setManualAllocationsEditor({
+      isOpen: true,
+      propId,
+      assignedIds,
+      dateRange,
+      draft,
+    });
+  };
+
+  const closeManualAllocationsEditor = () => {
+    setManualAllocationsEditor({ isOpen: false, propId: '', assignedIds: [], dateRange: [], draft: {} });
+  };
+
+  const saveManualAllocationsEditor = () => {
+    if (!manualAllocationsEditor.isOpen || !manualAllocationsEditor.propId) {
+      return;
+    }
+
+    const nextManual: Record<string, Record<string, number>> = {};
+    manualAllocationsEditor.dateRange.forEach((dateKey) => {
+      const dayMap: Record<string, number> = {};
+      manualAllocationsEditor.assignedIds.forEach((personId) => {
+        const draftKey = makeManualAllocationCellKey(dateKey, personId);
+        const raw = (manualAllocationsEditor.draft[draftKey] ?? '').trim();
+        const parsed = raw === '' ? Number.NaN : Number(raw);
+        if (Number.isFinite(parsed) && parsed > 0) {
+          dayMap[personId] = parsed;
+        }
+      });
+      if (Object.keys(dayMap).length > 0) {
+        nextManual[dateKey] = dayMap;
+      }
+    });
+
+    handlePropertyChange(manualAllocationsEditor.propId, nextManual);
+    closeManualAllocationsEditor();
+  };
+
+  const focusManualAllocationCell = (personId: string, dateKey: string) => {
+    const cellKey = makeManualAllocationCellKey(dateKey, personId);
+    const target = manualAllocationCellRefs.current[cellKey];
+    if (target) {
+      target.focus();
+      target.select();
+    }
+  };
+
+  const handleManualAllocationCellKeyDown = (
+    event: KeyboardEvent<HTMLInputElement>,
+    rowIndex: number,
+    colIndex: number,
+    personId: string,
+    dateKey: string,
+  ) => {
+    const rowCount = manualAllocationsEditor.assignedIds.length;
+    const colCount = manualAllocationsEditor.dateRange.length;
+    const moveTo = (nextRow: number, nextCol: number) => {
+      if (nextRow < 0 || nextRow >= rowCount || nextCol < 0 || nextCol >= colCount) {
+        return;
+      }
+      const nextPersonId = manualAllocationsEditor.assignedIds[nextRow];
+      const nextDateKey = manualAllocationsEditor.dateRange[nextCol];
+      if (!nextPersonId || !nextDateKey) {
+        return;
+      }
+      event.preventDefault();
+      focusManualAllocationCell(nextPersonId, nextDateKey);
+    };
+
+    if (event.key === 'ArrowLeft') {
+      moveTo(rowIndex, colIndex - 1);
+      return;
+    }
+    if (event.key === 'ArrowRight') {
+      moveTo(rowIndex, colIndex + 1);
+      return;
+    }
+    if (event.key === 'ArrowUp') {
+      moveTo(rowIndex - 1, colIndex);
+      return;
+    }
+    if (event.key === 'ArrowDown' || event.key === 'Enter') {
+      moveTo(rowIndex + 1, colIndex);
+      return;
+    }
+    if (event.key === 'Escape') {
+      event.currentTarget.blur();
+      return;
+    }
+
+    const allowedControlKeys = new Set([
+      'Backspace',
+      'Delete',
+      'Tab',
+      'Home',
+      'End',
+      'Shift',
+      'Control',
+      'Meta',
+      'Alt',
+    ]);
+    if (allowedControlKeys.has(event.key)) {
+      return;
+    }
+    if (event.key.length === 1 && !/[0-9.]/.test(event.key)) {
+      event.preventDefault();
+    }
+  };
+
   useEffect(() => {
     setDraftValues({});
     Object.values(pendingCommits.current).forEach(clearTimeout);
     pendingCommits.current = {};
+    closeManualAllocationsEditor();
   }, [nodeId, linkedAsset?.nodeId]);
 
   const makeDraftKey = (propId: string, isLinkedAsset: boolean) =>
@@ -267,11 +573,11 @@ export function Inspector({
   };
 
   const openEditor = (
-    propId: string, 
-    propName: string, 
-    value: string | number | boolean | string[] | null | undefined, 
+    propId: string,
+    propName: string,
+    value: NodeProperty['value'],
     isLinkedAsset = false,
-    markupProfile?: string
+    markupProfile?: string,
   ) => {
     console.log('[Inspector] Opening editor with:', { propId, propName, markupProfile });
     setEditorState({
@@ -285,6 +591,18 @@ export function Inspector({
   };
 
   const isPersonNode = nodeType === 'person';
+  const propertyMap = useMemo(() => new Map(properties.map((property) => [property.id, property])), [properties]);
+  const estimatedHoursValue = useMemo(() => {
+    const raw = propertyMap.get('estimated_hours')?.value;
+    const parsed = Number(raw ?? 0);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }, [propertyMap]);
+  const activeAllocationPropertyId = useMemo(() => {
+    if (propertyMap.has('allocations')) {
+      return 'allocations';
+    }
+    return null;
+  }, [propertyMap]);
   const personPropertyMap = new Map(properties.map((property) => [property.id, property]));
 
   const getPersonPropertyNumericValue = (propertyId: string, fallback: number) => {
@@ -412,7 +730,7 @@ export function Inspector({
 
   if (!nodeId) {
     return (
-      <aside className="bg-bg-light border-l border-border p-3 flex items-center justify-center">
+      <aside data-testid="inspector-empty" className="bg-bg-light border-l border-border p-3 flex items-center justify-center">
         <div className="text-sm text-fg-secondary text-center">
           Select a node to view properties
         </div>
@@ -421,7 +739,7 @@ export function Inspector({
   }
 
   return (
-    <aside className="bg-bg-light border-l border-border flex-1 flex flex-col h-full overflow-hidden">
+    <aside data-testid="inspector-panel" className="bg-bg-light border-l border-border flex-1 flex flex-col h-full overflow-hidden">
       <div className="text-sm font-semibold border-b border-accent-primary pb-2 mb-3 px-3 pt-3 flex-shrink-0">
         Properties
       </div>
@@ -445,13 +763,13 @@ export function Inspector({
         {/* Node Info */}
         <div className="mb-3">
           <div className="text-xs text-fg-secondary mb-1">Node Type</div>
-          <div className="text-sm text-fg-primary font-semibold bg-accent-primary/10 rounded px-2 py-1 capitalize">
+          <div data-testid="inspector-node-type" className="text-sm text-fg-primary font-semibold bg-accent-primary/10 rounded px-2 py-1 capitalize">
             {nodeType || 'Unknown'}
           </div>
         </div>
         <div className="mb-3">
           <div className="text-xs text-fg-secondary mb-1">Node ID</div>
-          <div className="text-sm text-fg-muted font-mono bg-bg-dark/60 rounded px-2 py-1 truncate opacity-60" title={nodeId}>
+          <div data-testid="inspector-node-id" className="text-sm text-fg-muted font-mono bg-bg-dark/60 rounded px-2 py-1 truncate opacity-60" title={nodeId}>
             {nodeId}
           </div>
         </div>
@@ -530,19 +848,42 @@ export function Inspector({
 
           // Helper to render a single property field
           const renderPropertyField = (prop: NodeProperty) => {
+            if (
+              prop.id === 'allocations'
+              && activeAllocationPropertyId
+              && prop.id !== activeAllocationPropertyId
+            ) {
+              return null;
+            }
+
             const displayValue = prop.value;
             const draftKey = makeDraftKey(prop.id, false);
             const draftValue = draftValues[draftKey] ?? String(displayValue ?? '');
             const isAssigneeField = prop.id === 'assigned_to';
-            const isManualAllocationsField = prop.id === 'manual_allocations';
+            const isManualAllocationsField =
+              prop.id === 'allocations'
+              && (!activeAllocationPropertyId || prop.id === activeAllocationPropertyId);
             const assignedIds = isAssigneeField ? parseAssignedToValue(displayValue) : [];
             const pendingAssignee = pendingAssigneeByProp[prop.id] ?? '';
             const manualAllocations = isManualAllocationsField ? parseManualAllocationsValue(displayValue) : {};
+            const manualAllocationsUnparseable = isManualAllocationsField ? isManualAllocationsUnparseable(displayValue) : false;
+            const taskAssignedIds = isManualAllocationsField
+              ? Array.from(new Set([
+                ...parseAssignedToValue(propertyMap.get('assigned_to')?.value),
+                ...Object.values(manualAllocations).flatMap((dayMap) => Object.keys(dayMap)),
+              ]))
+              : [];
+            const taskStartDate = isManualAllocationsField ? propertyMap.get('start_date')?.value : null;
+            const taskEndDate = isManualAllocationsField ? propertyMap.get('end_date')?.value : null;
             const manualDates = isManualAllocationsField
               ? Object.keys(manualAllocations).sort((a, b) => a.localeCompare(b))
               : [];
+            const taskDateRange = isManualAllocationsField
+              ? Array.from(new Set([...getDateRange(taskStartDate, taskEndDate), ...manualDates]))
+                .sort((a, b) => a.localeCompare(b))
+              : [];
             return (
-              <div key={prop.id}>
+              <div key={prop.id} data-testid={`inspector-property-${prop.id}`}>
                 {isAssigneeField && (
                   <div>
                     <label className="block text-sm text-fg-secondary mb-1">
@@ -616,32 +957,38 @@ export function Inspector({
                     <label className="block text-sm text-fg-secondary mb-1">
                       {prop.name}
                     </label>
-                    <div className="rounded border border-border bg-bg-dark/40 p-2 space-y-2">
-                      {manualDates.length === 0 ? (
-                        <div className="text-xs text-fg-muted">No manual allocations set.</div>
+                    <div className="rounded border border-border bg-bg-dark/40 p-2">
+                      {taskAssignedIds.length === 0 || taskDateRange.length === 0 ? (
+                        <div className="text-xs text-fg-muted">
+                          Set assigned people and task dates to edit per-day allocations.
+                        </div>
                       ) : (
-                        manualDates.map((dateKey) => {
-                          const personEntries = Object.entries(manualAllocations[dateKey])
-                            .sort(([a], [b]) => a.localeCompare(b));
-                          return (
-                            <div key={dateKey} className="rounded border border-border/60 bg-bg-dark px-2 py-1.5">
-                              <div className="text-xs font-semibold text-fg-secondary mb-1">{dateKey}</div>
-                              <div className="space-y-1">
-                                {personEntries.map(([personId, hours]) => (
-                                  <div key={`${dateKey}-${personId}`} className="flex items-center justify-between gap-2 text-xs">
-                                    <span className="text-fg-primary truncate">{assigneeLabelById.get(personId) ?? personId}</span>
-                                    <span className="text-fg-secondary font-mono">{hours.toFixed(1)}h</span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          );
-                        })
+                        <div className="space-y-2">
+                          <div className="text-xs text-fg-secondary">
+                            {taskAssignedIds.length} assignee{taskAssignedIds.length === 1 ? '' : 's'} × {taskDateRange.length} day{taskDateRange.length === 1 ? '' : 's'}
+                          </div>
+                          <button
+                            type="button"
+                            data-testid="edit-allocations-btn"
+                            onClick={() => openManualAllocationsEditor(prop.id, taskAssignedIds, taskDateRange, manualAllocations)}
+                            className="px-3 py-1.5 bg-accent-primary text-fg-primary rounded hover:bg-accent-hover transition-colors text-xs font-semibold"
+                            disabled={isReadOnly}
+                          >
+                            Edit Allocations
+                          </button>
+                        </div>
                       )}
                     </div>
-                    <div className="mt-1 text-xs text-fg-muted">
-                      Edit per-day allocations in the Manpower view task rows.
-                    </div>
+                    {manualDates.length > 0 && (
+                      <div className="mt-1 text-xs text-fg-muted">
+                        Stored dates: {manualDates.join(', ')}
+                      </div>
+                    )}
+                    {manualAllocationsUnparseable && (
+                      <div className="mt-1 text-xs text-status-warning">
+                        Stored manual allocations are malformed and cannot be parsed (example: "[object Object]").
+                      </div>
+                    )}
                   </div>
                 )}
                 {prop.type === 'text' && !isAssigneeField && !isManualAllocationsField && (
@@ -1133,20 +1480,22 @@ export function Inspector({
         )}
         
         {/* Template-Aware Editor Modal */}
-        <TemplateAwareEditor
-          isOpen={editorState.isOpen}
-          title={editorState.propName}
-          value={editorState.value}
-          propertyId={editorState.propId}
-          nodeId={nodeId || ''}
-          onChange={(newValue) => {
-            setEditorState({ ...editorState, value: newValue });
-          }}
-          onClose={closeEditor}
-          onSave={saveEditorContent}
-          template={undefined}
-          markupProfile={editorState.markupProfile}
-        />
+        {editorState.isOpen && (
+          <TemplateAwareEditor
+            isOpen={editorState.isOpen}
+            title={editorState.propName}
+            value={editorState.value}
+            propertyId={editorState.propId}
+            nodeId={nodeId || ''}
+            onChange={(newValue) => {
+              setEditorState({ ...editorState, value: newValue });
+            }}
+            onClose={closeEditor}
+            onSave={saveEditorContent}
+            template={undefined}
+            markupProfile={editorState.markupProfile}
+          />
+        )}
 
         {/* Person Weekly Schedule Dialog */}
         {personScheduleOpen && isPersonNode && (
@@ -1291,7 +1640,143 @@ export function Inspector({
             </div>
           </div>
         )}
+
+        {/* Manual Allocations Spreadsheet Dialog */}
+        {manualAllocationsEditor.isOpen && (
+          <div data-testid="allocations-modal" className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+            <div className="w-full max-w-6xl bg-bg-dark border border-border rounded-lg shadow-xl">
+              <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+                <div>
+                  <h3 className="text-base font-semibold text-fg-primary">Manual Allocations</h3>
+                  <p className="text-xs text-fg-secondary">Set per-day hours for each assigned person. Save writes the full task date grid.</p>
+                </div>
+                <button
+                  onClick={closeManualAllocationsEditor}
+                  className="px-3 py-1.5 text-xs text-fg-secondary hover:text-fg-primary hover:bg-bg-dark rounded"
+                >
+                  Close
+                </button>
+              </div>
+
+              <div className="p-4 overflow-auto max-h-[70vh]">
+                <table className="w-full text-sm border-separate border-spacing-0">
+                  <thead>
+                    <tr>
+                      <th className="text-left text-fg-secondary px-3 py-2 border-b border-r border-border sticky left-0 bg-bg-dark z-20">Assignee</th>
+                      <th className="text-right text-fg-secondary px-3 py-2 border-b border-r border-border whitespace-nowrap min-w-24">Remaining</th>
+                      {manualAllocationsEditor.dateRange.map((dateKey) => (
+                        <th
+                          key={dateKey}
+                          className={`text-center px-3 py-2 border-b border-r border-border whitespace-nowrap min-w-24 font-semibold ${
+                            dateKey === todayKey ? 'bg-emerald-500/60 text-fg-primary border-emerald-300/80' : 'text-fg-secondary'
+                          }`}
+                        >
+                          {dateKey}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {manualAllocationsEditor.assignedIds.map((personId, rowIndex) => {
+                      const perAssigneeTarget = manualAllocationsEditor.assignedIds.length > 0
+                        ? estimatedHoursValue / manualAllocationsEditor.assignedIds.length
+                        : 0;
+                      const allocatedHours = manualAllocationsEditor.dateRange.reduce((sum, dateKey) => {
+                        const raw = manualAllocationsEditor.draft[makeManualAllocationCellKey(dateKey, personId)] ?? '';
+                        const parsed = Number(raw);
+                        return Number.isFinite(parsed) ? sum + parsed : sum;
+                      }, 0);
+                      const remainingHoursRaw = perAssigneeTarget - allocatedHours;
+                      const remainingHours = Math.abs(remainingHoursRaw) <= allocationEpsilon ? 0 : remainingHoursRaw;
+                      const rowStatus = remainingHours === 0 ? 'full' : remainingHours < 0 ? 'over' : 'under';
+                      const statusIcon = rowStatus === 'full'
+                        ? { char: '✓', cls: 'text-emerald-400' }
+                        : rowStatus === 'over'
+                          ? { char: '↑', cls: 'text-status-warning' }
+                          : { char: '↓', cls: 'text-status-danger' };
+                      const remainingTone = rowStatus === 'full'
+                        ? 'text-emerald-400'
+                        : rowStatus === 'over'
+                          ? 'text-status-warning'
+                          : 'text-status-danger';
+
+                      return (
+                        <tr key={personId}>
+                          <td className="px-3 py-2 border-b border-r border-border text-fg-primary font-medium sticky left-0 bg-bg-dark z-20 whitespace-nowrap">
+                            <div className="flex items-center gap-2">
+                              <span className={`shrink-0 text-sm font-bold ${statusIcon.cls}`}>{statusIcon.char}</span>
+                              <span>{assigneeLabelById.get(personId) ?? personId}</span>
+                            </div>
+                          </td>
+                          <td
+                            className={`px-3 py-2 border-b border-r border-border text-right font-mono ${remainingTone}`}
+                            title={`Allocated ${allocatedHours.toFixed(1)}h / Target ${perAssigneeTarget.toFixed(1)}h`}
+                          >
+                            {remainingHours.toFixed(1)}
+                          </td>
+                          {manualAllocationsEditor.dateRange.map((dateKey, colIndex) => {
+                            const cellKey = makeManualAllocationCellKey(dateKey, personId);
+                            return (
+                              <td key={cellKey} className="px-2 py-2 border-2 border-emerald-500/80">
+                                <input
+                                  ref={(element) => {
+                                    manualAllocationCellRefs.current[cellKey] = element;
+                                  }}
+                                  type="text"
+                                  inputMode="decimal"
+                                  value={manualAllocationsEditor.draft[cellKey] ?? ''}
+                                  placeholder="—"
+                                  onChange={(event) => {
+                                    const nextValue = event.target.value;
+                                    if (nextValue !== '' && !/^\d*(?:\.\d*)?$/.test(nextValue)) {
+                                      return;
+                                    }
+                                    setManualAllocationsEditor((prev) => ({
+                                      ...prev,
+                                      draft: {
+                                        ...prev.draft,
+                                        [cellKey]: nextValue,
+                                      },
+                                    }));
+                                  }}
+                                  onFocus={(event) => {
+                                    event.currentTarget.select();
+                                  }}
+                                  onKeyDown={(event) => {
+                                    handleManualAllocationCellKeyDown(event, rowIndex, colIndex, personId, dateKey);
+                                  }}
+                                  className="w-full bg-transparent text-center font-mono text-fg-primary placeholder:text-fg-secondary focus:outline-none focus:bg-bg-dark/60 rounded [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                />
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="px-4 py-3 border-t border-border flex items-center justify-end gap-2">
+                <button
+                  onClick={closeManualAllocationsEditor}
+                  className="px-3 py-1.5 text-xs text-fg-secondary hover:text-fg-primary hover:bg-bg-dark rounded"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={saveManualAllocationsEditor}
+                  data-testid="allocations-save-btn"
+                  className="px-3 py-1.5 bg-accent-primary text-fg-primary rounded hover:bg-accent-hover transition-colors text-xs font-semibold"
+                  disabled={isReadOnly}
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </aside>
   );
-}
+});

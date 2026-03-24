@@ -21,6 +21,14 @@ export default defineConfig({
     },
   },
   server: {
+    watch: {
+      ignored: [
+        '**/src-tauri/target/**',
+        '**/src-tauri/gen/**',
+        '**/build/**',
+        '**/test-results/**',
+      ],
+    },
     proxy: {
       '/api': {
         target: 'http://localhost:5000',

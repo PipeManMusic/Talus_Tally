@@ -1,4 +1,4 @@
-import { X, FolderOpen } from 'lucide-react';
+import { X, FolderOpen, RotateCcw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { API_BASE_URL, apiClient } from '../../api/client';
 
@@ -78,30 +78,42 @@ interface SettingsDialogProps {
   onClose: () => void;
 }
 
-type TemplateDirKey =
+type OverrideDirKey =
   | 'custom_blueprint_templates_dir'
   | 'custom_export_templates_dir'
-  | 'custom_markup_templates_dir';
+  | 'custom_markup_templates_dir'
+  | 'custom_indicators_dir'
+  | 'custom_icons_dir';
 
-const TEMPLATE_DIR_FIELDS: Array<{
-  key: TemplateDirKey;
+const OVERRIDE_DIR_FIELDS: Array<{
+  key: OverrideDirKey;
   label: string;
-  placeholder: string;
+  section: 'templates' | 'assets';
 }> = [
   {
     key: 'custom_blueprint_templates_dir',
     label: 'Blueprint Templates',
-    placeholder: 'e.g. /shared/project/blueprints',
+    section: 'templates',
   },
   {
     key: 'custom_export_templates_dir',
     label: 'Export Templates',
-    placeholder: 'e.g. /shared/project/exports',
+    section: 'templates',
   },
   {
     key: 'custom_markup_templates_dir',
     label: 'Markup Templates',
-    placeholder: 'e.g. /shared/project/markups',
+    section: 'templates',
+  },
+  {
+    key: 'custom_indicators_dir',
+    label: 'Indicators',
+    section: 'assets',
+  },
+  {
+    key: 'custom_icons_dir',
+    label: 'Icons',
+    section: 'assets',
   },
 ];
 
@@ -110,12 +122,15 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
   const [indicatorCatalog, setIndicatorCatalog] = useState<IndicatorCatalog | null>(null);
   const [indicatorSvgs, setIndicatorSvgs] = useState<Record<string, string>>({});
   const [catalogError, setCatalogError] = useState<string | null>(null);
-  const [templateDirs, setTemplateDirs] = useState<Record<TemplateDirKey, string>>({
+  const [overrideDirs, setOverrideDirs] = useState<Record<OverrideDirKey, string>>({
     custom_blueprint_templates_dir: '',
     custom_export_templates_dir: '',
     custom_markup_templates_dir: '',
+    custom_indicators_dir: '',
+    custom_icons_dir: '',
   });
-  const [templatesDirSaved, setTemplatesDirSaved] = useState(false);
+  const [defaultPaths, setDefaultPaths] = useState<Record<string, string>>({});
+  const [overrideDirsSaved, setOverrideDirsSaved] = useState(false);
 
   useEffect(() => {
     const savedSize = localStorage.getItem('indicator_size');
@@ -131,11 +146,16 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
   useEffect(() => {
     if (!isOpen) return;
     apiClient.getSettings().then((settings) => {
-      setTemplateDirs({
+      setOverrideDirs({
         custom_blueprint_templates_dir: settings.custom_blueprint_templates_dir || '',
         custom_export_templates_dir: settings.custom_export_templates_dir || '',
         custom_markup_templates_dir: settings.custom_markup_templates_dir || '',
+        custom_indicators_dir: settings.custom_indicators_dir || '',
+        custom_icons_dir: settings.custom_icons_dir || '',
       });
+    }).catch(() => {});
+    apiClient.getSettingsDefaults().then((defaults) => {
+      setDefaultPaths(defaults);
     }).catch(() => {});
   }, [isOpen]);
 
@@ -155,9 +175,13 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
         const svgs: Record<string, string> = {};
         const sets = catalog.indicator_sets || {};
         const requests: Array<Promise<void>> = [];
+        const MAX_PREVIEW = 5;
+        let count = 0;
 
-        Object.entries(sets).forEach(([setId, setData]) => {
-          (setData.indicators || []).forEach((indicator) => {
+        for (const [setId, setData] of Object.entries(sets)) {
+          for (const indicator of setData.indicators || []) {
+            if (count >= MAX_PREVIEW) break;
+            count++;
             const key = `${setId}:${indicator.id}`;
             requests.push(
               fetch(`${API_BASE_URL}/api/v1/indicators/${setId}/${indicator.id}`)
@@ -171,8 +195,9 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
                   // Ignore individual indicator errors
                 })
             );
-          });
-        });
+          }
+          if (count >= MAX_PREVIEW) break;
+        }
 
         await Promise.all(requests);
         setIndicatorSvgs(svgs);
@@ -263,37 +288,25 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
                 {catalogError ? (
                   <div className="text-xs text-[var(--color-fg-secondary)]">{catalogError}</div>
                 ) : indicatorCatalog ? (
-                  <div className="space-y-3">
-                    {Object.entries(indicatorCatalog.indicator_sets || {}).map(([setId, setData]) => (
-                      <div key={setId} className="space-y-2">
-                        <div className="text-xs font-semibold text-[var(--color-fg-secondary)] uppercase tracking-wide">
-                          {setId}
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {(setData.indicators || []).map((indicator) => {
-                            const key = `${setId}:${indicator.id}`;
-                            const svg = indicatorSvgs[key];
-                            return (
-                              <div
-                                key={key}
-                                className="flex items-center gap-2 px-2 py-1 rounded border border-[var(--color-border-default)] bg-[var(--color-bg-light)]"
-                              >
-                                {svg ? (
-                                  <span
-                                    className="status-indicator-svg"
-                                    // eslint-disable-next-line react/no-danger
-                                    dangerouslySetInnerHTML={{ __html: recolorPreviewSvg(svg, '#ffffff') }}
-                                  />
-                                ) : (
-                                  <span className="status-indicator-text text-xs opacity-60">...</span>
-                                )}
-                                <span className="text-xs text-[var(--color-fg-secondary)]">
-                                  {indicator.id}
-                                </span>
-                              </div>
-                            );
-                          })}
-                        </div>
+                  <div className="flex flex-wrap gap-2">
+                    {Object.entries(indicatorCatalog.indicator_sets || {}).flatMap(([setId, setData]) =>
+                      (setData.indicators || []).map((indicator) => {
+                        const key = `${setId}:${indicator.id}`;
+                        return { key, indicator, svg: indicatorSvgs[key] };
+                      })
+                    ).filter(item => item.svg).map(({ key, indicator, svg }) => (
+                      <div
+                        key={key}
+                        className="flex items-center gap-2 px-2 py-1 rounded border border-[var(--color-border-default)] bg-[var(--color-bg-light)]"
+                      >
+                        <span
+                          className="status-indicator-svg"
+                          // eslint-disable-next-line react/no-danger
+                          dangerouslySetInnerHTML={{ __html: recolorPreviewSvg(svg, '#ffffff') }}
+                        />
+                        <span className="text-xs text-[var(--color-fg-secondary)]">
+                          {indicator.id}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -305,81 +318,164 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
           </section>
 
           <section>
-            <h3 className="text-sm font-semibold text-[var(--color-fg-primary)] mb-3">Templates</h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-[var(--color-fg-primary)]">File Locations</h3>
+              <button
+                onClick={async () => {
+                  try {
+                    const defaults = await apiClient.getSettingsDefaults();
+                    const resetDirs: Record<OverrideDirKey, string> = {
+                      custom_blueprint_templates_dir: '',
+                      custom_export_templates_dir: '',
+                      custom_markup_templates_dir: '',
+                      custom_indicators_dir: '',
+                      custom_icons_dir: '',
+                    };
+                    for (const key of Object.keys(resetDirs) as OverrideDirKey[]) {
+                      resetDirs[key] = '';
+                    }
+                    setOverrideDirs(resetDirs);
+                    const payload: Record<string, null> = {};
+                    for (const key of Object.keys(resetDirs)) {
+                      payload[key] = null;
+                    }
+                    await apiClient.updateSettings(payload);
+                    setDefaultPaths(defaults);
+                    setOverrideDirsSaved(true);
+                  } catch (err) {
+                    console.error('Failed to reset to defaults:', err);
+                  }
+                }}
+                className="flex items-center gap-1 px-2 py-1 text-xs text-[var(--color-fg-secondary)] hover:text-[var(--color-fg-primary)] hover:bg-[var(--color-bg-selection)] rounded transition-colors"
+                title="Clear all overrides and use default locations"
+              >
+                <RotateCcw size={12} />
+                Reset to Defaults
+              </button>
+            </div>
             <div className="space-y-2">
-              <label className="text-sm text-[var(--color-fg-secondary)]">
-                Template Folders
-              </label>
               <p className="text-xs text-[var(--color-fg-secondary)] leading-relaxed">
-                Configure separate folders for blueprint, export, and markup templates.
-                Leave any field empty to use the default location for that template type.
+                Override the default folder locations for templates, indicators, and icons.
+                Leave a field empty to use the default location shown as placeholder text.
               </p>
 
-              {TEMPLATE_DIR_FIELDS.map((entry) => (
-                <div key={entry.key} className="space-y-1">
-                  <div className="text-xs font-medium text-[var(--color-fg-secondary)] uppercase tracking-wide">{entry.label}</div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={templateDirs[entry.key]}
-                      onChange={(e) => {
-                        setTemplateDirs((current) => ({
-                          ...current,
-                          [entry.key]: e.target.value,
-                        }));
-                        setTemplatesDirSaved(false);
-                      }}
-                      placeholder={entry.placeholder}
-                      className="flex-1 bg-[var(--color-bg-dark)] text-[var(--color-fg-primary)] border border-[var(--color-border-default)] rounded-sm px-2 py-1 text-sm font-body focus:border-[var(--color-accent-primary)] focus:outline-none"
-                    />
-                    <button
-                      onClick={async () => {
-                        try {
-                          const { open } = await import('@tauri-apps/plugin-dialog');
-                          const selected = await open({
-                            directory: true,
-                            multiple: false,
-                            title: `Select ${entry.label} Folder`,
-                          });
-                          if (selected && typeof selected === 'string') {
-                            setTemplateDirs((current) => ({
-                              ...current,
-                              [entry.key]: selected,
-                            }));
-                            setTemplatesDirSaved(false);
+              <div className="space-y-1 mt-2">
+                <div className="text-xs font-semibold text-[var(--color-fg-secondary)] uppercase tracking-wide mb-1">Templates</div>
+                {OVERRIDE_DIR_FIELDS.filter(e => e.section === 'templates').map((entry) => (
+                  <div key={entry.key} className="space-y-1">
+                    <div className="text-xs font-medium text-[var(--color-fg-secondary)]">{entry.label}</div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={overrideDirs[entry.key]}
+                        onChange={(e) => {
+                          setOverrideDirs((current) => ({
+                            ...current,
+                            [entry.key]: e.target.value,
+                          }));
+                          setOverrideDirsSaved(false);
+                        }}
+                        placeholder={defaultPaths[entry.key] || 'Loading...'}
+                        className="flex-1 bg-[var(--color-bg-dark)] text-[var(--color-fg-primary)] border border-[var(--color-border-default)] rounded-sm px-2 py-1 text-sm font-body focus:border-[var(--color-accent-primary)] focus:outline-none placeholder:text-[var(--color-fg-secondary)]/50"
+                      />
+                      <button
+                        onClick={async () => {
+                          try {
+                            const { open } = await import('@tauri-apps/plugin-dialog');
+                            const selected = await open({
+                              directory: true,
+                              multiple: false,
+                              title: `Select ${entry.label} Folder`,
+                            });
+                            if (selected && typeof selected === 'string') {
+                              setOverrideDirs((current) => ({
+                                ...current,
+                                [entry.key]: selected,
+                              }));
+                              setOverrideDirsSaved(false);
+                            }
+                          } catch {
+                            // Not in Tauri or dialog cancelled — ignore
                           }
-                        } catch {
-                          // Not in Tauri or dialog cancelled — ignore
-                        }
-                      }}
-                      className="p-1.5 hover:bg-[var(--color-bg-selection)] rounded transition-colors border border-[var(--color-border-default)]"
-                      title={`Browse for ${entry.label} folder`}
-                    >
-                      <FolderOpen size={16} className="text-[var(--color-fg-secondary)]" />
-                    </button>
+                        }}
+                        className="p-1.5 hover:bg-[var(--color-bg-selection)] rounded transition-colors border border-[var(--color-border-default)]"
+                        title={`Browse for ${entry.label} folder`}
+                      >
+                        <FolderOpen size={16} className="text-[var(--color-fg-secondary)]" />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
 
-              <div className="flex items-center gap-2">
+              <div className="space-y-1 mt-3">
+                <div className="text-xs font-semibold text-[var(--color-fg-secondary)] uppercase tracking-wide mb-1">Assets</div>
+                {OVERRIDE_DIR_FIELDS.filter(e => e.section === 'assets').map((entry) => (
+                  <div key={entry.key} className="space-y-1">
+                    <div className="text-xs font-medium text-[var(--color-fg-secondary)]">{entry.label}</div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={overrideDirs[entry.key]}
+                        onChange={(e) => {
+                          setOverrideDirs((current) => ({
+                            ...current,
+                            [entry.key]: e.target.value,
+                          }));
+                          setOverrideDirsSaved(false);
+                        }}
+                        placeholder={defaultPaths[entry.key] || 'Loading...'}
+                        className="flex-1 bg-[var(--color-bg-dark)] text-[var(--color-fg-primary)] border border-[var(--color-border-default)] rounded-sm px-2 py-1 text-sm font-body focus:border-[var(--color-accent-primary)] focus:outline-none placeholder:text-[var(--color-fg-secondary)]/50"
+                      />
+                      <button
+                        onClick={async () => {
+                          try {
+                            const { open } = await import('@tauri-apps/plugin-dialog');
+                            const selected = await open({
+                              directory: true,
+                              multiple: false,
+                              title: `Select ${entry.label} Folder`,
+                            });
+                            if (selected && typeof selected === 'string') {
+                              setOverrideDirs((current) => ({
+                                ...current,
+                                [entry.key]: selected,
+                              }));
+                              setOverrideDirsSaved(false);
+                            }
+                          } catch {
+                            // Not in Tauri or dialog cancelled — ignore
+                          }
+                        }}
+                        className="p-1.5 hover:bg-[var(--color-bg-selection)] rounded transition-colors border border-[var(--color-border-default)]"
+                        title={`Browse for ${entry.label} folder`}
+                      >
+                        <FolderOpen size={16} className="text-[var(--color-fg-secondary)]" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-2 mt-2">
                 <button
                   onClick={async () => {
                     try {
-                      await apiClient.updateSettings({
-                        custom_blueprint_templates_dir: templateDirs.custom_blueprint_templates_dir || null,
-                        custom_export_templates_dir: templateDirs.custom_export_templates_dir || null,
-                        custom_markup_templates_dir: templateDirs.custom_markup_templates_dir || null,
-                      });
-                      setTemplatesDirSaved(true);
+                      const payload: Record<string, string | null> = {};
+                      for (const entry of OVERRIDE_DIR_FIELDS) {
+                        payload[entry.key] = overrideDirs[entry.key] || null;
+                      }
+                      await apiClient.updateSettings(payload);
+                      setOverrideDirsSaved(true);
                     } catch (err) {
-                      console.error('Failed to save template folder settings:', err);
+                      console.error('Failed to save folder settings:', err);
                     }
                   }}
                   className="px-3 py-1 text-xs bg-[var(--color-accent-primary)] hover:bg-[var(--color-accent-hover)] text-white rounded transition-colors"
                 >
                   Apply
                 </button>
-                {templatesDirSaved && (
+                {overrideDirsSaved && (
                   <span className="text-xs text-green-400">Saved. Restart or reload to take effect.</span>
                 )}
               </div>
@@ -392,7 +488,7 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
             onClick={handleReset}
             className="px-4 py-2 text-sm text-[var(--color-fg-secondary)] hover:text-[var(--color-fg-primary)] hover:bg-[var(--color-bg-selection)] rounded transition-colors"
           >
-            Reset to Default
+            Reset Indicator Size
           </button>
           <button
             onClick={onClose}

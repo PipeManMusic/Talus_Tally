@@ -7,7 +7,6 @@ class Node:
     """Represents a single node in the ProjectGraph."""
     
     def __init__(self, blueprint_type_id: str, name: str, id: Optional[UUID] = None):
-        print(f"[DEBUG][Node.__init__] blueprint_type_id={blueprint_type_id} (type={type(blueprint_type_id)}) name={name} id={id}")
         self.id: UUID = id or uuid4()
         self.blueprint_type_id: str = blueprint_type_id
         self.name: str = name

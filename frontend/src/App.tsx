@@ -47,9 +47,9 @@ import { MarkupEditor } from './views/MarkupEditor';
 import { openExternalUrl } from './utils/openExternal';
 import { IconEditor } from './views/IconEditor';
 import { ToolsView } from './views/ToolsView';
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { DebugPanel, type DebugLogEntry } from './components/dev/DebugPanel';
-import { filterDebugPanelLogs } from './config/debugPanelConfig';
+import { useState, useEffect, useCallback, useRef, useMemo, useTransition } from 'react';
+import { DebugPanel } from './components/dev/DebugPanel';
+import { pushDebugLog } from './store/debugLogStore';
 import { ErrorBoundary } from './components/dev/ErrorBoundary';
 // Toggleable debug logging for tree/expansion state
 const DEBUG_TREE = process.env.NODE_ENV !== 'production';
@@ -63,6 +63,12 @@ import { validateTemplateSchema, safeExtractOptions } from './utils/templateVali
 
 function App() {
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
+  const [, startSelectionTransition] = useTransition();
+  const handleNodeSelect = useCallback((nodeId: string | null) => {
+    startSelectionTransition(() => {
+      setSelectedNode(nodeId);
+    });
+  }, [startSelectionTransition]);
   const [inspectorOpen, setInspectorOpen] = useState(true);
   const [inspectorTab, setInspectorTab] = useState<'properties' | 'filters'>('properties');
   const { filterTabVisible, toggleFilterTabVisible, savedFilterSets, setSavedFilterSets } = useFilterStore();
@@ -80,7 +86,6 @@ function App() {
   const currentGraphRef = useRef<Graph | null>(null);
   const templateIdRef = useRef<string | null>(null);
   const [treeNodes, setTreeNodes] = useState<TreeNode[]>([]);
-  const [selectedNodeData, setSelectedNodeData] = useState<Node | null>(null);
   const [showNewProjectDialog, setShowNewProjectDialog] = useState(false);
   const [showAddChildDialog, setShowAddChildDialog] = useState(false);
   const [showAssetSelectDialog, setShowAssetSelectDialog] = useState(false);
@@ -105,16 +110,8 @@ function App() {
   const [assetCategoryParentId, setAssetCategoryParentId] = useState<string | null>(null);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [templateSchema, setTemplateSchema] = useState<TemplateSchema | null>(null);
-  const [blockedByNodes, setBlockedByNodes] = useState<string[]>([]);
-  const [blocksNodes, setBlocksNodes] = useState<string[]>([]);
   const [blockingRelationships, setBlockingRelationships] = useState<Array<{ blockedNodeId: string; blockingNodeId: string }>>([]);
-  const [velocityScore, setVelocityScore] = useState<VelocityScore | null>(null);
   const [velocityScores, setVelocityScores] = useState<Record<string, VelocityScore>>({});
-
-  // Debug: log whenever velocityScores state updates
-  useEffect(() => {
-    console.log('[App::STATE] velocityScores updated to', Object.keys(velocityScores).length, 'scores');
-  }, [velocityScores]);
   const [blockingNodeCount, setBlockingNodeCount] = useState(0);
   const [blockingEdgeCount, setBlockingEdgeCount] = useState(0);
   const [blockingFitSignal, setBlockingFitSignal] = useState(0);
@@ -126,8 +123,6 @@ function App() {
   const [currentTemplateId, setCurrentTemplateId] = useState<string | null>(null);
   const [expandAllSignal, setExpandAllSignal] = useState(0);
   const [collapseAllSignal, setCollapseAllSignal] = useState(0);
-  const [debugLogs, setDebugLogs] = useState<DebugLogEntry[]>([]);
-  const debugPanelLogs = useMemo(() => filterDebugPanelLogs(debugLogs), [debugLogs]);
   const [recentFiles, setRecentFiles] = useState<string[]>(() => {
     try {
       const stored = localStorage.getItem(RECENT_FILES_KEY);
@@ -144,7 +139,6 @@ function App() {
   });
   const [toasts, setToasts] = useState<ToastProps[]>([]);
   const toastIdCounter = useRef(0);
-  const debugLogCounterRef = useRef(0);
   const [isAppInitialized, setIsAppInitialized] = useState(false);
   // Track which nodes are expanded (by id) - restore from localStorage
   const [expandedMap, setExpandedMap] = useState<Record<string, boolean>>(() => {
@@ -364,9 +358,6 @@ function App() {
   useEffect(() => {
     if (process.env.NODE_ENV === 'production') return;
 
-    // Keep a larger in-memory log buffer so high-volume debug sessions
-    // (for example normalizeGraph traces) do not evict key API logs.
-    const maxEntries = 10000;
     const original = {
       log: console.log,
       info: console.info,
@@ -379,27 +370,14 @@ function App() {
       if (typeof arg === 'string') return arg;
       try {
         return JSON.stringify(arg);
-      } catch (err) {
+      } catch {
         return String(arg);
       }
     };
 
-    const pushLog = (level: DebugLogEntry['level'], args: unknown[]) => {
-      const now = new Date();
-      const time = now.toISOString().slice(11, 23);
+    const pushLog = (level: 'log' | 'info' | 'warn' | 'error' | 'debug', args: unknown[]) => {
       const message = args.map(formatArg).join(' ');
-      setDebugLogs((prev) => {
-        const entry: DebugLogEntry = {
-          id: ++debugLogCounterRef.current,
-          level,
-          time,
-          message,
-        };
-        if (prev.length >= maxEntries) {
-          return [...prev.slice(prev.length - maxEntries + 1), entry];
-        }
-        return [...prev, entry];
-      });
+      pushDebugLog(level, message);
     };
 
     console.log = (...args: unknown[]) => {
@@ -474,7 +452,7 @@ function App() {
         statusIndicatorSvg: node.statusIndicatorSvg ?? undefined,
         statusText: node.statusText ?? undefined,
         parent_id: parentId ?? undefined,
-        selected: node.id === selectedNode,
+        selected: false,
         allowed_children: allowedChildren,
         properties: node.properties || {},
         children: node.children?.map(childId => {
@@ -502,7 +480,7 @@ function App() {
     ));
 
     return roots.map(root => buildTree(root, nodes, null));
-  }, [templateSchema, selectedNode]);
+  }, [templateSchema]);
 
   // Track if this is the first tree build after project load
   const firstTreeBuild = useRef(true);
@@ -518,130 +496,64 @@ function App() {
     setTreeNodes(tree);
   }, [storeNodes, convertNodesToTree]);
 
-  // Get selected node data
-  useEffect(() => {
-    if (selectedNode && storeNodes[selectedNode]) {
-      setSelectedNodeData(storeNodes[selectedNode]);
-    } else {
-      setSelectedNodeData(null);
-    }
-  }, [selectedNode, storeNodes]);
-
   const fetchBlockingRelationships = useCallback(async () => {
-    const currentlySelectedNode = selectedNode;
-    if (!currentlySelectedNode || !sessionId) {
-      setBlockedByNodes([]);
-      setBlocksNodes([]);
+    if (!sessionId) {
+      setBlockingRelationships([]);
       return;
     }
 
     try {
       const result = await apiClient.getBlockingGraph(sessionId);
-      const edges = result.relationships || [];
-      setBlockingRelationships(edges);
-
-      // Find nodes that block the selected node
-      const blocked_by = edges
-        .filter(e => e.blockedNodeId === currentlySelectedNode)
-        .map(e => e.blockingNodeId);
-
-      // Find nodes that the selected node blocks
-      const blocks = edges
-        .filter(e => e.blockingNodeId === currentlySelectedNode)
-        .map(e => e.blockedNodeId);
-
-      setBlockedByNodes(blocked_by);
-      setBlocksNodes(blocks);
+      setBlockingRelationships(result.relationships || []);
     } catch (error) {
       console.error('Failed to fetch blocking relationships:', error);
     }
-  }, [selectedNode, sessionId]);
+  }, [sessionId]);
 
-  // Fetch blocking relationships based on active view
   useEffect(() => {
     fetchBlockingRelationships();
   }, [fetchBlockingRelationships]);
 
-  // Fetch velocity score for selected node
-  const fetchVelocity = useCallback(async () => {
-    const currentlySelectedNode = selectedNode;
-    if (!currentlySelectedNode || !sessionId) {
-      setVelocityScore(null);
-      return;
-    }
-
-    const cachedScore = velocityScores[currentlySelectedNode];
-    if (cachedScore) {
-      setVelocityScore(cachedScore);
-      return;
-    }
-
-    try {
-      const score = await apiClient.getNodeVelocity(sessionId, currentlySelectedNode);
-      setVelocityScore(score);
-    } catch (error) {
-      console.error('Failed to fetch node velocity:', error);
-      setVelocityScore(null);
-    }
-  }, [selectedNode, sessionId, velocityScores]);
-
-  // Fetch velocity score when selected node changes
-  useEffect(() => {
-    fetchVelocity();
-  }, [fetchVelocity]);
-
   const graphNodeCount = currentGraph?.nodes?.length ?? 0;
 
-  // Fetch velocity scores for all nodes for filtering.
-  // Depend on graph size so we refetch after a project graph is loaded into session.
-  useEffect(() => {
-    console.log('[App::VELOCITY] useEffect triggered with sessionId =', sessionId, 'graphNodeCount =', graphNodeCount);
+  const refreshVelocityScores = useCallback(async () => {
     if (!sessionId) {
-      console.log('[App::VELOCITY] sessionId is null/empty, clearing velocityScores');
       setVelocityScores({});
       return;
     }
 
-    console.log('[App::VELOCITY] sessionId is truthy:', sessionId, 'fetching velocity data...');
-    const fetchAllVelocityScores = async () => {
-      console.log('[App::VELOCITY] Starting fetch for sessionId:', sessionId);
-      try {
-        console.log('[App::VELOCITY] Calling apiClient.getVelocityRanking...');
-        const result = await apiClient.getVelocityRanking(sessionId);
-        console.log('[App::VELOCITY] API response received:', result ? 'DATA' : 'NULL');
-        if (result?.nodes) {
-          console.log('[App::VELOCITY] API returned', result.nodes.length, 'nodes');
-        }
-        const scoresMap: Record<string, VelocityScore> = {};
-        if (result?.nodes) {
-          result.nodes.forEach((score) => {
-            scoresMap[score.nodeId] = {
-              nodeId: score.nodeId,
-              baseScore: score.baseScore,
-              inheritedScore: score.inheritedScore,
-              statusScore: score.statusScore,
-              numericalScore: score.numericalScore,
-              blockingPenalty: score.blockingPenalty,
-              blockingBonus: score.blockingBonus,
-              totalVelocity: score.totalVelocity,
-              isBlocked: score.isBlocked,
-              blockedByNodes: score.blockedByNodes,
-              blocksNodeIds: score.blocksNodeIds,
-            };
-          });
-        }
-        console.log('[App::VELOCITY] Processed', Object.keys(scoresMap).length, 'scored nodes');
-        console.log('[App::VELOCITY] Calling setVelocityScores with', Object.keys(scoresMap).length, 'entries');
-        setVelocityScores(scoresMap);
-      } catch (err) {
-        console.error('[App::VELOCITY] EXCEPTION during fetch:', err);
-        setVelocityScores({});
+    try {
+      const result = await apiClient.getVelocityRanking(sessionId);
+      const scoresMap: Record<string, VelocityScore> = {};
+      if (result?.nodes) {
+        result.nodes.forEach((score) => {
+          scoresMap[score.nodeId] = {
+            nodeId: score.nodeId,
+            baseScore: score.baseScore,
+            inheritedScore: score.inheritedScore,
+            statusScore: score.statusScore,
+            numericalScore: score.numericalScore,
+            blockingPenalty: score.blockingPenalty,
+            blockingBonus: score.blockingBonus,
+            totalVelocity: score.totalVelocity,
+            isBlocked: score.isBlocked,
+            blockedByNodes: score.blockedByNodes,
+            blocksNodeIds: score.blocksNodeIds,
+          };
+        });
       }
-    };
+      setVelocityScores(scoresMap);
+    } catch (err) {
+      console.error('Failed to refresh velocity scores:', err);
+      setVelocityScores({});
+    }
+  }, [sessionId]);
 
-    console.log('[App::VELOCITY] Invoking fetchAllVelocityScores()');
-    fetchAllVelocityScores();
-  }, [sessionId, graphNodeCount]);
+  // Fetch velocity scores for all nodes for filtering.
+  // Depend on graph size so we refetch after a project graph is loaded into session.
+  useEffect(() => {
+    refreshVelocityScores();
+  }, [refreshVelocityScores, graphNodeCount]);
 
   // -----------------------------------------------------------------------
   // Property group assignment: maps property types to display groups.
@@ -678,175 +590,37 @@ function App() {
     return typeToGroup[propType] ?? 'Details';
   };
 
-  // Convert node properties to inspector format
-  const getNodeProperties = useCallback((): NodeProperty[] => {
-    if (!selectedNodeData || !templateSchema) {
-      return [];
-    }
-
-    // Find the node type schema
-    const nodeTypeSchema = templateSchema.node_types.find(nt => nt.id === selectedNodeData.type);
-    if (!nodeTypeSchema) {
-      return [];
-    }
-
-    console.log('[App] Node type schema properties:', nodeTypeSchema.properties?.map((p: any) => ({ 
-      id: p.id, 
-      type: p.type,
-      markup_profile: (p as any).markup_profile 
-    })));
-
-    // Start with name as the first editable property
-    const nameProperty: NodeProperty = {
-      id: 'name',
-      name: 'Name',
-      type: 'text',
-      value: selectedNodeData.properties?.name || '',
-      required: true,
-      group: 'Identity',
-    };
-
-    // Build properties from schema
-    const schemaProperties = nodeTypeSchema.properties.filter((prop) => prop.id !== 'name').map((prop) => {
-      let value = selectedNodeData.properties?.[prop.id];
-      if (value === undefined && prop.id === 'name') {
-        value = selectedNodeData.properties?.name || '';
-      }
-      let type: NodeProperty['type'] = 'text';
-      if (prop.type === 'number') type = 'number';
-      else if (prop.type === 'select') type = 'select';
-      else if (prop.type === 'textarea') type = 'textarea';
-      else if (prop.type === 'currency') type = 'currency';
-      else if (prop.type === 'date') type = 'date';
-      else if (prop.type === 'checkbox') type = 'checkbox';
-      else if (prop.type === 'editor') type = 'editor';
-      // Build options for select - use safe extraction to handle malformed data
-      let options = undefined;
-      if (prop.type === 'select') {
-        options = safeExtractOptions(prop);
-      }
-      
-      // Extract markup profile and tokens if this is an editor field
-      let markupTokens = undefined;
-      let markupProfile = undefined;
-      if (prop.type === 'editor') {
-        if ((prop as any).markup_tokens) {
-          markupTokens = (prop as any).markup_tokens;
-        }
-        if ((prop as any).markup_profile) {
-          markupProfile = (prop as any).markup_profile;
-        }
-      }
-
-      if (prop.id === 'description') {
-        console.log('[App] Building description property:', {
-          propId: prop.id,
-          propType: type,
-          hasMarkupProfile: !!markupProfile,
-          markupProfile,
-          rawProp: (prop as any).markup_profile,
-        });
-      }
-      
-      return {
-        id: prop.id,
-        name: prop.name,
-        type,
-        value: value ?? '',
-        options,
-        required: prop.required,
-        markupTokens,
-        markupProfile,
-        group: assignGroup(prop.id, type, (prop as any).ui_group),
-      };
-    });
-
-    return [nameProperty, ...schemaProperties];
-  }, [selectedNodeData, templateSchema]);
-
-  // Get linked asset metadata if this node has an asset_id property
-  const getLinkedAssetMetadata = useCallback((): any => {
-    if (!selectedNodeData) return null;
-    if (!templateSchema) {
-      return null;
-    }
-
-    // Check if this node has an asset_id property (like asset_reference nodes)
-    const assetId = selectedNodeData.properties?.asset_id;
-    if (!assetId) return null;
-
-    // Find the asset node in the store
-    const assetNode = storeNodes[assetId];
-    if (!assetNode) return null;
-
-    // Get the schema for the asset node type
-    const assetTypeSchema = templateSchema?.node_types?.find(nt => nt.id === assetNode.type);
-    if (!assetTypeSchema) {
-      return null;
-    }
-
-    // Build asset properties
-    const assetProperties = (assetTypeSchema.properties || []).map((prop) => {
-      let value = assetNode.properties?.[prop.id];
-      if (value === undefined && prop.id === 'name') {
-        value = assetNode.properties?.name || '';
-      }
-      let type: NodeProperty['type'] = 'text';
-      if (prop.type === 'number') type = 'number';
-      else if (prop.type === 'select') type = 'select';
-      else if (prop.type === 'textarea') type = 'textarea';
-      else if (prop.type === 'currency') type = 'currency';
-      else if (prop.type === 'date') type = 'date';
-      else if (prop.type === 'checkbox') type = 'checkbox';
-      else if (prop.type === 'editor') type = 'editor';
-      // Build options for select - use safe extraction to handle malformed data
-      let options = undefined;
-      if (prop.type === 'select') {
-        options = safeExtractOptions(prop);
-      }
-      
-      // Extract markup tokens and profile if this is an editor field
-      let markupTokens = undefined;
-      let markupProfile = undefined;
-      if (prop.type === 'editor') {
-        if ((prop as any).markup_tokens) {
-          markupTokens = (prop as any).markup_tokens;
-        }
-        if ((prop as any).markup_profile) {
-          markupProfile = (prop as any).markup_profile;
-        }
-      }
-      
-      return {
-        id: prop.id,
-        name: prop.name,
-        type,
-        value: value ?? '',
-        options,
-        required: prop.required,
-        markupTokens,
-        markupProfile,
-      };
-    });
-
-    return {
-      nodeId: assetNode.id,
-      nodeType: assetNode.type,
-      name: assetNode.properties?.name || 'Asset',
-      properties: assetProperties,
-    };
-  }, [selectedNodeData, templateSchema, storeNodes]);
-
-  // Memoize computed values for inspector
-  const nodeProperties = useMemo(() => getNodeProperties(), [getNodeProperties]);
-  const linkedAsset = useMemo(() => getLinkedAssetMetadata(), [getLinkedAssetMetadata]);
-
   // A single selection is shared across all views so visuals and inspector stay in sync.
   const currentSelectedNodeId = selectedNode;
 
   const currentSelectedNodeData = useMemo(() => {
     return currentSelectedNodeId ? storeNodes[currentSelectedNodeId] : null;
   }, [currentSelectedNodeId, storeNodes]);
+
+  const blockedByNodes = useMemo(() => {
+    if (!currentSelectedNodeId) {
+      return [];
+    }
+    return blockingRelationships
+      .filter((edge) => edge.blockedNodeId === currentSelectedNodeId)
+      .map((edge) => edge.blockingNodeId);
+  }, [blockingRelationships, currentSelectedNodeId]);
+
+  const blocksNodes = useMemo(() => {
+    if (!currentSelectedNodeId) {
+      return [];
+    }
+    return blockingRelationships
+      .filter((edge) => edge.blockingNodeId === currentSelectedNodeId)
+      .map((edge) => edge.blockedNodeId);
+  }, [blockingRelationships, currentSelectedNodeId]);
+
+  const currentVelocityScore = useMemo(() => {
+    if (!currentSelectedNodeId) {
+      return null;
+    }
+    return velocityScores[currentSelectedNodeId] ?? null;
+  }, [currentSelectedNodeId, velocityScores]);
 
   const isKnownTemplateNodeType = useMemo(() => {
     if (!currentSelectedNodeData || !templateSchema?.node_types) {
@@ -965,6 +739,8 @@ function App() {
 
     // Build properties from schema
     const schemaProperties = nodeTypeSchema.properties.filter((prop) => prop.id !== 'name').map((prop) => {
+      const isAllocationSchemaProperty = prop.id === 'allocations';
+
       let value = currentSelectedNodeData.properties?.[prop.id];
       if (value === undefined && prop.id === 'name') {
         value = currentSelectedNodeData.properties?.name || '';
@@ -996,7 +772,7 @@ function App() {
       }
       
       return {
-        id: prop.id,
+        id: isAllocationSchemaProperty ? 'allocations' : prop.id,
         name: prop.name,
         type,
         value: value ?? '',
@@ -1129,10 +905,11 @@ function App() {
   }, [showToast]);
 
   // Enable real-time WebSocket synchronization
-  useGraphSync({
+  const graphSyncOptions = useMemo(() => ({
     onExternalProjectUpdate: handleExternalProjectUpdate,
     onExternalTemplateUpdate: handleExternalTemplateUpdate,
-  });
+  }), [handleExternalProjectUpdate, handleExternalTemplateUpdate]);
+  useGraphSync(graphSyncOptions);
 
   const restoreGraphToSession = useCallback(async (sid: string) => {
     if (!currentGraphRef.current) {
@@ -1640,7 +1417,7 @@ function App() {
     }
 
     try {
-      await fetchVelocity();
+      await refreshVelocityScores();
     } catch (velErr) {
       console.warn('Failed to refresh velocity:', velErr);
     }
@@ -1653,7 +1430,7 @@ function App() {
     }
 
     console.log('✓ Full template refresh completed');
-  }, [currentTemplateId, sessionId, normalizeGraph, setCurrentGraph, fetchBlockingRelationships, fetchVelocity]);
+  }, [currentTemplateId, sessionId, normalizeGraph, setCurrentGraph, fetchBlockingRelationships, refreshVelocityScores]);
 
   // When the template editor closes, refresh everything
   const handleTemplateEditorClose = useCallback(async () => {
@@ -1685,14 +1462,14 @@ function App() {
 
       setBlockingGraphRefreshSignal((prev) => prev + 1);
       await fetchBlockingRelationships();
-      await fetchVelocity(); // Refresh velocity since blocking affects scores
+      await refreshVelocityScores();
       setIsDirty(true);
       console.log(`✓ Cleared all blocks for node ${nodeId}`);
     } catch (error) {
       console.error('Failed to clear blocking relationships:', error);
       alert('Failed to clear blocking relationships');
     }
-  }, [blocksNodes, fetchBlockingRelationships, fetchVelocity, sessionId]);
+  }, [blocksNodes, fetchBlockingRelationships, refreshVelocityScores, sessionId]);
 
   /** Clear a single blocking relationship by removing the blocker from blockedNodeId. */
   const handleClearSingleBlock = useCallback(async (blockedNodeId: string) => {
@@ -1701,14 +1478,14 @@ function App() {
       await apiClient.updateBlockingRelationship(sessionId, blockedNodeId, null);
       setBlockingGraphRefreshSignal((prev) => prev + 1);
       await fetchBlockingRelationships();
-      await fetchVelocity();
+      await refreshVelocityScores();
       setIsDirty(true);
       console.log(`✓ Cleared block on node ${blockedNodeId}`);
     } catch (error) {
       console.error('Failed to clear blocking relationship:', error);
       alert('Failed to clear blocking relationship');
     }
-  }, [fetchBlockingRelationships, fetchVelocity, sessionId]);
+  }, [fetchBlockingRelationships, refreshVelocityScores, sessionId]);
 
   const handleExpandAll = useCallback(() => {
     setExpandAllSignal((prev) => prev + 1);
@@ -1733,32 +1510,44 @@ function App() {
     if (currentIsDirty) {
       // Set up the action to execute after user makes their choice
       pendingCloseActionRef.current = async () => {
-        console.log('[CLOSE] Proceeding with force close...');
+        console.log('[CLOSE] Proceeding with graceful close...');
         try {
           const { invoke } = await import('@tauri-apps/api/core');
-          console.log('[CLOSE] Calling force_close_window command');
-          await invoke('force_close_window');
-          console.log('[CLOSE] force_close_window returned');
+          console.log('[CLOSE] Calling exit_app command');
+          await invoke('exit_app');
+          console.log('[CLOSE] exit_app returned');
           return;
         } catch (tauriErr) {
-          console.error('[CLOSE] Tauri force close failed:', tauriErr);
-          console.log('[CLOSE] Trying fallback window.close()');
-          window.close?.();
+          console.error('[CLOSE] Tauri graceful close failed:', tauriErr);
+          try {
+            const { invoke } = await import('@tauri-apps/api/core');
+            console.log('[CLOSE] Trying fallback force_close_window');
+            await invoke('force_close_window');
+          } catch (forceErr) {
+            console.error('[CLOSE] force_close_window fallback failed:', forceErr);
+            console.log('[CLOSE] Trying fallback window.close()');
+            window.close?.();
+          }
         }
       };
       // Show the save confirm dialog
       console.log('Opening save confirmation dialog');
       setShowSaveConfirmDialog(true);
     } else {
-      // No unsaved changes, close immediately with force_close_window
-      console.log('No unsaved changes, force closing immediately');
+      // No unsaved changes, close immediately (graceful first)
+      console.log('No unsaved changes, closing immediately');
       try {
         const { invoke } = await import('@tauri-apps/api/core');
-        console.log('[CLOSE] Calling force_close_window for clean state');
-        await invoke('force_close_window');
+        console.log('[CLOSE] Calling exit_app for clean state');
+        await invoke('exit_app');
       } catch (err) {
-        console.error('[CLOSE] Clean force close failed:', err);
-        window.close?.();
+        console.error('[CLOSE] Clean graceful close failed:', err);
+        try {
+          const { invoke } = await import('@tauri-apps/api/core');
+          await invoke('force_close_window');
+        } catch {
+          window.close?.();
+        }
       }
     }
   }, []);
@@ -2060,7 +1849,7 @@ function App() {
         console.log('[CLOSE HANDLER SETUP] Got window reference');
         
         // Listen for the custom close event emitted by Rust
-        unlisten = await listen('tauri://close-requested', async () => {
+        unlisten = await listen('talus://close-requested', async () => {
           const currentIsDirty = isDirtyRef.current;
           console.log('====================================');
           console.log('[CLOSE REQUESTED] EVENT RECEIVED!');
@@ -2071,14 +1860,20 @@ function App() {
             console.log('[CLOSE REQUESTED] Dirty state detected, showing save dialog');
             // Set up the action to execute after user makes their choice
             pendingCloseActionRef.current = async () => {
-              console.log('[CLOSE REQUESTED DESTROY] About to force close window...');
+              console.log('[CLOSE REQUESTED DESTROY] About to close app...');
               try {
                 const { invoke } = await import('@tauri-apps/api/core');
-                console.log('[CLOSE REQUESTED DESTROY] Calling force_close_window');
-                await invoke('force_close_window');
-                console.log('[CLOSE REQUESTED DESTROY] Force close completed');
+                console.log('[CLOSE REQUESTED DESTROY] Calling exit_app');
+                await invoke('exit_app');
+                console.log('[CLOSE REQUESTED DESTROY] exit_app completed');
               } catch (err) {
                 console.error('[CLOSE REQUESTED DESTROY] Error:', err);
+                try {
+                  const { invoke } = await import('@tauri-apps/api/core');
+                  await invoke('force_close_window');
+                } catch (forceErr) {
+                  console.error('[CLOSE REQUESTED DESTROY] force_close_window fallback failed:', forceErr);
+                }
               }
             };
             // Trigger the save dialog to show
@@ -2088,18 +1883,24 @@ function App() {
               setShowSaveConfirmDialog(true);
             }, 0);
           } else {
-            console.log('[CLOSE REQUESTED] Clean state, force closing window...');
+            console.log('[CLOSE REQUESTED] Clean state, closing window...');
             try {
               const { invoke } = await import('@tauri-apps/api/core');
-              console.log('[CLOSE REQUESTED] Calling force_close_window');
-              await invoke('force_close_window');
-              console.log('[CLOSE REQUESTED] Force close completed');
+              console.log('[CLOSE REQUESTED] Calling exit_app');
+              await invoke('exit_app');
+              console.log('[CLOSE REQUESTED] exit_app completed');
             } catch (err) {
-              console.error('[CLOSE REQUESTED] Force close failed:', err);
+              console.error('[CLOSE REQUESTED] Graceful close failed:', err);
+              try {
+                const { invoke } = await import('@tauri-apps/api/core');
+                await invoke('force_close_window');
+              } catch (forceErr) {
+                console.error('[CLOSE REQUESTED] force_close_window fallback failed:', forceErr);
+              }
             }
           }
         });
-        console.log('[CLOSE HANDLER SETUP] ✓ Event listener registered for tauri://close-requested');
+        console.log('[CLOSE HANDLER SETUP] ✓ Event listener registered for talus://close-requested');
       } catch (err) {
         console.error('[CLOSE HANDLER SETUP] ❌ Failed to setup close handler:', err);
       }
@@ -2262,6 +2063,102 @@ function App() {
     ],
   };
 
+  // ── Stable callback refs for memoised Inspector ──
+  // Using refs avoids recreating callback identity every render while still
+  // reading the latest closure values (selectedNode, orphan status, etc.)
+  const selectedNodeDataRef = useRef(currentSelectedNodeData);
+  selectedNodeDataRef.current = currentSelectedNodeData;
+  const isOrphanedRef = useRef(isCurrentNodeOrphaned);
+  isOrphanedRef.current = isCurrentNodeOrphaned;
+  const linkedAssetRef = useRef(currentLinkedAsset);
+  linkedAssetRef.current = currentLinkedAsset;
+  const storeNodesRef = useRef(storeNodes);
+  storeNodesRef.current = storeNodes;
+
+  const handleInspectorPropertyChange = useCallback(
+    (propId: string, value: string | number | string[] | Record<string, Record<string, number>>) => {
+      const nodeData = selectedNodeDataRef.current;
+      if (!nodeData) { alert('No node selected'); return; }
+      if (isOrphanedRef.current) {
+        alert('This node is orphaned and read-only until the template is fixed or orphaned data is deleted.');
+        return;
+      }
+
+      // For allocation properties, read old_value from allocations
+      const oldValue = nodeData.properties?.[propId];
+
+      safeExecuteCommand('UpdateProperty', {
+        node_id: nodeData.id,
+        property_id: propId,
+        old_value: oldValue,
+        new_value: value,
+      })
+        .then((result) => {
+          try {
+            const graph = normalizeGraph(result.graph ?? result);
+            setCurrentGraph(graph);
+            setIsDirty(result.is_dirty ?? true);
+            setGanttRefreshSignal((prev) => prev + 1);
+          } catch (error) {
+            console.error('[onPropertyChange] Error normalizing graph:', error);
+            alert('Error updating UI after property change: ' + (error as Error).message);
+          }
+        })
+        .catch((err) => {
+          console.error('Failed to update property:', err);
+          alert('Failed to update property');
+        });
+    },
+    [safeExecuteCommand],
+  );
+
+  const handleLinkedAssetPropertyChange = useCallback(
+    (propId: string, value: string | number | string[] | Record<string, Record<string, number>>) => {
+      const asset = linkedAssetRef.current;
+      if (!asset) { alert('No linked asset'); return; }
+      safeExecuteCommand('UpdateProperty', {
+        node_id: asset.nodeId,
+        property_id: propId,
+        old_value: storeNodesRef.current[asset.nodeId]?.properties?.[propId],
+        new_value: value,
+      })
+        .then((result) => {
+          const graph = normalizeGraph(result.graph ?? result);
+          setCurrentGraph(graph);
+          setIsDirty(result.is_dirty ?? true);
+          setGanttRefreshSignal((prev) => prev + 1);
+          console.log('✓ Asset property updated');
+        })
+        .catch((err) => {
+          console.error('Failed to update asset property:', err);
+          alert('Failed to update asset property');
+        });
+    },
+    [safeExecuteCommand],
+  );
+
+  const handleOrphanedPropertyDelete = useCallback(
+    (propKey: string) => {
+      const nodeData = selectedNodeDataRef.current;
+      if (!nodeData) return;
+      safeExecuteCommand('DeleteOrphanedProperty', {
+        node_id: nodeData.id,
+        property_key: propKey,
+      })
+        .then((result) => {
+          const graph = normalizeGraph(result.graph ?? result);
+          setCurrentGraph(graph);
+          setIsDirty(result.is_dirty ?? true);
+          console.log('✓ Orphaned property deleted:', propKey);
+        })
+        .catch((err) => {
+          console.error('Failed to delete orphaned property:', err);
+          alert('Failed to delete orphaned property');
+        });
+    },
+    [safeExecuteCommand],
+  );
+
   return (
     <ErrorBoundary>
       {!isAppInitialized || isInitialConnection ? (
@@ -2314,6 +2211,7 @@ function App() {
               ) : (
                 <TreeView
                   nodes={treeNodes}
+                  selectedNodeId={selectedNode}
                   nodeTypeSchemas={
                     templateSchema?.node_types?.reduce<Record<string, NodeTypeSchema>>((acc, nodeType) => {
                       acc[nodeType.id] = nodeType;
@@ -2321,7 +2219,7 @@ function App() {
                     }, {})
                   }
                   velocityScores={velocityScores}
-              onSelectNode={setSelectedNode}
+              onSelectNode={handleNodeSelect}
               expandAllSignal={expandAllSignal}
               collapseAllSignal={collapseAllSignal}
               getTypeLabel={(typeId: string) => {
@@ -2482,7 +2380,7 @@ function App() {
               sessionId={sessionId} 
               nodes={storeNodes} 
               selectedNodeId={selectedNode}
-              onNodeSelect={setSelectedNode}
+              onNodeSelect={handleNodeSelect}
               onNodePropertyChange={async ({ nodeId, propertyId, oldValue, newValue }) => {
                 const result = await safeExecuteCommand('UpdateProperty', {
                   node_id: nodeId,
@@ -2555,85 +2453,15 @@ function App() {
               orphanedProperties={activeView === 'graph' ? currentNodeOrphanedProperties : undefined}
               isReadOnly={activeView === 'graph' ? isCurrentNodeOrphaned : false}
               readOnlyReason={activeView === 'graph' ? currentNodeOrphanedReason : undefined}
-              onPropertyChange={(propId, value) => {
-                if (!currentSelectedNodeData) {
-                  alert('No node selected');
-                  return;
-                }
-                if (isCurrentNodeOrphaned) {
-                  alert('This node is orphaned and read-only until the template is fixed or orphaned data is deleted.');
-                  return;
-                }
-                safeExecuteCommand('UpdateProperty', {
-                    node_id: currentSelectedNodeData.id,
-                    property_id: propId,
-                    old_value: currentSelectedNodeData.properties?.[propId],
-                    new_value: value,
-                  })
-                  .then((result) => {
-                    try {
-                      const graph = normalizeGraph(result.graph ?? result);
-                      setCurrentGraph(graph);
-                      setIsDirty(result.is_dirty ?? true);
-                      setGanttRefreshSignal((prev) => prev + 1);
-                    } catch (error) {
-                      console.error('[onPropertyChange] Error normalizing graph:', error);
-                      alert('Error updating UI after property change: ' + (error as Error).message);
-                    }
-                  })
-                  .catch((err) => {
-                    console.error('Failed to update property:', err);
-                    alert('Failed to update property');
-                  });
-              }}
-              onLinkedAssetPropertyChange={(propId, value) => {
-                const linkedAssetMetadata = getLinkedAssetMetadata();
-                if (!linkedAssetMetadata) {
-                  alert('No linked asset');
-                  return;
-                }
-                // Update the linked asset node, not the reference node
-                safeExecuteCommand('UpdateProperty', {
-                    node_id: linkedAssetMetadata.nodeId,
-                    property_id: propId,
-                    old_value: storeNodes[linkedAssetMetadata.nodeId]?.properties?.[propId],
-                    new_value: value,
-                  })
-                  .then((result) => {
-                    const graph = normalizeGraph(result.graph ?? result);
-                    setCurrentGraph(graph);
-                    setIsDirty(result.is_dirty ?? true);  // Update dirty state from API
-                    setGanttRefreshSignal((prev) => prev + 1);
-                    console.log('✓ Asset property updated');
-                  })
-                  .catch((err) => {
-                    console.error('Failed to update asset property:', err);
-                    alert('Failed to update asset property');
-                  });
-              }}
+              onPropertyChange={handleInspectorPropertyChange}
+              onLinkedAssetPropertyChange={handleLinkedAssetPropertyChange}
               blockedByNodes={blockedByNodes}
               blocksNodes={blocksNodes}
               nodes={storeNodes}
               onClearBlocks={handleClearBlocks}
               onClearSingleBlock={handleClearSingleBlock}
-              velocityScore={velocityScore || undefined}
-              onOrphanedPropertyDelete={(propKey) => {
-                if (!currentSelectedNodeData) return;
-                safeExecuteCommand('DeleteOrphanedProperty', {
-                  node_id: currentSelectedNodeData.id,
-                  property_key: propKey,
-                })
-                  .then((result) => {
-                    const graph = normalizeGraph(result.graph ?? result);
-                    setCurrentGraph(graph);
-                    setIsDirty(result.is_dirty ?? true);
-                    console.log('✓ Orphaned property deleted:', propKey);
-                  })
-                  .catch((err) => {
-                    console.error('Failed to delete orphaned property:', err);
-                    alert('Failed to delete orphaned property');
-                  });
-              }}
+              velocityScore={currentVelocityScore || undefined}
+              onOrphanedPropertyDelete={handleOrphanedPropertyDelete}
               />
             )}
 
@@ -2659,7 +2487,7 @@ function App() {
 
       {/* Dev-only Debug Panel */}
       {process.env.NODE_ENV !== 'production' && (
-        <DebugPanel treeNodes={treeNodes} expandedMap={expandedMap} logs={debugPanelLogs} totalLogs={debugLogs.length} />
+        <DebugPanel treeNodes={treeNodes} expandedMap={expandedMap} />
       )}
 
       {/* Add Child Dialog */}

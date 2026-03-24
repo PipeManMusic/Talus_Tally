@@ -113,8 +113,8 @@ export function ChartsView({ nodes = {}, velocityScores = {}, templateSchema }: 
 
   const chartData = useMemo(() => {
     if (!xAxis) return [];
-    return aggregateChartData(filteredNodes, xAxis, yAxis);
-  }, [filteredNodes, xAxis, yAxis]);
+    return aggregateChartData(filteredNodes, xAxis, yAxis, 'sum', templateSchema);
+  }, [filteredNodes, xAxis, yAxis, templateSchema]);
 
   return (
     <div className="flex flex-col h-full bg-bg-dark text-fg-primary">

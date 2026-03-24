@@ -54,17 +54,44 @@ fn diag(msg: &str) {
   }
 }
 
+fn terminate_backend_process(state: &Arc<Mutex<Option<Child>>>, reason: &str) {
+  diag(&format!("Terminating backend process: {}", reason));
+  if let Ok(mut proc) = state.lock() {
+    if let Some(mut child) = proc.take() {
+      let pid = child.id();
+      diag(&format!("Killing backend child pid={}", pid));
+      let _ = child.kill();
+      match child.wait() {
+        Ok(status) => diag(&format!("Backend child pid={} exited with status {}", pid, status)),
+        Err(err) => diag(&format!("Failed waiting for backend child pid={}: {}", pid, err)),
+      }
+    } else {
+      diag("No backend child process registered");
+    }
+  } else {
+    diag("Failed to acquire backend process lock during shutdown");
+  }
+}
+
+struct BackendState(Arc<Mutex<Option<Child>>>);
+struct CloseState(Arc<Mutex<bool>>);
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   let backend_process: Arc<Mutex<Option<Child>>> = Arc::new(Mutex::new(None));
   let backend_process_clone = backend_process.clone();
   let backend_process_state = backend_process.clone();
+  let backend_process_runloop = backend_process.clone();
+  let close_allowed: Arc<Mutex<bool>> = Arc::new(Mutex::new(false));
+  let close_allowed_state = close_allowed.clone();
+  let close_allowed_window = close_allowed.clone();
 
   tauri::Builder::default()
     .plugin(tauri_plugin_dialog::init())
     .plugin(tauri_plugin_fs::init())
     .plugin(tauri_plugin_opener::init())
     .manage(BackendState(backend_process_state))
+    .manage(CloseState(close_allowed_state))
     .setup(move |app| {
       if cfg!(debug_assertions) {
         app.handle().plugin(
@@ -88,24 +115,37 @@ pub fn run() {
     .on_window_event(move |window, event| {
       match event {
         tauri::WindowEvent::CloseRequested { api, .. } => {
-          println!("✓ [CLOSE REQUESTED] Event received in Rust");
-          // Prevent immediate close - let JavaScript handler decide
+          let allow_close = close_allowed_window
+            .lock()
+            .map(|flag| *flag)
+            .unwrap_or(false);
+
+          if allow_close {
+            diag("Close requested while close_allowed=true; allowing close to proceed");
+            return;
+          }
+
+          diag("Close requested while close_allowed=false; preventing close and notifying frontend");
           api.prevent_close();
-          println!("✓ [CLOSE REQUESTED] Calling prevent_close()");
-          
-          // Emit event to frontend so JavaScript onCloseRequested handler can run
-          println!("✓ [CLOSE REQUESTED] Emitting tauri://close-requested event");
-          let _ = window.emit("tauri://close-requested", ());
-          println!("✓ [CLOSE REQUESTED] Event emitted successfully");
+          let _ = window.emit("talus://close-requested", ());
         }
         _ => {}
       }
     })
-    .run(tauri::generate_context!())
-    .expect("error while running tauri application");
+    .build(tauri::generate_context!())
+    .expect("error while building tauri application")
+    .run(move |_app_handle, event| {
+      match event {
+        tauri::RunEvent::Exit => {
+          terminate_backend_process(&backend_process_runloop, "run-event exit");
+        }
+        tauri::RunEvent::ExitRequested { .. } => {
+          terminate_backend_process(&backend_process_runloop, "run-event exit requested");
+        }
+        _ => {}
+      }
+    });
 }
-
-  struct BackendState(Arc<Mutex<Option<Child>>>);
 
 fn start_backend(backend_process: Arc<Mutex<Option<Child>>>, app_handle: tauri::AppHandle) {
   diag("=== Backend launch sequence starting ===");
@@ -350,28 +390,30 @@ fn maximize_window(window: tauri::Window) {
 }
 
 #[tauri::command]
-fn close_window(window: tauri::Window) {
+fn close_window(window: tauri::Window, close_state: tauri::State<CloseState>) {
+  if let Ok(mut allowed) = close_state.0.lock() {
+    *allowed = true;
+  }
   let _ = window.close();
 }
 
 #[tauri::command]
-fn exit_app(app: tauri::AppHandle, state: tauri::State<BackendState>) {
-  if let Ok(mut proc) = state.0.lock() {
-    if let Some(mut child) = proc.take() {
-      let _ = child.kill();
-    }
+fn exit_app(window: tauri::Window, app: tauri::AppHandle, state: tauri::State<BackendState>, close_state: tauri::State<CloseState>) {
+  if let Ok(mut allowed) = close_state.0.lock() {
+    *allowed = true;
   }
+  terminate_backend_process(&state.0, "exit_app command");
+  let _ = window.close();
   app.exit(0);
 }
 
 #[tauri::command]
-fn force_close_window(_app: tauri::AppHandle, state: tauri::State<BackendState>) {
+fn force_close_window(_window: tauri::Window, _app: tauri::AppHandle, state: tauri::State<BackendState>, close_state: tauri::State<CloseState>) {
   println!("✓ [FORCE CLOSE] Called, killing backend and exiting");
-  if let Ok(mut proc) = state.0.lock() {
-    if let Some(mut child) = proc.take() {
-      let _ = child.kill();
-    }
+  if let Ok(mut allowed) = close_state.0.lock() {
+    *allowed = true;
   }
+  terminate_backend_process(&state.0, "force_close_window command");
   println!("✓ [FORCE CLOSE] Backend killed, exiting with code 0");
   std::process::exit(0);
 }

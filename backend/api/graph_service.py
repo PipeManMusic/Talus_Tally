@@ -146,15 +146,11 @@ class GraphService:
             property_id: The ID of the property that changed
             new_value: The new value of the property
         """
-        print(f"DEBUG GraphService.notify_property_changed: node_id={node_id}, property_id={property_id}, new_value={new_value}, subscribers={len(self._property_change_subscribers)}")
         for callback in self._property_change_subscribers:
             try:
-                print(f"DEBUG: Calling subscriber {callback}")
                 callback(node_id, property_id, new_value)
-                print(f"DEBUG: Subscriber returned successfully")
             except Exception as e:
                 # Log but don't crash if a subscriber fails
                 import logging
                 logging.error(f"Error in property change subscriber: {e}")
-                print(f"DEBUG ERROR: {e}")
 

@@ -943,7 +943,8 @@ def reload_blueprint(session_id):
         orphan_info = {
             'orphaned_sessions': [],
             'total_orphaned_nodes': 0,
-            'total_orphaned_properties': 0
+            'total_orphaned_properties': 0,
+            'total_mismatch_candidates': 0,
         }
         if old_template_dict and new_template_dict:
             try:
@@ -970,10 +971,34 @@ def reload_blueprint(session_id):
                             'session_id': session_id,
                             'orphaned_count': orphaned_node_count,
                             'orphaned_node_ids': orphaned_node_ids,
-                            'orphaned_property_count': orphaned_prop_count
+                            'orphaned_property_count': orphaned_prop_count,
+                            'mismatch_candidate_count': 0,
+                            'mismatch_candidates': [],
                         })
                         orphan_info['total_orphaned_nodes'] += orphaned_node_count
                         orphan_info['total_orphaned_properties'] += orphaned_prop_count
+
+                    reconcile_result = orphan_mgr.reconcile_graph_with_template(graph_data, new_template_dict)
+                    mismatch_count = int(reconcile_result.get('mismatch_count', 0) or 0)
+                    if mismatch_count > 0:
+                        session_entry = next(
+                            (entry for entry in orphan_info['orphaned_sessions'] if entry.get('session_id') == session_id),
+                            None,
+                        )
+                        if session_entry is None:
+                            session_entry = {
+                                'session_id': session_id,
+                                'orphaned_count': orphaned_node_count,
+                                'orphaned_node_ids': orphaned_node_ids,
+                                'orphaned_property_count': orphaned_prop_count,
+                                'mismatch_candidate_count': 0,
+                                'mismatch_candidates': [],
+                            }
+                            orphan_info['orphaned_sessions'].append(session_entry)
+
+                        session_entry['mismatch_candidate_count'] = mismatch_count
+                        session_entry['mismatch_candidates'] = reconcile_result.get('mismatch_candidates', [])
+                        orphan_info['total_mismatch_candidates'] += mismatch_count
 
                     logger.info(
                         f"[API] Blueprint reload orphaned {orphaned_node_count} nodes "
@@ -1150,6 +1175,12 @@ def _get_indicator_catalog_path(*, prefer_writable: bool = False):
     override = os.environ.get('INDICATOR_CATALOG_PATH')
     if override:
         return override
+    from backend.infra.settings import CUSTOM_INDICATORS_DIR_KEY, get_setting
+    custom_dir = get_setting(CUSTOM_INDICATORS_DIR_KEY)
+    if custom_dir:
+        candidate = Path(str(custom_dir)) / 'catalog.yaml'
+        if candidate.exists():
+            return str(candidate)
     source_catalog = _resolve_assets_subpath(
         'assets', 'indicators', 'catalog.yaml', prefer_writable=prefer_writable
     )
@@ -1166,6 +1197,12 @@ def _get_icon_catalog_path(*, prefer_writable: bool = False):
     override = os.environ.get('ICON_CATALOG_PATH')
     if override:
         return override
+    from backend.infra.settings import CUSTOM_ICONS_DIR_KEY, get_setting
+    custom_dir = get_setting(CUSTOM_ICONS_DIR_KEY)
+    if custom_dir:
+        candidate = Path(str(custom_dir)) / 'catalog.yaml'
+        if candidate.exists():
+            return str(candidate)
     source_catalog = _resolve_assets_subpath(
         'assets', 'icons', 'catalog.yaml', prefer_writable=prefer_writable
     )
@@ -2053,6 +2090,7 @@ def load_graph_into_session(session_id):
 
         node_entries = graph_data.get('nodes', []) or []
         link_pairs: list[tuple[str, str]] = []
+        original_id_to_uuid: dict[str, str] = {}
 
         def _extract_properties(node_data: dict) -> dict:
             props = {}
@@ -2063,14 +2101,82 @@ def load_graph_into_session(session_id):
                 props = {**fallback, **props}
             return props
 
+        def _remap_node_reference_properties(template_dict: dict) -> int:
+            if not isinstance(template_dict, dict) or not original_id_to_uuid:
+                return 0
+
+            node_reference_props_by_type: dict[str, set[str]] = {}
+            for node_type in template_dict.get('node_types', []) or []:
+                if not isinstance(node_type, dict):
+                    continue
+                node_type_id = node_type.get('id')
+                if not node_type_id:
+                    continue
+                prop_ids = {
+                    prop.get('id')
+                    for prop in node_type.get('properties', []) or []
+                    if isinstance(prop, dict) and prop.get('type') == 'node_reference' and prop.get('id')
+                }
+                if prop_ids:
+                    node_reference_props_by_type[str(node_type_id)] = prop_ids
+
+            def _remap_reference_value(value):
+                if isinstance(value, list):
+                    return [original_id_to_uuid.get(str(item), str(item)) for item in value]
+
+                if isinstance(value, str):
+                    trimmed = value.strip()
+                    if not trimmed:
+                        return value
+
+                    if trimmed.startswith('[') and trimmed.endswith(']'):
+                        try:
+                            parsed = json.loads(trimmed)
+                        except (TypeError, ValueError):
+                            parsed = None
+                        if isinstance(parsed, list):
+                            return [original_id_to_uuid.get(str(item), str(item)) for item in parsed]
+
+                    if ',' in trimmed:
+                        remapped_parts = [original_id_to_uuid.get(part.strip(), part.strip()) for part in trimmed.split(',') if part.strip()]
+                        return ', '.join(remapped_parts)
+
+                    return original_id_to_uuid.get(trimmed, value)
+
+                return value
+
+            # Initialization-time mutation: remap imported string IDs to internal UUIDs.
+            # This is acceptable because it occurs during graph deserialization, before
+            # the CommandDispatcher is created (line 2274). See docs/ARCHITECTURE_MUTATION_POLICY.md
+            remapped_count = 0
+            for node in graph.nodes.values():
+                prop_ids = node_reference_props_by_type.get(node.blueprint_type_id, set())
+                if not prop_ids:
+                    continue
+                for prop_id in prop_ids:
+                    if prop_id not in node.properties:
+                        continue
+                    original_value = node.properties[prop_id]
+                    remapped_value = _remap_reference_value(original_value)
+                    if remapped_value != original_value:
+                        node.properties[prop_id] = remapped_value
+                        remapped_count += 1
+
+            return remapped_count
+
         for node_data in node_entries:
             node_id = node_data.get('id')
             if not node_id:
                 continue
             node_uuid = string_to_uuid(node_id)
+            original_id_to_uuid[str(node_id)] = str(node_uuid)
             node_type = node_data.get('type') or node_data.get('blueprint_type_id') or node_data.get('blueprintType')
             properties = _extract_properties(node_data)
             default_name = node_data.get('name') or properties.get('name') or node_data.get('label') or 'Unnamed'
+            
+            # Initialization-time mutation: construct nodes with properties from saved data.
+            # This is acceptable because it occurs during graph deserialization before the
+            # CommandDispatcher is created (line 2274). See docs/ARCHITECTURE_MUTATION_POLICY.md
             node = Node(
                 blueprint_type_id=node_type or 'unknown',
                 name=default_name,
@@ -2131,6 +2237,7 @@ def load_graph_into_session(session_id):
             'orphaned_sessions': [],
             'total_orphaned_nodes': 0,
             'total_orphaned_properties': 0,
+            'total_mismatch_candidates': 0,
         }
         if template_id:
             try:
@@ -2145,20 +2252,34 @@ def load_graph_into_session(session_id):
                     from backend.infra.template_persistence import TemplatePersistence
                     persistence = TemplatePersistence()
                     template_dict = persistence.load_template(template_id)
+                    remapped_reference_count = _remap_node_reference_properties(template_dict)
+                    if remapped_reference_count > 0:
+                        logger.info(
+                            "[API] Remapped %s node reference properties to internal UUIDs during graph load",
+                            remapped_reference_count,
+                        )
                     reconcile_result = OrphanManager.reconcile_graph_with_template(graph, template_dict)
-                    if reconcile_result['affected_nodes'] > 0 or reconcile_result['affected_properties'] > 0:
+                    if (
+                        reconcile_result['affected_nodes'] > 0
+                        or reconcile_result['affected_properties'] > 0
+                        or (reconcile_result.get('mismatch_count', 0) > 0)
+                    ):
                         orphan_info['orphaned_sessions'].append({
                             'session_id': session_id,
                             'orphaned_count': reconcile_result['affected_nodes'],
                             'orphaned_node_ids': reconcile_result['orphaned_node_ids'],
                             'orphaned_property_count': reconcile_result['affected_properties'],
+                            'mismatch_candidate_count': reconcile_result.get('mismatch_count', 0),
+                            'mismatch_candidates': reconcile_result.get('mismatch_candidates', []),
                         })
                         orphan_info['total_orphaned_nodes'] = reconcile_result['affected_nodes']
                         orphan_info['total_orphaned_properties'] = reconcile_result['affected_properties']
+                        orphan_info['total_mismatch_candidates'] = reconcile_result.get('mismatch_count', 0)
                         logger.info(
-                            "[API] Reconciled loaded graph with template: %s orphaned nodes, %s orphaned properties",
+                            "[API] Reconciled loaded graph with template: %s orphaned nodes, %s orphaned properties, %s mismatch candidates",
                             reconcile_result['affected_nodes'],
                             reconcile_result['affected_properties'],
+                            reconcile_result.get('mismatch_count', 0),
                         )
                 except Exception as orphan_err:
                     logger.warning("[API] Failed to reconcile graph orphans during load: %s", orphan_err, exc_info=True)
@@ -2668,7 +2789,8 @@ def editor_update_template(template_id):
             orphan_info = {
                 'orphaned_sessions': [],
                 'total_orphaned_nodes': 0,
-                'total_orphaned_properties': 0
+                'total_orphaned_properties': 0,
+                'total_mismatch_candidates': 0,
             }
             
             if old_template:
@@ -2724,14 +2846,39 @@ def editor_update_template(template_id):
                                 'session_id': session_id,
                                 'orphaned_count': orphaned_node_count,
                                 'orphaned_node_ids': orphaned_node_ids,
-                                'orphaned_property_count': orphaned_prop_count
+                                'orphaned_property_count': orphaned_prop_count,
+                                'mismatch_candidate_count': 0,
+                                'mismatch_candidates': [],
                             })
                             orphan_info['total_orphaned_nodes'] += orphaned_node_count
                             orphan_info['total_orphaned_properties'] += orphaned_prop_count
+
+                        reconcile_result = orphan_mgr.reconcile_graph_with_template(graph, data)
+                        mismatch_count = int(reconcile_result.get('mismatch_count', 0) or 0)
+                        if mismatch_count > 0:
+                            session_entry = next(
+                                (entry for entry in orphan_info['orphaned_sessions'] if entry.get('session_id') == session_id),
+                                None,
+                            )
+                            if session_entry is None:
+                                session_entry = {
+                                    'session_id': session_id,
+                                    'orphaned_count': orphaned_node_count,
+                                    'orphaned_node_ids': orphaned_node_ids,
+                                    'orphaned_property_count': orphaned_prop_count,
+                                    'mismatch_candidate_count': 0,
+                                    'mismatch_candidates': [],
+                                }
+                                orphan_info['orphaned_sessions'].append(session_entry)
+
+                            session_entry['mismatch_candidate_count'] = mismatch_count
+                            session_entry['mismatch_candidates'] = reconcile_result.get('mismatch_candidates', [])
+                            orphan_info['total_mismatch_candidates'] += mismatch_count
                     
                     logger.info(
                         f"Template update orphaned {orphan_info['total_orphaned_nodes']} nodes "
                         f"and {orphan_info['total_orphaned_properties']} properties "
+                        f"with {orphan_info['total_mismatch_candidates']} mismatch candidates "
                         f"across {len(orphan_info['orphaned_sessions'])} sessions"
                     )
             
@@ -3357,7 +3504,7 @@ def _serialize_graph(graph, blueprint=None):
         
         node_id = str(node.id)
         if node_id in visited:
-            print(f"[serialize_node] Cycle detected at node {node_id}, ancestry: {ancestry}")
+            logger.warning("serialize_node cycle detected at node %s ancestry=%s", node_id, ancestry)
             return {
                 'id': node_id,
                 'blueprint_type_id': node.blueprint_type_id,
@@ -3376,21 +3523,14 @@ def _serialize_graph(graph, blueprint=None):
         branch_visited = visited | {node_id}
         new_ancestry = ancestry + [node_id]
         
-        print(f"[DEBUG][serialize_node] node={node} type(node)={type(node)}")
-        # Debug: Log node properties being serialized
-        print(f"[DEBUG][serialize_node] node_id={node_id} properties={node.properties}")
-        print(f"[DEBUG][serialize_node] properties keys: {list(node.properties.keys()) if hasattr(node.properties, 'keys') else 'not a dict'}")
-        
         # Get child nodes
         child_nodes = []
         for child_id in getattr(node, 'children', []):
-            print(f"[DEBUG][serialize_node] child_id={child_id} type(child_id)={type(child_id)}")
             child = graph.nodes.get(child_id)
-            print(f"[DEBUG][serialize_node] child={child} type(child)={type(child)}")
             if child is not None:
                 child_nodes.append(child)
             else:
-                print(f"[WARN][serialize_node] Skipping orphaned child_id={child_id} (parent={node_id})")
+                logger.warning("serialize_node skipping orphaned child_id=%s parent=%s", child_id, node_id)
         node_data = {
             'id': node_id,
             'blueprint_type_id': node.blueprint_type_id,
@@ -3440,7 +3580,6 @@ def _serialize_graph(graph, blueprint=None):
         node_data['icon_id'] = get_node_icon(node, blueprint)
         # Add allowed_children from schema
         node_data['allowed_children'] = get_allowed_children(node.blueprint_type_id)
-        print(f"[serialize_node] id={node_id} type={node.blueprint_type_id} allowed_children={node_data['allowed_children']} status={node.properties.get('status')} indicator_id={node_data['indicator_id']} indicator_set={node_data['indicator_set']}")
         return node_data
 
     return {
@@ -3641,6 +3780,13 @@ def get_settings():
     """Return all user-configurable settings."""
     from backend.infra.settings import load_settings
     return jsonify(load_settings()), 200
+
+
+@api_bp.route('/settings/defaults', methods=['GET'])
+def get_settings_defaults():
+    """Return the resolved default paths for each overridable directory."""
+    from backend.infra.settings import get_default_paths
+    return jsonify(get_default_paths()), 200
 
 
 @api_bp.route('/settings', methods=['PUT'])

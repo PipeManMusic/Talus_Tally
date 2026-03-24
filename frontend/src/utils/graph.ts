@@ -37,11 +37,6 @@ export function normalizeGraph(graphLike: any): Graph {
           return null;
         }
         
-        // Log every 10 nodes to track progress without flooding
-        if (processedCount % 10 === 0) {
-          console.log(`[normalizeGraph] Progress: ${processedCount} nodes processed...`);
-        }
-        
         // Prevent infinite recursion with depth limit
         if (ancestry.length >= MAX_DEPTH) {
           console.error('[normalizeGraph] Max recursion depth exceeded!', { nodeId: nestedNode.id, depth: ancestry.length });
@@ -71,13 +66,6 @@ export function normalizeGraph(graphLike: any): Graph {
         
         visited.add(nodeId);
 
-        // Debug: Log what properties we're receiving
-        console.log(`[normalizeGraph] Node ${nodeId} (${nestedNode.blueprint_type_id}):`, {
-          name: nestedNode.name,
-          properties: nestedNode.properties,
-          allKeys: Object.keys(nestedNode)
-        });
-
         const node: Node = {
           id: nodeId,
           type: nestedNode.blueprint_type_id || 'unknown',
@@ -95,11 +83,6 @@ export function normalizeGraph(graphLike: any): Graph {
           allowed_children: nestedNode.allowed_children,
         };
 
-        console.log(`[normalizeGraph] Normalized node ${nodeId}:`, {
-          properties: node.properties,
-          propertyCount: Object.keys(node.properties).length
-        });
-
         nodes.push(node);
 
         if (nestedNode.children && Array.isArray(nestedNode.children)) {
@@ -115,7 +98,6 @@ export function normalizeGraph(graphLike: any): Graph {
         };
 
       for (const rootNode of source.roots || []) {
-        console.log('[normalizeGraph] Processing root node:', rootNode.id || rootNode.blueprint_type_id);
         const processedRoot = flattenNodes(rootNode);
         if (!processedRoot) {
           console.error('[normalizeGraph] Failed to process root node:', rootNode);

@@ -9,6 +9,22 @@ from backend.api.broadcaster import emit_property_changed
 
 SCHEDULING_TASK_PROPERTY_MACRO = [
     {
+        "id": "start_date",
+        "type": "date",
+        "label": "Start Date",
+        "system_locked": True,
+        "ui_group": "Schedule",
+        "semantic_role": "gantt_start",
+    },
+    {
+        "id": "end_date",
+        "type": "date",
+        "label": "End Date",
+        "system_locked": True,
+        "ui_group": "Schedule",
+        "semantic_role": "gantt_end",
+    },
+    {
         "id": "assigned_to",
         "type": "node_reference",
         "target_type": "person",
@@ -29,6 +45,28 @@ SCHEDULING_TASK_PROPERTY_MACRO = [
         "type": "number",
         "label": "Actual Hours",
         "value": 0,
+        "system_locked": True,
+        "ui_group": "Schedule",
+    },
+    {
+        "id": "allocations",
+        "label": "Allocations",
+        "type": "object",
+        "value": {},
+        "system_locked": True,
+        "ui_group": "Schedule",
+    },
+    {
+        "id": "status",
+        "label": "Status",
+        "type": "select",
+        "indicator_set": "status",
+        "options": [
+            {"name": "To Do", "indicator_id": "empty"},
+            {"name": "In Progress", "indicator_id": "partial"},
+            {"name": "Done", "indicator_id": "filled"},
+        ],
+        "value": "To Do",
         "system_locked": True,
         "ui_group": "Schedule",
     },

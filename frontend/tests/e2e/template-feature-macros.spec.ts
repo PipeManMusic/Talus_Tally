@@ -58,9 +58,9 @@ test.describe('Template Feature Macros', () => {
 
     // Wait for the save to complete (optimistic update + backend persist)
     // The scheduling properties should appear in the properties list
-    await expect(page.getByRole('heading', { name: 'Start Date', exact: true })).toBeVisible({ timeout: 10000 });
-    await expect(page.getByRole('heading', { name: 'End Date', exact: true })).toBeVisible({ timeout: 10000 });
-    await expect(page.getByRole('heading', { name: 'Assigned Asset', exact: true })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: /Start Date/i })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: /End Date/i })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: /Assigned (Asset|To)/i })).toBeVisible({ timeout: 10000 });
 
     // Verify persistence from backend source of truth.
     const persistedTemplateResponse = await page.request.get('/api/v1/templates/editor/e2e_smoketest');
@@ -95,8 +95,8 @@ test.describe('Template Feature Macros', () => {
     await budgetingCheckbox.check();
 
     // Budget properties should appear
-    await expect(page.getByRole('heading', { name: 'Estimated Cost', exact: true })).toBeVisible({ timeout: 10000 });
-    await expect(page.getByRole('heading', { name: 'Actual Cost ($)', exact: true })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: /Estimated Cost/i })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: /Actual Cost/i })).toBeVisible({ timeout: 10000 });
   });
 
   test('disabling a feature removes its properties', async ({ page }) => {
@@ -123,7 +123,7 @@ test.describe('Template Feature Macros', () => {
       await schedulingCheckbox.check();
       await autosaveEnableScheduling;
     }
-    await expect(page.getByRole('heading', { name: 'Start Date', exact: true })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: /Start Date/i })).toBeVisible({ timeout: 10000 });
 
     // Disable scheduling
     if (await schedulingCheckbox.isChecked()) {
@@ -140,9 +140,9 @@ test.describe('Template Feature Macros', () => {
     await page.locator('[class*="cursor-pointer"]').filter({ hasText: 'Test Project' }).first().click();
 
     // Wait for the injected properties to be removed
-    await expect(page.getByRole('heading', { name: 'Start Date', exact: true })).toHaveCount(0, { timeout: 10000 });
-    await expect(page.getByRole('heading', { name: 'End Date', exact: true })).toHaveCount(0, { timeout: 10000 });
-    await expect(page.getByRole('heading', { name: 'Assigned Asset', exact: true })).toHaveCount(0, { timeout: 10000 });
+    await expect(page.getByRole('heading', { name: /Start Date/i })).toHaveCount(0, { timeout: 10000 });
+    await expect(page.getByRole('heading', { name: /End Date/i })).toHaveCount(0, { timeout: 10000 });
+    await expect(page.getByRole('heading', { name: /Assigned (Asset|To)/i })).toHaveCount(0, { timeout: 10000 });
   });
 
   test('system-locked properties hide the delete button', async ({ page }) => {

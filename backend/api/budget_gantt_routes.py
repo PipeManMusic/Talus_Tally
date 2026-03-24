@@ -168,24 +168,47 @@ def get_manpower(session_id: str):
 
 @budget_gantt_bp.route('/sessions/<session_id>/manpower/recalculate', methods=['POST'])
 def recalculate_manpower(session_id: str):
-    """Explicitly regenerate manual manpower allocations, then return fresh payload."""
+    """Explicitly regenerate manpower allocations via proper command execution."""
     try:
-        graph_nodes, session_data = _get_graph_nodes(session_id)
-
-        if graph_nodes is None:
-            if session_data is None:
-                return jsonify({'error': 'Session not found'}), 404
-            return jsonify({
-                'updated_tasks': 0,
-                'total_tasks': 0,
-                'timestamp': int(time.time() * 1000),
-            })
-
+        from backend.api.routes import get_session_data
+        
+        session_data = get_session_data(session_id)
+        if not session_data:
+            return jsonify({'error': 'Session not found'}), 404
+        
+        graph = session_data.get('graph')
+        dispatcher = session_data.get('dispatcher')
+        if not graph or not dispatcher:
+            return jsonify({'error': 'Session is missing graph or dispatcher'}), 404
+        
+        graph_nodes = graph.nodes if hasattr(graph, 'nodes') else {}
         from backend.core.resource_engine import calculate_manpower_load, recalculate_manpower_allocations
+        from backend.handlers.commands.node_commands import UpdatePropertyCommand
+        from uuid import UUID
 
+        # Get the list of changes (does not mutate nodes directly)
         recalc_result = recalculate_manpower_allocations(list(graph_nodes.values()))
+        
+        # Apply each change via UpdatePropertyCommand to ensure undo/redo support
+        for change in recalc_result.get("changes", []):
+            command = UpdatePropertyCommand(
+                node_id=UUID(change["node_id"]),
+                property_id=change["property_id"],
+                old_value=change["old_value"],
+                new_value=change["new_value"],
+                graph=graph,
+                graph_service=session_data.get('graph_service'),
+                session_id=session_id,
+            )
+            dispatcher.execute(command)
+        
+        # Calculate fresh payload
         payload = calculate_manpower_load(list(graph_nodes.values()))
-        payload.update(recalc_result)
+        payload.update({
+            "updated_tasks": recalc_result["updated_tasks"],
+            "total_tasks": recalc_result["total_tasks"],
+            "changes": recalc_result.get("changes", []),
+        })
         payload['timestamp'] = int(time.time() * 1000)
         return jsonify(payload)
 

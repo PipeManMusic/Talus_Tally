@@ -37,7 +37,6 @@ class CommandDispatcher:
         Returns:
             The result of the command's execute method
         """
-        print(f"DEBUG Dispatcher.execute: command={type(command).__name__}")
         command_id = str(id(command))
         command_type = type(command).__name__
         

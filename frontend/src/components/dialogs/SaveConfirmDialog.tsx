@@ -13,7 +13,7 @@ export function SaveConfirmDialog({
   onCancel,
   isOpen = true,
 }: SaveConfirmDialogProps) {
-  const [selectedAction, setSelectedAction] = useState<SaveAction>('cancel');
+  const [selectedAction, setSelectedAction] = useState<SaveAction>('dont-save');
 
   if (!isOpen) return null;
 

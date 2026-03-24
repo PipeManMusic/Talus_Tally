@@ -242,6 +242,23 @@ class SchemaLoader:
         catalog_path = None
         icon_catalog_path = None
 
+        # Check settings-based overrides first.
+        from backend.infra.settings import (
+            CUSTOM_ICONS_DIR_KEY,
+            CUSTOM_INDICATORS_DIR_KEY,
+            get_setting,
+        )
+        custom_indicators_dir = get_setting(CUSTOM_INDICATORS_DIR_KEY)
+        if custom_indicators_dir:
+            candidate = Path(str(custom_indicators_dir)) / 'catalog.yaml'
+            if candidate.exists():
+                catalog_path = candidate
+        custom_icons_dir = get_setting(CUSTOM_ICONS_DIR_KEY)
+        if custom_icons_dir:
+            candidate = Path(str(custom_icons_dir)) / 'catalog.yaml'
+            if candidate.exists():
+                icon_catalog_path = candidate
+
         # In production, prefer user-managed catalogs so edits live outside install prefix.
         if not is_development_mode:
             user_indicator_catalog = get_user_indicators_dir() / 'catalog.yaml'
@@ -286,7 +303,6 @@ class SchemaLoader:
         
         # Store templates directory for discovery
         self.templates_dir = get_templates_directory()
-        print(f"[SchemaLoader] Templates dir: {self.templates_dir}")
     
     def load(self, filepath: str) -> Blueprint:
         """
@@ -304,11 +320,6 @@ class SchemaLoader:
         # If filepath doesn't include a directory, look in templates_dir
         if not os.path.isabs(filepath) and os.path.sep not in filepath:
             filepath = os.path.join(self.templates_dir, filepath)
-        
-        # Debug logging
-        print(f"[SchemaLoader.load] Attempting to load: {filepath}")
-        print(f"[SchemaLoader.load] File exists: {os.path.exists(filepath)}")
-        print(f"[SchemaLoader.load] Is readable: {os.access(filepath, os.R_OK)}")
         
         try:
             # Use utf-8-sig to handle Windows BOM, fallback to utf-8
@@ -335,14 +346,9 @@ class SchemaLoader:
         
         # Parse node types and generate UUIDs for options
         node_types_data = data.get('node_types', [])
-        # Debug: print node_types_data and their types
-        print("[DEBUG] node_types_data after YAML load:")
-        for idx, nt in enumerate(node_types_data):
-            print(f"  idx={idx} type={type(nt)} value={nt}")
         node_types = []
         for nt_data in node_types_data:
             if not isinstance(nt_data, dict):
-                print(f"[DEBUG] Skipping non-dict node_type: {nt_data} (type={type(nt_data)})")
                 continue
             self._generate_option_uuids(nt_data)
             node_type = NodeTypeDef(**nt_data)
@@ -366,7 +372,6 @@ class SchemaLoader:
             if prop.get('type') == 'select' and 'options' in prop:
                 property_id = prop.get('id')
                 options = prop['options']
-                print(f"[DEBUG] Before UUID normalization: node_type_id={node_type_id} property_id={property_id} options={options}")
                 # Handle both string and dict option formats
                 normalized_options = []
                 for option in options:
@@ -380,7 +385,6 @@ class SchemaLoader:
                             option['id'] = _generate_stable_uuid(f"{node_type_id}.{property_id}", option['name'])
                         normalized_options.append(option)
                     else:
-                        print(f"[DEBUG] Skipping non-str/non-dict option: {option} (type={type(option)})")
+                        normalized_options.append(option)
                 prop['options'] = normalized_options
-                print(f"[DEBUG] After UUID normalization: node_type_id={node_type_id} property_id={property_id} options={normalized_options}")
 

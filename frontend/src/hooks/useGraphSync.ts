@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useWebSocket } from './useWebSocket';
 import { useGraphStore } from '@/store';
 
@@ -36,6 +36,16 @@ export function useGraphSync(options?: GraphSyncOptions) {
     }
   }, [removeNode]);
 
+  const handlePropertyChanged = useCallback((data: any) => {
+    if (!data.node_id || !data.property_name) return;
+    const existing = useGraphStore.getState().nodes[data.node_id];
+    if (!existing) return;
+    updateNode(data.node_id, {
+      ...existing,
+      properties: { ...existing.properties, [data.property_name]: data.new_value },
+    });
+  }, [updateNode]);
+
   const handleConnect = useCallback(() => {
     console.log('[GraphSync] WebSocket connected');
   }, []);
@@ -44,16 +54,25 @@ export function useGraphSync(options?: GraphSyncOptions) {
     console.log('[GraphSync] WebSocket disconnected');
   }, []);
 
-  // Set up WebSocket with callbacks
-  const { connected, emit } = useWebSocket({
+  // Set up WebSocket with callbacks — memoised to avoid re-triggering
+  // the useEffect([callbacks]) inside useWebSocket on every render.
+  const wsCallbacks = useMemo(() => ({
     onNodeCreated: handleNodeCreated,
     onNodeUpdated: handleNodeUpdated,
     onNodeDeleted: handleNodeDeleted,
+    onPropertyChanged: handlePropertyChanged,
     onConnect: handleConnect,
     onDisconnect: handleDisconnect,
     onExternalProjectUpdate: options?.onExternalProjectUpdate,
     onExternalTemplateUpdate: options?.onExternalTemplateUpdate,
-  });
+  }), [
+    handleNodeCreated, handleNodeUpdated, handleNodeDeleted,
+    handlePropertyChanged,
+    handleConnect, handleDisconnect,
+    options?.onExternalProjectUpdate, options?.onExternalTemplateUpdate,
+  ]);
+
+  const { connected, emit } = useWebSocket(wsCallbacks);
 
   useEffect(() => {
     if (!connected) {

@@ -1803,9 +1803,23 @@ const PropertyEditor = memo(function PropertyEditor({
                         type="text"
                         value={option.name}
                         onChange={(e) => {
+                          const oldName = option.name;
+                          const newName = e.target.value;
                           const newOptions = [...(property.options || [])];
-                          newOptions[idx] = { ...newOptions[idx], name: e.target.value };
-                          onUpdate({ options: newOptions });
+                          newOptions[idx] = { ...newOptions[idx], name: newName };
+                          // Re-key statusScores when an option is renamed
+                          const scores = property.velocityConfig?.statusScores;
+                          if (scores && oldName in scores && oldName !== newName) {
+                            const newScores = { ...scores };
+                            newScores[newName] = newScores[oldName];
+                            delete newScores[oldName];
+                            onUpdate({
+                              options: newOptions,
+                              velocityConfig: { ...property.velocityConfig, statusScores: newScores },
+                            });
+                          } else {
+                            onUpdate({ options: newOptions });
+                          }
                         }}
                         className="flex-1 px-2 py-1 bg-bg-light border border-border rounded text-fg-primary text-sm"
                         placeholder="Option name"

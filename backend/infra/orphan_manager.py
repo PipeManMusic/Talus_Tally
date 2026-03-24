@@ -10,6 +10,7 @@ become "orphaned properties" - preserved but read-only in the UI.
 """
 
 from typing import List, Dict, Any, Set, Iterable, Tuple, Union
+import difflib
 import logging
 
 logger = logging.getLogger(__name__)
@@ -78,6 +79,54 @@ class OrphanManager:
             metadata = {}
             setattr(node, 'metadata', metadata)
         return metadata
+
+    @staticmethod
+    def _normalize_property_key(key: str) -> str:
+        return ''.join(ch for ch in str(key).lower() if ch.isalnum())
+
+    @staticmethod
+    def _score_property_similarity(left: str, right: str) -> float:
+        left_norm = OrphanManager._normalize_property_key(left)
+        right_norm = OrphanManager._normalize_property_key(right)
+        if not left_norm or not right_norm:
+            return 0.0
+        if left_norm == right_norm:
+            return 1.0
+        base = difflib.SequenceMatcher(None, left_norm, right_norm).ratio()
+        if left_norm in right_norm or right_norm in left_norm:
+            base = max(base, 0.85)
+        return base
+
+    @staticmethod
+    def _find_property_rename_candidate(
+        orphaned_key: str,
+        allowed_props: Set[str],
+        existing_props: Dict[str, Any],
+    ) -> Union[None, Dict[str, Union[str, float]]]:
+        candidates: List[Tuple[str, float]] = []
+        for allowed_key in allowed_props:
+            if allowed_key in ('name', orphaned_key):
+                continue
+            if allowed_key in existing_props:
+                continue
+            score = OrphanManager._score_property_similarity(orphaned_key, allowed_key)
+            if score >= 0.72:
+                candidates.append((allowed_key, score))
+
+        if not candidates:
+            return None
+
+        candidates.sort(key=lambda item: item[1], reverse=True)
+        best_key, best_score = candidates[0]
+        second_best_score = candidates[1][1] if len(candidates) > 1 else 0.0
+
+        if len(candidates) > 1 and (best_score - second_best_score) < 0.08:
+            return None
+
+        return {
+            'suggested_property': best_key,
+            'score': round(best_score, 3),
+        }
     
     @staticmethod
     def find_orphaned_node_types(
@@ -319,6 +368,7 @@ class OrphanManager:
 
         orphaned_node_ids: List[str] = []
         orphaned_properties_count = 0
+        mismatch_candidates: List[Dict[str, Union[str, float]]] = []
 
         for node_id, node in OrphanManager._iter_graph_nodes(graph):
             node_type = OrphanManager._get_node_type(node)
@@ -348,6 +398,27 @@ class OrphanManager:
                         orphaned_properties_count += 1
                     orphaned_props[key] = value
 
+            rename_hints: Dict[str, Dict[str, Union[str, float]]] = {}
+            for orphaned_key in orphaned_props.keys():
+                candidate = OrphanManager._find_property_rename_candidate(
+                    orphaned_key=orphaned_key,
+                    allowed_props=allowed_props,
+                    existing_props=properties,
+                )
+                if not candidate:
+                    continue
+                hint = {
+                    'legacy_property': orphaned_key,
+                    'suggested_property': candidate['suggested_property'],
+                    'score': candidate['score'],
+                }
+                rename_hints[orphaned_key] = hint
+                mismatch_candidates.append({
+                    'node_id': node_id,
+                    'node_type': node_type,
+                    **hint,
+                })
+
             # If template now supports a previously orphaned property, remove stale marker
             for key in list(orphaned_props.keys()):
                 if key in allowed_props:
@@ -358,8 +429,15 @@ class OrphanManager:
             else:
                 metadata.pop('orphaned_properties', None)
 
+            if rename_hints:
+                metadata['property_mismatch_hints'] = rename_hints
+            else:
+                metadata.pop('property_mismatch_hints', None)
+
         return {
             'orphaned_node_ids': orphaned_node_ids,
             'affected_nodes': len(orphaned_node_ids),
             'affected_properties': orphaned_properties_count,
+            'mismatch_count': len(mismatch_candidates),
+            'mismatch_candidates': mismatch_candidates,
         }

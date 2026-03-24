@@ -228,12 +228,6 @@ node_types:
     value: 0
     system_locked: true
     ui_group: Schedule
-  - id: manual_allocations
-    label: Manual Allocations
-    type: object
-    value: &id001 {}
-    system_locked: true
-    ui_group: Schedule
 - allowed_asset_types: []
   allowed_children:
   - feature
@@ -278,12 +272,6 @@ node_types:
     value: 0
     system_locked: true
     ui_group: Schedule
-  - id: manual_allocations
-    label: Manual Allocations
-    type: object
-    value: *id001
-    system_locked: true
-    ui_group: Schedule
 - allowed_asset_types: []
   allowed_children: []
   features:
@@ -324,12 +312,6 @@ node_types:
     label: Actual Hours
     type: number
     value: 0
-    system_locked: true
-    ui_group: Schedule
-  - id: manual_allocations
-    label: Manual Allocations
-    type: object
-    value: *id001
     system_locked: true
     ui_group: Schedule
 uuid: 2dac86dd-3f6b-401d-ba03-67372db4ec4d

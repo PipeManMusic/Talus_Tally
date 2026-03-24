@@ -1,3 +1,5 @@
+import { resolvePropertyValueLabel } from './propertyValueDisplay';
+
 export interface ChartAggregatePoint {
   name: string;
   value: number;
@@ -46,6 +48,7 @@ export function aggregateChartData(
   xAxisProp: string,
   yAxisProp: string,
   aggregationMode: ChartAggregationMode = 'sum',
+  templateSchema?: any,
 ): ChartAggregatePoint[] {
   const totals = new Map<string, { sum: number; count: number }>();
   const nodeById = new Map<string, any>();
@@ -70,6 +73,17 @@ export function aggregateChartData(
         const assignedName = String(assignedNode?.name ?? '').trim();
         const assignedEmail = String(assignedNode?.properties?.email ?? '').trim();
         groupValue = assignedName || assignedEmail || rawGroup;
+      } else if (rawGroup !== 'Unassigned' && templateSchema) {
+        // Resolve select option UUIDs to human-readable labels
+        const resolved = resolvePropertyValueLabel(
+          templateSchema,
+          node?.type,
+          xAxisProp,
+          rawGroup,
+        );
+        if (resolved !== rawGroup) {
+          groupValue = resolved;
+        }
       }
 
       const existing = totals.get(groupValue) ?? { sum: 0, count: 0 };

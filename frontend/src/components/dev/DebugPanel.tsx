@@ -1,20 +1,23 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo, useSyncExternalStore } from 'react';
+import {
+  type DebugLogEntry,
+  getDebugLogSnapshot,
+  getDebugLogCount,
+  subscribeDebugLogs,
+} from '../../store/debugLogStore';
+import { filterDebugPanelLogs } from '../../config/debugPanelConfig';
 
-export type DebugLogEntry = {
-  id: number;
-  level: 'log' | 'info' | 'warn' | 'error' | 'debug';
-  time: string;
-  message: string;
-};
+export type { DebugLogEntry };
 
 type DebugPanelProps = {
   treeNodes: unknown;
   expandedMap: unknown;
-  logs?: DebugLogEntry[];
-  totalLogs?: number;
 };
 
-export function DebugPanel({ treeNodes, expandedMap, logs = [], totalLogs }: DebugPanelProps) {
+export function DebugPanel({ treeNodes, expandedMap }: DebugPanelProps) {
+  const allLogs = useSyncExternalStore(subscribeDebugLogs, getDebugLogSnapshot);
+  const totalLogs = useSyncExternalStore(subscribeDebugLogs, getDebugLogCount);
+  const logs = useMemo(() => filterDebugPanelLogs(allLogs), [allLogs]);
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -145,7 +148,7 @@ export function DebugPanel({ treeNodes, expandedMap, logs = [], totalLogs }: Deb
             </div>
           </div>
           <div style={{ color: '#8ecae6', fontSize: 10, marginBottom: 4 }}>
-            Showing {logs.length} of {totalLogs ?? logs.length} captured entries
+            Showing {logs.length} of {totalLogs} captured entries
           </div>
           <div style={{ background: '#111', color: '#ccc', fontSize: 11, maxHeight: 160, overflow: 'auto', padding: 6 }}>
             {logs.length === 0 && <div>No logs captured yet.</div>}

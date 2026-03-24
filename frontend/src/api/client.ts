@@ -369,11 +369,20 @@ export interface ManpowerTaskAllocation {
   status: 'under' | 'over' | 'full';
 }
 
+export interface ManpowerPersonTask {
+  node_id: string;
+  name: string;
+  start_date: string;
+  end_date: string;
+}
+
 export interface ManpowerPayload {
   date_columns: string[];
   resources: Record<string, ManpowerResource>;
   unallocated_tasks?: ManpowerUnallocatedTask[];
   task_allocations?: ManpowerTaskAllocation[];
+  allocation_property_id?: string;
+  person_tasks?: Record<string, ManpowerPersonTask[]>;
   updated_tasks?: number;
   total_tasks?: number;
   timestamp: number;
@@ -591,6 +600,14 @@ export class APIClient {
     const response = await fetch(`${this.baseUrl}/api/v1/settings`);
     if (!response.ok) {
       throw new Error(`Failed to fetch settings: ${response.status} ${response.statusText}`);
+    }
+    return response.json();
+  }
+
+  async getSettingsDefaults(): Promise<Record<string, string>> {
+    const response = await fetch(`${this.baseUrl}/api/v1/settings/defaults`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch settings defaults: ${response.status} ${response.statusText}`);
     }
     return response.json();
   }

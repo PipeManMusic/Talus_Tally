@@ -81,7 +81,7 @@
           "end_date": "",
           "episode_number": 1,
           "estimated_hours": "",
-          "manual_allocations": "[object Object]",
+          "manual_allocations": {},
           "start_date": "",
           "status": "3094f28b-3fc3-2667-5ae1-933b041d78ed",
           "synopsis": "The who what where and why of Project Talus"
@@ -187,7 +187,7 @@
           "description": "[SCENE]Studio\n[HOOK]Have you ever wondered how to make sure your vintage car purchase is ready to be a reliable daily driver and won't leave you on the side of the road with a tow truck bill or worse? Then stay tuned for Project Talus\n[VISUAL]Intro clip\n",
           "episode_number": 2,
           "estimated_hours": "",
-          "manual_allocations": "",
+          "manual_allocations": {},
           "status": "3094f28b-3fc3-2667-5ae1-933b041d78ed"
         },
         "children": [
@@ -1446,7 +1446,7 @@
           "end_date": null,
           "episode_number": 8,
           "estimated_hours": "",
-          "manual_allocations": null,
+          "manual_allocations": {},
           "start_date": null,
           "status": "3094f28b-3fc3-2667-5ae1-933b041d78ed"
         },

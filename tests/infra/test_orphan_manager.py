@@ -330,6 +330,7 @@ def test_reconcile_graph_with_template_marks_orphaned_nodes_and_properties():
     assert result['affected_nodes'] == 1
     assert str(removed_type_node.id) in result['orphaned_node_ids']
     assert result['affected_properties'] == 1
+    assert result['mismatch_count'] == 0
 
     assert removed_type_node.metadata.get('orphaned') is True
     assert 'not found in current template' in removed_type_node.metadata.get('orphaned_reason', '')
@@ -366,4 +367,49 @@ def test_reconcile_graph_with_template_accepts_property_key_definitions():
 
     assert result['affected_nodes'] == 0
     assert result['affected_properties'] == 0
+    assert result['mismatch_count'] == 0
     assert 'orphaned_properties' not in scene_node.metadata
+
+
+def test_reconcile_graph_with_template_surfaces_property_mismatch_candidates():
+    """Reconcile should suggest likely renamed properties when data/template drift is detected."""
+    graph = ProjectGraph(template_id='test_template', template_version='1.0.0')
+
+    episode_node = Node(blueprint_type_id='episode', name='Episode 1')
+    episode_node.properties = {
+        'name': 'Episode 1',
+        'manual_allocations': {
+            '2026-04-13': {'person-1': 8},
+        },
+    }
+    graph.add_node(episode_node)
+
+    template = {
+        'id': 'test_template',
+        'node_types': [
+            {
+                'id': 'episode',
+                'properties': [
+                    {'id': 'name'},
+                    {'id': 'allocations'},
+                ],
+            }
+        ],
+    }
+
+    result = OrphanManager.reconcile_graph_with_template(graph, template)
+
+    assert result['affected_nodes'] == 0
+    assert result['affected_properties'] == 1
+    assert result['mismatch_count'] == 1
+    assert len(result['mismatch_candidates']) == 1
+
+    candidate = result['mismatch_candidates'][0]
+    assert candidate['node_id'] == str(episode_node.id)
+    assert candidate['node_type'] == 'episode'
+    assert candidate['legacy_property'] == 'manual_allocations'
+    assert candidate['suggested_property'] == 'allocations'
+
+    hints = episode_node.metadata.get('property_mismatch_hints', {})
+    assert 'manual_allocations' in hints
+    assert hints['manual_allocations']['suggested_property'] == 'allocations'

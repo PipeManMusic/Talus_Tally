@@ -1,3 +1,19 @@
+talus-tally (0.1.7~alpha1-1) jammy; urgency=medium
+
+  * Alpha 0.1.7 release
+  * Fix UI freeze from compound re-render cascade (debug log store refactor)
+  * Fix auto-allocate destroying manual edits (graph store sync bug)
+  * Unify manual_allocations to allocations throughout codebase
+  * Add template/indicator/icon directory override settings with reset
+  * Fix manpower view color system (over/under swap, overtime orange, unavailable gray)
+  * Remove duplicate manpower view status warning
+  * Add inspector e2e tests
+  * Limit settings indicator preview to 5 for performance
+  * Chart engine UUID-to-label fix
+  * Velocity statusScores re-keying on rename
+
+ -- Talus Tally Dev <dev@talusstally.local>  Mon, 24 Mar 2026 00:00:00 +0000
+
 talus-tally (0.1.6.1~alpha1-1) jammy; urgency=medium
 
   * Hotfix 0.1.6.1 alpha

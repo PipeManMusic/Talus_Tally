@@ -1,71 +1,108 @@
-id: e2e_smoketest
-version: '1.0'
-name: E2E Test Template
 description: Minimal template with predictable node types for automated E2E coverage.
+id: e2e_smoketest
+name: E2E Test Template
 node_types:
-- id: e2e_root
-  label: Test Project
-  icon: layers
+- allowed_asset_types: []
   allowed_children:
-  - e2e_phase
+  - e2e_task
+  - person
+  features:
+  - budgeting
+  icon: layers
+  id: e2e_root
+  label: Test Project
   properties:
   - id: name
     label: Project Name
+    required: false
     type: text
   - id: objective
     label: Objective
+    required: false
     type: text
-- id: e2e_phase
-  label: Phase
-  icon: flag
-  allowed_children:
-  - e2e_task
-  properties:
-  - id: name
-    label: Phase Name
-    type: text
-  - id: status
-    label: Status
-    type: select
-    indicator_set: status
-    options:
-    - name: Planned
-      indicator_id: empty
-    - name: In Progress
-      indicator_id: partial
-    - name: Complete
-      indicator_id: filled
-- id: e2e_task
-  label: Task
-  icon: check-circle
+  - id: estimated_cost
+    label: Estimated Cost
+    type: currency
+    system_locked: true
+    ui_group: Financial
+  - id: actual_cost
+    label: Actual Cost
+    type: currency
+    system_locked: true
+    ui_group: Financial
+- allowed_asset_types: []
   allowed_children: []
+  features:
+  - scheduling
+  - budgeting
+  icon: check-square
+  id: e2e_task
+  label: Task
   properties:
   - id: name
     label: Task Name
+    required: true
     type: text
   - id: status
     label: Status
     type: select
-    indicator_set: status
     options:
-    - name: Not Started
-      indicator_id: empty
-    - name: Active
-      indicator_id: partial
-    - name: Done
-      indicator_id: filled
-  - id: notes
-    label: Notes
+    - not_started
+    - in_progress
+    - completed
+  - id: description
+    label: Description
+    type: textarea
+  - id: start_date
+    label: Start Date
+    type: date
+    system_locked: true
+    ui_group: Schedule
+  - id: end_date
+    label: End Date
+    type: date
+    system_locked: true
+    ui_group: Schedule
+  - id: assigned_to
+    label: Assigned To
     type: text
-- id: e2e_note
-  label: Archive Note
-  icon: sticky-note
+    system_locked: true
+    ui_group: Schedule
+  - id: estimated_cost
+    label: Estimated Cost
+    type: currency
+    system_locked: true
+    ui_group: Financial
+  - id: actual_cost
+    label: Actual Cost
+    type: currency
+    system_locked: true
+    ui_group: Financial
+- allowed_asset_types: []
   allowed_children: []
+  features: []
+  icon: user
+  id: person
+  label: Person
   properties:
-  - id: title
-    label: Note Title
+  - id: name
+    label: Person Name
+    required: true
     type: text
-  - id: body
-    label: Details
-    type: text
+  - id: capacity_monday
+    label: Monday Capacity
+    type: number
+  - id: capacity_tuesday
+    label: Tuesday Capacity
+    type: number
+  - id: capacity_wednesday
+    label: Wednesday Capacity
+    type: number
+  - id: capacity_thursday
+    label: Thursday Capacity
+    type: number
+  - id: capacity_friday
+    label: Friday Capacity
+    type: number
 uuid: 314d7e8b-173a-40ea-9b06-d055510feb83
+version: '1.0'

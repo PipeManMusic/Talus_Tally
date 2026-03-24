@@ -112,11 +112,14 @@ describe('Inspector', () => {
     expect(onPropertyChange).toHaveBeenCalledWith('assigned_to', []);
   });
 
-  it('renders manual_allocations as a readable per-day summary', () => {
+  it('renders allocations editor trigger and opens spreadsheet modal', () => {
     const taskProperties: NodeProperty[] = [
       { id: 'name', name: 'Name', type: 'text', value: 'Task A' },
+      { id: 'assigned_to', name: 'Assigned To', type: 'text', value: ['person-1', 'person-2'] },
+      { id: 'start_date', name: 'Start Date', type: 'date', value: '2026-03-17' },
+      { id: 'end_date', name: 'End Date', type: 'date', value: '2026-03-18' },
       {
-        id: 'manual_allocations',
+        id: 'allocations',
         name: 'Manual Allocations',
         type: 'text',
         value: {
@@ -141,14 +144,61 @@ describe('Inspector', () => {
       />,
     );
 
-    expect(screen.getByText('Manual Allocations')).toBeInTheDocument();
-    expect(screen.getByText('2026-03-17')).toBeInTheDocument();
-    expect(screen.getByText('2026-03-18')).toBeInTheDocument();
-    expect(screen.getByText('Alice Johnson')).toBeInTheDocument();
-    expect(screen.getByText('bob@example.com')).toBeInTheDocument();
-    expect(screen.getByText('2.5h')).toBeInTheDocument();
-    expect(screen.getByText('1.0h')).toBeInTheDocument();
-    expect(screen.getByText('Edit per-day allocations in the Manpower view task rows.')).toBeInTheDocument();
+    expect(screen.getAllByText('Manual Allocations').length).toBeGreaterThan(0);
+    expect(screen.getByRole('button', { name: 'Edit Allocations' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit Allocations' }));
+
+    expect(screen.getAllByText('Manual Allocations').length).toBeGreaterThan(1);
+    expect(screen.getAllByText('Alice Johnson').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('bob@example.com').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('2026-03-17').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('2026-03-18').length).toBeGreaterThan(0);
+    expect(screen.getByDisplayValue('2.5')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('1')).toBeInTheDocument();
+  });
+
+  it('updates allocations from inspector spreadsheet modal', () => {
+    const onPropertyChange = vi.fn();
+    const taskProperties: NodeProperty[] = [
+      { id: 'name', name: 'Name', type: 'text', value: 'Task A' },
+      { id: 'assigned_to', name: 'Assigned To', type: 'text', value: ['person-1'] },
+      { id: 'start_date', name: 'Start Date', type: 'date', value: '2026-03-17' },
+      { id: 'end_date', name: 'End Date', type: 'date', value: '2026-03-17' },
+      {
+        id: 'allocations',
+        name: 'Manual Allocations',
+        type: 'text',
+        value: {
+          '2026-03-17': { 'person-1': 2.5 },
+        },
+      },
+    ];
+
+    const nodes = {
+      'person-1': { id: 'person-1', type: 'person', properties: { name: 'Alice Johnson', email: 'alice@example.com' } },
+    };
+
+    render(
+      <Inspector
+        nodeId="task-1"
+        nodeName="Task A"
+        nodeType="task"
+        properties={taskProperties}
+        nodes={nodes}
+        onPropertyChange={onPropertyChange}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit Allocations' }));
+
+    const input = screen.getByDisplayValue('2.5');
+    fireEvent.change(input, { target: { value: '3' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(onPropertyChange).toHaveBeenCalledWith('allocations', {
+      '2026-03-17': { 'person-1': 3 },
+    });
   });
 
   describe('Velocity Section', () => {

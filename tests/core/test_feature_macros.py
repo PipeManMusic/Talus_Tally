@@ -2,7 +2,7 @@
 Tests for feature_macros — Template Feature Macro injection/removal system.
 
 Covers:
-- Scheduling feature injects start_date, end_date, assigned_to, estimated_hours, actual_hours
+- Scheduling feature injects start_date, end_date, assigned_to, estimated_hours, actual_hours, manual_allocations, status
 - Budgeting feature injects estimated_cost + actual_cost
 - Disabling a feature removes its system_locked properties
 - Enabling both features simultaneously
@@ -81,6 +81,8 @@ class TestFeatureInjection:
         assert "assigned_to" in prop_ids
         assert "estimated_hours" in prop_ids
         assert "actual_hours" in prop_ids
+        assert "allocations" in prop_ids
+        assert "status" in prop_ids
 
     def test_scheduling_properties_are_system_locked(self, scheduling_template):
         result = apply_feature_macros(scheduling_template)
@@ -99,6 +101,9 @@ class TestFeatureInjection:
         assert prop_map["assigned_to"]["target_type"] == "person"
         assert prop_map["estimated_hours"]["type"] == "number"
         assert prop_map["actual_hours"]["type"] == "number"
+        assert prop_map["allocations"]["type"] == "object"
+        assert prop_map["status"]["type"] == "select"
+        assert prop_map["status"]["indicator_set"] == "status"
 
     def test_scheduling_properties_have_ui_group(self, scheduling_template):
         result = apply_feature_macros(scheduling_template)
@@ -109,6 +114,8 @@ class TestFeatureInjection:
         assert prop_map["assigned_to"]["ui_group"] == "Schedule"
         assert prop_map["estimated_hours"]["ui_group"] == "Schedule"
         assert prop_map["actual_hours"]["ui_group"] == "Schedule"
+        assert prop_map["allocations"]["ui_group"] == "Schedule"
+        assert prop_map["status"]["ui_group"] == "Schedule"
 
     def test_scheduling_semantic_roles(self, scheduling_template):
         result = apply_feature_macros(scheduling_template)
@@ -126,11 +133,11 @@ class TestFeatureInjection:
         assert "estimated_cost" in prop_map
         assert prop_map["estimated_cost"]["type"] == "currency"
         assert prop_map["estimated_cost"]["system_locked"] is True
-        assert prop_map["estimated_cost"]["ui_group"] == "Budget"
+        assert prop_map["estimated_cost"]["ui_group"] == "Financial"
         assert "actual_cost" in prop_map
-        assert prop_map["actual_cost"]["type"] == "number"
+        assert prop_map["actual_cost"]["type"] == "currency"
         assert prop_map["actual_cost"]["system_locked"] is True
-        assert prop_map["actual_cost"]["ui_group"] == "Budget"
+        assert prop_map["actual_cost"]["ui_group"] == "Financial"
 
     def test_both_features_inject_all_properties(self, both_features_template):
         result = apply_feature_macros(both_features_template)
@@ -142,6 +149,8 @@ class TestFeatureInjection:
             "assigned_to",
             "estimated_hours",
             "actual_hours",
+            "allocations",
+            "status",
             "estimated_cost",
             "actual_cost",
         }
@@ -192,6 +201,8 @@ class TestFeatureRemoval:
         assert "assigned_to" not in prop_ids
         assert "estimated_hours" not in prop_ids
         assert "actual_hours" not in prop_ids
+        assert "manual_allocations" not in prop_ids
+        assert "status" not in prop_ids
 
     def test_disabling_budgeting_removes_estimated_cost(self, budgeting_template):
         injected = apply_feature_macros(budgeting_template)

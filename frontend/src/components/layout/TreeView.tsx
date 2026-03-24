@@ -94,6 +94,7 @@ function FilteredTreeContent({
   resolveTypeLabel,
   nodeTypeSchemas,
   velocityScores = {},
+  selectedNodeId,
   onSelect,
   onExpand,
   onContextMenu,
@@ -108,6 +109,7 @@ function FilteredTreeContent({
   resolveTypeLabel: (type: string) => string;
   nodeTypeSchemas?: Record<string, NodeTypeSchema>;
   velocityScores?: Record<string, any>;
+  selectedNodeId?: string | null;
   onSelect?: (id: string) => void;
   onExpand?: (id: string) => void;
   onContextMenu?: (nodeId: string, action: string) => void;
@@ -184,6 +186,7 @@ function FilteredTreeContent({
                         nodeTypeSchemas={nodeTypeSchemas}
                         velocityScores={velocityScores}
                         level={level + 1}
+                        selectedNodeId={selectedNodeId}
                         onSelect={onSelect}
                         onExpand={onExpand}
                         onContextMenu={onContextMenu}
@@ -211,6 +214,7 @@ type TreeItemProps = {
   velocityScores?: Record<string, any>;
   level?: number;
   isGhosted?: boolean;
+  selectedNodeId?: string | null;
   onSelect?: (id: string) => void;
   onExpand?: (id: string) => void;
   onContextMenu?: (nodeId: string, action: string) => void;
@@ -226,6 +230,7 @@ function TreeItem({
   velocityScores = {},
   level = 0,
   isGhosted = false,
+  selectedNodeId,
   onSelect,
   onExpand,
   onContextMenu,
@@ -247,7 +252,7 @@ function TreeItem({
   const addButtonRef = useRef<HTMLButtonElement>(null);
   const [iconCacheVersion, setIconCacheVersion] = useState(0);
   const rowRef = useRef<HTMLDivElement>(null);
-  const isSelected = node.selected === true;
+  const isSelected = selectedNodeId != null ? node.id === selectedNodeId : node.selected === true;
   const orphanedReason = typeof node.metadata?.orphaned_reason === 'string' ? node.metadata.orphaned_reason.toLowerCase() : '';
   const hasTemplateType = !nodeTypeSchemas || Boolean(nodeTypeSchemas[node.type]);
   const isOrphaned = Boolean(node.metadata?.orphaned) && (
@@ -932,6 +937,7 @@ function TreeItem({
             resolveTypeLabel={resolveTypeLabel}
             nodeTypeSchemas={nodeTypeSchemas}
             velocityScores={velocityScores}
+            selectedNodeId={selectedNodeId}
             onSelect={onSelect}
             onExpand={onExpand}
             onContextMenu={onContextMenu}
@@ -949,6 +955,7 @@ function TreeItem({
 
 type TreeViewProps = {
   nodes: TreeNode[];
+  selectedNodeId?: string | null;
   nodeTypeSchemas?: Record<string, NodeTypeSchema>;
   velocityScores?: Record<string, any>;
   onSelectNode?: (id: string) => void;
@@ -973,6 +980,7 @@ export function TreeView({
   getTypeLabel,
   expandedMap: externalExpandedMap,
   setExpandedMap: externalSetExpandedMap,
+  selectedNodeId,
 }: TreeViewProps) {
   const [internalExpandedMap, setInternalExpandedMap] = useState<Record<string, boolean>>({});
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -1078,6 +1086,7 @@ export function TreeView({
                 nodeTypeSchemas={nodeTypeSchemas}
                 velocityScores={velocityScores}
                 isGhosted={filterMode === 'ghost' && !isDirectMatch && !hasMatchingDescendant}
+                selectedNodeId={selectedNodeId}
                 onSelect={onSelectNode}
                 onExpand={onExpandNode}
                 onContextMenu={onContextMenu}

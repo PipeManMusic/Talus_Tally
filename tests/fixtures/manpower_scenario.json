@@ -1,0 +1,116 @@
+{
+  "_comment": "Realistic project fixture matching the project_talus template schema. Use this in resource_engine and API route tests to validate manload calculations with real node types and property names.",
+  "nodes": [
+    {
+      "id": "proj-root-001",
+      "type": "project_root",
+      "properties": {
+        "name": "Bronco II Restoration",
+        "vehicle": "Bronco II",
+        "project_lead": "Danel Worth",
+        "budget": "15000",
+        "actual_cost": "3500"
+      }
+    },
+    {
+      "id": "personnel-root-001",
+      "type": "personnel_assets",
+      "properties": {
+        "name": "Personnel"
+      }
+    },
+    {
+      "id": "person-alex-001",
+      "type": "person",
+      "properties": {
+        "name": "Alex",
+        "email": "alex@example.com",
+        "capacity_monday": 8,
+        "capacity_tuesday": 8,
+        "capacity_wednesday": 8,
+        "capacity_thursday": 8,
+        "capacity_friday": 8,
+        "capacity_saturday": 0,
+        "capacity_sunday": 0,
+        "overtime_capacity": 0,
+        "overtime_capacity_monday": 0,
+        "overtime_capacity_tuesday": 0,
+        "overtime_capacity_wednesday": 0,
+        "overtime_capacity_thursday": 0,
+        "overtime_capacity_friday": 0,
+        "overtime_capacity_saturday": 0,
+        "overtime_capacity_sunday": 0
+      }
+    },
+    {
+      "id": "person-blair-002",
+      "type": "person",
+      "properties": {
+        "name": "Blair",
+        "email": "blair@example.com",
+        "capacity_monday": 4,
+        "capacity_tuesday": 4,
+        "capacity_wednesday": 4,
+        "capacity_thursday": 4,
+        "capacity_friday": 4,
+        "capacity_saturday": 0,
+        "capacity_sunday": 0,
+        "overtime_capacity": 0,
+        "overtime_capacity_monday": 2,
+        "overtime_capacity_tuesday": 2,
+        "overtime_capacity_wednesday": 2,
+        "overtime_capacity_thursday": 2,
+        "overtime_capacity_friday": 2,
+        "overtime_capacity_saturday": 0,
+        "overtime_capacity_sunday": 0
+      }
+    },
+    {
+      "id": "season-001",
+      "type": "season",
+      "properties": {
+        "name": "Daily Driver"
+      }
+    },
+    {
+      "id": "episode-suspension-001",
+      "type": "episode",
+      "properties": {
+        "name": "Suspension Overhaul",
+        "start_date": "2026-01-05",
+        "end_date": "2026-01-09",
+        "assigned_to": "person-alex-001",
+        "estimated_hours": 16,
+        "allocations": {}
+      }
+    },
+    {
+      "id": "episode-brakes-002",
+      "type": "episode",
+      "properties": {
+        "name": "Brake Replacement",
+        "start_date": "2026-01-12",
+        "end_date": "2026-01-14",
+        "assigned_to": ["person-alex-001", "person-blair-002"],
+        "estimated_hours": 12,
+        "allocations": {}
+      }
+    },
+    {
+      "id": "episode-partial-manual-003",
+      "type": "episode",
+      "properties": {
+        "name": "Fluid Change",
+        "start_date": "2026-01-07",
+        "end_date": "2026-01-09",
+        "assigned_to": "person-alex-001",
+        "estimated_hours": 6,
+        "allocations": {
+          "2026-01-07": {"person-alex-001": 2.0},
+          "2026-01-08": {"person-alex-001": 2.0},
+          "2026-01-09": {"person-alex-001": 2.0}
+        }
+      }
+    }
+  ]
+}
