@@ -386,6 +386,7 @@ export interface ManpowerPayload {
   updated_tasks?: number;
   total_tasks?: number;
   timestamp: number;
+  changes?: Array<{ node_id: string; property_id: string; new_value: unknown }>;
 }
 
 export class APIClient {
