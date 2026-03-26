@@ -52,6 +52,22 @@ export function AgileView({
     return map;
   }, [templateSchema]);
 
+  // Build a lookup from option UUID → option name for the status property across all node types.
+  const statusOptionNames = useMemo(() => {
+    const map = new Map<string, string>();
+    templateSchema?.node_types?.forEach(nt => {
+      const statusProp = nt.properties?.find(p => p.id === AGILE_STATUS_PROPERTY_ID);
+      if (statusProp?.options) {
+        for (const opt of statusProp.options) {
+          if (opt && typeof opt === 'object' && opt.id && opt.name) {
+            map.set(opt.id, opt.name);
+          }
+        }
+      }
+    });
+    return map;
+  }, [templateSchema]);
+
   const effectiveNodes = useMemo(() => {
     return Object.keys(nodes).length > 0 ? nodes : storeNodes;
   }, [nodes, storeNodes]);
@@ -87,7 +103,9 @@ export function AgileView({
 
     const statusRaw = node.properties?.[AGILE_STATUS_PROPERTY_ID];
     if (typeof statusRaw === 'string' && statusRaw.trim()) {
-      return normalizeStatus(statusRaw);
+      // Resolve option UUID to name if the value is a UUID
+      const resolved = statusOptionNames.get(statusRaw) ?? statusRaw;
+      return normalizeStatus(resolved);
     }
 
     return 'To Do';

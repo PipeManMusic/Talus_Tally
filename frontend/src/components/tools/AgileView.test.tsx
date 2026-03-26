@@ -161,4 +161,54 @@ describe('AgileView', () => {
     expect(screen.queryByText('Hidden Task')).toBeNull();
     expect(screen.getByText('Visible Task')).toBeTruthy();
   });
+
+  it('resolves option UUID status values to column names', () => {
+    const nodes = {
+      'bug-1': {
+        id: 'bug-1',
+        type: 'bug-type-uuid',
+        properties: {
+          name: 'Bug with UUID status',
+          estimated_hours: 2,
+          status: 'uuid-in-progress',
+        },
+      },
+    } as any;
+
+    const templateSchema = {
+      node_types: [
+        {
+          id: 'bug-type-uuid',
+          name: 'Bug',
+          properties: [
+            {
+              id: 'status',
+              type: 'select',
+              options: [
+                { id: 'uuid-to-do', name: 'To Do', indicator_id: 'empty' },
+                { id: 'uuid-in-progress', name: 'In Progress', indicator_id: 'partial' },
+                { id: 'uuid-done', name: 'Done', indicator_id: 'filled' },
+              ],
+            },
+          ],
+        },
+      ],
+    } as any;
+
+    render(
+      <AgileView
+        sessionId="session-1"
+        nodes={nodes}
+        velocityScores={{}}
+        templateSchema={templateSchema}
+      />,
+    );
+
+    // The card should appear in the "In Progress" column, not "To Do"
+    const inProgressColumn = screen.getByTestId('agile-column-in-progress');
+    expect(inProgressColumn).toHaveTextContent('Bug with UUID status');
+
+    const toDoColumn = screen.getByTestId('agile-column-to-do');
+    expect(toDoColumn).not.toHaveTextContent('Bug with UUID status');
+  });
 });
