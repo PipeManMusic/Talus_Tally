@@ -35,30 +35,6 @@ const recolorSvg = (svgString: string, color: string | undefined): string => {
   return recolored;
 };
 
-const iconDefaults: Record<string, string> = {
-  project_root: 'film',
-  assets: 'archive-box',
-  inventory_root: 'archive-box',
-  camera_gear_inventory: 'camera',
-  camera_gear_category: 'camera',
-  camera_gear_asset: 'camera',
-  parts_inventory: 'cog',
-  part_category: 'cog',
-  part_asset: 'cog',
-  car_parts_inventory: 'cog',
-  tools_inventory: 'cog',
-  tool_category: 'cog',
-  tool_asset: 'cog',
-  vehicles: 'truck',
-  vehicle_asset: 'truck',
-  phase: 'calendar-days',
-  season: 'calendar-days',
-  episode: 'video-camera',
-  task: 'clipboard-document-check',
-  footage: 'play-circle',
-  location_scout: 'map-pin',
-};
-
 interface Edge {
   from: string;
   to: string;
@@ -115,6 +91,13 @@ export function NodeBlockingEditor({ sessionId, nodes, velocityScores = {}, sele
       map.set(nodeType.id, { color, shape });
     });
     return map;
+  }, [templateSchema]);
+
+  const nodeTypeSchemasById = useMemo(() => {
+    return templateSchema?.node_types?.reduce<Record<string, any>>((acc, nt) => {
+      acc[nt.id] = nt;
+      return acc;
+    }, {}) ?? {};
   }, [templateSchema]);
 
   const maxDepthObserved = useMemo(() => {
@@ -330,6 +313,7 @@ export function NodeBlockingEditor({ sessionId, nodes, velocityScores = {}, sele
         nodeIds.filter((id) => nodeVisibility.get(id) ?? true),
       ),
       hideFilteredNodes: filterMode === 'hide' && rules.length > 0,
+      nodeTypeSchemas: nodeTypeSchemasById,
       baseWidth: nodeSizeConfig.baseWidth,
       baseHeight: nodeSizeConfig.baseHeight,
       maxScale: nodeSizeConfig.maxScale,
@@ -347,7 +331,9 @@ export function NodeBlockingEditor({ sessionId, nodes, velocityScores = {}, sele
     nodePositions.forEach((nodeData) => {
       const node = nodes[nodeData.id];
       if (!node) return;
-      const iconSourceId = (node as any).icon_id ?? iconDefaults[node.type] ?? node.type ?? undefined;
+      const nodeTypeSchema = templateSchema?.node_types?.find((nt: any) => nt.id === node.type);
+      const schemaIcon = (nodeTypeSchema as any)?.icon;
+      const iconSourceId = (node as any).icon_id ?? schemaIcon ?? undefined;
       iconIds.set(nodeData.id, iconSourceId);
     });
 

@@ -1,4 +1,4 @@
-import type { Node } from '../api/client';
+import type { Node, NodeTypeSchema } from '../api/client';
 
 function parseBlockedByValue(value: unknown): string[] {
   if (Array.isArray(value)) {
@@ -153,12 +153,11 @@ export interface BlockingLayoutResult {
 interface BlockingLayoutOptions {
   visibleNodeIds?: Set<string>;
   hideFilteredNodes?: boolean;
+  nodeTypeSchemas?: Record<string, NodeTypeSchema>;
   baseWidth: number;
   baseHeight: number;
   maxScale: number;
 }
-
-const PROJECT_ROOT_TYPES = new Set(['project', 'project_root']);
 
 export function buildBlockingHierarchyLayout(
   nodes: Record<string, Node>,
@@ -169,7 +168,14 @@ export function buildBlockingHierarchyLayout(
     return { positions: [], depths: {}, parentIds: {} };
   }
 
-  const projectRootId = nodeIds.find((id) => PROJECT_ROOT_TYPES.has(nodes[id]?.type));
+  const projectRootId = nodeIds.find((id) => {
+    const schemas = options.nodeTypeSchemas;
+    if (schemas) {
+      return schemas[nodes[id]?.type]?.features?.includes('is_root') ?? false;
+    }
+    // Fallback for callers that don't pass schemas
+    return nodes[id]?.type === 'project_root' || nodes[id]?.type === 'project';
+  });
   const parentIds: Record<string, string | undefined> = {};
   const orderedChildren: Record<string, string[]> = {};
 

@@ -153,6 +153,7 @@ export function ToolsView({
           <AgileView
             nodes={nodes}
             velocityScores={velocityScores}
+            templateSchema={templateSchema}
             sessionId={sessionId}
             selectedNodeId={selectedNodeId}
             onNodeSelect={onNodeSelect}

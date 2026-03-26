@@ -4,6 +4,7 @@ import { Select } from '../ui/Select';
 import { CurrencyInput } from '../ui/CurrencyInput';
 import { TemplateAwareEditor } from '../ui/TemplateAwareEditor';
 import type { MarkupToken } from '../../services/markupRenderService';
+import type { NodeTypeSchema } from '../../api/client';
 
 const WEEKDAY_LABELS = [
   { key: 'monday', short: 'Mon', full: 'Monday' },
@@ -90,9 +91,11 @@ interface InspectorProps {
   onLinkedAssetPropertyChange?: (propId: string, value: string | number | string[] | Record<string, Record<string, number>>) => void;
   orphanedProperties?: Record<string, string | number>;
   onOrphanedPropertyDelete?: (propKey: string) => void;
+  onDeleteAllOrphanedProperties?: () => void;
   blockedByNodes?: string[];
   blocksNodes?: string[];
   nodes?: Record<string, any>;
+  nodeTypeSchemas?: Record<string, NodeTypeSchema>;
   onClearBlocks?: (nodeId: string) => void;
   /** Clear a single blocking relationship. blockedNodeId is the node being unblocked. */
   onClearSingleBlock?: (blockedNodeId: string) => void;
@@ -111,9 +114,11 @@ export const Inspector = memo(function Inspector({
   onLinkedAssetPropertyChange,
   orphanedProperties,
   onOrphanedPropertyDelete,
+  onDeleteAllOrphanedProperties,
   blockedByNodes = [],
   blocksNodes = [],
   nodes = {},
+  nodeTypeSchemas,
   onClearBlocks,
   onClearSingleBlock,
   velocityScore,
@@ -192,7 +197,7 @@ export const Inspector = memo(function Inspector({
 
   const assignablePeople = useMemo(() => {
     return Object.values(nodes)
-      .filter((node: any) => node?.type === 'person')
+      .filter((node: any) => nodeTypeSchemas?.[node?.type]?.features?.includes('is_person'))
       .map((node: any) => {
         const id = String(node.id);
         const name = String(node?.properties?.name ?? node?.name ?? '').trim();
@@ -590,7 +595,7 @@ export const Inspector = memo(function Inspector({
     });
   };
 
-  const isPersonNode = nodeType === 'person';
+  const isPersonNode = nodeTypeSchemas?.[nodeType ?? '']?.features?.includes('is_person') ?? false;
   const propertyMap = useMemo(() => new Map(properties.map((property) => [property.id, property])), [properties]);
   const estimatedHoursValue = useMemo(() => {
     const raw = propertyMap.get('estimated_hours')?.value;
@@ -1252,18 +1257,14 @@ export const Inspector = memo(function Inspector({
                   <span>Inherited:</span>
                   <span className="text-fg-primary">{velocityScore.inheritedScore}</span>
                 </div>
-                {velocityScore.statusScore !== 0 && (
-                  <div className="flex justify-between items-center">
-                    <span>Status:</span>
-                    <span className="text-fg-primary">{velocityScore.statusScore}</span>
-                  </div>
-                )}
-                {velocityScore.numericalScore !== 0 && (
-                  <div className="flex justify-between items-center">
-                    <span>Numerical:</span>
-                    <span className="text-fg-primary">{velocityScore.numericalScore}</span>
-                  </div>
-                )}
+                <div className="flex justify-between items-center">
+                  <span>Status:</span>
+                  <span className="text-fg-primary">{velocityScore.statusScore}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span>Numerical:</span>
+                  <span className="text-fg-primary">{velocityScore.numericalScore}</span>
+                </div>
                 {velocityScore.blockingBonus !== 0 && (
                   <div className="flex justify-between items-center">
                     <span>Blocking Bonus:</span>
@@ -1289,6 +1290,15 @@ export const Inspector = memo(function Inspector({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
               Orphaned Properties
+              {onDeleteAllOrphanedProperties && Object.keys(orphanedProperties).length > 1 && (
+                <button
+                  onClick={onDeleteAllOrphanedProperties}
+                  className="ml-auto text-xs bg-status-danger/20 text-status-danger rounded px-2 py-0.5 hover:bg-status-danger/30 transition-colors"
+                  title="Delete all orphaned properties"
+                >
+                  Delete All
+                </button>
+              )}
             </div>
             <div className="mb-3 text-xs text-orange-300/80 bg-orange-500/10 border border-orange-500/30 rounded px-2 py-2">
               These properties were removed from the template but their values are preserved. They are read-only.

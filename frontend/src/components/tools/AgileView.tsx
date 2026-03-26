@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { apiClient, type Node, type VelocityScore } from '../../api/client';
+import { apiClient, type Node, type VelocityScore, type TemplateSchema } from '../../api/client';
 import { useGraphStore } from '../../store';
 import { useFilterStore } from '../../store/filterStore';
 import { evaluateNodeVisibility } from '../../utils/filterEngine';
@@ -7,6 +7,7 @@ import { evaluateNodeVisibility } from '../../utils/filterEngine';
 interface AgileViewProps {
   nodes?: Record<string, Node>;
   velocityScores?: Record<string, VelocityScore>;
+  templateSchema?: TemplateSchema | null;
   sessionId?: string | null;
   selectedNodeId?: string | null;
   onNodeSelect?: (nodeId: string | null) => void;
@@ -32,6 +33,7 @@ function normalizeStatus(raw: string): KanbanStatus {
 export function AgileView({
   nodes = {},
   velocityScores = {},
+  templateSchema,
   sessionId,
   selectedNodeId,
   onNodeSelect,
@@ -44,13 +46,20 @@ export function AgileView({
   const [draggedNodeId, setDraggedNodeId] = useState<string | null>(null);
   const [dragOverStatus, setDragOverStatus] = useState<KanbanStatus | null>(null);
 
+  const typeFeatures = useMemo(() => {
+    const map = new Map<string, string[]>();
+    templateSchema?.node_types?.forEach(nt => map.set(nt.id, nt.features || []));
+    return map;
+  }, [templateSchema]);
+
   const effectiveNodes = useMemo(() => {
     return Object.keys(nodes).length > 0 ? nodes : storeNodes;
   }, [nodes, storeNodes]);
 
   const filteredNodes = useMemo(() => {
     return Object.values(effectiveNodes).filter(node => {
-      if (node.type === 'project' || node.type === 'project_root' || node.type === 'person') return false;
+      const features = typeFeatures.get(node.type) || [];
+      if (features.includes('is_root') || features.includes('is_person')) return false;
       const isVisible = evaluateNodeVisibility(
         {
           id: node.id,
@@ -160,7 +169,7 @@ export function AgileView({
   );
 
   const avgCapacity = useMemo(() => {
-    const persons = Object.values(effectiveNodes).filter(n => n.type === 'person');
+    const persons = Object.values(effectiveNodes).filter(n => typeFeatures.get(n.type)?.includes('is_person'));
     if (persons.length === 0) return 8;
     const caps = persons
       .map(p => Number(p.properties?.daily_capacity) || 0)

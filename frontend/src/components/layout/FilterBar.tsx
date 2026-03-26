@@ -71,6 +71,16 @@ export function FilterBar({
     return Array.from(types).sort();
   }, [nodes]);
 
+  const nodeTypeLabelMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    templateSchema?.node_types?.forEach((nt) => {
+      if (nt.id && nt.name) {
+        map[nt.id] = nt.name;
+      }
+    });
+    return map;
+  }, [templateSchema]);
+
   const selectOptionsByProperty = useMemo(
     () => getSelectOptionsByProperty(templateSchema),
     [templateSchema],
@@ -185,7 +195,7 @@ export function FilterBar({
                           <option value="">Select node type...</option>
                           {availableNodeTypes.map((nodeType) => (
                             <option key={nodeType} value={nodeType}>
-                              {nodeType}
+                              {nodeTypeLabelMap[nodeType] || nodeType}
                             </option>
                           ))}
                         </select>
@@ -251,7 +261,7 @@ export function FilterBar({
                           <option value="">Select node type...</option>
                           {availableNodeTypes.map((nodeType) => (
                             <option key={nodeType} value={nodeType}>
-                              {nodeType}
+                              {nodeTypeLabelMap[nodeType] || nodeType}
                             </option>
                           ))}
                         </select>

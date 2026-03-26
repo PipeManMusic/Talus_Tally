@@ -119,6 +119,7 @@ function App() {
   const [ganttRefreshSignal, setGanttRefreshSignal] = useState(0);
   const [manpowerOverloadCount, setManpowerOverloadCount] = useState(0);
   const [indicatorRefreshSignal, setIndicatorRefreshSignal] = useState(0);
+  const [templateRefreshSignal, setTemplateRefreshSignal] = useState(0);
   const [lastFilePath, setLastFilePath] = useState<string | null>(null);
   const [currentTemplateId, setCurrentTemplateId] = useState<string | null>(null);
   const [expandAllSignal, setExpandAllSignal] = useState(0);
@@ -411,6 +412,13 @@ function App() {
   }, []);
 
   // Convert backend nodes to tree structure
+  const nodeTypeSchemasById = useMemo(() => {
+    return templateSchema?.node_types?.reduce<Record<string, NodeTypeSchema>>((acc, nodeType) => {
+      acc[nodeType.id] = nodeType;
+      return acc;
+    }, {}) ?? {};
+  }, [templateSchema]);
+
   const convertNodesToTree = useCallback((nodes: Record<string, Node>): TreeNode[] => {
     const nodeList = Object.values(nodes);
     if (nodeList.length === 0) return [];
@@ -901,7 +909,8 @@ function App() {
 
   const handleExternalTemplateUpdate = useCallback((data: any) => {
     console.log('[External Update] Template file changed externally:', data);
-    showToast('Template updated by external change', 'info', 3000);
+    showToast('Template updated — refreshing schema…', 'info', 3000);
+    setTemplateRefreshSignal((prev) => prev + 1);
   }, [showToast]);
 
   // Enable real-time WebSocket synchronization
@@ -1432,6 +1441,14 @@ function App() {
     console.log('✓ Full template refresh completed');
   }, [currentTemplateId, sessionId, normalizeGraph, setCurrentGraph, fetchBlockingRelationships, refreshVelocityScores]);
 
+  // When a socket.io template-updated event arrives, refresh schema + graph
+  useEffect(() => {
+    if (templateRefreshSignal === 0) return;
+    refreshTemplateAndGraph().catch((err) => {
+      console.error('Failed to refresh schema after template update event:', err);
+    });
+  }, [templateRefreshSignal, refreshTemplateAndGraph]);
+
   // When the template editor closes, refresh everything
   const handleTemplateEditorClose = useCallback(async () => {
     setShowTemplateEditor(false);
@@ -1626,20 +1643,12 @@ function App() {
     ];
     if (!templateSchema) return fallback;
     
-    // Check both project_root and inventory_root for inventory types
-    const root = templateSchema.node_types.find(nt => nt.id === 'project_root');
-    const assetRoot = templateSchema.node_types.find(nt => nt.id === 'inventory_root');
-    const allowed = [
-      ...(root?.allowed_children || []),
-      ...(assetRoot?.allowed_children || [])
-    ];
-    
-    const isAssetCategory = (id: string) => id.endsWith('_inventory') || id === 'vehicles';
-    const options = allowed
-      .filter(isAssetCategory)
-      .map((id) => ({
-        id,
-        label: templateSchema.node_types.find(nt => nt.id === id)?.name || id,
+    // Find inventory container types using feature flags
+    const options = templateSchema.node_types
+      .filter(nt => nt.features?.includes('is_inventory_container'))
+      .map((nt) => ({
+        id: nt.id,
+        label: nt.name || nt.id,
       }));
     return options.length > 0 ? options : fallback;
   }, [templateSchema]);
@@ -2099,6 +2108,8 @@ function App() {
             setCurrentGraph(graph);
             setIsDirty(result.is_dirty ?? true);
             setGanttRefreshSignal((prev) => prev + 1);
+            // Refresh velocity scores so the inspector reflects the new status
+            refreshVelocityScores();
           } catch (error) {
             console.error('[onPropertyChange] Error normalizing graph:', error);
             alert('Error updating UI after property change: ' + (error as Error).message);
@@ -2109,7 +2120,7 @@ function App() {
           alert('Failed to update property');
         });
     },
-    [safeExecuteCommand],
+    [safeExecuteCommand, refreshVelocityScores],
   );
 
   const handleLinkedAssetPropertyChange = useCallback(
@@ -2158,6 +2169,37 @@ function App() {
     },
     [safeExecuteCommand],
   );
+
+  const handleDeleteAllOrphanedProperties = useCallback(() => {
+    const nodeData = selectedNodeDataRef.current;
+    if (!nodeData) return;
+    const orphaned = currentNodeOrphanedProperties;
+    if (!orphaned) return;
+    const keys = Object.keys(orphaned);
+    if (keys.length === 0) return;
+    if (!confirm(`Delete all ${keys.length} orphaned properties?`)) return;
+    // Chain deletions sequentially so each command sees the updated graph
+    let chain = Promise.resolve<any>(undefined);
+    for (const key of keys) {
+      chain = chain.then(() =>
+        safeExecuteCommand('DeleteOrphanedProperty', {
+          node_id: nodeData.id,
+          property_key: key,
+        }),
+      );
+    }
+    chain
+      .then((result) => {
+        const graph = normalizeGraph(result.graph ?? result);
+        setCurrentGraph(graph);
+        setIsDirty(result.is_dirty ?? true);
+        console.log('✓ All orphaned properties deleted');
+      })
+      .catch((err) => {
+        console.error('Failed to delete all orphaned properties:', err);
+        alert('Failed to delete all orphaned properties');
+      });
+  }, [safeExecuteCommand, currentNodeOrphanedProperties]);
 
   return (
     <ErrorBoundary>
@@ -2212,12 +2254,7 @@ function App() {
                 <TreeView
                   nodes={treeNodes}
                   selectedNodeId={selectedNode}
-                  nodeTypeSchemas={
-                    templateSchema?.node_types?.reduce<Record<string, NodeTypeSchema>>((acc, nodeType) => {
-                      acc[nodeType.id] = nodeType;
-                      return acc;
-                    }, {})
-                  }
+                  nodeTypeSchemas={nodeTypeSchemasById}
                   velocityScores={velocityScores}
               onSelectNode={handleNodeSelect}
               expandAllSignal={expandAllSignal}
@@ -2458,10 +2495,12 @@ function App() {
               blockedByNodes={blockedByNodes}
               blocksNodes={blocksNodes}
               nodes={storeNodes}
+              nodeTypeSchemas={nodeTypeSchemasById}
               onClearBlocks={handleClearBlocks}
               onClearSingleBlock={handleClearSingleBlock}
               velocityScore={currentVelocityScore || undefined}
               onOrphanedPropertyDelete={handleOrphanedPropertyDelete}
+              onDeleteAllOrphanedProperties={handleDeleteAllOrphanedProperties}
               />
             )}
 

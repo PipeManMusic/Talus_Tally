@@ -4,6 +4,8 @@ import { AlertCircle, RefreshCcw, Users } from 'lucide-react';
 import { apiClient, type Node, type VelocityScore } from '../../api/client';
 import { useManpowerPayload } from '../../hooks/useManpowerPayload';
 import { useGraphStore } from '../../store';
+import { useFilterStore } from '../../store/filterStore';
+import { evaluateNodeVisibility } from '../../utils/filterEngine';
 
 interface ManpowerViewProps {
   sessionId: string | null;
@@ -142,6 +144,7 @@ export const ManpowerView = memo(function ManpowerView({
     refreshSignal,
   });
   const { updateNode } = useGraphStore();
+  const { rules, filterMode } = useFilterStore();
   const [isSavingAllocation, setIsSavingAllocation] = useState(false);
   // Per-task save queue: ensures concurrent edits to the same task are serialized,
   // so each save reads the Zustand store AFTER the previous save's updateNode has run.
@@ -509,7 +512,6 @@ export const ManpowerView = memo(function ManpowerView({
     onOverloadChange?.(overloadedDayCount);
   }, [overloadedDayCount, onOverloadChange]);
 
-  void nodes;
   void velocityScores;
 
   if (!sessionId) {
@@ -620,6 +622,7 @@ export const ManpowerView = memo(function ManpowerView({
                 const hasSelectedTask = personTasks.some((task) => task.id === selectedNodeId);
                 const isSelectedCluster = isSelected || hasSelectedTask;
                 const isCollapsed = collapsedPersons.has(personId);
+
                 const totalPersonAssigned = data.date_columns.reduce(
                   (sum, day) => sum + getLoadTotal(resource.load[day]),
                   0,
@@ -702,6 +705,20 @@ export const ManpowerView = memo(function ManpowerView({
 
                     {/* Task sub-rows — one per task, inline editable */}
                     {!isCollapsed && personTasks.map((task) => {
+                      // Apply filter rules to task nodes
+                      const taskNode = nodes?.[task.id];
+                      const nodeForFilter = {
+                        id: task.id,
+                        name: task.name,
+                        type: taskNode?.type,
+                        properties: { ...taskNode?.properties, name: task.name },
+                      };
+                      const isTaskVisible = evaluateNodeVisibility(nodeForFilter, rules);
+                      if (!isTaskVisible && filterMode === 'hide') {
+                        return null;
+                      }
+                      const isTaskGhosted = !isTaskVisible && filterMode === 'ghost';
+
                       const isTaskSelected = selectedNodeId === task.id;
                       const taskStatus = allocationStatusMap.get(`${task.id}:${personId}`);
                       const visualTaskStatus = taskStatus ? getVisualTaskStatus(taskStatus) : null;
@@ -723,7 +740,7 @@ export const ManpowerView = memo(function ManpowerView({
                             isTaskSelected
                               ? 'bg-accent-primary/25 ring-2 ring-accent-primary/60'
                               : 'bg-bg-darker/40 hover:bg-bg-darker/60'
-                          }`}
+                          }${isTaskGhosted ? ' opacity-30' : ''}`}
                           onClick={() => onNodeSelect?.(task.id)}
                         >
                           <td

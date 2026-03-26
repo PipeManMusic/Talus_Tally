@@ -46,8 +46,8 @@ export function ChartsView({ nodes = {}, velocityScores = {}, templateSchema }: 
   }, [nodes, storeNodes]);
 
   const allNodes = useMemo(() => {
-    return Object.values(effectiveNodeMap).filter((node) => node.type !== 'project' && node.type !== 'project_root');
-  }, [effectiveNodeMap]);
+    return Object.values(effectiveNodeMap).filter((node) => !templateSchema?.node_types?.find(nt => nt.id === node.type)?.features?.includes('is_root'));
+  }, [effectiveNodeMap, templateSchema]);
 
   const filteredNodes = useMemo(() => {
     return allNodes.filter((node) => {

@@ -260,36 +260,6 @@ function TreeItem({
   );
 
   const parentId = (node as any).parent_id ?? null;
-  const indicatorDefaults: Record<string, string> = {
-    project_root: 'empty',
-    season: 'partial',
-    episode: 'partial',
-    task: 'partial',
-    footage: 'filled',
-  };
-  const iconDefaults: Record<string, string> = {
-    project_root: 'film',
-    assets: 'archive-box',
-    inventory_root: 'archive-box',
-    camera_gear_inventory: 'camera',
-    camera_gear_category: 'camera',
-    camera_gear_asset: 'camera',
-    parts_inventory: 'cog',
-    part_category: 'cog',
-    part_asset: 'cog',
-    car_parts_inventory: 'cog',
-    tools_inventory: 'cog',
-    tool_category: 'cog',
-    tool_asset: 'cog',
-    vehicles: 'truck',
-    vehicle_asset: 'truck',
-    phase: 'calendar-days',
-    season: 'calendar-days',
-    episode: 'video-camera',
-    task: 'clipboard-document-check',
-    footage: 'play-circle',
-    location_scout: 'map-pin',
-  };
 
   const nodeTypeSchema = nodeTypeSchemas?.[node.type];
   const statusProperties = (nodeTypeSchema?.properties || []).filter((property: any) => {
@@ -299,11 +269,12 @@ function TreeItem({
     const setId = property?.indicator_set || 'status';
     return setId === 'status';
   });
-  const fallbackIndicatorId = (node as any).indicator_id ?? indicatorDefaults[node.type] ?? undefined;
+  const fallbackIndicatorId = (node as any).indicator_id ?? undefined;
   const primaryStatusPropertyId =
     (nodeTypeSchema as any)?.primary_status_property_id ||
     statusProperties[0]?.id;
-  const iconSourceId = (node as any).icon_id ?? iconDefaults[node.type] ?? node.type ?? undefined;
+  const schemaIcon = (nodeTypeSchema as any)?.icon;
+  const iconSourceId = (node as any).icon_id ?? schemaIcon ?? undefined;
 
   useEffect(() => {
     const unsubscribe = subscribeToIconCache(() => {
@@ -449,7 +420,7 @@ function TreeItem({
     return normalizedAllowedChildren.some((allowed) => allowed === normalized || WILDCARD_CHILDREN.has(allowed));
   };
   const hasAllowedChildren = normalizedAllowedChildren.length > 0;
-  const isInventoryType = (type: string) => type.endsWith('_inventory') || type === 'assets' || type === 'asset_category';
+  const isInventoryType = (type: string) => nodeTypeSchemas?.[type]?.features?.includes('is_inventory_container') ?? false;
   const showAssetCategoryAction = allowedChildrenList.some((child) => isInventoryType(child));
   const standardTypes = allowedChildrenList.filter((child) => !isInventoryType(child));
   const handleMenuAction = (action: string) => {
@@ -1031,7 +1002,7 @@ export function TreeView({
     }
   }, [collapseAllSignal, setExpandedMap]);
 
-  const projectRoots = nodes.filter((node) => node.type === 'project_root');
+  const projectRoots = nodes.filter((node) => nodeTypeSchemas?.[node.type]?.features?.includes('is_root'));
   const hasMultipleProjects = projectRoots.length > 1;
 
   // Get filter state - must be called at top level, not in map loop
@@ -1076,7 +1047,7 @@ export function TreeView({
 
           return (
             <div key={node.id}>
-              {hasMultipleProjects && node.type === 'project_root' && (
+              {hasMultipleProjects && nodeTypeSchemas?.[node.type]?.features?.includes('is_root') && (
                 <div className="font-display text-xs font-semibold uppercase tracking-wide text-accent-primary border-t border-border pt-2 mt-2 mb-1">
                   Project: {node.name}
                 </div>

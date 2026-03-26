@@ -652,15 +652,6 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
           <h2 className="text-lg font-semibold text-fg-primary mb-4">Template Information</h2>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm text-fg-secondary mb-1">ID</label>
-              <input
-                type="text"
-                value={currentTemplate.id}
-                onChange={(e) => updateCurrentTemplate({ id: e.target.value })}
-                className="w-full px-3 py-2 bg-bg-light border border-border rounded text-fg-primary font-mono"
-              />
-            </div>
-            <div>
               <label className="block text-sm text-fg-secondary mb-1">Version</label>
               <input
                 type="text"
@@ -818,10 +809,6 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
             nodeTypes={currentTemplate.node_types}
             onChange={handleNodeTypesChange}
           />
-        </div>
-
-        <div className="mt-6 text-sm text-fg-secondary text-center pb-6">
-          <p>Support for indicator management and markup profiles coming soon...</p>
         </div>
       </div>
       </div>

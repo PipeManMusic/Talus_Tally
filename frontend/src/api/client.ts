@@ -98,6 +98,7 @@ export interface NodeTypeSchema {
   allowed_children: string[];
   allowed_asset_types?: string[];
   icon?: string;
+  features?: string[];
   properties: Array<{
     id: string;
     name: string;

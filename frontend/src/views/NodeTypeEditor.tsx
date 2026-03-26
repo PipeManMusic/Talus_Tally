@@ -501,7 +501,7 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
     ];
 
     const canonicalIds = new Set(canonicalPersonProperties.map((property) => property.id));
-    const existingPerson = nodeTypes.find((nodeType) => nodeType.id === 'person');
+    const existingPerson = nodeTypes.find((nodeType) => nodeType.features?.includes('is_person'));
     const customPersonProperties = (existingPerson?.properties || []).filter(
       (property) => !canonicalIds.has(property.id),
     );
@@ -511,7 +511,7 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
       label: 'Person',
       allowed_children: [],
       properties: [...canonicalPersonProperties, ...customPersonProperties],
-      features: [],
+      features: ['is_person'],
       icon: 'user',
       shape: 'circle',
       color: '#3b82f6',
@@ -522,6 +522,7 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
       id: 'personnel_assets',
       label: 'Personnel Assets',
       allowed_children: ['person'],
+      features: ['is_personnel_container'],
       properties: [
         {
           id: 'name',
@@ -537,16 +538,16 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
     };
 
     const withPersonAndParent = nodeTypes
-      .filter((nodeType) => nodeType.id !== 'person' && nodeType.id !== 'personnel_assets')
+      .filter((nodeType) => !nodeType.features?.includes('is_person') && !nodeType.features?.includes('is_personnel_container'))
       .map((nodeType) => {
-        if (nodeType.id === 'inventory_root') {
+        if (nodeType.features?.includes('is_inventory_container')) {
           const filteredChildren = (nodeType.allowed_children || []).filter((childId) => childId !== 'person');
           return {
             ...nodeType,
             allowed_children: normalizeAllowedChildren([...filteredChildren, 'personnel_assets']),
           };
         }
-        if (nodeType.id === 'project_root') {
+        if (nodeType.features?.includes('is_root')) {
           const filteredChildren = (nodeType.allowed_children || []).filter((childId) => childId !== 'person');
           return {
             ...nodeType,
