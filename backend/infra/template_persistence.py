@@ -30,16 +30,8 @@ def _get_workspace_templates_dir() -> Optional[str]:
     """
     Resolve repository-local templates directory when running from source.
 
-    Precedence:
-    1) TALUS_BLUEPRINT_TEMPLATES_DIR env var (if it points to an existing dir)
-    2) <repo>/data/templates if it exists
+    Returns <repo>/data/templates if it exists, else None.
     """
-    env_override = os.environ.get("TALUS_BLUEPRINT_TEMPLATES_DIR")
-    if env_override:
-        candidate = Path(env_override).expanduser().resolve()
-        if candidate.is_dir():
-            return str(candidate)
-
     repo_candidate = Path(__file__).resolve().parents[2] / "data" / "templates"
     if repo_candidate.is_dir():
         return str(repo_candidate)
@@ -51,14 +43,20 @@ def get_templates_directory() -> str:
     """
     Returns the templates directory.
 
-    If the user has configured a custom templates directory (via Settings),
-    that path is returned – enabling shared/collaborative template folders.
-
-    If no custom setting is present and we are running from source with a
-    repository-local `data/templates` folder, use that workspace directory.
-
-    Otherwise falls back to the XDG user-data default.
+    Resolution order (highest → lowest priority):
+    1) TALUS_BLUEPRINT_TEMPLATES_DIR environment variable
+    2) Custom setting from the user's settings.json
+    3) Repository-local ``data/templates/`` when running from source
+    4) XDG user-data default
     """
+    # Environment variable has absolute priority so tests and CI can
+    # override without touching the user's settings.json.
+    env_override = os.environ.get("TALUS_BLUEPRINT_TEMPLATES_DIR")
+    if env_override:
+        candidate = Path(env_override).expanduser().resolve()
+        if candidate.is_dir():
+            return str(candidate)
+
     from backend.infra.settings import CUSTOM_BLUEPRINT_TEMPLATES_DIR_KEY, get_setting
 
     custom_dir = get_setting(CUSTOM_BLUEPRINT_TEMPLATES_DIR_KEY)
@@ -170,24 +168,30 @@ class TemplatePersistence:
             with open(template_path, 'r', encoding='utf-8') as f:
                 data = yaml.safe_load(f)
 
-        return self._ensure_template_uuid(data, template_path)
+        data = self._ensure_template_uuid(data, template_path)
+        # Inject id from filename — the filename is the canonical identifier
+        data['id'] = template_id
+        return data
     
-    def save_template(self, template_data: Dict[str, Any]) -> None:
+    def save_template(self, template_data: Dict[str, Any], template_id: Optional[str] = None) -> None:
         """
         Save a template to disk.
         
         Args:
-            template_data: Complete template dict with id, name, version, node_types, etc.
+            template_data: Complete template dict with name, version, node_types, etc.
+            template_id: The filename (without .yaml) to save as. If None, falls back
+                         to template_data['id'] for backward compatibility.
             
         Raises:
-            ValueError: If template is invalid
+            ValueError: If template is invalid or no ID can be determined
         """
         template_data = self._ensure_template_uuid(template_data)
         errors = self.validate_template(template_data)
         if errors:
             raise ValueError(f'Template validation failed: {"; ".join(errors)}')
         
-        template_id = template_data.get('id')
+        if not template_id:
+            template_id = template_data.get('id')
         if not template_id:
             raise ValueError('Template must have an id')
         
@@ -196,7 +200,9 @@ class TemplatePersistence:
         
         template_file = templates_path / f'{template_id}.yaml'
         
-        self._write_template_file(template_file, template_data)
+        # Strip 'id' from YAML — the filename is the canonical identifier
+        data_to_write = {k: v for k, v in template_data.items() if k != 'id'}
+        self._write_template_file(template_file, data_to_write)
     
     def delete_template(self, template_id: str) -> None:
         """
@@ -225,8 +231,6 @@ class TemplatePersistence:
         errors = []
         
         # Check required top-level fields
-        if 'id' not in template_data:
-            errors.append('Template must have an id')
         if 'name' not in template_data:
             errors.append('Template must have a name')
         if 'version' not in template_data:

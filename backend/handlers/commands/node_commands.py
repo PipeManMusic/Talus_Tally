@@ -84,39 +84,33 @@ class CreateNodeCommand(Command):
 
     def _initialize_default_status(self) -> None:
         """Initialize default status from blueprint if available."""
-        print(f"DEBUG _initialize_default_status: node={self.node.id}, type={self.blueprint_type_id}, has_blueprint={self.blueprint is not None}")
-        
         if not self.blueprint:
-            print(f"  -> No blueprint")
             return
 
-        node_def = getattr(self.blueprint, "_node_type_map", {}).get(self.blueprint_type_id)
-        print(f"  -> node_def found: {node_def is not None}")
+        node_def = None
+        if hasattr(self.blueprint, 'get_node_type'):
+            node_def = self.blueprint.get_node_type(self.blueprint_type_id)
+        else:
+            node_def = getattr(self.blueprint, "_node_type_map", {}).get(self.blueprint_type_id)
         if not node_def:
             return
 
         properties = node_def._extra_props.get("properties", [])
         status_prop = next((p for p in properties if p.get("id") == "status"), None)
-        print(f"  -> status_prop found: {status_prop is not None}")
         if not status_prop:
             return
 
         options = status_prop.get("options", [])
-        print(f"  -> options count: {len(options)}")
         if not options:
             return
 
         default_id = options[0].get("id")
-        print(f"  -> default_id: {default_id}")
         if not default_id:
             return
 
         # Initialize status property with first option if not already set
         if self.node.properties.get("status") is None:
             self.node.properties["status"] = default_id
-            print(f"  -> Status initialized to {default_id}")
-        else:
-            print(f"  -> Status already set to {self.node.properties.get('status')}")
     
     def undo(self) -> None:
         """Undo the command by removing the node."""

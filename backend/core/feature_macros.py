@@ -128,8 +128,14 @@ def apply_feature_macros(template_data: Dict[str, Any]) -> Dict[str, Any]:
             for macro_prop in macro_props:
                 pid = macro_prop["id"]
                 if pid in prop_index:
-                    # Overwrite with the canonical macro definition
-                    properties[prop_index[pid]] = dict(macro_prop)
+                    # Property already defined in the template — merge
+                    # macro-only fields (system_locked, ui_group, etc.)
+                    # without overwriting the template's options,
+                    # velocityConfig, or other customisations.
+                    existing = properties[prop_index[pid]]
+                    for key, value in macro_prop.items():
+                        if key not in existing:
+                            existing[key] = value
                 else:
                     properties.append(dict(macro_prop))
                     prop_index[pid] = len(properties) - 1

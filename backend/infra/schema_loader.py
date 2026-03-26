@@ -112,14 +112,22 @@ class IndicatorCatalog:
 class NodeTypeDef:
     """Definition of a node type from a blueprint."""
     
-    def __init__(self, id: str, label: str = None, name: str = None, allowed_children: List[str] = None, allowed_asset_types: List[str] = None, properties: List[Dict[str, Any]] = None, primary_status_property_id: str = None, **kwargs):
-        self.id = id
+    def __init__(self, id: str = None, label: str = None, name: str = None, allowed_children: List[str] = None, allowed_asset_types: List[str] = None, properties: List[Dict[str, Any]] = None, primary_status_property_id: str = None, features: List[str] = None, **kwargs):
+        # The uuid is the stable identity for this node type.  Legacy
+        # templates supply only ``id`` (a slug like "equipment"); the
+        # SchemaLoader migration layer generates a deterministic uuid from
+        # it and stores it in ``kwargs['uuid']``.
+        self.uuid: str = kwargs.pop('uuid', None) or ''
+        # Keep the legacy id for backward-compat / logging but it is no
+        # longer the primary key.  New templates may omit it entirely.
+        self.id = id or ''
         # Accept either 'label' or 'name', prefer 'label'
-        self.name = label or name or id
+        self.name = label or name or id or 'Unnamed'
         self.allowed_children = allowed_children or []
         self.allowed_asset_types = allowed_asset_types or []
         self.properties = properties or []  # Preserve properties with their velocityConfigs
         self.primary_status_property_id = primary_status_property_id  # Which status property controls node styling
+        self.features = features or []  # Feature flags: is_root, is_person, scheduling, budgeting, etc.
         self.has_time_log = kwargs.get('has_time_log', False)
         self._extra_props = kwargs
         # Ensure properties is in _extra_props for backward compatibility
@@ -127,6 +135,12 @@ class NodeTypeDef:
             self._extra_props['properties'] = properties
         if primary_status_property_id is not None:
             self._extra_props['primary_status_property_id'] = primary_status_property_id
+        # Ensure features is in _extra_props for feature_macros compatibility
+        self._extra_props['features'] = self.features
+
+    def has_feature(self, feature: str) -> bool:
+        """Check if this node type has a specific feature flag."""
+        return feature in self.features
 
 
 class Blueprint:
@@ -137,24 +151,40 @@ class Blueprint:
         self.name = name
         self.version = version
         self.node_types = node_types
-        self._node_type_map = {nt.id: nt for nt in node_types}
+        # Primary lookup is by uuid; keep a secondary map by legacy id for
+        # backward compatibility during the migration window.
+        self._node_type_map = {nt.uuid: nt for nt in node_types}
+        self._node_type_map_by_legacy_id = {nt.id: nt for nt in node_types if nt.id}
         self._extra_props = kwargs
+
+    def get_node_type(self, type_ref: str) -> Optional['NodeTypeDef']:
+        """Look up a node type by uuid, falling back to legacy id."""
+        return self._node_type_map.get(type_ref) or self._node_type_map_by_legacy_id.get(type_ref)
+
+    def allowed_children_as_legacy_ids(self, node_type_def: 'NodeTypeDef') -> list:
+        """Return allowed_children as legacy IDs for frontend serialization."""
+        uuid_to_legacy = {nt.uuid: nt.id for nt in self.node_types if nt.uuid}
+        return [uuid_to_legacy.get(ref, ref) for ref in (node_type_def.allowed_children or [])]
     
     def is_allowed_child(self, parent_type: str, child_type: str) -> bool:
         """
         Check if a child type is allowed under a parent type.
         
         Args:
-            parent_type: The ID of the parent node type
-            child_type: The ID of the child node type
+            parent_type: The uuid (or legacy id) of the parent node type
+            child_type: The uuid (or legacy id) of the child node type
             
         Returns:
             True if the relationship is allowed, False otherwise
         """
-        if parent_type not in self._node_type_map:
+        parent_def = self.get_node_type(parent_type)
+        if not parent_def:
             return False
-        
-        parent_def = self._node_type_map[parent_type]
+        # Resolve child_type to its uuid for comparison against
+        # the UUID-based allowed_children list.
+        child_def = self.get_node_type(child_type)
+        if child_def:
+            return child_def.uuid in parent_def.allowed_children or child_type in parent_def.allowed_children
         return child_type in parent_def.allowed_children
     
     def get_option_by_uuid(self, property_id: str, option_uuid: str) -> Optional[Dict[str, Any]]:
@@ -180,17 +210,16 @@ class Blueprint:
         """Get the UUID for an option by its name.
         
         Args:
-            node_type_id: The node type ID
+            node_type_id: The node type uuid (or legacy id)
             property_id: The property ID (e.g., "status")
             option_name: The option name/value
             
         Returns:
             The option UUID or None if not found
         """
-        if node_type_id not in self._node_type_map:
+        node_type = self.get_node_type(node_type_id)
+        if not node_type:
             return None
-        
-        node_type = self._node_type_map[node_type_id]
         properties = node_type._extra_props.get('properties', [])
         
         for prop in properties:
@@ -340,12 +369,53 @@ class SchemaLoader:
             print(f"[SchemaLoader.load] VALIDATION ERROR: {e}")
             raise
         
-        blueprint_id = data.get('id')
+        blueprint_id = data.get('id') or os.path.splitext(os.path.basename(filepath))[0]
         name = data.get('name')
         version = data.get('version', '1.0')
         
         # Parse node types and generate UUIDs for options
         node_types_data = data.get('node_types', [])
+
+        # --- Phase 1: ensure every node type has a stable uuid ---
+        # Build a mapping of legacy id → uuid so allowed_children can be
+        # resolved in Phase 2.
+        legacy_id_to_uuid: Dict[str, str] = {}
+        for nt_data in node_types_data:
+            if not isinstance(nt_data, dict):
+                continue
+            if not nt_data.get('uuid'):
+                legacy_id = nt_data.get('id', '')
+                nt_data['uuid'] = _generate_stable_uuid('node_type', legacy_id)
+            legacy_id = nt_data.get('id')
+            if legacy_id:
+                legacy_id_to_uuid[legacy_id] = nt_data['uuid']
+
+        # --- Phase 2: resolve allowed_children from legacy ids to UUIDs ---
+        all_uuids = {nt_data.get('uuid') for nt_data in node_types_data if isinstance(nt_data, dict)}
+        for nt_data in node_types_data:
+            if not isinstance(nt_data, dict):
+                continue
+            children = nt_data.get('allowed_children', [])
+            resolved: List[str] = []
+            for child_ref in children:
+                if child_ref in all_uuids:
+                    # Already a uuid
+                    resolved.append(child_ref)
+                elif child_ref in legacy_id_to_uuid:
+                    # Legacy id → resolve to uuid
+                    resolved.append(legacy_id_to_uuid[child_ref])
+                else:
+                    # Unknown reference — keep as-is so validation can flag it
+                    resolved.append(child_ref)
+            nt_data['allowed_children'] = resolved
+
+        # --- Phase 2.5: apply feature macros so macro-injected properties
+        #     (e.g. scheduling → status) are present in every Blueprint,
+        #     not just the schema endpoint. ---
+        from backend.core.feature_macros import apply_feature_macros
+        apply_feature_macros({'node_types': node_types_data})
+
+        # --- Phase 3: construct NodeTypeDef objects ---
         node_types = []
         for nt_data in node_types_data:
             if not isinstance(nt_data, dict):

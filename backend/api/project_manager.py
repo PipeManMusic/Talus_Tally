@@ -57,7 +57,7 @@ class ProjectManager:
                 raise Exception("Blueprint node_types malformed: no valid node type definitions found.")
             first_node_type = node_types[0]
             root_node = Node(
-                blueprint_type_id=first_node_type.id,
+                blueprint_type_id=first_node_type.uuid,
                 name=project_name or first_node_type.name,
                 id=uuid4()
             )

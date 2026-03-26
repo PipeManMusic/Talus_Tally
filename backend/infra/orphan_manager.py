@@ -313,14 +313,14 @@ class OrphanManager:
                 if 'orphaned_properties' not in node_metadata:
                     node_metadata['orphaned_properties'] = {}
                 
-                # Move orphaned property values to metadata
+                # Move orphaned property values to metadata and remove from properties
                 for key in orphaned_keys:
                     if key in node_props:
                         value = node_props[key]
                         node_metadata['orphaned_properties'][key] = value
-                        # Keep in properties for backward compat, but mark as orphaned
+                        del node_props[key]
                         node_id = node.get('id') if isinstance(node, dict) else str(getattr(node, 'id', 'unknown'))
-                        logger.info(f"Marked property '{key}' as orphaned in node {node_id}")
+                        logger.info(f"Orphaned property '{key}' moved from properties to metadata in node {node_id}")
                         orphaned_count += 1
         
         return orphaned_count
@@ -352,19 +352,28 @@ class OrphanManager:
         node types/properties relative to the currently loaded template.
         """
         node_types = template.get('node_types', []) if isinstance(template, dict) else []
-        template_type_ids = {nt.get('id') for nt in node_types if nt.get('id')}
+        template_type_ids = set()
+        for nt in node_types:
+            if nt.get('id'):
+                template_type_ids.add(nt['id'])
+            if nt.get('uuid'):
+                template_type_ids.add(nt['uuid'])
 
         allowed_props_by_type: Dict[str, Set[str]] = {}
         for node_type in node_types:
             type_id = node_type.get('id')
-            if not type_id:
+            type_uuid = node_type.get('uuid')
+            if not type_id and not type_uuid:
                 continue
             allowed_props = {'name'}
             for prop in node_type.get('properties', []) or []:
                 prop_key = prop.get('id') or prop.get('key')
                 if prop_key:
                     allowed_props.add(prop_key)
-            allowed_props_by_type[type_id] = allowed_props
+            if type_id:
+                allowed_props_by_type[type_id] = allowed_props
+            if type_uuid:
+                allowed_props_by_type[type_uuid] = allowed_props
 
         orphaned_node_ids: List[str] = []
         orphaned_properties_count = 0
@@ -392,11 +401,13 @@ class OrphanManager:
             existing_orphaned = metadata.get('orphaned_properties')
             orphaned_props = dict(existing_orphaned) if isinstance(existing_orphaned, dict) else {}
 
-            for key, value in properties.items():
+            for key in list(properties.keys()):
                 if key not in allowed_props:
+                    value = properties[key]
                     if key not in orphaned_props:
                         orphaned_properties_count += 1
                     orphaned_props[key] = value
+                    del properties[key]
 
             rename_hints: Dict[str, Dict[str, Union[str, float]]] = {}
             for orphaned_key in orphaned_props.keys():

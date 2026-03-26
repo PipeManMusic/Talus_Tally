@@ -91,6 +91,7 @@ class PersistenceManager:
         template_paths = data.get('templates', [])
         property_uuid_map = self._build_property_uuid_map(template_paths)
         select_option_map = self._build_select_option_map(template_paths)
+        legacy_to_uuid_map = self._build_legacy_to_uuid_map(template_paths)
         
         # Handle both old format (nodes as dict) and new format (nodes as array under graph)
         nodes_data = data.get('nodes', {})
@@ -108,6 +109,10 @@ class PersistenceManager:
         for node_id, node_data in nodes_data.items():
             # Handle both 'type' and 'blueprint_type_id' for compatibility
             blueprint_type = node_data.get('type') or node_data.get('blueprint_type_id')
+
+            # Migrate legacy string IDs (e.g. "project_root") to UUIDs
+            if blueprint_type and blueprint_type in legacy_to_uuid_map:
+                blueprint_type = legacy_to_uuid_map[blueprint_type]
             
             # Convert ID to UUID (handle both valid UUIDs and strings like "uuid-1")
             if 'id' in node_data:
@@ -265,13 +270,19 @@ class PersistenceManager:
 
             for node_type in blueprint.node_types:
                 properties = getattr(node_type, '_extra_props', {}).get('properties', [])
+                prop_map = {}
                 for prop in properties:
                     prop_id = prop.get('id') or prop.get('name')
                     if not prop_id:
                         continue
                     prop_uuid = str(string_to_uuid(prop_id))
-                    mapping.setdefault(node_type.id, {})[prop_uuid] = prop_id
+                    prop_map[prop_uuid] = prop_id
                     total_mappings += 1
+                # Key by both legacy ID and UUID so lookups work either way
+                if node_type.id:
+                    mapping.setdefault(node_type.id, {}).update(prop_map)
+                if node_type.uuid:
+                    mapping.setdefault(node_type.uuid, {}).update(prop_map)
 
         print(f"[DEBUG][Persistence] Built property UUID map entries={total_mappings} templates={len(template_paths)}")
         return mapping
@@ -327,11 +338,32 @@ class PersistenceManager:
                     if options and options[0].get('id') is not None:
                         default_id = str(options[0].get('id'))
 
-                    mapping.setdefault(node_type.id, {})[prop_id] = {
+                    option_info = {
                         'name_to_id': name_to_id,
                         'valid_ids': valid_ids,
                         'required': bool(prop.get('required')),
                         'default_id': default_id,
                     }
+                    # Key by both legacy ID and UUID so lookups work either way
+                    if node_type.id:
+                        mapping.setdefault(node_type.id, {})[prop_id] = option_info
+                    if node_type.uuid:
+                        mapping.setdefault(node_type.uuid, {})[prop_id] = option_info
 
+        return mapping
+
+    def _build_legacy_to_uuid_map(self, template_paths: list[str]) -> dict:
+        """Build a map of legacy node type IDs to UUIDs for migration."""
+        if not template_paths:
+            return {}
+        loader = SchemaLoader()
+        mapping: dict = {}
+        for template_path in template_paths:
+            try:
+                blueprint = loader.load(template_path)
+            except Exception:
+                continue
+            for node_type in blueprint.node_types:
+                if node_type.id and node_type.uuid:
+                    mapping[node_type.id] = node_type.uuid
         return mapping

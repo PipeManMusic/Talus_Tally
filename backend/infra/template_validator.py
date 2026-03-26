@@ -15,7 +15,7 @@ class TemplateValidationError(Exception):
 class TemplateValidator:
     """Validates template YAML structure and content."""
     
-    REQUIRED_TOP_LEVEL = ['id', 'name', 'node_types']
+    REQUIRED_TOP_LEVEL = ['name', 'node_types']
     REQUIRED_NODE_TYPE = ['id', 'label']  # or 'name' as alternative to 'label'
     # Note: Property types are not strictly validated to allow for extensibility
     # The backend and frontend explicitly handle the types they understand
