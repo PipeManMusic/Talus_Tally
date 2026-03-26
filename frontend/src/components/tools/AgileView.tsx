@@ -21,7 +21,7 @@ interface AgileViewProps {
 
 const STATUS_COLUMNS = ['To Do', 'In Progress', 'Done'] as const;
 type KanbanStatus = (typeof STATUS_COLUMNS)[number];
-const AGILE_STATUS_PROPERTY_ID = 'agile_status';
+const AGILE_STATUS_PROPERTY_ID = 'status';
 
 function normalizeStatus(raw: string): KanbanStatus {
   const lower = raw.trim().toLowerCase();
@@ -85,14 +85,9 @@ export function AgileView({
     const override = statusOverrides[node.id];
     if (override) return override;
 
-    const agileStatusRaw = node.properties?.[AGILE_STATUS_PROPERTY_ID];
-    if (typeof agileStatusRaw === 'string' && agileStatusRaw.trim()) {
-      return normalizeStatus(agileStatusRaw);
-    }
-
-    const legacyStatusRaw = node.properties?.status;
-    if (typeof legacyStatusRaw === 'string' && legacyStatusRaw.trim()) {
-      return normalizeStatus(legacyStatusRaw);
+    const statusRaw = node.properties?.[AGILE_STATUS_PROPERTY_ID];
+    if (typeof statusRaw === 'string' && statusRaw.trim()) {
+      return normalizeStatus(statusRaw);
     }
 
     return 'To Do';

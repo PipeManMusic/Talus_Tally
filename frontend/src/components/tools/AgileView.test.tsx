@@ -33,7 +33,7 @@ describe('AgileView', () => {
     apiClientMock.executeCommand.mockResolvedValue({});
   });
 
-  it('uses fixed agile_status property updates from drag-and-drop', async () => {
+  it('uses status property for drag-and-drop updates', async () => {
     const nodes = {
       'task-1': {
         id: 'task-1',
@@ -41,8 +41,7 @@ describe('AgileView', () => {
         properties: {
           name: 'Task A',
           estimated_hours: 4,
-          status: 'Custom User Status',
-          agile_status: 'To Do',
+          status: 'To Do',
         },
       },
     } as any;
@@ -76,7 +75,7 @@ describe('AgileView', () => {
     await waitFor(() => {
       expect(apiClientMock.executeCommand).toHaveBeenCalledWith('session-1', 'UpdateProperty', {
         node_id: 'task-1',
-        property_id: 'agile_status',
+        property_id: 'status',
         old_value: 'To Do',
         new_value: 'Done',
       });
@@ -91,7 +90,7 @@ describe('AgileView', () => {
         properties: {
           name: 'Task A',
           estimated_hours: 4,
-          agile_status: 'In Progress',
+          status: 'In Progress',
         },
       },
     } as any;
