@@ -1,5 +1,4 @@
 description: Minimal template with predictable node types for automated E2E coverage.
-id: e2e_smoketest
 name: E2E Test Template
 node_types:
 - allowed_asset_types: []
@@ -8,6 +7,7 @@ node_types:
   - person
   features:
   - budgeting
+  - is_root
   icon: layers
   id: e2e_root
   label: Test Project
@@ -80,7 +80,8 @@ node_types:
     ui_group: Financial
 - allowed_asset_types: []
   allowed_children: []
-  features: []
+  features:
+  - is_person
   icon: user
   id: person
   label: Person

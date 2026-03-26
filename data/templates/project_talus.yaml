@@ -8,7 +8,6 @@ blocking_view:
     min_scale: 0.7
 description: Production workflow for YouTube channel and Restomod build with footage
   tracking and asset management.
-id: project_talus
 name: Project Talus
 node_types:
 - allowed_asset_types: []
@@ -18,6 +17,8 @@ node_types:
   - task
   - personnel_assets
   color: '#6366f1'
+  features:
+  - is_root
   icon: film
   id: project_root
   label: Project
@@ -60,6 +61,8 @@ node_types:
   - personnel_assets
   - tools_inventory
   color: '#a78bfa'
+  features:
+  - is_inventory_container
   id: inventory_root
   label: Assets
   properties:
@@ -68,10 +71,13 @@ node_types:
     required: false
     type: text
   shape: hexagon
+  icon: archive-box
 - allowed_asset_types: []
   allowed_children:
   - camera_gear_category
   color: '#60a5fa'
+  features:
+  - is_inventory_container
   id: camera_gear_inventory
   label: Camera Gear Inventory
   properties:
@@ -80,6 +86,7 @@ node_types:
     required: false
     type: text
   shape: rounded
+  icon: camera
 - allowed_asset_types: []
   allowed_children:
   - camera_gear_asset
@@ -93,6 +100,7 @@ node_types:
     required: false
     type: text
   shape: roundedSquare
+  icon: camera
 - allowed_asset_types: []
   allowed_children: []
   color: '#0ea5e9'
@@ -138,10 +146,13 @@ node_types:
     required: false
     type: text
   shape: circle
+  icon: camera
 - allowed_asset_types: []
   allowed_children:
   - part_category
   color: '#ef4444'
+  features:
+  - is_inventory_container
   icon: cog
   id: car_parts_inventory
   label: Car Parts Inventory
@@ -227,6 +238,8 @@ node_types:
   allowed_children:
   - tool_category
   color: '#84cc16'
+  features:
+  - is_inventory_container
   id: tools_inventory
   label: Tools Inventory
   properties:
@@ -235,6 +248,7 @@ node_types:
     required: false
     type: text
   shape: hexagon
+  icon: wrench-screwdriver
 - allowed_asset_types: []
   allowed_children:
   - tool_asset
@@ -248,6 +262,7 @@ node_types:
     required: false
     type: text
   shape: rounded
+  icon: wrench-screwdriver
 - allowed_asset_types: []
   allowed_children: []
   color: '#86efac'
@@ -307,6 +322,7 @@ node_types:
   shape: circle
   velocityConfig:
     scoreMode: inherit
+  icon: wrench-screwdriver
 - allowed_asset_types: []
   allowed_children:
   - episode
@@ -432,6 +448,7 @@ node_types:
     system_locked: true
     ui_group: Schedule
   shape: roundedSquare
+  icon: video-camera
 - allowed_asset_types:
   - camera_gear_asset
   allowed_children:
@@ -507,6 +524,7 @@ node_types:
     required: false
     type: date
   shape: rounded
+  icon: map-pin
 - allowed_asset_types: []
   allowed_children:
   - asset_reference
@@ -553,6 +571,7 @@ node_types:
     required: false
     type: editor
   shape: roundedSquare
+  icon: clipboard-document-check
 - allowed_asset_types:
   - camera_gear_asset
   allowed_children: []
@@ -575,6 +594,7 @@ node_types:
     label: Quantity Needed
     required: false
     type: number
+  icon: camera
 - allowed_asset_types:
   - part_asset
   allowed_children: []
@@ -597,6 +617,7 @@ node_types:
     label: Quantity Needed
     required: false
     type: number
+  icon: cog
 - allowed_asset_types:
   - tool_asset
   allowed_children: []
@@ -622,6 +643,7 @@ node_types:
   velocityConfig:
     baseScore: -1
     scoreMode: standalone
+  icon: wrench-screwdriver
 - allowed_asset_types: []
   allowed_children: []
   id: asset_reference
@@ -643,6 +665,7 @@ node_types:
     label: Quantity Needed
     required: false
     type: number
+  icon: clipboard-document-list
 - allowed_asset_types: []
   allowed_children: []
   id: node_type_1773847596886
@@ -652,11 +675,14 @@ node_types:
     label: Name
     required: false
     type: text
+  icon: document-text
 - allowed_asset_types: []
   allowed_children:
   - person
   base_type: asset
   color: '#60a5fa'
+  features:
+  - is_personnel_container
   icon: users
   id: personnel_assets
   label: Personnel Assets
@@ -670,7 +696,8 @@ node_types:
   allowed_children: []
   base_type: asset
   color: '#3b82f6'
-  features: []
+  features:
+  - is_person
   icon: user
   id: person
   label: Person

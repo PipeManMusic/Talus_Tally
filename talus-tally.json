@@ -4,62 +4,67 @@
     "nodes": [
       {
         "id": "9054588c-307f-4441-8550-f8f7ed2fd6ce",
-        "type": "root",
+        "type": "dda577b6-9f7c-8feb-e893-5e6f32522a56",
         "properties": {
           "name": "TalusTally"
         },
         "children": [
           "5d61ff85-92da-473d-82aa-e2f75c2f58bc",
-          "4ad12b4d-ff97-40b2-8109-05c2d96a185a"
+          "4ad12b4d-ff97-40b2-8109-05c2d96a185a",
+          "7f3af414-af19-48c5-9238-9f0bfcf57157",
+          "82446ad3-2467-4945-b190-35791f5bc92e",
+          "7ff6c401-165b-4449-9876-13530bf9591f",
+          "6191451e-21cd-4f59-ab59-3fbec7662137"
         ],
         "metadata": {},
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": null,
+        "icon_id": "computer-desktop",
         "allowed_children": [
-          "release",
-          "personnel_assets"
+          "c0abc659-8861-6eaa-0df0-cdff04957bbb",
+          "1b7cedf8-5697-2dac-6a63-e977869dc40f"
         ]
       },
       {
         "id": "5d61ff85-92da-473d-82aa-e2f75c2f58bc",
-        "type": "release",
+        "type": "c0abc659-8861-6eaa-0df0-cdff04957bbb",
         "properties": {
-          "name": "0.1.6"
+          "name": "0.1.6",
+          "status": "a682e13f-3ee5-3abe-e13a-586ee54ac91d"
         },
         "children": [
           "598bc7ec-d49d-45e4-bc2d-4863abc30df6"
         ],
         "metadata": {},
-        "indicator_id": null,
-        "indicator_set": null,
-        "icon_id": null,
+        "indicator_id": "filled",
+        "indicator_set": "status",
+        "icon_id": "arrow-up-on-square-stack",
         "allowed_children": [
-          "feature",
-          "bug"
+          "70a3bbf1-e0be-754e-a1ef-0913bda3506a",
+          "f5f146a0-94f7-7638-59de-50d292517482"
         ]
       },
       {
         "id": "598bc7ec-d49d-45e4-bc2d-4863abc30df6",
-        "type": "feature",
+        "type": "70a3bbf1-e0be-754e-a1ef-0913bda3506a",
         "properties": {
           "name": "Manloading",
-          "agile_status": "In Progress",
           "assigned_to": [
             "a2a6dc2d-52bd-4b72-ba66-f51b689d9ebd"
           ],
-          "estimated_hours": "5"
+          "estimated_hours": "5",
+          "status": "a682e13f-3ee5-3abe-e13a-586ee54ac91d"
         },
         "children": [],
         "metadata": {},
-        "indicator_id": null,
-        "indicator_set": null,
-        "icon_id": null,
+        "indicator_id": "filled",
+        "indicator_set": "status",
+        "icon_id": "check",
         "allowed_children": []
       },
       {
         "id": "4ad12b4d-ff97-40b2-8109-05c2d96a185a",
-        "type": "personnel_assets",
+        "type": "1b7cedf8-5697-2dac-6a63-e977869dc40f",
         "properties": {
           "name": "Developers"
         },
@@ -69,16 +74,16 @@
         "metadata": {},
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": null,
+        "icon_id": "users",
         "schema_shape": "rounded",
         "schema_color": "#60a5fa",
         "allowed_children": [
-          "person"
+          "7230f246-66ef-dfb4-1010-c4ade5ac5418"
         ]
       },
       {
         "id": "a2a6dc2d-52bd-4b72-ba66-f51b689d9ebd",
-        "type": "person",
+        "type": "7230f246-66ef-dfb4-1010-c4ade5ac5418",
         "properties": {
           "name": "Daniel Worth",
           "capacity_friday": 8,
@@ -110,9 +115,340 @@
         "metadata": {},
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": null,
+        "icon_id": "user",
         "schema_shape": "circle",
         "schema_color": "#3b82f6",
+        "allowed_children": []
+      },
+      {
+        "id": "7f3af414-af19-48c5-9238-9f0bfcf57157",
+        "type": "c0abc659-8861-6eaa-0df0-cdff04957bbb",
+        "properties": {
+          "name": "0.1.7",
+          "status": "a682e13f-3ee5-3abe-e13a-586ee54ac91d"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "filled",
+        "indicator_set": "status",
+        "icon_id": "arrow-up-on-square-stack",
+        "allowed_children": [
+          "70a3bbf1-e0be-754e-a1ef-0913bda3506a",
+          "f5f146a0-94f7-7638-59de-50d292517482"
+        ]
+      },
+      {
+        "id": "82446ad3-2467-4945-b190-35791f5bc92e",
+        "type": "c0abc659-8861-6eaa-0df0-cdff04957bbb",
+        "properties": {
+          "name": "0.1.8",
+          "status": "624a65b3-0dd3-5060-f581-2ebcade3874e"
+        },
+        "children": [
+          "a2ceafce-f5b3-4815-9c4f-664177e53fad",
+          "5e09c031-4e2e-4f4f-9830-f1b6842bcbf7",
+          "155295a7-e689-4ee2-a030-366393e2ec32",
+          "6ab879a5-68cb-4a90-a070-9210e46da93f",
+          "0fbea9ac-8104-477d-a17c-a19dc6b57a91",
+          "a2c741f9-2d7e-4887-a5e8-e687ba430b56",
+          "89e5e58d-43ef-4ba4-ad4c-19c9bbeaef9e",
+          "eaa54eed-bfc7-49e1-a06e-64a0c904a180",
+          "a5a57507-d90e-405a-adb5-bf7d98844fb1",
+          "f4650257-0c04-4466-84b2-f54b2d5231e0"
+        ],
+        "metadata": {},
+        "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": "arrow-up-on-square-stack",
+        "allowed_children": [
+          "70a3bbf1-e0be-754e-a1ef-0913bda3506a",
+          "f5f146a0-94f7-7638-59de-50d292517482"
+        ]
+      },
+      {
+        "id": "a2ceafce-f5b3-4815-9c4f-664177e53fad",
+        "type": "f5f146a0-94f7-7638-59de-50d292517482",
+        "properties": {
+          "name": "Blocker View Not Zoomed to Fit",
+          "status": "d9d116ca-739c-cbc2-b251-5190ab654d21"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "bug-ant",
+        "allowed_children": []
+      },
+      {
+        "id": "5e09c031-4e2e-4f4f-9830-f1b6842bcbf7",
+        "type": "f5f146a0-94f7-7638-59de-50d292517482",
+        "properties": {
+          "name": "Updating Template Creates Error And Didn't Add Editor Property",
+          "status": "d9d116ca-739c-cbc2-b251-5190ab654d21"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "bug-ant",
+        "allowed_children": []
+      },
+      {
+        "id": "155295a7-e689-4ee2-a030-366393e2ec32",
+        "type": "f5f146a0-94f7-7638-59de-50d292517482",
+        "properties": {
+          "name": "Velocity Scores Broken",
+          "actual_hours": "",
+          "estimated_hours": "1",
+          "prop_1774551003137": "true",
+          "status": "624a65b3-0dd3-5060-f581-2ebcade3874e"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": "bug-ant",
+        "allowed_children": []
+      },
+      {
+        "id": "6ab879a5-68cb-4a90-a070-9210e46da93f",
+        "type": "f5f146a0-94f7-7638-59de-50d292517482",
+        "properties": {
+          "name": "Still Using IDs For Properties",
+          "notes": "When adding a property, if you don't fill out the legacy id it doesn't show the property in the inspector",
+          "status": "d9d116ca-739c-cbc2-b251-5190ab654d21"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "bug-ant",
+        "allowed_children": []
+      },
+      {
+        "id": "0fbea9ac-8104-477d-a17c-a19dc6b57a91",
+        "type": "f5f146a0-94f7-7638-59de-50d292517482",
+        "properties": {
+          "name": "Blockers Aren't Shown In Inspector",
+          "status": "d9d116ca-739c-cbc2-b251-5190ab654d21"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "bug-ant",
+        "allowed_children": []
+      },
+      {
+        "id": "a2c741f9-2d7e-4887-a5e8-e687ba430b56",
+        "type": "f5f146a0-94f7-7638-59de-50d292517482",
+        "properties": {
+          "name": "UUIDs In Agile View",
+          "prop_1774551003137": "false",
+          "status": "d9d116ca-739c-cbc2-b251-5190ab654d21"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "bug-ant",
+        "allowed_children": []
+      },
+      {
+        "id": "89e5e58d-43ef-4ba4-ad4c-19c9bbeaef9e",
+        "type": "f5f146a0-94f7-7638-59de-50d292517482",
+        "properties": {
+          "name": "Agile View Is Not Reading The Status Property",
+          "status": "d9d116ca-739c-cbc2-b251-5190ab654d21"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "bug-ant",
+        "allowed_children": []
+      },
+      {
+        "id": "eaa54eed-bfc7-49e1-a06e-64a0c904a180",
+        "type": "f5f146a0-94f7-7638-59de-50d292517482",
+        "properties": {
+          "name": "Node Names Are Not Loded In UI Till You Trigger An Edit",
+          "status": "d9d116ca-739c-cbc2-b251-5190ab654d21"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "bug-ant",
+        "allowed_children": []
+      },
+      {
+        "id": "a5a57507-d90e-405a-adb5-bf7d98844fb1",
+        "type": "f5f146a0-94f7-7638-59de-50d292517482",
+        "properties": {
+          "name": "Close On Dirty Data Safety",
+          "status": "d9d116ca-739c-cbc2-b251-5190ab654d21"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "bug-ant",
+        "allowed_children": []
+      },
+      {
+        "id": "f4650257-0c04-4466-84b2-f54b2d5231e0",
+        "type": "f5f146a0-94f7-7638-59de-50d292517482",
+        "properties": {
+          "name": "UUIDs in Blocker View",
+          "status": "d9d116ca-739c-cbc2-b251-5190ab654d21"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "bug-ant",
+        "allowed_children": []
+      },
+      {
+        "id": "7ff6c401-165b-4449-9876-13530bf9591f",
+        "type": "c0abc659-8861-6eaa-0df0-cdff04957bbb",
+        "properties": {
+          "name": "0.1.9",
+          "status": "d9d116ca-739c-cbc2-b251-5190ab654d21"
+        },
+        "children": [
+          "c87b04ee-e99d-4cdc-8fd2-77fd15c182ba"
+        ],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "arrow-up-on-square-stack",
+        "allowed_children": [
+          "70a3bbf1-e0be-754e-a1ef-0913bda3506a",
+          "f5f146a0-94f7-7638-59de-50d292517482"
+        ]
+      },
+      {
+        "id": "c87b04ee-e99d-4cdc-8fd2-77fd15c182ba",
+        "type": "70a3bbf1-e0be-754e-a1ef-0913bda3506a",
+        "properties": {
+          "name": "Build Out Gantt Chart View",
+          "status": "d9d116ca-739c-cbc2-b251-5190ab654d21"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "check",
+        "allowed_children": []
+      },
+      {
+        "id": "6191451e-21cd-4f59-ab59-3fbec7662137",
+        "type": "c0abc659-8861-6eaa-0df0-cdff04957bbb",
+        "properties": {
+          "name": "Future",
+          "status": "d9d116ca-739c-cbc2-b251-5190ab654d21"
+        },
+        "children": [
+          "7ad1d30b-c67f-4880-ab93-f8e5b61da3e1",
+          "3e6076b8-0339-4635-99f5-574c3365d0da",
+          "f3a3ee5a-47ca-4a42-8198-bc2c3092428f",
+          "fc63ee6c-c928-44db-b345-7a037d8df248",
+          "20bbc0d0-0d76-4ec7-a8d5-bc1d8f944c15",
+          "555e8918-0bfd-4360-adee-d4f4f38664c5"
+        ],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "arrow-up-on-square-stack",
+        "allowed_children": [
+          "70a3bbf1-e0be-754e-a1ef-0913bda3506a",
+          "f5f146a0-94f7-7638-59de-50d292517482"
+        ]
+      },
+      {
+        "id": "7ad1d30b-c67f-4880-ab93-f8e5b61da3e1",
+        "type": "70a3bbf1-e0be-754e-a1ef-0913bda3506a",
+        "properties": {
+          "name": "Add Excel Syle Editing For Bulk Edits",
+          "status": "d9d116ca-739c-cbc2-b251-5190ab654d21"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "check",
+        "allowed_children": []
+      },
+      {
+        "id": "3e6076b8-0339-4635-99f5-574c3365d0da",
+        "type": "70a3bbf1-e0be-754e-a1ef-0913bda3506a",
+        "properties": {
+          "name": "Add Ability To Select And Edit Multiple Nodes At Once",
+          "status": "d9d116ca-739c-cbc2-b251-5190ab654d21"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "check",
+        "allowed_children": []
+      },
+      {
+        "id": "f3a3ee5a-47ca-4a42-8198-bc2c3092428f",
+        "type": "70a3bbf1-e0be-754e-a1ef-0913bda3506a",
+        "properties": {
+          "name": "Node Family Templates",
+          "status": "d9d116ca-739c-cbc2-b251-5190ab654d21"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "check",
+        "allowed_children": []
+      },
+      {
+        "id": "fc63ee6c-c928-44db-b345-7a037d8df248",
+        "type": "70a3bbf1-e0be-754e-a1ef-0913bda3506a",
+        "properties": {
+          "name": "Velocity Score For Check Boxes",
+          "status": "d9d116ca-739c-cbc2-b251-5190ab654d21"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "check",
+        "allowed_children": []
+      },
+      {
+        "id": "20bbc0d0-0d76-4ec7-a8d5-bc1d8f944c15",
+        "type": "70a3bbf1-e0be-754e-a1ef-0913bda3506a",
+        "properties": {
+          "name": "Velicty Score For Deadlines and Start Dates",
+          "status": "d9d116ca-739c-cbc2-b251-5190ab654d21"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "check",
+        "allowed_children": []
+      },
+      {
+        "id": "555e8918-0bfd-4360-adee-d4f4f38664c5",
+        "type": "70a3bbf1-e0be-754e-a1ef-0913bda3506a",
+        "properties": {
+          "name": "Indicators For Check Boxes",
+          "status": "d9d116ca-739c-cbc2-b251-5190ab654d21"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "check",
         "allowed_children": []
       }
     ],
@@ -384,9 +720,18 @@
     "d593c50d-31dd-43bd-bc8a-788e2416bfc3": true,
     "9054588c-307f-4441-8550-f8f7ed2fd6ce": true,
     "4ad12b4d-ff97-40b2-8109-05c2d96a185a": true,
-    "5d61ff85-92da-473d-82aa-e2f75c2f58bc": true
+    "5d61ff85-92da-473d-82aa-e2f75c2f58bc": true,
+    "7f3af414-af19-48c5-9238-9f0bfcf57157": true,
+    "82446ad3-2467-4945-b190-35791f5bc92e": true,
+    "7ff6c401-165b-4449-9876-13530bf9591f": true,
+    "6191451e-21cd-4f59-ab59-3fbec7662137": true
   },
-  "blocking_relationships": [],
+  "blocking_relationships": [
+    {
+      "blockedNodeId": "a2a6dc2d-52bd-4b72-ba66-f51b689d9ebd",
+      "blockingNodeId": "598bc7ec-d49d-45e4-bc2d-4863abc30df6"
+    }
+  ],
   "filter_sets": [
     {
       "id": "fset-1773246022456-ier6p9b",

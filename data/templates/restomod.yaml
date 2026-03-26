@@ -1,9 +1,10 @@
-id: restomod_v1
 version: '1.0'
 name: Restomod Creator
 description: A template for vehicle restoration and modification projects.
 node_types:
-- id: project_root
+- features:
+  - is_root
+  id: project_root
   label: Project
   allowed_children:
   - parts_inventory
@@ -32,7 +33,10 @@ node_types:
   - id: actual_cost
     label: Actual Cost
     type: currency
-- id: parts_inventory
+  icon: truck
+- features:
+  - is_inventory_container
+  id: parts_inventory
   label: Parts Inventory
   allowed_children:
   - part_category
@@ -93,7 +97,9 @@ node_types:
   - id: notes
     label: Notes
     type: text
-- id: tools_inventory
+- features:
+  - is_inventory_container
+  id: tools_inventory
   label: Tools Inventory
   allowed_children:
   - tool_category
@@ -154,7 +160,9 @@ node_types:
   - id: notes
     label: Notes
     type: text
-- id: vehicles
+- features:
+  - is_inventory_container
+  id: vehicles
   label: Vehicles
   allowed_children:
   - vehicle_asset
@@ -231,6 +239,7 @@ node_types:
   - id: quantity
     label: Quantity Needed
     type: number
+  icon: clipboard-document-list
 - id: phase
   label: Phase
   allowed_children:
@@ -254,6 +263,7 @@ node_types:
   - id: start_date
     label: Start Date
     type: date
+  icon: calendar-days
 - id: job
   label: Job
   allowed_children:
@@ -277,6 +287,7 @@ node_types:
   - id: description
     label: Description
     type: text
+  icon: clipboard-document-list
 - id: task
   label: Task
   has_time_log: true
@@ -316,6 +327,7 @@ node_types:
   - id: notes
     label: Notes
     type: text
+  icon: clipboard-document-check
 - id: part
   label: Part
   allowed_children: []
@@ -355,6 +367,7 @@ node_types:
   - id: link
     label: URL
     type: text
+  icon: cog
 - id: gear
   label: Gear
   allowed_children: []
@@ -368,4 +381,5 @@ node_types:
   - id: serial_number
     label: Serial Number
     type: text
+  icon: wrench-screwdriver
 uuid: 822ba3f7-4e75-4bd9-8303-8b2262303b5d

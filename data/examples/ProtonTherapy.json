@@ -1,0 +1,3853 @@
+{
+  "graph": {
+    "id": "default",
+    "nodes": [
+      {
+        "id": "efb7c391-e37f-4308-9eaa-ad7444cd3fc0",
+        "type": "root",
+        "properties": {
+          "name": "Proton Therapy"
+        },
+        "children": [
+          "6e412f5e-5da1-4869-aac7-4319a535d4ca",
+          "14ba58b9-62dd-40ce-bfc5-c6c9aa8b2bb2",
+          "f736eaa8-76bf-468f-924b-7f0a06955457"
+        ],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#D94E1F",
+        "allowed_children": [
+          "building"
+        ]
+      },
+      {
+        "id": "6e412f5e-5da1-4869-aac7-4319a535d4ca",
+        "type": "building",
+        "properties": {
+          "name": "BR+A"
+        },
+        "children": [
+          "c389bcae-e778-4c0f-8a2f-207590279c71",
+          "50fae02d-2ab2-4e1f-8364-123ce773aaff",
+          "1cc076a5-1a4e-42e6-bf74-f88ecbc927f5"
+        ],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#FF6B3B",
+        "allowed_children": [
+          "level"
+        ]
+      },
+      {
+        "id": "c389bcae-e778-4c0f-8a2f-207590279c71",
+        "type": "level",
+        "properties": {
+          "name": "B3"
+        },
+        "children": [
+          "0c50324a-ef25-4dce-a858-a1c2a8f923c8"
+        ],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#ffc107",
+        "allowed_children": [
+          "trade"
+        ]
+      },
+      {
+        "id": "0c50324a-ef25-4dce-a858-a1c2a8f923c8",
+        "type": "trade",
+        "properties": {
+          "name": "MP",
+          "trade_select": "9077f5bc-fa09-d70d-41d9-cd0609fd02fa"
+        },
+        "children": [
+          "a384014a-7d70-458e-93af-910c3dc7b1bb",
+          "3e9eadbe-ebba-4764-bf2a-c75b03647fb3",
+          "c04102e9-366e-4616-8a49-c5de21a72286"
+        ],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#28a745",
+        "allowed_children": [
+          "eq_category",
+          "deliverable",
+          "coordion"
+        ]
+      },
+      {
+        "id": "a384014a-7d70-458e-93af-910c3dc7b1bb",
+        "type": "eq_category",
+        "properties": {
+          "name": "CRAH"
+        },
+        "children": [
+          "4cf5d280-b5b3-4523-8492-0225c325e276",
+          "b2e1394d-1fba-4d8c-808d-c3ccf1de2dd0",
+          "b3d8eae7-fcc3-4294-a497-9c1de67c478b"
+        ],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "allowed_children": [
+          "equipment"
+        ]
+      },
+      {
+        "id": "4cf5d280-b5b3-4523-8492-0225c325e276",
+        "type": "equipment",
+        "properties": {
+          "name": "CRAH B3-1",
+          "prop_1772728461860": "CRAH",
+          "prop_1772728496581": "B3-1",
+          "prop_1772728518927": "f04ff91e-e4d4-72f6-7a17-8151ab13260b",
+          "prop_1772728604451": "271f7364-0178-febd-49cf-1296ece5e56e",
+          "prop_1772741530967": 4.5,
+          "prop_1772741588288": 15.2
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "b2e1394d-1fba-4d8c-808d-c3ccf1de2dd0",
+        "type": "equipment",
+        "properties": {
+          "name": "CRAH B3-2",
+          "prop_1772728461860": "CRAH",
+          "prop_1772728496581": "B3-2",
+          "prop_1772728518927": "f04ff91e-e4d4-72f6-7a17-8151ab13260b",
+          "prop_1772728604451": "271f7364-0178-febd-49cf-1296ece5e56e",
+          "prop_1772741530967": 4.5,
+          "prop_1772741588288": 15.2
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "b3d8eae7-fcc3-4294-a497-9c1de67c478b",
+        "type": "equipment",
+        "properties": {
+          "name": "CRAH B3-3",
+          "prop_1772728461860": "CRAH",
+          "prop_1772728496581": "B-3",
+          "prop_1772741530967": 4.5,
+          "prop_1772741588288": 15.2
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "3e9eadbe-ebba-4764-bf2a-c75b03647fb3",
+        "type": "deliverable",
+        "properties": {
+          "name": "Shop Drawings",
+          "prop_1772729338195": "b0371afd-3e20-8823-e7d8-9f206072010d"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": null,
+        "allowed_children": []
+      },
+      {
+        "id": "c04102e9-366e-4616-8a49-c5de21a72286",
+        "type": "coordion",
+        "properties": {
+          "name": "Coordination",
+          "assigned_to": "",
+          "end_date": "2026-03-31",
+          "prop_1773065386946": "0cecb9af-9363-9e57-a6af-df3353325726",
+          "start_date": "2026-01-01"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": null,
+        "allowed_children": []
+      },
+      {
+        "id": "50fae02d-2ab2-4e1f-8364-123ce773aaff",
+        "type": "level",
+        "properties": {
+          "name": "B2"
+        },
+        "children": [
+          "08f47de4-739e-4ac1-b16f-69e852e4f12f"
+        ],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#ffc107",
+        "allowed_children": [
+          "trade"
+        ]
+      },
+      {
+        "id": "08f47de4-739e-4ac1-b16f-69e852e4f12f",
+        "type": "trade",
+        "properties": {
+          "name": "MP"
+        },
+        "children": [
+          "2d779d94-e8cf-478e-8ca1-0445f8add1f4"
+        ],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#28a745",
+        "allowed_children": [
+          "eq_category",
+          "deliverable",
+          "coordion"
+        ]
+      },
+      {
+        "id": "2d779d94-e8cf-478e-8ca1-0445f8add1f4",
+        "type": "eq_category",
+        "properties": {
+          "name": "Supply Terminals (SAVs and VAVs)"
+        },
+        "children": [
+          "73480654-b5a8-4961-a4a3-a9dae9c34b7b",
+          "bb654aba-15e1-4f6e-96ad-0119c0e08c59",
+          "6aed6fd8-4f77-4479-ac73-81dd365d6ec4",
+          "16787e28-54c9-4ec0-bf6e-db42caa46cc4",
+          "45cc437d-1307-46a2-ae45-043d6dd8a8a9",
+          "42a4871e-3bde-407a-a743-1e48b1ec1769",
+          "24719b97-9a4a-4f82-9df3-911134823829",
+          "3a281134-f3b6-418b-b9e3-440e84ab8bbb",
+          "f0bd70d3-b952-4efc-99c6-0074f337fff5",
+          "df70245f-2fa3-4f08-a22b-b229e9cb5679",
+          "e41ef218-da08-4fea-a099-c849fe0d6bf2",
+          "b35ae3ac-0308-49ae-a465-725d7de30f4b",
+          "efc6b88c-7a1b-467f-8eb3-984613a58874",
+          "b08a1020-56b3-486f-83ad-034eadd17955",
+          "61098af6-71da-4940-bae1-e3253be17785",
+          "7ab03f89-bf30-4b7f-a936-1156561e1f83",
+          "45ca05c0-6437-4b7e-a73c-11366c5c730f",
+          "ef04be74-872e-497e-9c39-e46e1bdd4d62",
+          "410157fb-4c2b-4710-b04a-14ae01fd7f1f",
+          "a0ef846c-867d-4f54-ad36-e94e10b64ece",
+          "053ae085-09a2-445c-97ec-4ab63ae89782",
+          "a4855342-25e4-4e06-a195-6336ec1ec75d",
+          "54c01f2a-ab0c-4e9c-a0e2-0f56f17e3044",
+          "a9b83a18-82a8-4160-b9ea-81279b410549",
+          "23bf3d35-cf70-4e68-afbc-430c7f6c467e",
+          "6f2b8d87-42f2-483b-951f-3a26a9ed3fa7",
+          "db9bf1ce-e55c-4828-9df1-616a7d0ada0d",
+          "7bbbc9e1-8ba1-4401-a9ba-897e496d93fc",
+          "abf68450-559e-45a4-adb7-201cb41ef3f3",
+          "3139ee5b-4604-4563-947d-7ef45e17618c",
+          "051916c8-57f9-4631-9676-c469f27ca3db",
+          "7bb744f0-847d-407f-bd02-68f14feb2f78",
+          "6b012a33-c375-401d-8c1d-7600adc6a342",
+          "8d0822ec-40e7-4a71-802b-eb57cfe03fc3",
+          "ef839b0f-8fd0-49b1-bd3c-6075e52f06cb",
+          "847dccdf-a422-4c47-8a64-0e9175016694",
+          "7ec5b7c3-4a41-4e3b-ab3f-d50190fe7d67",
+          "fb6349fc-1e6d-4f2d-bd74-4d892654595c",
+          "5c130683-396a-40f3-925e-64567ce5ef01",
+          "23af63bb-16f3-4b0b-aa70-175be6a16128",
+          "29812686-abe3-42ea-8e26-b21a69a04566",
+          "a6b8dddc-d96a-43aa-bfeb-bcb40ca51fd6",
+          "f86e6677-0638-4e47-91da-776711c52616",
+          "38a166cb-bc70-40cf-89af-53f0ebd856e4",
+          "434f6a0b-cdb4-4374-a451-791f3b48eea5",
+          "15a1f6e8-d5a4-4fdb-80ef-0dd6ea63cf6a",
+          "93e27636-725a-4f65-b86d-806d0b18a8c4",
+          "58da4205-661e-4e6e-a1eb-fca694aed2e1",
+          "afb59dd0-ea69-4e9e-9be4-6c85d53589b8",
+          "e2eda51f-2849-4f8d-a8f4-795b6a2d5612",
+          "6f14c50c-06bd-4fb5-b76b-5198adfa6870",
+          "5c3ad865-16ba-4acd-a6a6-8bd475ccba2b",
+          "4ea8c537-832f-432b-a9ad-d74b2d3547c1",
+          "fbcf4e91-3026-4227-a3b6-5e89741a629e",
+          "a28fcaac-0e4d-44a0-964e-bc1ebc994fa7",
+          "c6edc2f6-715a-4434-92c7-17cbdc163f10",
+          "9821313a-4448-4e1c-ad91-e61272dc4ea1",
+          "1903f77f-51ee-4029-a907-bc2d88c036eb",
+          "81688695-c8a9-4afe-98f4-3e85b8677814",
+          "dd97dc03-031c-4e0d-b1d7-2eef59249593",
+          "009ab05c-e113-43fd-8d1e-b0158f4f9479",
+          "50ec6352-a294-448f-b738-9f0188e3171f",
+          "aa995656-e4b2-4a93-b3d7-a5e0c47b4cdc",
+          "30c78db2-abf4-4ae4-b4b3-4c1e796eb70e"
+        ],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "allowed_children": [
+          "equipment"
+        ]
+      },
+      {
+        "id": "73480654-b5a8-4961-a4a3-a9dae9c34b7b",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-1",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d116",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea0",
+          "prop_1772741530967": "2"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "bb654aba-15e1-4f6e-96ad-0119c0e08c59",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-2",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-2",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d117",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea1",
+          "prop_1772741530967": "0.75"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "6aed6fd8-4f77-4479-ac73-81dd365d6ec4",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-3",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-3",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d118",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea2",
+          "prop_1772741530967": "1.25"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "16787e28-54c9-4ec0-bf6e-db42caa46cc4",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-4",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-4",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d119",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea3",
+          "prop_1772741530967": "2.5"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "45cc437d-1307-46a2-ae45-043d6dd8a8a9",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-5",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-5",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d120",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea4",
+          "prop_1772741530967": "1.75"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "42a4871e-3bde-407a-a743-1e48b1ec1769",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-6",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-6",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d121",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea5",
+          "prop_1772741530967": "1.5"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "24719b97-9a4a-4f82-9df3-911134823829",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-7",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-7",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d122",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea6",
+          "prop_1772741530967": "1.25"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "3a281134-f3b6-418b-b9e3-440e84ab8bbb",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-8",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-8",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d123",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea7",
+          "prop_1772741530967": "1.75"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "f0bd70d3-b952-4efc-99c6-0074f337fff5",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-9",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-9",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d124",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea8",
+          "prop_1772741530967": "1.25"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "df70245f-2fa3-4f08-a22b-b229e9cb5679",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-10",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-10",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d125",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea9",
+          "prop_1772741530967": "1.5"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "e41ef218-da08-4fea-a099-c849fe0d6bf2",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-11",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-11",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d126",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea10",
+          "prop_1772741530967": "1.25"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "b35ae3ac-0308-49ae-a465-725d7de30f4b",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-12",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-12",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d127",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea11",
+          "prop_1772741530967": "1.25"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "efc6b88c-7a1b-467f-8eb3-984613a58874",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-13",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-13",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d128",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea12",
+          "prop_1772741530967": "2"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "b08a1020-56b3-486f-83ad-034eadd17955",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-14",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-14",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d129",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea13",
+          "prop_1772741530967": "1"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "61098af6-71da-4940-bae1-e3253be17785",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-15",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-15",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d130",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea14",
+          "prop_1772741530967": "1"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "7ab03f89-bf30-4b7f-a936-1156561e1f83",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-16",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-16",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d131",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea15",
+          "prop_1772741530967": "0.75"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "45ca05c0-6437-4b7e-a73c-11366c5c730f",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-17",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-17",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d132",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea16",
+          "prop_1772741530967": "1"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "ef04be74-872e-497e-9c39-e46e1bdd4d62",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-18",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-18",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d133",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea17",
+          "prop_1772741530967": "1.5"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "410157fb-4c2b-4710-b04a-14ae01fd7f1f",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-19",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-19",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d134",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea18",
+          "prop_1772741530967": "2.25"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "a0ef846c-867d-4f54-ad36-e94e10b64ece",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-20",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-20",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d135",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea19",
+          "prop_1772741530967": "1.25"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "053ae085-09a2-445c-97ec-4ab63ae89782",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-21",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-21",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d136",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea20",
+          "prop_1772741530967": "1"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "a4855342-25e4-4e06-a195-6336ec1ec75d",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-22",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-22",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d137",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea21",
+          "prop_1772741530967": "0.75"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "54c01f2a-ab0c-4e9c-a0e2-0f56f17e3044",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-23",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-23",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d138",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea22",
+          "prop_1772741530967": "0.75"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "a9b83a18-82a8-4160-b9ea-81279b410549",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-24",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-24",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d139",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea23",
+          "prop_1772741530967": "0.75"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "23bf3d35-cf70-4e68-afbc-430c7f6c467e",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-25",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-25",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d140",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea24",
+          "prop_1772741530967": "2"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "6f2b8d87-42f2-483b-951f-3a26a9ed3fa7",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-26",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-26",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d141",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea25",
+          "prop_1772741530967": "1.5"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "db9bf1ce-e55c-4828-9df1-616a7d0ada0d",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-27",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-27",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d142",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea26",
+          "prop_1772741530967": "2.25"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "7bbbc9e1-8ba1-4401-a9ba-897e496d93fc",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-28",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-28",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d143",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea27",
+          "prop_1772741530967": "0.75"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "abf68450-559e-45a4-adb7-201cb41ef3f3",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-29",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-29",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d144",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea28",
+          "prop_1772741530967": "1.25"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "3139ee5b-4604-4563-947d-7ef45e17618c",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-30",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-30",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d145",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea29",
+          "prop_1772741530967": "0.75"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "051916c8-57f9-4631-9676-c469f27ca3db",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-31",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-31",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d146",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea30",
+          "prop_1772741530967": "0.75"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "7bb744f0-847d-407f-bd02-68f14feb2f78",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-32",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-32",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d147",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea31",
+          "prop_1772741530967": "0.75"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "6b012a33-c375-401d-8c1d-7600adc6a342",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-33",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-33",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d148",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea32",
+          "prop_1772741530967": "2.25"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "8d0822ec-40e7-4a71-802b-eb57cfe03fc3",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-34",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-34",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d149",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea33",
+          "prop_1772741530967": "1"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "ef839b0f-8fd0-49b1-bd3c-6075e52f06cb",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-35",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-35",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d150",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea34",
+          "prop_1772741530967": "0.75"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "847dccdf-a422-4c47-8a64-0e9175016694",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-36",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-36",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d151",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea35",
+          "prop_1772741530967": "0.75"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "7ec5b7c3-4a41-4e3b-ab3f-d50190fe7d67",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-37",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-37",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d152",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea36",
+          "prop_1772741530967": "0.75"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "fb6349fc-1e6d-4f2d-bd74-4d892654595c",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-38",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-38",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d153",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea37",
+          "prop_1772741530967": "0.75"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "5c130683-396a-40f3-925e-64567ce5ef01",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-39",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-39",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d154",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea38",
+          "prop_1772741530967": "2.75"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "23af63bb-16f3-4b0b-aa70-175be6a16128",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-40",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-40",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d155",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea39",
+          "prop_1772741530967": "1.25"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "29812686-abe3-42ea-8e26-b21a69a04566",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-41",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-41",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d156",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea40",
+          "prop_1772741530967": "0.75"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "a6b8dddc-d96a-43aa-bfeb-bcb40ca51fd6",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-42",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-42",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d157",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea41",
+          "prop_1772741530967": "9.5"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "f86e6677-0638-4e47-91da-776711c52616",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-43",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-43",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d158",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea42",
+          "prop_1772741530967": "1.75"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "38a166cb-bc70-40cf-89af-53f0ebd856e4",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-44",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-44",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d159",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea43",
+          "prop_1772741530967": "1.5"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "434f6a0b-cdb4-4374-a451-791f3b48eea5",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-45",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-45",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d160",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea44",
+          "prop_1772741530967": "2.75"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "15a1f6e8-d5a4-4fdb-80ef-0dd6ea63cf6a",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-46",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-46",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d161",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea45",
+          "prop_1772741530967": "2.25"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "93e27636-725a-4f65-b86d-806d0b18a8c4",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-47",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-47",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d162",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea46",
+          "prop_1772741530967": "1"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "58da4205-661e-4e6e-a1eb-fca694aed2e1",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-48",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-48",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d163",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea47",
+          "prop_1772741530967": "1"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "afb59dd0-ea69-4e9e-9be4-6c85d53589b8",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-49",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-49",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d164",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea48",
+          "prop_1772741530967": "2.75"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "e2eda51f-2849-4f8d-a8f4-795b6a2d5612",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-50",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-50",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d165",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea49",
+          "prop_1772741530967": "0.75"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "6f14c50c-06bd-4fb5-b76b-5198adfa6870",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-51",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-51",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d166",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea50",
+          "prop_1772741530967": "2"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "5c3ad865-16ba-4acd-a6a6-8bd475ccba2b",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-52",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-52",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d167",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea51",
+          "prop_1772741530967": "1.75"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "4ea8c537-832f-432b-a9ad-d74b2d3547c1",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-53",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-53",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d168",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea52",
+          "prop_1772741530967": "2.75"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "fbcf4e91-3026-4227-a3b6-5e89741a629e",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-54",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-54",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d169",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea53",
+          "prop_1772741530967": "0.75"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "a28fcaac-0e4d-44a0-964e-bc1ebc994fa7",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-55",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-55",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d170",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea54",
+          "prop_1772741530967": "0.75"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "c6edc2f6-715a-4434-92c7-17cbdc163f10",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-56",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-56",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d171",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea55",
+          "prop_1772741530967": "4"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "9821313a-4448-4e1c-ad91-e61272dc4ea1",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-57",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-57",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d172",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea56",
+          "prop_1772741530967": "0.75"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "1903f77f-51ee-4029-a907-bc2d88c036eb",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-58",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-58",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d173",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea57",
+          "prop_1772741530967": "1.5"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "81688695-c8a9-4afe-98f4-3e85b8677814",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-59",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-59",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d174",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea58",
+          "prop_1772741530967": "0.75"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "dd97dc03-031c-4e0d-b1d7-2eef59249593",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-60",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-60",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d175",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea59",
+          "prop_1772741530967": "3.75"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "009ab05c-e113-43fd-8d1e-b0158f4f9479",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-61",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-61",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d176",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea60",
+          "prop_1772741530967": "2.75"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "50ec6352-a294-448f-b738-9f0188e3171f",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-62",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-62",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d177",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea61",
+          "prop_1772741530967": "0.75"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "aa995656-e4b2-4a93-b3d7-a5e0c47b4cdc",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-63",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-63",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d178",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea62",
+          "prop_1772741530967": "0.75"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "30c78db2-abf4-4ae4-b4b3-4c1e796eb70e",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-64",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-64",
+          "prop_1772728518927": "9a160e74-7349-1cab-5103-4aae2567caba",
+          "prop_1772728604451": "57179616-bcc3-9ccc-5b41-16d55215d179",
+          "prop_1772728700309": "4459b58e-acff-bce0-6bbe-dedb38483ea63",
+          "prop_1772741530967": "1"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "1cc076a5-1a4e-42e6-bf74-f88ecbc927f5",
+        "type": "level",
+        "properties": {
+          "name": "B1"
+        },
+        "children": [
+          "a4349340-303c-4d74-879c-fd301d7cc85d"
+        ],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#ffc107",
+        "allowed_children": [
+          "trade"
+        ]
+      },
+      {
+        "id": "a4349340-303c-4d74-879c-fd301d7cc85d",
+        "type": "trade",
+        "properties": {
+          "name": "MP"
+        },
+        "children": [
+          "dbf31b89-a976-46b7-acd6-dce71add78d9",
+          "c50e8407-db7c-4a09-816e-c99ee006c245",
+          "a2d6de3f-cf6f-4e6c-9d3e-c71e0b48cb78"
+        ],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#28a745",
+        "allowed_children": [
+          "eq_category",
+          "deliverable",
+          "coordion"
+        ]
+      },
+      {
+        "id": "dbf31b89-a976-46b7-acd6-dce71add78d9",
+        "type": "eq_category",
+        "properties": {
+          "name": "STUs"
+        },
+        "children": [
+          "740e1833-9cee-4a68-bf48-c50584806f28",
+          "f396c8ef-4489-492a-9c94-0f8326475861",
+          "c752a6a6-baa7-4695-ba76-4b1963d7f903",
+          "65dadaa5-e94d-47ab-87d2-51faa4252da9",
+          "511f106f-7adb-456f-8e24-8e84f9383ec4",
+          "50a03afe-4dc7-45fb-a2d6-2be6c363156d",
+          "c93bbfec-77c3-49f4-b601-b2fb437097c9",
+          "6e52064f-0606-488e-80c0-50463685b1f2",
+          "6379cd0e-e499-4142-b32b-f136545bf120",
+          "362b53ff-29c8-4fdd-a7c9-645a2830450f",
+          "ae03882a-e585-4756-b290-ad23876f45df",
+          "42ae9fe3-2a75-4abc-a94d-83a24f53cc8d",
+          "9b616322-2a67-4f89-9436-dd6d35e92326",
+          "232d6220-952c-4e1c-8492-cac5f80144e9",
+          "4a051c52-830a-45b5-b585-f0e0cdbfa17a",
+          "a8f1206c-e753-413e-a5ff-e5b269dce963",
+          "4b1d2c42-32e2-45fd-977b-748035e4cbe8",
+          "d7d6eb7f-4e5b-4042-aeb9-daeb32da950a",
+          "f44f7191-cb4a-4099-a966-246477bf1cc7",
+          "cca3008f-6c17-4618-a34c-8166a2d58c0e",
+          "73569b1f-bd9a-48cd-ab98-ca8045aaaa5e",
+          "7a654a1e-c5b7-4803-9d5b-cf8be1462ab0",
+          "56d94bac-ca4d-4d10-88ba-2b663622a071",
+          "cb0a9a8b-c64c-4527-83eb-a4a690c1df2a",
+          "c8f79355-c3c9-4d4c-8e54-0494550a98cf",
+          "f7ea9b6d-64f8-44da-aea3-4ed50c1dc9a4",
+          "c23a20f3-d091-45a7-83bd-4b5c8f0b3517",
+          "2ce59cf7-5064-4349-8eee-dabc1344ca29",
+          "6173702d-a913-4322-94a4-8595157b37f4",
+          "59579795-efb9-4ae0-bb69-c6b8dae31043",
+          "852c767f-11ed-4559-bc46-a939b1374b20",
+          "4073e17b-bbd8-4f37-9369-00245fde7ba3",
+          "8b9d93af-ade5-4e1d-b2da-4e2553ac0a57",
+          "1bf6bca9-5b10-457d-8538-3f890f8eaf8d",
+          "b1f1dd34-feda-4a55-96ef-52fe8d61bd7b",
+          "f1bb77bc-06ce-49f5-bc5d-5e82e4dfae5d",
+          "a55a3a39-115a-4248-801a-b30e25a85d73",
+          "59fbe69a-d2a5-47ab-b772-3da10387d442",
+          "97868215-873f-4c6e-a8ed-c89b16a91e91",
+          "c069b7ae-8458-4456-96f0-e6d1500f3836",
+          "848d2d31-d018-4d36-b715-b01526a09381",
+          "d0b8a952-5c44-40ba-a13a-94df574de947",
+          "2f3ef14b-7afd-4bc4-8fd2-18d3e9a0381a",
+          "3125bff6-c5ce-4b71-89bd-85ae63dfc3ed",
+          "317d1970-45c0-48f3-9016-37cf17150603",
+          "7dcd3abe-1e1f-48a9-833b-c1460f06af5a",
+          "d23c2b0e-81f8-4894-9e3a-1f7e50a5a385",
+          "41d8a455-84d4-4d26-b6fd-9fa8797db2e8",
+          "9cb84fed-53c5-4b8d-af48-f8f6174a13e1",
+          "becec427-af6d-4526-a41c-59baac086889",
+          "ee925903-d2a5-4c4d-9ff6-ccf1fb8e94fc",
+          "456338be-e092-4ffb-a706-00a058a8d605",
+          "de05b2df-1a62-4695-a564-a626e18bf623",
+          "4ffd5bdb-8145-4f84-a122-7d5d6920632d",
+          "2247d57d-cc43-478a-9070-5dfeac248801",
+          "2a99fec7-e942-427e-a767-154a85f8bc03",
+          "7c4c07b1-142b-4c9e-aa9b-a0841ae6116b",
+          "8b6b0aaf-b640-4dec-b0d4-db5be8e01c60",
+          "3e31704c-69b9-4718-8820-704c1db4a54f",
+          "51970e8b-f630-444c-ba44-44616c457e6a",
+          "72c3606c-13b9-4c9a-a33b-240fdf451212",
+          "877d2033-e50f-4497-a716-2fccd89e651b",
+          "9d34407e-d1b0-475f-aaec-387fac09d15b",
+          "844747d8-81bc-44d6-91dc-c991fc2df89d",
+          "924a77e8-6938-4c15-9069-f013aca29445",
+          "c5811b5e-32a7-49b9-8405-53ac714825da",
+          "131c8058-9198-43ff-bd61-3367f7bc8512",
+          "5a2f5d0d-1729-4326-86e0-f29ebc5872d9",
+          "74c88055-3be2-4826-82aa-40be46ff3b72",
+          "c6f5db13-3322-4e5f-959b-13ce5acdb9b0",
+          "cecaf619-40cd-4e81-b74c-8ffa40c7f135",
+          "6ca3ba93-189b-4369-a737-18ee41de90ec",
+          "9b58cb52-c863-4fef-8d73-3eef50a6a0a5",
+          "eedeafa5-7c98-4a06-8353-acc7ddf5f21c",
+          "769728a0-6e27-4141-8efe-5385c07c887d",
+          "16529afc-9925-4d8a-a13f-2105a7117afd",
+          "93da083a-f181-41bf-89c1-f355eb8e062a",
+          "115aec36-76ba-413c-9948-0b55c67a37eb",
+          "c5b03a30-15ce-4015-8095-d2c3f7e3883b",
+          "40988a93-2f42-46e8-a100-82db656ae3ee",
+          "6977ced1-30da-4330-b34f-73ec53230ce4",
+          "21137fe5-bd72-450b-a17e-5bfe904c1301",
+          "fbddafbc-1d40-49ac-be90-6c75cb7c771f",
+          "ed4d8228-c3e4-492f-be4f-f579c6fd3781",
+          "92edac58-df79-421e-b2e9-719aff5d8e00",
+          "f9303c44-deb9-497a-9461-437400503aaf",
+          "d3611fe1-5e22-4a34-8f46-7d3b8ea71653",
+          "b17add88-19ed-4b88-bc2f-d744b9f76bd9",
+          "e5dd824a-f047-49e6-bf0f-a4266702f834",
+          "a8506bc4-5476-45a2-8f9e-27e00a557fcf",
+          "e461ae63-df79-45c9-95e9-519b6a133b83",
+          "f360de3c-6a03-4ed6-b994-3b987b639c38",
+          "1d488742-4fa8-408d-a8f1-df416f498e25"
+        ],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "allowed_children": [
+          "equipment"
+        ]
+      },
+      {
+        "id": "740e1833-9cee-4a68-bf48-c50584806f28",
+        "type": "equipment",
+        "properties": {
+          "name": "SAV-B1-1",
+          "assigned_to": [
+            "0a191c5c-9d12-4d62-a8ed-4c95feee16fd"
+          ],
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "SAV",
+          "prop_1772728496581": "B1-1",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "f396c8ef-4489-492a-9c94-0f8326475861",
+        "type": "equipment",
+        "properties": {
+          "name": "SAV-B1-2",
+          "assigned_to": [
+            "0a191c5c-9d12-4d62-a8ed-4c95feee16fd"
+          ],
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "SAV",
+          "prop_1772728496581": "B1-2",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "c752a6a6-baa7-4695-ba76-4b1963d7f903",
+        "type": "equipment",
+        "properties": {
+          "name": "SAV-B1-3",
+          "assigned_to": [
+            "0a191c5c-9d12-4d62-a8ed-4c95feee16fd"
+          ],
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "SAV",
+          "prop_1772728496581": "B1-3",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "65dadaa5-e94d-47ab-87d2-51faa4252da9",
+        "type": "equipment",
+        "properties": {
+          "name": "SAV-B1-4",
+          "assigned_to": [
+            "0a191c5c-9d12-4d62-a8ed-4c95feee16fd"
+          ],
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "SAV",
+          "prop_1772728496581": "B1-4",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "511f106f-7adb-456f-8e24-8e84f9383ec4",
+        "type": "equipment",
+        "properties": {
+          "name": "SAV-B1-5",
+          "assigned_to": [
+            "0a191c5c-9d12-4d62-a8ed-4c95feee16fd"
+          ],
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "SAV",
+          "prop_1772728496581": "B1-5",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "50a03afe-4dc7-45fb-a2d6-2be6c363156d",
+        "type": "equipment",
+        "properties": {
+          "name": "SAV-B1-6",
+          "assigned_to": [
+            "0a191c5c-9d12-4d62-a8ed-4c95feee16fd"
+          ],
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "SAV",
+          "prop_1772728496581": "B1-6",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "c93bbfec-77c3-49f4-b601-b2fb437097c9",
+        "type": "equipment",
+        "properties": {
+          "name": "SAV-B1-7",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "SAV",
+          "prop_1772728496581": "B1-7",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "6e52064f-0606-488e-80c0-50463685b1f2",
+        "type": "equipment",
+        "properties": {
+          "name": "SAV-B1-8",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "SAV",
+          "prop_1772728496581": "B1-8",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "6379cd0e-e499-4142-b32b-f136545bf120",
+        "type": "equipment",
+        "properties": {
+          "name": "SAV-B1-9",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "SAV",
+          "prop_1772728496581": "B1-9",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "362b53ff-29c8-4fdd-a7c9-645a2830450f",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B1-1",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B1-1",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "ae03882a-e585-4756-b290-ad23876f45df",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B1-2",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B1-2",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "42ae9fe3-2a75-4abc-a94d-83a24f53cc8d",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B1-3",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B1-3",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "9b616322-2a67-4f89-9436-dd6d35e92326",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B1-4",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B1-4",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "232d6220-952c-4e1c-8492-cac5f80144e9",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B1-5",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B1-5",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "4a051c52-830a-45b5-b585-f0e0cdbfa17a",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B1-6",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B1-6",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "a8f1206c-e753-413e-a5ff-e5b269dce963",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B1-7",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B1-7",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "4b1d2c42-32e2-45fd-977b-748035e4cbe8",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B1-8",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B1-8",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "d7d6eb7f-4e5b-4042-aeb9-daeb32da950a",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B1-9",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B1-9",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "f44f7191-cb4a-4099-a966-246477bf1cc7",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B1-10",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B1-10",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "cca3008f-6c17-4618-a34c-8166a2d58c0e",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B1-11",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B1-11",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "73569b1f-bd9a-48cd-ab98-ca8045aaaa5e",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B1-12",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B1-12",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "7a654a1e-c5b7-4803-9d5b-cf8be1462ab0",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B1-13",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B1-13",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "56d94bac-ca4d-4d10-88ba-2b663622a071",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B1-14",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "manual_allocations": "",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B1-14",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {
+          "orphaned_properties": {
+            "manual_allocations": ""
+          },
+          "property_mismatch_hints": {
+            "manual_allocations": {
+              "legacy_property": "manual_allocations",
+              "score": 0.85,
+              "suggested_property": "allocations"
+            }
+          }
+        },
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "cb0a9a8b-c64c-4527-83eb-a4a690c1df2a",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B1-15",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B1-15",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "c8f79355-c3c9-4d4c-8e54-0494550a98cf",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B1-16",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B1-16",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "f7ea9b6d-64f8-44da-aea3-4ed50c1dc9a4",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B1-17",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B1-17",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "c23a20f3-d091-45a7-83bd-4b5c8f0b3517",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B1-18",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B1-18",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "2ce59cf7-5064-4349-8eee-dabc1344ca29",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B1-19",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B1-19",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "6173702d-a913-4322-94a4-8595157b37f4",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B1-20",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B1-20",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "59579795-efb9-4ae0-bb69-c6b8dae31043",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-1",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-1",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "852c767f-11ed-4559-bc46-a939b1374b20",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-2",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-2",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "4073e17b-bbd8-4f37-9369-00245fde7ba3",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-3",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-3",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "8b9d93af-ade5-4e1d-b2da-4e2553ac0a57",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-4",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-4",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "1bf6bca9-5b10-457d-8538-3f890f8eaf8d",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-5",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-5",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "b1f1dd34-feda-4a55-96ef-52fe8d61bd7b",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-6",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-6",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "f1bb77bc-06ce-49f5-bc5d-5e82e4dfae5d",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-7",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-7",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "a55a3a39-115a-4248-801a-b30e25a85d73",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-8",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-8",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "59fbe69a-d2a5-47ab-b772-3da10387d442",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-9",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-9",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "97868215-873f-4c6e-a8ed-c89b16a91e91",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-10",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-10",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "c069b7ae-8458-4456-96f0-e6d1500f3836",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-11",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-11",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "848d2d31-d018-4d36-b715-b01526a09381",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-12",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-12",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "d0b8a952-5c44-40ba-a13a-94df574de947",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-13",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-13",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "2f3ef14b-7afd-4bc4-8fd2-18d3e9a0381a",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-14",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-14",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "3125bff6-c5ce-4b71-89bd-85ae63dfc3ed",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-15",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-15",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "317d1970-45c0-48f3-9016-37cf17150603",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-16",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-16",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "7dcd3abe-1e1f-48a9-833b-c1460f06af5a",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-17",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-17",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "d23c2b0e-81f8-4894-9e3a-1f7e50a5a385",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-18",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-18",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "41d8a455-84d4-4d26-b6fd-9fa8797db2e8",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-19",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-19",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "9cb84fed-53c5-4b8d-af48-f8f6174a13e1",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-20",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-20",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "becec427-af6d-4526-a41c-59baac086889",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-21",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-21",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "ee925903-d2a5-4c4d-9ff6-ccf1fb8e94fc",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-22",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-22",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "456338be-e092-4ffb-a706-00a058a8d605",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-23",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-23",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "de05b2df-1a62-4695-a564-a626e18bf623",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-24",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-24",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "4ffd5bdb-8145-4f84-a122-7d5d6920632d",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-25",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-25",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "2247d57d-cc43-478a-9070-5dfeac248801",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-26",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-26",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "2a99fec7-e942-427e-a767-154a85f8bc03",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-27",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-27",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "7c4c07b1-142b-4c9e-aa9b-a0841ae6116b",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-28",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-28",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "8b6b0aaf-b640-4dec-b0d4-db5be8e01c60",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-29",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-29",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "3e31704c-69b9-4718-8820-704c1db4a54f",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-30",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-30",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "51970e8b-f630-444c-ba44-44616c457e6a",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-31",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-31",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "72c3606c-13b9-4c9a-a33b-240fdf451212",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-32",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-32",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "877d2033-e50f-4497-a716-2fccd89e651b",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-33",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-33",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "9d34407e-d1b0-475f-aaec-387fac09d15b",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-34",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-34",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "844747d8-81bc-44d6-91dc-c991fc2df89d",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-35",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-35",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "924a77e8-6938-4c15-9069-f013aca29445",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-36",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-36",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "c5811b5e-32a7-49b9-8405-53ac714825da",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-37",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-37",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "131c8058-9198-43ff-bd61-3367f7bc8512",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-38",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-38",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "5a2f5d0d-1729-4326-86e0-f29ebc5872d9",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-39",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-39",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "74c88055-3be2-4826-82aa-40be46ff3b72",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-40",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-40",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "c6f5db13-3322-4e5f-959b-13ce5acdb9b0",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-41",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-41",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "cecaf619-40cd-4e81-b74c-8ffa40c7f135",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-42",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-42",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "6ca3ba93-189b-4369-a737-18ee41de90ec",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-43",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-43",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "9b58cb52-c863-4fef-8d73-3eef50a6a0a5",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-44",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-44",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "eedeafa5-7c98-4a06-8353-acc7ddf5f21c",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-45",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-45",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "769728a0-6e27-4141-8efe-5385c07c887d",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-46",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-46",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "16529afc-9925-4d8a-a13f-2105a7117afd",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-47",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-47",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "93da083a-f181-41bf-89c1-f355eb8e062a",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-48",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-48",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "115aec36-76ba-413c-9948-0b55c67a37eb",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-49",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-49",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "c5b03a30-15ce-4015-8095-d2c3f7e3883b",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-50",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-50",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "40988a93-2f42-46e8-a100-82db656ae3ee",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-51",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-51",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "6977ced1-30da-4330-b34f-73ec53230ce4",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-52",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-52",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "21137fe5-bd72-450b-a17e-5bfe904c1301",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-53",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-53",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "fbddafbc-1d40-49ac-be90-6c75cb7c771f",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-54",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-54",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "ed4d8228-c3e4-492f-be4f-f579c6fd3781",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-55",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-55",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "92edac58-df79-421e-b2e9-719aff5d8e00",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-56",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-56",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "f9303c44-deb9-497a-9461-437400503aaf",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-57",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-57",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "d3611fe1-5e22-4a34-8f46-7d3b8ea71653",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-58",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-58",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "b17add88-19ed-4b88-bc2f-d744b9f76bd9",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-59",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-59",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "e5dd824a-f047-49e6-bf0f-a4266702f834",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-60",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-60",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "a8506bc4-5476-45a2-8f9e-27e00a557fcf",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-61",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-61",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "e461ae63-df79-45c9-95e9-519b6a133b83",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-62",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-62",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "f360de3c-6a03-4ed6-b994-3b987b639c38",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-63",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-63",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "1d488742-4fa8-408d-a8f1-df416f498e25",
+        "type": "equipment",
+        "properties": {
+          "name": "VAV-B2-64",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.1",
+          "prop_1772728461860": "VAV",
+          "prop_1772728496581": "B2-64",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "c50e8407-db7c-4a09-816e-c99ee006c245",
+        "type": "eq_category",
+        "properties": {
+          "name": "FCUs"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "allowed_children": [
+          "equipment"
+        ]
+      },
+      {
+        "id": "a2d6de3f-cf6f-4e6c-9d3e-c71e0b48cb78",
+        "type": "eq_category",
+        "properties": {
+          "name": "CRAH"
+        },
+        "children": [
+          "ac13f294-c7e8-48a4-bae9-8db741567516",
+          "74f1cace-56f5-4514-8a76-30ec793b4cbd",
+          "459629fe-391a-4bfd-be30-d1fa06ed3c93"
+        ],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "allowed_children": [
+          "equipment"
+        ]
+      },
+      {
+        "id": "ac13f294-c7e8-48a4-bae9-8db741567516",
+        "type": "equipment",
+        "properties": {
+          "name": "CRAH-B1-1",
+          "actual_hours": "",
+          "assigned_to": [
+            "0a191c5c-9d12-4d62-a8ed-4c95feee16fd"
+          ],
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.2",
+          "manual_allocations": "",
+          "prop_1772728461860": "CRAH",
+          "prop_1772728496581": "B1-1",
+          "prop_1772728518927": "f04ff91e-e4d4-72f6-7a17-8151ab13260b",
+          "prop_1772728604451": "29cba34c-a594-92b0-9d15-b7400c0d67d6",
+          "prop_1772741530967": "11.7",
+          "prop_1772741588288": "51.8",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {
+          "orphaned_properties": {
+            "manual_allocations": ""
+          },
+          "property_mismatch_hints": {
+            "manual_allocations": {
+              "legacy_property": "manual_allocations",
+              "score": 0.85,
+              "suggested_property": "allocations"
+            }
+          }
+        },
+        "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "74f1cace-56f5-4514-8a76-30ec793b4cbd",
+        "type": "equipment",
+        "properties": {
+          "name": "CRAH-B1-2",
+          "assigned_to": [
+            "0a191c5c-9d12-4d62-a8ed-4c95feee16fd"
+          ],
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.2",
+          "prop_1772728461860": "CRAH",
+          "prop_1772728496581": "B1-2",
+          "prop_1772728518927": "f04ff91e-e4d4-72f6-7a17-8151ab13260b",
+          "prop_1772728604451": "29cba34c-a594-92b0-9d15-b7400c0d67d6",
+          "prop_1772741530967": "11.7",
+          "prop_1772741588288": "51.8",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "459629fe-391a-4bfd-be30-d1fa06ed3c93",
+        "type": "equipment",
+        "properties": {
+          "name": "CRAH-B1-3",
+          "end_date": "3/24/2026",
+          "estimated_hours": "0.2",
+          "prop_1772728461860": "CRAH",
+          "prop_1772728496581": "B1-3",
+          "prop_1772728518927": "f04ff91e-e4d4-72f6-7a17-8151ab13260b",
+          "prop_1772728604451": "29cba34c-a594-92b0-9d15-b7400c0d67d6",
+          "prop_1772741530967": "11.7",
+          "prop_1772741588288": "51.8",
+          "start_date": "3/23/2026"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": null,
+        "schema_color": "#dc3545",
+        "allowed_children": []
+      },
+      {
+        "id": "14ba58b9-62dd-40ce-bfc5-c6c9aa8b2bb2",
+        "type": "building",
+        "properties": {
+          "name": "Main Building"
+        },
+        "children": [
+          "daa3244e-07b7-4bdf-b54e-89faa312722b"
+        ],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#FF6B3B",
+        "allowed_children": [
+          "level"
+        ]
+      },
+      {
+        "id": "daa3244e-07b7-4bdf-b54e-89faa312722b",
+        "type": "level",
+        "properties": {
+          "name": "Level 1"
+        },
+        "children": [
+          "5f726491-c91e-405b-8b6e-d7157685ee33"
+        ],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#ffc107",
+        "allowed_children": [
+          "trade"
+        ]
+      },
+      {
+        "id": "5f726491-c91e-405b-8b6e-d7157685ee33",
+        "type": "trade",
+        "properties": {
+          "name": "MP"
+        },
+        "children": [
+          "8fcea21e-015d-4120-9fc8-10d8c838c120"
+        ],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_color": "#28a745",
+        "allowed_children": [
+          "eq_category",
+          "deliverable",
+          "coordion"
+        ]
+      },
+      {
+        "id": "8fcea21e-015d-4120-9fc8-10d8c838c120",
+        "type": "coordion",
+        "properties": {
+          "name": "First Pass",
+          "status": "1e06d22d-7932-189f-5654-833364a64e94"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": null,
+        "allowed_children": []
+      },
+      {
+        "id": "f736eaa8-76bf-468f-924b-7f0a06955457",
+        "type": "personnel_assets",
+        "properties": {
+          "name": "Personnel"
+        },
+        "children": [
+          "65bfdc5e-586c-47f1-88f4-3274dfb5bb0b",
+          "0a191c5c-9d12-4d62-a8ed-4c95feee16fd"
+        ],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_shape": "rounded",
+        "schema_color": "#60a5fa",
+        "allowed_children": [
+          "person"
+        ]
+      },
+      {
+        "id": "65bfdc5e-586c-47f1-88f4-3274dfb5bb0b",
+        "type": "person",
+        "properties": {
+          "name": "JJ Victor",
+          "capacity_friday": 8,
+          "capacity_monday": 8,
+          "capacity_saturday": 0,
+          "capacity_sunday": 0,
+          "capacity_thursday": 8,
+          "capacity_tuesday": 8,
+          "capacity_wednesday": 8,
+          "email": "",
+          "hourly_rate_friday": "",
+          "hourly_rate_monday": "",
+          "hourly_rate_saturday": "",
+          "hourly_rate_sunday": "",
+          "hourly_rate_thursday": "",
+          "hourly_rate_tuesday": "",
+          "hourly_rate_wednesday": "",
+          "overtime_capacity": 2.5714285714285716,
+          "overtime_capacity_friday": 2,
+          "overtime_capacity_monday": 2,
+          "overtime_capacity_saturday": 8,
+          "overtime_capacity_sunday": 0,
+          "overtime_capacity_thursday": 2,
+          "overtime_capacity_tuesday": 2,
+          "overtime_capacity_wednesday": 2,
+          "system_role": "Lead"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_shape": "circle",
+        "schema_color": "#3b82f6",
+        "allowed_children": []
+      },
+      {
+        "id": "0a191c5c-9d12-4d62-a8ed-4c95feee16fd",
+        "type": "person",
+        "properties": {
+          "name": "Daniel Worth",
+          "capacity_friday": 0,
+          "capacity_monday": 8,
+          "capacity_saturday": 0,
+          "capacity_sunday": 0,
+          "capacity_thursday": 0,
+          "capacity_tuesday": 8,
+          "capacity_wednesday": 0,
+          "email": "dworth@southlandind.com",
+          "hourly_rate_friday": "",
+          "hourly_rate_monday": "",
+          "hourly_rate_saturday": "",
+          "hourly_rate_sunday": "",
+          "hourly_rate_thursday": "",
+          "hourly_rate_tuesday": "",
+          "hourly_rate_wednesday": "",
+          "overtime_capacity": 2.5714285714285716,
+          "overtime_capacity_friday": 2,
+          "overtime_capacity_monday": 2,
+          "overtime_capacity_saturday": 8,
+          "overtime_capacity_sunday": 0,
+          "overtime_capacity_thursday": 2,
+          "overtime_capacity_tuesday": 2,
+          "overtime_capacity_wednesday": 2,
+          "system_role": "Detailer III"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null,
+        "schema_shape": "circle",
+        "schema_color": "#3b82f6",
+        "allowed_children": []
+      }
+    ],
+    "edges": []
+  },
+  "template_id": "DetailingProject",
+  "expanded_map": {
+    "efb7c391-e37f-4308-9eaa-ad7444cd3fc0": true,
+    "6e412f5e-5da1-4869-aac7-4319a535d4ca": false,
+    "50fae02d-2ab2-4e1f-8364-123ce773aaff": false,
+    "08f47de4-739e-4ac1-b16f-69e852e4f12f": true,
+    "c389bcae-e778-4c0f-8a2f-207590279c71": false,
+    "0c50324a-ef25-4dce-a858-a1c2a8f923c8": true,
+    "7d26d293-b4fc-487a-b402-ec47eae0c649": true,
+    "a384014a-7d70-458e-93af-910c3dc7b1bb": false,
+    "2d779d94-e8cf-478e-8ca1-0445f8add1f4": true,
+    "1cc076a5-1a4e-42e6-bf74-f88ecbc927f5": true,
+    "a4349340-303c-4d74-879c-fd301d7cc85d": true,
+    "f736eaa8-76bf-468f-924b-7f0a06955457": true,
+    "dbf31b89-a976-46b7-acd6-dce71add78d9": false,
+    "a2d6de3f-cf6f-4e6c-9d3e-c71e0b48cb78": true,
+    "14ba58b9-62dd-40ce-bfc5-c6c9aa8b2bb2": true,
+    "daa3244e-07b7-4bdf-b54e-89faa312722b": true,
+    "5f726491-c91e-405b-8b6e-d7157685ee33": true
+  },
+  "blocking_relationships": [],
+  "filter_sets": []
+}

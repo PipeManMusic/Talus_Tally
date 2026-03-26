@@ -1,4 +1,3 @@
-id: album_v1
 version: '1.0'
 name: Album Organizer
 description: A template for organizing and managing creation of a music album.
@@ -23,6 +22,7 @@ node_types:
   - id: genre
     label: Genre
     type: text
+  icon: musical-note
 - id: track
   label: Track
   allowed_children: []
@@ -37,6 +37,7 @@ node_types:
   - id: composer
     label: Composer
     type: text
+  icon: musical-note
 - id: task
   label: Task
   allowed_children: []
@@ -58,4 +59,5 @@ node_types:
       indicator_id: filled
     - name: On Hold
       indicator_id: alert
+  icon: clipboard-document-check
 uuid: b9362fed-768e-4afc-9538-07873a0a4e2c

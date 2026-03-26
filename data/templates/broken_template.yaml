@@ -1,4 +1,3 @@
-id: broken_template_test
 name: BROKEN TEST TEMPLATE
 description: This template has intentional errors for testing error handling
 version: '1.0'

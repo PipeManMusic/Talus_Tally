@@ -1,0 +1,630 @@
+blocking_view:
+  node_size:
+    base_height: 100
+    base_width: 160
+    direction: down
+    max_depth: 6
+    max_scale: 1.3
+    min_scale: 0.7
+description: This is a template for tracking construction project detailing work.
+id: DetailingProject
+name: Southland Ind Detailing Project Template
+node_types:
+- allowed_asset_types: []
+  allowed_children: []
+  color: '#D94E1F'
+  features:
+  - is_root
+  id: root
+  label: Project
+  properties:
+  - id: prop_1773256978759
+    indicator_set: status
+    label: Job Number
+    required: false
+    type: number
+  uuid: dda577b6-9f7c-8feb-e893-5e6f32522a56
+  velocityConfig:
+    baseScore: 0
+- allowed_asset_types: []
+  allowed_children: []
+  color: '#FF6B3B'
+  id: building
+  label: Building
+  properties:
+  - id: name
+    label: Building Name
+    required: false
+    type: text
+  uuid: 3a638e56-8c4e-5b20-d608-75081b77a567
+  velocityConfig:
+    baseScore: 0
+- allowed_asset_types: []
+  allowed_children: []
+  color: '#28a745'
+  icon: cog
+  id: trade
+  label: Trade
+  properties:
+  - id: trade_select
+    label: Trade
+    options:
+    - id: 8002c070-92c0-92fd-fa2f-69a4d2bbaf8f
+      name: Mechanical Duct
+    - id: 8e58caaf-3cb3-6451-d521-a593e3ebb3f4
+      name: Plumbing
+    - id: 9077f5bc-fa09-d70d-41d9-cd0609fd02fa
+      name: Mechanical Pipe
+    required: false
+    type: select
+  uuid: ea771325-f14c-3a0e-8b7b-6756efc0280e
+  velocityConfig:
+    baseScore: 0
+- allowed_asset_types: []
+  allowed_children: []
+  color: '#ffc107'
+  id: level
+  label: Level
+  properties:
+  - id: name
+    label: Name
+    required: false
+    type: text
+  uuid: a0e34eb7-e581-ce67-0291-af71d5cddc2b
+  velocityConfig:
+    baseScore: 0
+- allowed_asset_types: []
+  allowed_children: []
+  base_type: standard
+  color: '#dc3545'
+  features: []
+  id: equipment
+  label: Equipment
+  primary_status_property_id: prop_1772728700309
+  properties:
+  - id: prop_1772728461860
+    indicator_set: status
+    label: Unit ID
+    required: false
+    type: text
+  - id: prop_1772728496581
+    indicator_set: status
+    label: Unit Number
+    required: false
+    type: text
+  - id: prop_1772728518927
+    indicator_set: status
+    label: Submittal Status
+    options:
+    - id: 9a160e74-7349-1cab-5103-4aae2567caba
+      indicator_id: empty
+      name: Pending Submitals
+    - id: f04ff91e-e4d4-72f6-7a17-8151ab13260b
+      indicator_id: partial
+      name: Preliminary Submittals
+    - id: e9d66261-d124-041a-3a5a-2707a109e044
+      indicator_id: filled
+      name: Approved Submittals
+    required: false
+    type: select
+    velocityConfig:
+      enabled: true
+      mode: status
+      statusScores:
+        Approved Submittals: 2
+        Pending Submitals: 0
+        Preliminary Submittals: 1
+  - id: prop_1772728604451
+    indicator_set: status
+    label: Modeling Status
+    options:
+    - id: 57179616-bcc3-9ccc-5b41-16d55215d116
+      indicator_id: empty
+      name: Unmodeled
+    - id: 29cba34c-a594-92b0-9d15-b7400c0d67d6
+      indicator_id: partial
+      name: Unit Modeled
+    - id: 271f7364-0178-febd-49cf-1296ece5e56e
+      indicator_id: filled
+      name: Connections Modeled
+    required: false
+    type: select
+    velocityConfig:
+      enabled: true
+      mode: status
+      statusScores:
+        Connections Modeled: -1
+        Unit Modeled: 1
+        Unmodeled: 2
+  - id: prop_1772728700309
+    indicator_set: status
+    label: QA/QC Status
+    options:
+    - id: 4459b58e-acff-bce0-6bbe-dedb38483ea0
+      indicator_id: empty
+      name: Unverified
+    - id: 3d8ee06c-f042-01a9-e2b2-46c3a61c3d69
+      indicator_id: filled
+      name: Verified
+    - id: 8d6363d4-be78-832b-80d1-9a63237eef85
+      indicator_id: alert
+      name: Needs Rechecked
+    - id: 422f0183-a5dc-0c9f-65c8-1b9fc7795a31
+      indicator_id: high
+      name: Deleted
+    required: false
+    type: select
+    velocityConfig:
+      enabled: true
+      mode: status
+      statusScores:
+        Needs Rechecked: -1
+        Unverified: 2
+        Verified: 1
+  - id: prop_1772741530967
+    indicator_set: status
+    label: GPM Heating
+    required: false
+    type: number
+  - id: prop_1772741588288
+    indicator_set: status
+    label: GPM Cooling
+    required: false
+    type: number
+  - id: prop_1773331655961
+    indicator_set: status
+    label: Notes
+    required: false
+    type: editor
+  uuid: 94b6e869-c0d3-8c61-3ab7-7b3e53fe07b6
+  velocityConfig:
+    baseScore: 0
+- allowed_asset_types: []
+  allowed_children: []
+  features:
+  - scheduling
+  icon: clipboard-document-check
+  id: deliverable
+  label: Deliverable
+  properties:
+  - id: Type
+    label: Type
+    options:
+    - id: 4c7b7e64-a49e-2d97-94c6-c8182208deab
+      name: PL01-SHOP DRAWING
+    - id: 817cd54c-8755-0aec-802e-dba29a203cd9
+      name: PL02-SPOOLS
+    - id: c75db6c8-72a3-7569-a973-2879bdd2f757
+      name: PL03-SPOOL MAPS
+    - id: c976265a-d206-0e23-dd98-765344550019
+      name: PL04-BOMS
+    - id: b9f5d584-e521-7663-a478-e5a925e613d2
+      name: PL05-SKETCHES
+    - id: 3a6ea6f5-33b6-cea9-4932-ec67794abc16
+      name: PL06-HANGER MAPS & FAB
+    - id: 79661eee-d98b-944d-5090-c3f71b2c64e8
+      name: PL07-SEISMIC BRACING
+    - id: 93e8ad5b-39d5-3311-2882-ca77773c6f9c
+      name: PL08-POINT LOADS
+    - id: b74fc5a9-21a2-5fb2-353b-d4547c2be5a4
+      name: PL09-ROBOTIC LAYOUT
+    - id: f938313a-7f54-e941-2fb4-133a99e59cce
+      name: PL10-SLAB PEN AND PADS
+    - id: 2de20cd4-ce1b-e1f1-90dc-a561b690ac42
+      name: PL11-MODULAR AND FIXTURE
+    required: false
+    type: select
+  - id: prop_1772729338195
+    indicator_set: status
+    label: Issued
+    options:
+    - id: 42ec6e27-753c-b55d-e25c-b70cea8edc47
+      indicator_id: empty
+      name: Not issued
+    - id: f998099d-f169-aa5d-e97d-2ffc82b72ca4
+      indicator_id: partial
+      name: Preliminary
+    - id: 43b3e5be-d217-196e-5f47-95cf1a00ab37
+      indicator_id: partial
+      name: Progress
+    - id: b0371afd-3e20-8823-e7d8-9f206072010d
+      indicator_id: partial
+      name: For Review
+    - id: 516008ab-09e3-1440-7f2e-a9aa30f7331f
+      indicator_id: partial
+      name: For Approval
+    - id: da3c9c5c-49c9-6ce3-1006-dddda5833957
+      indicator_id: filled
+      name: For Construction
+    - id: a2d61385-40aa-6964-7a7c-846750ad3c7e
+      indicator_id: low
+      name: Revised
+    - id: ce28bb59-fbb0-82d6-bffe-b4513ba5361e
+      name: As Built
+    required: false
+    type: select
+    velocityConfig:
+      enabled: true
+      mode: status
+      statusScores:
+        As Built: -1
+        For Approval: 1
+        For Construction: 1
+        For Review: 1
+        No issued: 6
+        Not issued: -1
+        Preliminary: 1
+        Progress: 1
+  - id: start_date
+    label: Start Date
+    type: date
+    system_locked: true
+    ui_group: Schedule
+    semantic_role: gantt_start
+  - id: end_date
+    label: End Date
+    type: date
+    system_locked: true
+    ui_group: Schedule
+    semantic_role: gantt_end
+  - id: assigned_to
+    label: Assigned To
+    type: node_reference
+    target_type: person
+    system_locked: true
+    ui_group: Schedule
+  - id: estimated_hours
+    label: Estimated Hours
+    type: number
+    value: 0
+    system_locked: true
+    ui_group: Schedule
+  - id: actual_hours
+    label: Actual Hours
+    type: number
+    value: 0
+    system_locked: true
+    ui_group: Schedule
+  - id: allocations
+    label: Allocations
+    type: object
+    value: &id001 {}
+    system_locked: true
+    ui_group: Schedule
+  - id: status
+    label: Status
+    type: select
+    indicator_set: status
+    options:
+    - &id002
+      name: To Do
+      indicator_id: empty
+      id: 69f5389a-a464-dc22-7a09-f4036d1b82ce
+    - &id003
+      name: In Progress
+      indicator_id: partial
+      id: 4155c964-b1c3-53b7-ae52-50e14ea9683d
+    - &id004
+      name: Done
+      indicator_id: filled
+      id: 39c8d24d-5335-76f0-9c50-14fa510ec8ad
+    value: To Do
+    system_locked: true
+    ui_group: Schedule
+  uuid: d7779356-7b62-364b-1612-03ffc0143bdc
+  velocityConfig:
+    baseScore: 0
+- allowed_asset_types: []
+  allowed_children: []
+  features:
+  - scheduling
+  id: eq_category
+  label: Equipment Category
+  properties:
+  - id: name
+    label: Name
+    required: false
+    type: text
+  - id: start_date
+    label: Start Date
+    type: date
+    system_locked: true
+    ui_group: Schedule
+    semantic_role: gantt_start
+  - id: end_date
+    label: End Date
+    type: date
+    system_locked: true
+    ui_group: Schedule
+    semantic_role: gantt_end
+  - id: assigned_to
+    label: Assigned To
+    type: node_reference
+    target_type: person
+    system_locked: true
+    ui_group: Schedule
+  - id: estimated_hours
+    label: Estimated Hours
+    type: number
+    value: 0
+    system_locked: true
+    ui_group: Schedule
+  - id: actual_hours
+    label: Actual Hours
+    type: number
+    value: 0
+    system_locked: true
+    ui_group: Schedule
+  - id: allocations
+    label: Allocations
+    type: object
+    value: *id001
+    system_locked: true
+    ui_group: Schedule
+  - id: status
+    label: Status
+    type: select
+    indicator_set: status
+    options:
+    - *id002
+    - *id003
+    - *id004
+    value: To Do
+    system_locked: true
+    ui_group: Schedule
+  uuid: 9e2af5ed-7355-1b3f-3c1c-784b3121c27d
+- allowed_asset_types: []
+  allowed_children: []
+  features:
+  - scheduling
+  id: coordion
+  label: Coordination
+  properties:
+  - id: name
+    label: Name
+    required: false
+    type: text
+  - id: start_date
+    label: Start Date
+    type: date
+    system_locked: true
+    ui_group: Schedule
+    semantic_role: gantt_start
+  - id: end_date
+    label: End Date
+    type: date
+    system_locked: true
+    ui_group: Schedule
+    semantic_role: gantt_end
+  - id: assigned_to
+    label: Assigned To
+    type: node_reference
+    target_type: person
+    system_locked: true
+    ui_group: Schedule
+  - id: prop_1773065386946
+    indicator_set: status
+    label: Status
+    options:
+    - id: c61cbe53-19ed-c8bb-5f71-697cbc954be2
+      indicator_id: empty
+      name: Not started
+    - id: 0cecb9af-9363-9e57-a6af-df3353325726
+      indicator_id: partial
+      name: In Progress
+    - id: a7e4a353-44e7-f00d-3f6d-ce34d30aa928
+      indicator_id: filled
+      name: Complete
+    - id: d8480cb0-d92e-e34f-320f-2d25c88145e9
+      indicator_id: alert
+      name: Needs Revisited
+    required: false
+    type: select
+    velocityConfig:
+      enabled: true
+      mode: status
+      statusScores:
+        Complete: -1
+        In Progress: 1
+        Needs Revisited: 2
+        Not started: -1
+  - id: estimated_hours
+    label: Estimated Hours
+    type: number
+    value: 0
+    system_locked: true
+    ui_group: Schedule
+  - id: actual_hours
+    label: Actual Hours
+    type: number
+    value: 0
+    system_locked: true
+    ui_group: Schedule
+  - id: allocations
+    label: Allocations
+    type: object
+    value: *id001
+    system_locked: true
+    ui_group: Schedule
+  - id: status
+    label: Status
+    type: select
+    indicator_set: status
+    options:
+    - *id002
+    - *id003
+    - *id004
+    value: To Do
+    system_locked: true
+    ui_group: Schedule
+  uuid: 9a389f68-6739-d77d-df83-64c4071c09e1
+- allowed_asset_types: []
+  allowed_children: []
+  base_type: asset
+  color: '#60a5fa'
+  features:
+  - is_personnel_container
+  icon: users
+  id: personnel_assets
+  label: Personnel Assets
+  properties:
+  - id: name
+    label: Name
+    required: true
+    type: text
+  shape: rounded
+  uuid: 1b7cedf8-5697-2dac-6a63-e977869dc40f
+- allowed_asset_types: []
+  allowed_children: []
+  base_type: asset
+  color: '#3b82f6'
+  features:
+  - is_person
+  icon: user
+  id: person
+  label: Person
+  properties:
+  - id: name
+    label: Full Name
+    required: true
+    system_locked: true
+    type: text
+  - id: email
+    label: Email
+    required: true
+    system_locked: true
+    type: text
+  - id: capacity_monday
+    label: Capacity Monday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 8
+  - id: capacity_tuesday
+    label: Capacity Tuesday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 8
+  - id: capacity_wednesday
+    label: Capacity Wednesday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 8
+  - id: capacity_thursday
+    label: Capacity Thursday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 8
+  - id: capacity_friday
+    label: Capacity Friday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 8
+  - id: capacity_saturday
+    label: Capacity Saturday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 0
+  - id: capacity_sunday
+    label: Capacity Sunday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 0
+  - id: hourly_rate_monday
+    label: Hourly Rate Monday
+    required: false
+    system_locked: true
+    type: number
+  - id: hourly_rate_tuesday
+    label: Hourly Rate Tuesday
+    required: false
+    system_locked: true
+    type: number
+  - id: hourly_rate_wednesday
+    label: Hourly Rate Wednesday
+    required: false
+    system_locked: true
+    type: number
+  - id: hourly_rate_thursday
+    label: Hourly Rate Thursday
+    required: false
+    system_locked: true
+    type: number
+  - id: hourly_rate_friday
+    label: Hourly Rate Friday
+    required: false
+    system_locked: true
+    type: number
+  - id: hourly_rate_saturday
+    label: Hourly Rate Saturday
+    required: false
+    system_locked: true
+    type: number
+  - id: hourly_rate_sunday
+    label: Hourly Rate Sunday
+    required: false
+    system_locked: true
+    type: number
+  - id: overtime_capacity
+    label: Overtime Capacity (Hours)
+    required: false
+    system_locked: true
+    type: number
+    value: 0
+  - id: overtime_capacity_monday
+    label: Overtime Capacity Monday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    value: 0
+  - id: overtime_capacity_tuesday
+    label: Overtime Capacity Tuesday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    value: 0
+  - id: overtime_capacity_wednesday
+    label: Overtime Capacity Wednesday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    value: 0
+  - id: overtime_capacity_thursday
+    label: Overtime Capacity Thursday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    value: 0
+  - id: overtime_capacity_friday
+    label: Overtime Capacity Friday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    value: 0
+  - id: overtime_capacity_saturday
+    label: Overtime Capacity Saturday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    value: 0
+  - id: overtime_capacity_sunday
+    label: Overtime Capacity Sunday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    value: 0
+  - id: system_role
+    label: System Role
+    required: false
+    system_locked: true
+    type: text
+  shape: circle
+  uuid: 7230f246-66ef-dfb4-1010-c4ade5ac5418
+uuid: e23d1f11-77f4-4964-95e0-269d7525d654
+version: 0.1.1
