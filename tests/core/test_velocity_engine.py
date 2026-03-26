@@ -196,6 +196,51 @@ class TestBasicVelocityCalculations:
         assert child_calc.inherited_score == 10
         assert child_calc.total_velocity == 9
     
+    def test_velocity_node_under_non_velocity_ancestors(self, basic_schema):
+        """Test that non-velocity parents don't propagate -1 sentinels to children with velocity config.
+        
+        Regression: root(no cfg) -> container(no cfg) -> task(cfg) would previously
+        accumulate inherited=-2 from the two -1 sentinels, drowning out the task's
+        status score.
+        """
+        graph = {
+            "root-1": {
+                "type": "no_velocity",
+                "parent_id": None,
+                "properties": {},
+                "children": ["container-1"],
+            },
+            "container-1": {
+                "type": "no_velocity",
+                "parent_id": "root-1",
+                "properties": {},
+                "children": ["task-1"],
+            },
+            "task-1": {
+                "type": "task",
+                "parent_id": "container-1",
+                "properties": {},
+                "children": [],
+            },
+        }
+
+        engine = VelocityEngine(graph, basic_schema)
+
+        root_calc = engine.calculate_velocity("root-1")
+        assert root_calc.base_score == -1
+        assert root_calc.total_velocity == -1
+
+        container_calc = engine.calculate_velocity("container-1")
+        assert container_calc.base_score == -1
+        # Sentinel should NOT propagate: inherited must be 0
+        assert container_calc.inherited_score == 0
+
+        task_calc = engine.calculate_velocity("task-1")
+        assert task_calc.base_score == 1  # task baseScore
+        # No negative inherited from non-velocity ancestors
+        assert task_calc.inherited_score == 0
+        assert task_calc.total_velocity == 1
+
     def test_missing_node(self, basic_schema):
         """Test calculation for non-existent node"""
         graph = {}

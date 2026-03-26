@@ -44,7 +44,7 @@ def test_template_schema_includes_markup_profile(client):
     data = response.get_json()
 
     node_types = data.get("node_types", [])
-    root_type = next((nt for nt in node_types if nt.get("id") == "root"), None)
+    root_type = next((nt for nt in node_types if nt.get("legacy_id") == "root"), None)
     assert root_type is not None
 
     props = root_type.get("properties", [])

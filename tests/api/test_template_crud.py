@@ -58,7 +58,6 @@ class TestTemplatePersistence:
         persistence = TemplatePersistence(templates_dir=str(tmp_path))
         
         template_data = {
-            'id': 'test_template',
             'name': 'Test Template',
             'version': '0.1.0',
             'description': 'A test template',
@@ -79,7 +78,7 @@ class TestTemplatePersistence:
             ]
         }
         
-        persistence.save_template(template_data)
+        persistence.save_template(template_data, template_id='test_template')
         
         # File should exist
         template_file = tmp_path / 'test_template.yaml'
@@ -95,7 +94,6 @@ class TestTemplatePersistence:
         persistence = TemplatePersistence(templates_dir=str(tmp_path))
         
         template_v1 = {
-            'id': 'test_template',
             'name': 'Test Template v1',
             'version': '0.1.0',
             'description': 'Version 1',
@@ -110,7 +108,6 @@ class TestTemplatePersistence:
         }
         
         template_v2 = {
-            'id': 'test_template',
             'name': 'Test Template v2',
             'version': '0.2.0',
             'description': 'Version 2',
@@ -124,8 +121,8 @@ class TestTemplatePersistence:
             ]
         }
         
-        persistence.save_template(template_v1)
-        persistence.save_template(template_v2)
+        persistence.save_template(template_v1, template_id='test_template')
+        persistence.save_template(template_v2, template_id='test_template')
         
         loaded = persistence.load_template('test_template')
         assert loaded['name'] == 'Test Template v2'
@@ -144,14 +141,13 @@ class TestTemplatePersistence:
         persistence = TemplatePersistence()
         
         invalid_template = {
-            # Missing id, name, version
+            # Missing name, version
             'description': 'Missing required fields',
             'node_types': []
         }
         
         errors = persistence.validate_template(invalid_template)
         assert len(errors) > 0
-        assert any('id' in e.lower() for e in errors)
         assert any('name' in e.lower() for e in errors)
         assert any('version' in e.lower() for e in errors)
     
@@ -209,7 +205,6 @@ class TestTemplatePersistence:
         persistence = TemplatePersistence(templates_dir=str(tmp_path))
         
         template_data = {
-            'id': 'test_template',
             'name': 'Test Template',
             'version': '0.1.0',
             'description': 'A test template',
@@ -223,7 +218,7 @@ class TestTemplatePersistence:
             ]
         }
         
-        persistence.save_template(template_data)
+        persistence.save_template(template_data, template_id='test_template')
         assert (tmp_path / 'test_template.yaml').exists()
         
         persistence.delete_template('test_template')

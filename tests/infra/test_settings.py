@@ -46,6 +46,7 @@ def test_save_settings_persists_only_normalized_directory_keys(tmp_path, monkeyp
 
 
 def test_directory_helpers_use_custom_directories_when_present(tmp_path, monkeypatch):
+    monkeypatch.delenv('TALUS_BLUEPRINT_TEMPLATES_DIR', raising=False)
     blueprints_dir = tmp_path / "blueprints"
     exports_dir = tmp_path / "exports"
     markups_dir = tmp_path / "markups"
@@ -69,6 +70,7 @@ def test_directory_helpers_use_custom_directories_when_present(tmp_path, monkeyp
 
 
 def test_templates_directory_uses_workspace_fallback_when_no_custom_setting(tmp_path, monkeypatch):
+    monkeypatch.delenv('TALUS_BLUEPRINT_TEMPLATES_DIR', raising=False)
     workspace_templates = tmp_path / "data" / "templates"
     workspace_templates.mkdir(parents=True)
 
@@ -82,6 +84,7 @@ def test_templates_directory_uses_workspace_fallback_when_no_custom_setting(tmp_
 
 
 def test_templates_directory_falls_back_to_user_dir_when_no_custom_or_workspace(monkeypatch):
+    monkeypatch.delenv('TALUS_BLUEPRINT_TEMPLATES_DIR', raising=False)
     monkeypatch.setattr("backend.infra.settings.get_setting", lambda *_args, **_kwargs: None)
     monkeypatch.setattr("backend.infra.template_persistence._get_workspace_templates_dir", lambda: None)
 

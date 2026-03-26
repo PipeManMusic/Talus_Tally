@@ -6,7 +6,7 @@ def test_load_blueprint(sample_blueprint_path):
     loader = SchemaLoader()
     blueprint = loader.load(sample_blueprint_path)
     
-    assert blueprint.id == "restomod_v1"
+    assert blueprint.id == "restomod"
     assert blueprint.name == "Restomod Creator"
     
     # Verify Node Types

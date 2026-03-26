@@ -14,6 +14,7 @@ def backend_server():
     env = os.environ.copy()
     env["PYTHONUNBUFFERED"] = "1"
     env["PYTHONPATH"] = project_root
+    env["TALUS_BLUEPRINT_TEMPLATES_DIR"] = os.path.join(project_root, 'data', 'templates')
     
     # Start the server - run as module to avoid import issues
     proc = subprocess.Popen(

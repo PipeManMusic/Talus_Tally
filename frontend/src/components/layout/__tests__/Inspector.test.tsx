@@ -1,6 +1,10 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { Inspector, type NodeProperty } from '../Inspector';
 
+const personNodeTypeSchema = {
+  person: { id: 'person', name: 'Person', allowed_children: [], properties: [], features: ['is_person'] },
+} as any;
+
 describe('Inspector', () => {
   const mockProperties: NodeProperty[] = [
     { id: 'name', name: 'Name', type: 'text', value: 'Test Node' },
@@ -63,6 +67,7 @@ describe('Inspector', () => {
         nodeName="Alex"
         nodeType="person"
         properties={personProperties}
+        nodeTypeSchemas={personNodeTypeSchema}
       />,
     );
 
@@ -97,6 +102,7 @@ describe('Inspector', () => {
         nodeType="task"
         properties={taskProperties}
         nodes={nodes}
+        nodeTypeSchemas={personNodeTypeSchema}
         onPropertyChange={onPropertyChange}
       />,
     );
@@ -141,6 +147,7 @@ describe('Inspector', () => {
         nodeType="task"
         properties={taskProperties}
         nodes={nodes}
+        nodeTypeSchemas={personNodeTypeSchema}
       />,
     );
 
@@ -186,6 +193,7 @@ describe('Inspector', () => {
         nodeType="task"
         properties={taskProperties}
         nodes={nodes}
+        nodeTypeSchemas={personNodeTypeSchema}
         onPropertyChange={onPropertyChange}
       />,
     );
@@ -268,6 +276,84 @@ describe('Inspector', () => {
 
       expect(screen.getByText('Blocking Penalty:')).toBeInTheDocument();
       expect(screen.getByText('-5')).toBeInTheDocument();
+    });
+
+    it('always shows status score even when non-zero', () => {
+      render(
+        <Inspector
+          nodeId="test-123"
+          nodeName="Test Node"
+          nodeType="bug"
+          properties={mockProperties}
+          velocityScore={{
+            nodeId: 'test-123',
+            baseScore: 0,
+            inheritedScore: 0,
+            statusScore: 2,
+            numericalScore: 0,
+            blockingPenalty: 0,
+            blockingBonus: 0,
+            totalVelocity: 2,
+            isBlocked: false,
+          }}
+        />
+      );
+
+      const statusLabel = screen.getByText('Status:');
+      expect(statusLabel).toBeInTheDocument();
+      // The sibling span should show the score value
+      const statusValue = statusLabel.closest('div')!.querySelector('span.text-fg-primary');
+      expect(statusValue).toHaveTextContent('2');
+    });
+
+    it('shows status score when zero', () => {
+      render(
+        <Inspector
+          nodeId="test-123"
+          nodeName="Test Node"
+          nodeType="release"
+          properties={mockProperties}
+          velocityScore={{
+            nodeId: 'test-123',
+            baseScore: 0,
+            inheritedScore: 0,
+            statusScore: 0,
+            numericalScore: 0,
+            blockingPenalty: 0,
+            blockingBonus: 0,
+            totalVelocity: 0,
+            isBlocked: false,
+          }}
+        />
+      );
+
+      expect(screen.getByText('Status:')).toBeInTheDocument();
+      expect(screen.getByText('Numerical:')).toBeInTheDocument();
+    });
+
+    it('shows numerical score when non-zero', () => {
+      render(
+        <Inspector
+          nodeId="test-123"
+          nodeName="Test Node"
+          nodeType="task"
+          properties={mockProperties}
+          velocityScore={{
+            nodeId: 'test-123',
+            baseScore: 0,
+            inheritedScore: 0,
+            statusScore: 1,
+            numericalScore: 5,
+            blockingPenalty: 0,
+            blockingBonus: 0,
+            totalVelocity: 6,
+            isBlocked: false,
+          }}
+        />
+      );
+
+      expect(screen.getByText('Numerical:')).toBeInTheDocument();
+      expect(screen.getByText('5')).toBeInTheDocument();
     });
   });
 });
