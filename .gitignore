@@ -26,6 +26,7 @@ logs/
 *.dmg
 *.exe
 talus-tally_*/
+talus-tally.json
 
 # VS Code workspace and settings
 .vscode/
