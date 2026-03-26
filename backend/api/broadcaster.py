@@ -220,3 +220,11 @@ def emit_session_disconnected(session_id: str, client_id: str):
         'session_id': session_id,
         'client_id': client_id,
     }, room=session_id)
+
+
+def emit_template_updated(session_id: str, template_id: str):
+    """Emit when a template is updated, notifying sessions using it."""
+    emit_event('external_template_update', {
+        'session_id': session_id,
+        'template_id': template_id,
+    }, room=session_id)

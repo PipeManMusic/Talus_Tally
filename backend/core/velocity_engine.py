@@ -168,13 +168,10 @@ class VelocityEngine:
         # 4. Calculate numerical multiplier scores
         calc.numerical_score = self._calculate_numerical_scores(node_id, node_type)
         
-        # Track the unblocked total so children can inherit during cycle detection.
-        self._in_progress_totals[node_id] = (
-            calc.base_score
-            + calc.inherited_score
-            + calc.status_score
-            + calc.numerical_score
-        )
+        # Track the inheritable total so children can inherit during cycle detection.
+        # Uses _inheritable_total logic (max(base, 0)) so the -1 sentinel for
+        # non-velocity nodes does not leak into children via the cycle path.
+        self._in_progress_totals[node_id] = self._inheritable_total(calc)
 
         # 5. Check blocking status
         is_blocked = self._is_node_blocked(node_id)
@@ -248,6 +245,23 @@ class VelocityEngine:
 
         return False
     
+    def _inheritable_total(self, calc: VelocityCalculation) -> float:
+        """Return the portion of a parent's score that children should inherit.
+
+        Nodes without velocity config use base_score=-1 as a sentinel so they
+        sort to the bottom of the ranking.  That sentinel should *not*
+        propagate to children — otherwise every non-velocity ancestor adds -1,
+        burying velocity-enabled descendants.  Use max(base, 0) so the
+        sentinel is transparent while still allowing real base scores to
+        propagate.
+        """
+        return (
+            max(calc.base_score, 0)
+            + calc.inherited_score
+            + calc.status_score
+            + calc.numerical_score
+        )
+
     def _calculate_inherited_score(self, node_id: str) -> float:
         """Return the immediate parent's total velocity.
 
@@ -261,21 +275,10 @@ class VelocityEngine:
             return self._in_progress_totals.get(parent_id, 0)
 
         if parent_id in self._velocity_cache:
-            parent_calc = self._velocity_cache[parent_id]
-            return (
-                parent_calc.base_score
-                + parent_calc.inherited_score
-                + parent_calc.status_score
-                + parent_calc.numerical_score
-            )
+            return self._inheritable_total(self._velocity_cache[parent_id])
 
         parent_calc = self.calculate_velocity(parent_id)
-        return (
-            parent_calc.base_score
-            + parent_calc.inherited_score
-            + parent_calc.status_score
-            + parent_calc.numerical_score
-        )
+        return self._inheritable_total(parent_calc)
     
     def _get_parent_id(self, node_id: str) -> Optional[str]:
         """Get parent node ID"""

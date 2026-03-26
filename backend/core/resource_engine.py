@@ -69,10 +69,12 @@ def _parse_date(value: Any) -> Optional[date]:
     if "T" in raw:
         raw = raw.split("T", 1)[0]
 
-    try:
-        return datetime.strptime(raw, "%Y-%m-%d").date()
-    except ValueError:
-        return None
+    for fmt in ("%Y-%m-%d", "%m/%d/%Y", "%d/%m/%Y", "%Y/%m/%d"):
+        try:
+            return datetime.strptime(raw, fmt).date()
+        except ValueError:
+            continue
+    return None
 
 
 def _date_columns(start: date, end: date) -> List[str]:
@@ -335,6 +337,17 @@ def _iter_schedulable_tasks(node_list: List[Any], people: Dict[str, Dict[str, An
     people_ids = set(people.keys())
 
     for node in node_list:
+        # Skip orphaned nodes or nodes with orphaned scheduling properties
+        metadata = node.get("metadata") if isinstance(node, dict) else getattr(node, "metadata", None)
+        if isinstance(metadata, dict):
+            if metadata.get("orphaned"):
+                continue
+            orphaned_props = metadata.get("orphaned_properties", {})
+            if isinstance(orphaned_props, dict) and (
+                "start_date" in orphaned_props or "end_date" in orphaned_props or "assigned_to" in orphaned_props
+            ):
+                continue
+
         props = _node_properties(node)
         assigned_to_values = _parse_assigned_to_values(props.get("assigned_to"))
         assigned_person_ids = [person_id for person_id in assigned_to_values if person_id in people_ids]
@@ -399,10 +412,14 @@ def _allocation_status(
     return "full"
 
 
-def _build_people_resources(node_list: List[Any]) -> Dict[str, Dict[str, Any]]:
+def _build_people_resources(node_list: List[Any], person_type_ids: Optional[set] = None) -> Dict[str, Dict[str, Any]]:
     people: Dict[str, Dict[str, Any]] = {}
     for node in node_list:
-        if _node_type(node) != "person":
+        node_type = _node_type(node)
+        if person_type_ids:
+            if node_type not in person_type_ids:
+                continue
+        elif node_type != "person":
             continue
 
         node_id = _node_id(node)
@@ -422,7 +439,7 @@ def _build_people_resources(node_list: List[Any]) -> Dict[str, Dict[str, Any]]:
     return people
 
 
-def recalculate_manpower_allocations(nodes: Iterable[Any], _today: Optional[date] = None) -> Dict[str, Any]:
+def recalculate_manpower_allocations(nodes: Iterable[Any], _today: Optional[date] = None, person_type_ids: Optional[set] = None) -> Dict[str, Any]:
     """
     Recalculate and return manual manpower allocations for all schedulable tasks.
 
@@ -436,6 +453,7 @@ def recalculate_manpower_allocations(nodes: Iterable[Any], _today: Optional[date
         nodes: Iterable of node dicts with type, properties, etc.
         _today: Optional date for testing; defaults to date.today(). Use underscore prefix to indicate
                 it's for testing purposes.
+        person_type_ids: Optional set of type IDs that identify person nodes (UUIDs and/or legacy IDs).
     
     Returns:
         {
@@ -453,7 +471,7 @@ def recalculate_manpower_allocations(nodes: Iterable[Any], _today: Optional[date
         }
     """
     node_list = list(nodes or [])
-    people = _build_people_resources(node_list)
+    people = _build_people_resources(node_list, person_type_ids=person_type_ids)
     tasks = _iter_schedulable_tasks(node_list, people)
 
     updated_task_count = 0
@@ -505,12 +523,12 @@ def recalculate_manpower_allocations(nodes: Iterable[Any], _today: Optional[date
     }
 
 
-def calculate_manpower_load(nodes: Iterable[Any], _today: Optional[date] = None) -> Dict[str, Any]:
+def calculate_manpower_load(nodes: Iterable[Any], _today: Optional[date] = None, person_type_ids: Optional[set] = None) -> Dict[str, Any]:
     """
     Calculate day-by-day manpower loading for person resources.
 
     Rules:
-    - Person nodes are first-class resources (type == 'person').
+    - Person nodes are first-class resources (identified by person_type_ids or legacy 'person' type).
         - Work nodes contribute load when they have:
       * estimated_hours > 0
       * valid start_date and end_date
@@ -522,9 +540,10 @@ def calculate_manpower_load(nodes: Iterable[Any], _today: Optional[date] = None)
         nodes: Iterable of node dicts with type, properties, etc.
         _today: Optional date for testing; defaults to date.today(). Use underscore prefix to indicate
                 it's for testing purposes.
+        person_type_ids: Optional set of type IDs that identify person nodes (UUIDs and/or legacy IDs).
     """
     node_list = list(nodes or [])
-    people = _build_people_resources(node_list)
+    people = _build_people_resources(node_list, person_type_ids=person_type_ids)
 
     tasks = _iter_schedulable_tasks(node_list, people)
 

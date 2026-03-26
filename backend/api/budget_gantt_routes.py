@@ -34,6 +34,14 @@ def _get_graph_nodes(session_id: str):
     return graph_nodes, session_data
 
 
+def _get_person_type_ids(session_data) -> set:
+    """Extract the set of node type IDs (UUIDs) that have the is_person feature."""
+    blueprint = session_data.get('blueprint') if session_data else None
+    if not blueprint or not hasattr(blueprint, 'node_types'):
+        return set()
+    return {nt.uuid for nt in blueprint.node_types if nt.has_feature('is_person')}
+
+
 # ── Budget ────────────────────────────────────────────────────────────
 
 
@@ -157,7 +165,8 @@ def get_manpower(session_id: str):
 
         from backend.core.resource_engine import calculate_manpower_load
 
-        payload = calculate_manpower_load(list(graph_nodes.values()))
+        person_ids = _get_person_type_ids(session_data)
+        payload = calculate_manpower_load(list(graph_nodes.values()), person_type_ids=person_ids)
         payload['timestamp'] = int(time.time() * 1000)
         return jsonify(payload)
 
@@ -186,8 +195,10 @@ def recalculate_manpower(session_id: str):
         from backend.handlers.commands.node_commands import UpdatePropertyCommand
         from uuid import UUID
 
+        person_ids = _get_person_type_ids(session_data)
+
         # Get the list of changes (does not mutate nodes directly)
-        recalc_result = recalculate_manpower_allocations(list(graph_nodes.values()))
+        recalc_result = recalculate_manpower_allocations(list(graph_nodes.values()), person_type_ids=person_ids)
         
         # Apply each change via UpdatePropertyCommand to ensure undo/redo support
         for change in recalc_result.get("changes", []):
@@ -203,7 +214,7 @@ def recalculate_manpower(session_id: str):
             dispatcher.execute(command)
         
         # Calculate fresh payload
-        payload = calculate_manpower_load(list(graph_nodes.values()))
+        payload = calculate_manpower_load(list(graph_nodes.values()), person_type_ids=person_ids)
         payload.update({
             "updated_tasks": recalc_result["updated_tasks"],
             "total_tasks": recalc_result["total_tasks"],

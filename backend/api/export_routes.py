@@ -169,15 +169,25 @@ def download_export(session_id):
                     if option_id and option_name:
                         status_label_map[str(option_id)] = option_name
 
+        # Build UUID-to-legacy-id map for export template backward compatibility
+        uuid_to_legacy_id: Dict[str, str] = {}
+        if blueprint and hasattr(blueprint, 'node_types'):
+            for nt in blueprint.node_types:
+                if nt.uuid and nt.id:
+                    uuid_to_legacy_id[nt.uuid] = nt.id
+
         # Flatten graph nodes into list of dicts
         nodes = []
         for node_id, node in graph.nodes.items():
             status_value = node.properties.get('status', 'unknown')
             status_label = status_label_map.get(str(status_value), status_value)
+            # Resolve legacy type id for backward-compatible export templates
+            legacy_type = uuid_to_legacy_id.get(node.blueprint_type_id, node.blueprint_type_id)
             node_dict = {
                 'id': str(node.id),
                 'name': node.name,
-                'type': node.blueprint_type_id,
+                'type': legacy_type,
+                'type_uuid': node.blueprint_type_id,
                 'properties': node.properties,
                 'status': status_value,
                 'status_label': status_label,

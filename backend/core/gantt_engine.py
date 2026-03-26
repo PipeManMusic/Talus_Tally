@@ -81,6 +81,20 @@ class GanttEngine:
             return node.blueprint_type_id or "unknown"
         return node.get("type", "unknown")
 
+    @staticmethod
+    def _is_scheduling_orphaned(node: Any) -> bool:
+        """Return True if the node or its scheduling properties are orphaned."""
+        metadata = getattr(node, "metadata", None) if hasattr(node, "metadata") else node.get("metadata")
+        if not isinstance(metadata, dict):
+            return False
+        if metadata.get("orphaned"):
+            return True
+        orphaned_props = metadata.get("orphaned_properties", {})
+        if isinstance(orphaned_props, dict):
+            if "start_date" in orphaned_props or "end_date" in orphaned_props:
+                return True
+        return False
+
     def _resolve_node(self, nid_str: str) -> Optional[Any]:
         node = self._nodes.get(nid_str)
         if node is not None:
@@ -117,6 +131,8 @@ class GanttEngine:
         latest: Optional[date] = None
 
         for node in self._nodes.values():
+            if self._is_scheduling_orphaned(node):
+                continue
             s = self._parse_date(self._get_prop(node, "start_date"))
             e = self._parse_date(self._get_prop(node, "end_date"))
             if s is not None:
@@ -166,6 +182,8 @@ class GanttEngine:
 
         for nid, node in self._nodes.items():
             nid_str = str(nid)
+            if self._is_scheduling_orphaned(node):
+                continue
             s = self._parse_date(self._get_prop(node, "start_date"))
             e = self._parse_date(self._get_prop(node, "end_date"))
 

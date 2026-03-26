@@ -40,8 +40,10 @@ def _convert_blueprint_to_schema(blueprint) -> Optional[Dict]:
     if hasattr(blueprint, 'node_types'):
         schema = {'node_types': []}
         for node_type in blueprint.node_types:
+            # Use uuid (the primary key after the UUID migration) so it matches
+            # node.blueprint_type_id which VelocityEngine uses as node_type.
             nt_dict = {
-                'id': node_type.id if hasattr(node_type, 'id') else str(node_type),
+                'id': node_type.uuid if hasattr(node_type, 'uuid') and node_type.uuid else (node_type.id if hasattr(node_type, 'id') and node_type.id else str(node_type)),
             }
             
             # Extract node-level velocityConfig if it exists

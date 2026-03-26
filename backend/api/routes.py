@@ -97,12 +97,16 @@ def get_indicator_metadata(node, blueprint):
     if not blueprint:
         return None
 
-    # Find the node type definition
-    node_type_def = None
-    for nt in blueprint.node_types:
-        if hasattr(nt, 'id') and nt.id == node.blueprint_type_id:
-            node_type_def = nt
-            break
+    # Find the node type definition (by uuid, falling back to legacy id)
+    if hasattr(blueprint, 'get_node_type'):
+        node_type_def = blueprint.get_node_type(node.blueprint_type_id)
+    else:
+        # Fallback for mock/SimpleNamespace blueprints without get_node_type
+        node_type_def = next(
+            (nt for nt in getattr(blueprint, 'node_types', [])
+             if getattr(nt, 'id', None) == node.blueprint_type_id),
+            None
+        )
 
     if not node_type_def or not hasattr(node_type_def, '_extra_props'):
         return None
@@ -124,52 +128,50 @@ def get_indicator_metadata(node, blueprint):
         indicator_set = prop.get('indicator_set', 'status')
         options = prop.get('options', [])
         
-        # Find the matching option
+        # Find the matching option (match by UUID id first, then by name)
+        matched_option = None
         for option in options:
             option_id = str(option.get('id')) if option.get('id') is not None else None
             if isinstance(option, dict) and option_id == prop_value_uuid_str:
-                indicator_id = option.get('indicator_id')
-                if not indicator_id:
-                    indicator_id = option.get('name')
-                if indicator_id:
-                    return {
-                        'indicator_set': indicator_set,
-                        'indicator_id': indicator_id,
-                        'bullet': option.get('bullet', '•')
-                    }
+                matched_option = option
+                break
+        if not matched_option:
+            for option in options:
+                if isinstance(option, dict) and option.get('name') == prop_value_uuid_str:
+                    matched_option = option
+                    break
+        if matched_option:
+            indicator_id = matched_option.get('indicator_id')
+            if not indicator_id:
+                indicator_id = matched_option.get('name')
+            if indicator_id:
+                return {
+                    'indicator_set': indicator_set,
+                    'indicator_id': indicator_id,
+                    'bullet': matched_option.get('bullet', '•')
+                }
     
     return None
 
 
 def get_node_icon(node, blueprint):
-    """Return the icon_id defined on the node type within the blueprint."""
-    default_icon_map = {
-        'project_root': 'film',
-        'season': 'calendar-days',
-        'episode': 'video-camera',
-        'task': 'clipboard-document-check',
-        'footage': 'play-circle',
-        'location_scout': 'map-pin',
-        'inventory_root': 'archive-box',
-        'camera_gear_inventory': 'camera',
-        'camera_gear_category': 'camera',
-        'camera_gear_asset': 'camera',
-        'car_parts_inventory': 'cog',
-        'part_category': 'cog',
-        'part_asset': 'cog',
-        'tools_inventory': 'cog',
-        'tool_category': 'cog',
-        'tool_asset': 'cog',
-        'asset_reference': 'clipboard-document-list',
-        'uses_camera_gear': 'camera',
-        'uses_car_part': 'cog',
-        'uses_tool': 'cog',
-        'phase': 'calendar-days',
-        'job': 'clipboard-document-list',
-        'part': 'cog',
-        'vehicles': 'truck',
-        'vehicle_asset': 'truck',
-    }
+    """Return the icon_id defined on the node type within the blueprint.
+    
+    Icons are defined in the template YAML on each node type's `icon` field.
+    Returns None if no icon is defined.
+    """
+    if not blueprint:
+        return node.properties.get('icon') or node.properties.get('icon_id')
+
+    node_type_def = blueprint.get_node_type(node.blueprint_type_id)
+    if not node_type_def:
+        return node.properties.get('icon') or node.properties.get('icon_id')
+
+    icon_id = node_type_def._extra_props.get('icon')
+    if icon_id:
+        return icon_id
+    return node.properties.get('icon') or node.properties.get('icon_id')
+
 
 def _build_velocity_schema_snapshot(blueprint) -> dict:
     """Build a minimal velocity schema snapshot with option UUIDs for session reuse."""
@@ -178,8 +180,10 @@ def _build_velocity_schema_snapshot(blueprint) -> dict:
         return velocity_schema
 
     for node_type in blueprint.node_types:
+        # Use uuid (the primary key after the UUID migration) so it matches
+        # node.blueprint_type_id which VelocityEngine uses as node_type.
         nt_dict = {
-            'id': node_type.id if hasattr(node_type, 'id') else str(node_type),
+            'id': node_type.uuid if hasattr(node_type, 'uuid') and node_type.uuid else (node_type.id if hasattr(node_type, 'id') and node_type.id else str(node_type)),
         }
         if hasattr(node_type, '_extra_props') and isinstance(node_type._extra_props, dict):
             nt_dict['velocityConfig'] = node_type._extra_props.get('velocityConfig', {})
@@ -192,18 +196,6 @@ def _build_velocity_schema_snapshot(blueprint) -> dict:
         velocity_schema['node_types'].append(nt_dict)
 
     return velocity_schema
-
-    if not blueprint:
-        return node.properties.get('icon') or node.properties.get('icon_id') or default_icon_map.get(node.blueprint_type_id)
-
-    node_type_def = blueprint._node_type_map.get(node.blueprint_type_id)
-    if not node_type_def:
-        return node.properties.get('icon') or node.properties.get('icon_id') or default_icon_map.get(node.blueprint_type_id)
-
-    icon_id = node_type_def._extra_props.get('icon')
-    if icon_id:
-        return icon_id
-    return node.properties.get('icon') or node.properties.get('icon_id') or default_icon_map.get(node.blueprint_type_id)
 """
 REST API route handlers.
 
@@ -621,7 +613,7 @@ def import_nodes_from_csv():
             }
         }), 400
 
-    if blueprint_type_id not in blueprint._node_type_map:
+    if not blueprint.get_node_type(blueprint_type_id):
         return jsonify({
             'error': {
                 'code': 'INVALID_PLAN',
@@ -644,7 +636,7 @@ def import_nodes_from_csv():
         }), 400
 
     def resolve_property_schema(node_type_id: str):
-        node_type = blueprint._node_type_map.get(node_type_id)
+        node_type = blueprint.get_node_type(node_type_id)
         if not node_type:
             return []
         return node_type._extra_props.get('properties', [])
@@ -918,9 +910,11 @@ def reload_blueprint(session_id):
             }
             for nt in old_blueprint.node_types:
                 nt_dict = {
-                    'id': nt.id,
+                    'id': nt.uuid,
+                    'uuid': nt.uuid,
+                    'legacy_id': nt.id,
                     'name': nt.name,
-                    'allowed_children': nt.allowed_children,
+                    'allowed_children': list(nt.allowed_children or []),
                     'properties': nt.properties or [],
                 }
                 old_template_dict['node_types'].append(nt_dict)
@@ -2119,6 +2113,10 @@ def load_graph_into_session(session_id):
                 }
                 if prop_ids:
                     node_reference_props_by_type[str(node_type_id)] = prop_ids
+                    # Also key by UUID so lookup works after blueprint_type_id migration
+                    node_type_uuid = node_type.get('uuid')
+                    if node_type_uuid:
+                        node_reference_props_by_type[str(node_type_uuid)] = prop_ids
 
             def _remap_reference_value(value):
                 if isinstance(value, list):
@@ -2246,12 +2244,33 @@ def load_graph_into_session(session_id):
                 current_version = blueprint.version if hasattr(blueprint, 'version') else '0.1.0'
                 logger.info(f"[API] Loaded blueprint for template_id={template_id}, version={current_version}")
 
+                # Build a legacy-ID-to-UUID map for migrating node types and
+                # injecting into template_dict for orphan reconciliation.
+                _legacy_to_uuid = {nt.id: nt.uuid for nt in blueprint.node_types if nt.id}
+
+                # Migrate node blueprint_type_ids from legacy string IDs to UUIDs.
+                # Existing projects store type: "project_root" etc. which must become UUIDs.
+                migrated_count = 0
+                for node in graph.nodes.values():
+                    if node.blueprint_type_id in _legacy_to_uuid:
+                        node.blueprint_type_id = _legacy_to_uuid[node.blueprint_type_id]
+                        migrated_count += 1
+                if migrated_count:
+                    logger.info("[API] Migrated %s node blueprint_type_ids from legacy IDs to UUIDs", migrated_count)
+
                 # Reconcile loaded graph against current template to mark orphaned nodes/properties.
                 # This covers opening existing project files after template changes.
                 try:
                     from backend.infra.template_persistence import TemplatePersistence
                     persistence = TemplatePersistence()
                     template_dict = persistence.load_template(template_id)
+                    # Inject UUIDs into template_dict so orphan reconciliation
+                    # can match nodes whose blueprint_type_id was migrated to UUID.
+                    for nt_data in (template_dict.get('node_types', []) or []):
+                        if isinstance(nt_data, dict) and not nt_data.get('uuid'):
+                            legacy_id = nt_data.get('id', '')
+                            if legacy_id:
+                                nt_data['uuid'] = _legacy_to_uuid.get(legacy_id, '')
                     remapped_reference_count = _remap_node_reference_properties(template_dict)
                     if remapped_reference_count > 0:
                         logger.info(
@@ -2417,26 +2436,8 @@ def get_template_schema(template_id):
         schema_loader = SchemaLoader()
         blueprint = schema_loader.load(f'{template_id}.yaml')
 
-        # Apply feature macros in-memory so macro properties appear in the
-        # schema even if the YAML was saved before the macro system existed.
-        from backend.core.feature_macros import apply_feature_macros
-        blueprint_dict = {
-            'node_types': [
-                {
-                    'id': nt.id,
-                    'properties': nt._extra_props.get('properties', []),
-                    'features': nt._extra_props.get('features'),
-                }
-                for nt in blueprint.node_types
-            ]
-        }
-        apply_feature_macros(blueprint_dict)
-        # Patch the properties back onto the blueprint node types
-        macro_props_by_id = {nt['id']: nt['properties'] for nt in blueprint_dict['node_types']}
-        for nt in blueprint.node_types:
-            if nt.id in macro_props_by_id:
-                nt._extra_props['properties'] = macro_props_by_id[nt.id]
-                nt.properties = macro_props_by_id[nt.id]
+        # Feature macros are now applied inside SchemaLoader.load(),
+        # so the blueprint already has macro-injected properties.
 
         markup_registry = MarkupRegistry()
         
@@ -2493,11 +2494,15 @@ def get_template_schema(template_id):
                 })
             
             node_type_dict = {
-                'id': node_type.id,
+                'id': node_type.uuid,
+                'uuid': node_type.uuid,
+                'legacy_id': node_type.id,
                 'name': node_type.name,
-                'allowed_children': node_type.allowed_children,
+                'allowed_children': list(node_type.allowed_children or []),
                 'allowed_asset_types': node_type.allowed_asset_types,
                 'icon': node_type._extra_props.get('icon'),
+                'base_type': node_type._extra_props.get('base_type'),
+                'features': node_type.features,
                 'properties': properties
             }
             # Include primary_status_property_id if set
@@ -2579,6 +2584,17 @@ def editor_get_template(template_id):
         # Ensure macro properties are present even if template was saved
         # before macro system existed
         apply_feature_macros(template)
+        # Re-generate option UUIDs after macros so injected options get stable IDs
+        _uuid_gen = SchemaLoader()
+        for nt_data in template.get('node_types', []):
+            _uuid_gen._generate_option_uuids(nt_data)
+
+        # --- Ensure every node type has a stable uuid ---
+        from backend.infra.schema_loader import _generate_stable_uuid
+        for nt_data in template.get('node_types', []):
+            if not nt_data.get('uuid'):
+                legacy_id = nt_data.get('id', '')
+                nt_data['uuid'] = _generate_stable_uuid('node_type', legacy_id)
         
         # Migrate old templates for editor compatibility
         if 'node_types' in template:
@@ -2609,7 +2625,7 @@ def editor_get_template(template_id):
                         prop['type'] = 'text'
 
                 # Person node has strict required properties for manpower features
-                if node_type.get('id') == 'person':
+                if 'is_person' in (node_type.get('features') or []):
                     properties = node_type.get('properties', [])
                     prop_by_id = {prop.get('id'): prop for prop in properties if isinstance(prop, dict)}
 
@@ -2727,12 +2743,30 @@ def editor_create_template():
         try:
             from backend.core.feature_macros import apply_feature_macros
             apply_feature_macros(data)
-            persistence.save_template(data)
+            # Re-generate option UUIDs after macros so injected options get stable IDs
+            _uuid_gen = SchemaLoader()
+            for nt_data in data.get('node_types', []):
+                _uuid_gen._generate_option_uuids(nt_data)
+            # Ensure every node type has a stable uuid
+            from backend.infra.schema_loader import _generate_stable_uuid
+            _lid_to_uuid = {}
+            for nt_data in data.get('node_types', []):
+                if not nt_data.get('uuid'):
+                    nt_data['uuid'] = _generate_stable_uuid('node_type', nt_data.get('id', ''))
+                if nt_data.get('id'):
+                    _lid_to_uuid[nt_data['id']] = nt_data['uuid']
+            _all_uuids = {nt_data.get('uuid') for nt_data in data.get('node_types', [])}
+            for nt_data in data.get('node_types', []):
+                nt_data['allowed_children'] = [
+                    (ref if ref in _all_uuids else _lid_to_uuid.get(ref, ref))
+                    for ref in nt_data.get('allowed_children', [])
+                ]
+            persistence.save_template(data, template_id=data.get('id'))
             return jsonify({
                 'success': True,
-                'template_id': data['id'],
+                'template_id': data.get('id', ''),
                 'template': data,
-                'message': f'Template "{data.get("name", data["id"])}" created successfully'
+                'message': f'Template "{data.get("name", data.get("id", ""))}" created successfully'
             }), 201
         except ValueError as ve:
             return jsonify({
@@ -2769,8 +2803,7 @@ def editor_update_template(template_id):
             }), 400
         
         # Ensure ID matches URL parameter
-        if data.get('id') != template_id:
-            data['id'] = template_id
+        data['id'] = template_id
         
         try:
             # Load old template to detect removed node types
@@ -2783,7 +2816,21 @@ def editor_update_template(template_id):
             # Save the updated template
             from backend.core.feature_macros import apply_feature_macros
             apply_feature_macros(data)
-            persistence.save_template(data)
+            # Re-generate option UUIDs after macros so injected options get stable IDs
+            _uuid_gen = SchemaLoader()
+            for nt_data in data.get('node_types', []):
+                _uuid_gen._generate_option_uuids(nt_data)
+            # Ensure every node type has a stable uuid
+            from backend.infra.schema_loader import _generate_stable_uuid
+            for nt_data in data.get('node_types', []):
+                if not nt_data.get('uuid'):
+                    nt_data['uuid'] = _generate_stable_uuid('node_type', nt_data.get('id', ''))
+            # Also ensure old_template has uuids for orphan comparison
+            if old_template:
+                for nt_data in old_template.get('node_types', []):
+                    if not nt_data.get('uuid'):
+                        nt_data['uuid'] = _generate_stable_uuid('node_type', nt_data.get('id', ''))
+            persistence.save_template(data, template_id=template_id)
             
             # Check for orphaned node types
             orphan_info = {
@@ -2881,6 +2928,27 @@ def editor_update_template(template_id):
                         f"with {orphan_info['total_mismatch_candidates']} mismatch candidates "
                         f"across {len(orphan_info['orphaned_sessions'])} sessions"
                     )
+
+            # Refresh blueprint in all sessions using this template and notify via socket
+            from backend.api.broadcaster import emit_template_updated
+            loader = SchemaLoader()
+            for session_id, session_data in _sessions.items():
+                blueprint = session_data.get('blueprint')
+                blueprint_id = None
+                if blueprint:
+                    if isinstance(blueprint, dict):
+                        blueprint_id = blueprint.get('id')
+                    else:
+                        blueprint_id = getattr(blueprint, 'id', None)
+                if blueprint_id != template_id:
+                    continue
+                try:
+                    new_blueprint = loader.load(f'{template_id}.yaml')
+                    session_data['blueprint'] = new_blueprint
+                    logger.info(f"Refreshed blueprint for session {session_id} after template update")
+                except Exception as bp_err:
+                    logger.warning(f"Failed to refresh blueprint for session {session_id}: {bp_err}")
+                emit_template_updated(session_id, template_id)
             
             return jsonify({
                 'success': True,
@@ -3484,12 +3552,12 @@ def _serialize_graph(graph, blueprint=None):
             logger.warning(f"[get_allowed_children] blueprint is None!")
             return []
         logger.info(f"[get_allowed_children] blueprint._node_type_map keys: {list(blueprint._node_type_map.keys())}")
-        node_type_def = blueprint._node_type_map.get(node_type_id)
+        node_type_def = blueprint.get_node_type(node_type_id)
         logger.info(f"[get_allowed_children] node_type_def={node_type_def}")
         if not node_type_def:
             logger.warning(f"[get_allowed_children] node_type_def not found for {node_type_id}")
             return []
-        allowed = node_type_def.allowed_children or []
+        allowed = list(node_type_def.allowed_children or [])
         logger.info(f"[get_allowed_children] returning allowed_children={allowed}")
         return allowed
     
@@ -3541,7 +3609,7 @@ def _serialize_graph(graph, blueprint=None):
         }
 
         if blueprint:
-            node_type_def = blueprint._node_type_map.get(node.blueprint_type_id)
+            node_type_def = blueprint.get_node_type(node.blueprint_type_id)
             if node_type_def:
                 # Add schema shape and color for visual rendering
                 if 'shape' in node_type_def._extra_props:
