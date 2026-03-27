@@ -213,6 +213,13 @@ class ImportNodesCommand(Command):
 
         self.created_node_ids = []
 
+        # Resolve the UUID key for the "name" property
+        name_key = "name"
+        if self.blueprint:
+            pmap = self.blueprint.build_property_uuid_map(self.plan.blueprint_type_id)
+            if pmap and 'name' in pmap:
+                name_key = pmap['name']
+
         for child_command, prepared in self._child_commands:
             child_command.execute()
             node = child_command.node
@@ -223,13 +230,13 @@ class ImportNodesCommand(Command):
             if not hasattr(node, "properties") or node.properties is None:
                 node.properties = {}
 
-            previous_name = node.properties.get("name")
-            node.properties["name"] = prepared.name
+            previous_name = node.properties.get(name_key)
+            node.properties[name_key] = prepared.name
             if self.session_id and previous_name != prepared.name:
                 emit_property_changed(
                     self.session_id,
                     str(node.id),
-                    "name",
+                    name_key,
                     previous_name,
                     prepared.name,
                 )

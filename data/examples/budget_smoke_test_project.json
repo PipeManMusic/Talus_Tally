@@ -1,0 +1,209 @@
+{
+  "graph": {
+    "id": "default",
+    "nodes": [
+      {
+        "id": "c9aecf4d-4ca8-40d1-a67e-492b2e692dd2",
+        "type": "292b9e11-45c7-94f4-20db-7f6085266a4f",
+        "properties": {
+          "19419fc9-6b1c-c58c-8c6b-2b00ae2dbcc2": "Budget Smoke Test Project",
+          "7bf1d263-950d-2100-0963-b91d9f5b2755": 50000,
+          "346c937b-e080-4baa-2749-483a38ef1602": 0
+        },
+        "children": [
+          "11a11e89-6ff7-47a9-94ff-3f53b69d8702",
+          "a3df6ffa-e0a1-413f-8a18-63d61bff83e0",
+          "4b7b7187-a20b-4468-a7fa-ef77f0b04770",
+          "89ab5140-9a48-4176-a375-646745c20511"
+        ],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null
+      },
+      {
+        "id": "11a11e89-6ff7-47a9-94ff-3f53b69d8702",
+        "type": "52d4e312-8aa4-2ef7-631e-044f3c8cd4f1",
+        "properties": {
+          "ba909407-deba-bb08-6575-8ce62aa5d67b": "Engineering",
+          "e0854142-0d47-315b-6746-5c59496785ac": 30000,
+          "f7721dd6-bbb1-18fa-cad9-29f3fac5400e": 0,
+          "c02981c4-10cc-56f2-3af7-ef0f5ba70e4b": "in_progress"
+        },
+        "children": [
+          "fe7a0372-cb33-4a1f-993f-7fa4b9d0c939",
+          "45a874b2-82f6-4e3e-87d2-8d38d5c6e315",
+          "9e58245b-e69f-4814-9152-60ade4c87c58"
+        ],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null
+      },
+      {
+        "id": "a3df6ffa-e0a1-413f-8a18-63d61bff83e0",
+        "type": "52d4e312-8aa4-2ef7-631e-044f3c8cd4f1",
+        "properties": {
+          "ba909407-deba-bb08-6575-8ce62aa5d67b": "Marketing",
+          "e0854142-0d47-315b-6746-5c59496785ac": 20000,
+          "f7721dd6-bbb1-18fa-cad9-29f3fac5400e": 0,
+          "c02981c4-10cc-56f2-3af7-ef0f5ba70e4b": "to_do"
+        },
+        "children": [
+          "34599007-b179-43a8-b487-0fa51d8e4f80",
+          "5116343f-b2c0-45f2-b182-950fa5b3ee03",
+          "76c04fae-8988-49ff-8039-29243594aa35"
+        ],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null
+      },
+      {
+        "id": "fe7a0372-cb33-4a1f-993f-7fa4b9d0c939",
+        "type": "df26a76a-47e9-229d-25cb-fb1b64e3d621",
+        "properties": {
+          "d7d0c0e3-0845-4dc3-8225-3d188cdcd6ec": "Backend API Development",
+          "f07dd1da-75ae-34be-006d-8802e2be2073": 12000,
+          "6a2a25cb-07a5-e87b-1493-08dbe7e8aae3": 8500,
+          "8cb6d24b-34bf-d30e-3ec5-2df02aec825d": 120,
+          "d4de7dbf-40f0-30da-eed6-4f27e05732e9": "in_progress",
+          "51e1307e-6bac-c306-8fa2-28c5e5fdcaad": "2025-01-20",
+          "b62b3cde-83be-20bb-00a9-0141896a21f7": "2025-03-15",
+          "ea43cbdb-4044-74a8-a033-1cad31844070": "4b7b7187-a20b-4468-a7fa-ef77f0b04770"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null
+      },
+      {
+        "id": "45a874b2-82f6-4e3e-87d2-8d38d5c6e315",
+        "type": "df26a76a-47e9-229d-25cb-fb1b64e3d621",
+        "properties": {
+          "d7d0c0e3-0845-4dc3-8225-3d188cdcd6ec": "Frontend UI Build",
+          "f07dd1da-75ae-34be-006d-8802e2be2073": 10000,
+          "6a2a25cb-07a5-e87b-1493-08dbe7e8aae3": 11200,
+          "8cb6d24b-34bf-d30e-3ec5-2df02aec825d": 100,
+          "d4de7dbf-40f0-30da-eed6-4f27e05732e9": "done",
+          "51e1307e-6bac-c306-8fa2-28c5e5fdcaad": "2025-02-01",
+          "b62b3cde-83be-20bb-00a9-0141896a21f7": "2025-03-30",
+          "ea43cbdb-4044-74a8-a033-1cad31844070": "4b7b7187-a20b-4468-a7fa-ef77f0b04770"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null
+      },
+      {
+        "id": "9e58245b-e69f-4814-9152-60ade4c87c58",
+        "type": "df26a76a-47e9-229d-25cb-fb1b64e3d621",
+        "properties": {
+          "d7d0c0e3-0845-4dc3-8225-3d188cdcd6ec": "Testing & QA",
+          "f07dd1da-75ae-34be-006d-8802e2be2073": 8000,
+          "6a2a25cb-07a5-e87b-1493-08dbe7e8aae3": 0,
+          "8cb6d24b-34bf-d30e-3ec5-2df02aec825d": 80,
+          "d4de7dbf-40f0-30da-eed6-4f27e05732e9": "to_do",
+          "51e1307e-6bac-c306-8fa2-28c5e5fdcaad": "2025-04-01",
+          "b62b3cde-83be-20bb-00a9-0141896a21f7": "2025-04-30"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null
+      },
+      {
+        "id": "34599007-b179-43a8-b487-0fa51d8e4f80",
+        "type": "df26a76a-47e9-229d-25cb-fb1b64e3d621",
+        "properties": {
+          "d7d0c0e3-0845-4dc3-8225-3d188cdcd6ec": "Campaign Design",
+          "f07dd1da-75ae-34be-006d-8802e2be2073": 8000,
+          "6a2a25cb-07a5-e87b-1493-08dbe7e8aae3": 7500,
+          "8cb6d24b-34bf-d30e-3ec5-2df02aec825d": 60,
+          "d4de7dbf-40f0-30da-eed6-4f27e05732e9": "done",
+          "51e1307e-6bac-c306-8fa2-28c5e5fdcaad": "2025-01-15",
+          "b62b3cde-83be-20bb-00a9-0141896a21f7": "2025-02-15",
+          "ea43cbdb-4044-74a8-a033-1cad31844070": "89ab5140-9a48-4176-a375-646745c20511"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null
+      },
+      {
+        "id": "5116343f-b2c0-45f2-b182-950fa5b3ee03",
+        "type": "df26a76a-47e9-229d-25cb-fb1b64e3d621",
+        "properties": {
+          "d7d0c0e3-0845-4dc3-8225-3d188cdcd6ec": "Social Media Launch",
+          "f07dd1da-75ae-34be-006d-8802e2be2073": 5000,
+          "6a2a25cb-07a5-e87b-1493-08dbe7e8aae3": 3200,
+          "8cb6d24b-34bf-d30e-3ec5-2df02aec825d": 40,
+          "d4de7dbf-40f0-30da-eed6-4f27e05732e9": "in_progress",
+          "51e1307e-6bac-c306-8fa2-28c5e5fdcaad": "2025-03-01",
+          "b62b3cde-83be-20bb-00a9-0141896a21f7": "2025-03-31",
+          "ea43cbdb-4044-74a8-a033-1cad31844070": "89ab5140-9a48-4176-a375-646745c20511"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null
+      },
+      {
+        "id": "76c04fae-8988-49ff-8039-29243594aa35",
+        "type": "df26a76a-47e9-229d-25cb-fb1b64e3d621",
+        "properties": {
+          "d7d0c0e3-0845-4dc3-8225-3d188cdcd6ec": "Trade Show Prep",
+          "f07dd1da-75ae-34be-006d-8802e2be2073": 7000,
+          "6a2a25cb-07a5-e87b-1493-08dbe7e8aae3": 0,
+          "8cb6d24b-34bf-d30e-3ec5-2df02aec825d": 50,
+          "d4de7dbf-40f0-30da-eed6-4f27e05732e9": "to_do",
+          "51e1307e-6bac-c306-8fa2-28c5e5fdcaad": "2025-05-01",
+          "b62b3cde-83be-20bb-00a9-0141896a21f7": "2025-05-31"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null
+      },
+      {
+        "id": "4b7b7187-a20b-4468-a7fa-ef77f0b04770",
+        "type": "7230f246-66ef-dfb4-1010-c4ade5ac5418",
+        "properties": {
+          "3c4347c9-42a4-844d-939d-679087cd2ea4": "Alice Chen",
+          "9407c701-9e69-a48c-b661-1be4ad2e3fef": "alice@example.com",
+          "12302379-59c1-41f9-f62e-6d4fa2d31cb4": 8
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null
+      },
+      {
+        "id": "89ab5140-9a48-4176-a375-646745c20511",
+        "type": "7230f246-66ef-dfb4-1010-c4ade5ac5418",
+        "properties": {
+          "3c4347c9-42a4-844d-939d-679087cd2ea4": "Bob Martinez",
+          "9407c701-9e69-a48c-b661-1be4ad2e3fef": "bob@example.com",
+          "12302379-59c1-41f9-f62e-6d4fa2d31cb4": 8
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": null,
+        "indicator_set": null,
+        "icon_id": null
+      }
+    ],
+    "edges": []
+  },
+  "template_id": "budget_smoke_test",
+  "expanded_map": {},
+  "blocking_relationships": [],
+  "filter_sets": []
+}

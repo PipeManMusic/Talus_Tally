@@ -118,7 +118,7 @@ def get_indicator_metadata(node, blueprint):
         if 'options' not in prop or 'indicator_set' not in prop:
             continue
         
-        prop_id = prop.get('id') or prop.get('name')
+        prop_id = prop.get('uuid') or prop.get('id') or prop.get('name')
         prop_value_uuid = node.properties.get(prop_id)
         
         if not prop_value_uuid:
@@ -191,7 +191,16 @@ def _build_velocity_schema_snapshot(blueprint) -> dict:
             nt_dict['velocityConfig'] = node_type.velocityConfig
 
         if hasattr(node_type, 'properties') and node_type.properties:
-            nt_dict['properties'] = node_type.properties
+            remapped_props = []
+            for p in node_type.properties:
+                if isinstance(p, dict) and p.get('uuid'):
+                    rp = dict(p)
+                    rp['key'] = rp.get('id', '')
+                    rp['id'] = rp['uuid']
+                    remapped_props.append(rp)
+                else:
+                    remapped_props.append(p)
+            nt_dict['properties'] = remapped_props
 
         velocity_schema['node_types'].append(nt_dict)
 
@@ -639,7 +648,13 @@ def import_nodes_from_csv():
         node_type = blueprint.get_node_type(node_type_id)
         if not node_type:
             return []
-        return node_type._extra_props.get('properties', [])
+        props = node_type._extra_props.get('properties', [])
+        # Return properties with UUID as id (matching schema endpoint)
+        # so frontend-supplied UUIDs match during validation.
+        return [
+            {**p, 'id': p.get('uuid') or p.get('id'), 'key': p.get('id')}
+            for p in props
+        ]
 
     service = CSVImportService(resolve_property_schema)
 
@@ -912,7 +927,7 @@ def reload_blueprint(session_id):
                 nt_dict = {
                     'id': nt.uuid,
                     'uuid': nt.uuid,
-                    'legacy_id': nt.id,
+                    'key': nt.id,
                     'name': nt.name,
                     'allowed_children': list(nt.allowed_children or []),
                     'properties': nt.properties or [],
@@ -2151,13 +2166,21 @@ def load_graph_into_session(session_id):
                 prop_ids = node_reference_props_by_type.get(node.blueprint_type_id, set())
                 if not prop_ids:
                     continue
+                # Build legacy→UUID map for this node type to find UUID-keyed properties
+                _nt_pmap = prop_uuid_maps.get(node.blueprint_type_id, {}) if prop_uuid_maps else {}
                 for prop_id in prop_ids:
+                    # Check both legacy key and UUID key
+                    actual_key = prop_id
                     if prop_id not in node.properties:
-                        continue
-                    original_value = node.properties[prop_id]
+                        uuid_key = _nt_pmap.get(prop_id)
+                        if uuid_key and uuid_key in node.properties:
+                            actual_key = uuid_key
+                        else:
+                            continue
+                    original_value = node.properties[actual_key]
                     remapped_value = _remap_reference_value(original_value)
                     if remapped_value != original_value:
-                        node.properties[prop_id] = remapped_value
+                        node.properties[actual_key] = remapped_value
                         remapped_count += 1
 
             return remapped_count
@@ -2258,6 +2281,51 @@ def load_graph_into_session(session_id):
                 if migrated_count:
                     logger.info("[API] Migrated %s node blueprint_type_ids from legacy IDs to UUIDs", migrated_count)
 
+                # Migrate node property keys from legacy string IDs to UUIDs.
+                # Existing projects store properties keyed by "name", "status",
+                # etc. which must become property UUIDs.
+                prop_uuid_maps = blueprint.build_all_property_uuid_maps()
+                prop_migrated_count = 0
+                for node in graph.nodes.values():
+                    pmap = prop_uuid_maps.get(node.blueprint_type_id)
+                    if not pmap:
+                        continue
+                    old_props = dict(node.properties)
+                    new_props: dict = {}
+                    changed = False
+                    for key, value in old_props.items():
+                        if key in pmap:
+                            new_props[pmap[key]] = value
+                            changed = True
+                        else:
+                            # Already a UUID or unknown key — keep as-is
+                            new_props[key] = value
+                    if changed:
+                        node.properties = new_props
+                        # Keep node.name in sync
+                        name_uuid = pmap.get('name')
+                        if name_uuid and name_uuid in new_props:
+                            node.name = str(new_props[name_uuid])
+                        prop_migrated_count += 1
+                if prop_migrated_count:
+                    logger.info("[API] Migrated property keys from legacy IDs to UUIDs on %s nodes", prop_migrated_count)
+
+                # Fix up node.name for nodes whose properties were already UUID-keyed
+                # (no migration occurred, so node.name may still be 'Unnamed').
+                name_fixed = 0
+                for node in graph.nodes.values():
+                    if node.name and node.name != 'Unnamed':
+                        continue
+                    pmap = prop_uuid_maps.get(node.blueprint_type_id)
+                    if not pmap:
+                        continue
+                    name_uuid = pmap.get('name')
+                    if name_uuid and name_uuid in node.properties:
+                        node.name = str(node.properties[name_uuid])
+                        name_fixed += 1
+                if name_fixed:
+                    logger.info("[API] Resolved node.name from UUID-keyed properties on %s nodes", name_fixed)
+
                 # Reconcile loaded graph against current template to mark orphaned nodes/properties.
                 # This covers opening existing project files after template changes.
                 try:
@@ -2266,11 +2334,15 @@ def load_graph_into_session(session_id):
                     template_dict = persistence.load_template(template_id)
                     # Inject UUIDs into template_dict so orphan reconciliation
                     # can match nodes whose blueprint_type_id was migrated to UUID.
+                    _uuid_gen = SchemaLoader()
                     for nt_data in (template_dict.get('node_types', []) or []):
                         if isinstance(nt_data, dict) and not nt_data.get('uuid'):
                             legacy_id = nt_data.get('id', '')
                             if legacy_id:
                                 nt_data['uuid'] = _legacy_to_uuid.get(legacy_id, '')
+                        # Inject property UUIDs so reconciliation recognises UUID-keyed properties
+                        if isinstance(nt_data, dict):
+                            _uuid_gen._generate_property_uuids(nt_data)
                     remapped_reference_count = _remap_node_reference_properties(template_dict)
                     if remapped_reference_count > 0:
                         logger.info(
@@ -2482,7 +2554,8 @@ def get_template_schema(template_id):
                     markup_tokens = inline_markup.get('tokens') or []
                 
                 properties.append({
-                    'id': prop_id,
+                    'id': prop_data.get('uuid') or prop_id,
+                    'key': prop_id,
                     'name': prop_display,
                     'type': prop_type,
                     'required': required,
@@ -2496,7 +2569,7 @@ def get_template_schema(template_id):
             node_type_dict = {
                 'id': node_type.uuid,
                 'uuid': node_type.uuid,
-                'legacy_id': node_type.id,
+                'key': node_type.id,
                 'name': node_type.name,
                 'allowed_children': list(node_type.allowed_children or []),
                 'allowed_asset_types': node_type.allowed_asset_types,
@@ -2505,9 +2578,11 @@ def get_template_schema(template_id):
                 'features': node_type.features,
                 'properties': properties
             }
-            # Include primary_status_property_id if set
+            # Include primary_status_property_id if set (resolve to UUID)
             if hasattr(node_type, 'primary_status_property_id') and node_type.primary_status_property_id:
-                node_type_dict['primary_status_property_id'] = node_type.primary_status_property_id
+                psp_id = node_type.primary_status_property_id
+                prop_map = blueprint.build_property_uuid_map(node_type.uuid)
+                node_type_dict['primary_status_property_id'] = prop_map.get(psp_id, psp_id)
             node_types.append(node_type_dict)
         
         response_payload = {
@@ -2588,6 +2663,7 @@ def editor_get_template(template_id):
         _uuid_gen = SchemaLoader()
         for nt_data in template.get('node_types', []):
             _uuid_gen._generate_option_uuids(nt_data)
+            _uuid_gen._generate_property_uuids(nt_data)
 
         # --- Ensure every node type has a stable uuid ---
         from backend.infra.schema_loader import _generate_stable_uuid
@@ -2747,6 +2823,7 @@ def editor_create_template():
             _uuid_gen = SchemaLoader()
             for nt_data in data.get('node_types', []):
                 _uuid_gen._generate_option_uuids(nt_data)
+                _uuid_gen._generate_property_uuids(nt_data)
             # Ensure every node type has a stable uuid
             from backend.infra.schema_loader import _generate_stable_uuid
             _lid_to_uuid = {}
@@ -2820,6 +2897,7 @@ def editor_update_template(template_id):
             _uuid_gen = SchemaLoader()
             for nt_data in data.get('node_types', []):
                 _uuid_gen._generate_option_uuids(nt_data)
+                _uuid_gen._generate_property_uuids(nt_data)
             # Ensure every node type has a stable uuid
             from backend.infra.schema_loader import _generate_stable_uuid
             for nt_data in data.get('node_types', []):
@@ -3234,6 +3312,14 @@ def execute_command():
                     session_id=session_id,
                 )
                 dispatcher.execute(command)
+                # Keep node.name in sync when the name property is updated
+                blueprint = session_data.get('blueprint')
+                node = graph.get_node(UUID(node_id))
+                if node and blueprint:
+                    prop_map = blueprint.build_property_uuid_map(node.blueprint_type_id)
+                    name_uuid = prop_map.get('name') if prop_map else None
+                    if property_id == name_uuid or property_id == 'name':
+                        node.name = str(command_data.get('new_value', ''))
             elif command_type == 'MoveNode':
                 node_id = command_data.get('node_id')
                 new_parent_id = command_data.get('new_parent_id')
@@ -3622,15 +3708,15 @@ def _serialize_graph(graph, blueprint=None):
                 for prop_def in prop_defs:
                     if prop_def.get('type') != 'editor':
                         continue
-                    prop_id = prop_def.get('id') or prop_def.get('name')
-                    if not prop_id:
+                    prop_uuid = prop_def.get('uuid') or prop_def.get('id') or prop_def.get('name')
+                    if not prop_uuid:
                         continue
                     markup_def = resolve_markup_definition(prop_def, markup_registry)
                     if not markup_def:
                         continue
-                    raw_value = node.properties.get(prop_id, '')
+                    raw_value = node.properties.get(prop_uuid, '')
                     parsed = markup_parser.parse(str(raw_value), markup_def)
-                    property_markup[prop_id] = {
+                    property_markup[prop_uuid] = {
                         'profile_id': markup_def.get('id'),
                         'blocks': parsed.get('blocks', [])
                     }

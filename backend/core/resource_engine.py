@@ -5,6 +5,8 @@ import logging
 from datetime import date, datetime, timedelta
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
+from backend.core.property_resolver import PropertyResolver
+
 
 WEEKDAY_FIELD_BY_INDEX = {
     0: "capacity_monday",
@@ -52,6 +54,22 @@ def _node_properties(node: Any) -> Dict[str, Any]:
         return props if isinstance(props, dict) else {}
     props = getattr(node, "properties", None)
     return props if isinstance(props, dict) else {}
+
+
+def _resolved_properties(node: Any, pr: PropertyResolver) -> Dict[str, Any]:
+    """Return node properties with UUID keys reverse-mapped to semantic keys.
+
+    Downstream helpers (``_build_weekday_capacity_profile`` etc.) use
+    hardcoded semantic keys such as ``"start_date"``.  By reverse-mapping
+    once at the call-site we avoid touching every leaf function.
+    """
+    raw = _node_properties(node)
+    ntype = _node_type(node)
+    pmap = pr.map_for(ntype)  # {prop_key: uuid}
+    if not pmap:
+        return raw
+    reverse = {v: k for k, v in pmap.items()}
+    return {reverse.get(k, k): v for k, v in raw.items()}
 
 
 def _parse_date(value: Any) -> Optional[date]:
@@ -162,7 +180,8 @@ def _build_weekday_overtime_profile(props: Dict[str, Any]) -> Dict[int, float]:
     return {weekday: overtime_capacity for weekday in WEEKDAY_FIELD_BY_INDEX}
 
 
-def _find_project_bounds(nodes: Iterable[Any]) -> Tuple[Optional[date], Optional[date]]:
+def _find_project_bounds(nodes: Iterable[Any], pr: PropertyResolver = None) -> Tuple[Optional[date], Optional[date]]:
+    pr = pr or PropertyResolver()
     project_start: Optional[date] = None
     project_end: Optional[date] = None
 
@@ -171,7 +190,7 @@ def _find_project_bounds(nodes: Iterable[Any]) -> Tuple[Optional[date], Optional
         if node_type not in {"project_root", "project"}:
             continue
 
-        props = _node_properties(node)
+        props = _resolved_properties(node, pr)
         project_start = (
             _parse_date(props.get("project_start"))
             or _parse_date(props.get("project_start_date"))
@@ -189,7 +208,7 @@ def _find_project_bounds(nodes: Iterable[Any]) -> Tuple[Optional[date], Optional
     task_starts: List[date] = []
     task_ends: List[date] = []
     for node in nodes:
-        props = _node_properties(node)
+        props = _resolved_properties(node, pr)
         start = _parse_date(props.get("start_date"))
         end = _parse_date(props.get("end_date"))
         if start and end:
@@ -332,7 +351,8 @@ def _canonicalize_allocations_for_assignees(
     return canonical
 
 
-def _iter_schedulable_tasks(node_list: List[Any], people: Dict[str, Dict[str, Any]]) -> List[Dict[str, Any]]:
+def _iter_schedulable_tasks(node_list: List[Any], people: Dict[str, Dict[str, Any]], pr: PropertyResolver = None) -> List[Dict[str, Any]]:
+    pr = pr or PropertyResolver()
     tasks: List[Dict[str, Any]] = []
     people_ids = set(people.keys())
 
@@ -348,7 +368,7 @@ def _iter_schedulable_tasks(node_list: List[Any], people: Dict[str, Dict[str, An
             ):
                 continue
 
-        props = _node_properties(node)
+        props = _resolved_properties(node, pr)
         assigned_to_values = _parse_assigned_to_values(props.get("assigned_to"))
         assigned_person_ids = [person_id for person_id in assigned_to_values if person_id in people_ids]
         if not assigned_person_ids:
@@ -412,7 +432,8 @@ def _allocation_status(
     return "full"
 
 
-def _build_people_resources(node_list: List[Any], person_type_ids: Optional[set] = None) -> Dict[str, Dict[str, Any]]:
+def _build_people_resources(node_list: List[Any], person_type_ids: Optional[set] = None, pr: PropertyResolver = None) -> Dict[str, Dict[str, Any]]:
+    pr = pr or PropertyResolver()
     people: Dict[str, Dict[str, Any]] = {}
     for node in node_list:
         node_type = _node_type(node)
@@ -426,7 +447,7 @@ def _build_people_resources(node_list: List[Any], person_type_ids: Optional[set]
         if not node_id:
             continue
 
-        props = _node_properties(node)
+        props = _resolved_properties(node, pr)
         weekday_capacity_profile = _build_weekday_capacity_profile(props)
         weekday_overtime_profile = _build_weekday_overtime_profile(props)
 
@@ -439,7 +460,7 @@ def _build_people_resources(node_list: List[Any], person_type_ids: Optional[set]
     return people
 
 
-def recalculate_manpower_allocations(nodes: Iterable[Any], _today: Optional[date] = None, person_type_ids: Optional[set] = None) -> Dict[str, Any]:
+def recalculate_manpower_allocations(nodes: Iterable[Any], _today: Optional[date] = None, person_type_ids: Optional[set] = None, blueprint=None) -> Dict[str, Any]:
     """
     Recalculate and return manual manpower allocations for all schedulable tasks.
 
@@ -454,6 +475,7 @@ def recalculate_manpower_allocations(nodes: Iterable[Any], _today: Optional[date
         _today: Optional date for testing; defaults to date.today(). Use underscore prefix to indicate
                 it's for testing purposes.
         person_type_ids: Optional set of type IDs that identify person nodes (UUIDs and/or legacy IDs).
+        blueprint: Optional Blueprint for property UUID resolution.
     
     Returns:
         {
@@ -470,9 +492,10 @@ def recalculate_manpower_allocations(nodes: Iterable[Any], _today: Optional[date
             ]
         }
     """
+    pr = PropertyResolver(blueprint)
     node_list = list(nodes or [])
-    people = _build_people_resources(node_list, person_type_ids=person_type_ids)
-    tasks = _iter_schedulable_tasks(node_list, people)
+    people = _build_people_resources(node_list, person_type_ids=person_type_ids, pr=pr)
+    tasks = _iter_schedulable_tasks(node_list, people, pr=pr)
 
     updated_task_count = 0
     changes = []
@@ -505,12 +528,14 @@ def recalculate_manpower_allocations(nodes: Iterable[Any], _today: Optional[date
                 day_bucket = next_manual.setdefault(day, {})
                 day_bucket[person_id] = daily_hours
 
-        props = _node_properties(task["node"])
+        props = _resolved_properties(task["node"], pr)
         old_value = props.get(ALLOCATIONS_PROPERTY_ID)
         if old_value != next_manual:
+            # Report changes using UUID property key for the command dispatcher
+            alloc_uuid = pr.key(_node_type(task["node"]), ALLOCATIONS_PROPERTY_ID)
             changes.append({
                 "node_id": task["node_id"],
-                "property_id": ALLOCATIONS_PROPERTY_ID,
+                "property_id": alloc_uuid,
                 "old_value": old_value,
                 "new_value": next_manual,
             })
@@ -523,7 +548,7 @@ def recalculate_manpower_allocations(nodes: Iterable[Any], _today: Optional[date
     }
 
 
-def calculate_manpower_load(nodes: Iterable[Any], _today: Optional[date] = None, person_type_ids: Optional[set] = None) -> Dict[str, Any]:
+def calculate_manpower_load(nodes: Iterable[Any], _today: Optional[date] = None, person_type_ids: Optional[set] = None, blueprint=None) -> Dict[str, Any]:
     """
     Calculate day-by-day manpower loading for person resources.
 
@@ -542,10 +567,11 @@ def calculate_manpower_load(nodes: Iterable[Any], _today: Optional[date] = None,
                 it's for testing purposes.
         person_type_ids: Optional set of type IDs that identify person nodes (UUIDs and/or legacy IDs).
     """
+    pr = PropertyResolver(blueprint)
     node_list = list(nodes or [])
-    people = _build_people_resources(node_list, person_type_ids=person_type_ids)
+    people = _build_people_resources(node_list, person_type_ids=person_type_ids, pr=pr)
 
-    tasks = _iter_schedulable_tasks(node_list, people)
+    tasks = _iter_schedulable_tasks(node_list, people, pr=pr)
 
     manual_allocation_dates: set[date] = set()
     for task in tasks:
@@ -554,7 +580,7 @@ def calculate_manpower_load(nodes: Iterable[Any], _today: Optional[date] = None,
             if parsed_day:
                 manual_allocation_dates.add(parsed_day)
 
-    start, end = _find_project_bounds(node_list)
+    start, end = _find_project_bounds(node_list, pr=pr)
     if manual_allocation_dates:
         min_manual = min(manual_allocation_dates)
         max_manual = max(manual_allocation_dates)
@@ -577,8 +603,8 @@ def calculate_manpower_load(nodes: Iterable[Any], _today: Optional[date] = None,
             "resources": {
                 pid: {
                     "name": pdata["name"],
-                    "capacity": pdata["capacity"],
-                    "overtime_capacity": pdata["overtime_capacity"],
+                    "capacity": 0,
+                    "overtime_capacity": 0,
                     "capacity_by_day": {},
                     "overtime_capacity_by_day": {},
                     "load": {},

@@ -1,0 +1,127 @@
+name: Budget Smoke Test
+description: Minimal template for smoke-testing the budget rollup engine.
+blocking_view:
+  node_size:
+    base_height: 100
+    base_width: 160
+    direction: TB
+    max_depth: 4
+    depth_scale: 0.85
+node_types:
+- id: project_root
+  label: Project
+  icon: folder
+  color: '#6366f1'
+  shape: hexagon
+  features:
+  - is_root
+  allowed_children:
+  - department
+  - task
+  - person
+  properties:
+  - id: name
+    label: Name
+    type: text
+    required: true
+  - id: estimated_cost
+    label: Estimated Cost
+    type: currency
+  - id: actual_cost
+    label: Actual Cost
+    type: currency
+  velocityConfig:
+    baseScore: 0
+- id: department
+  label: Department
+  icon: briefcase
+  color: '#f59e0b'
+  shape: rounded
+  allowed_children:
+  - task
+  properties:
+  - id: name
+    label: Name
+    type: text
+    required: true
+  - id: estimated_cost
+    label: Estimated Cost
+    type: currency
+  - id: actual_cost
+    label: Actual Cost
+    type: currency
+  - id: status
+    label: Status
+    type: select
+    options:
+    - id: to_do
+      name: To Do
+    - id: in_progress
+      name: In Progress
+    - id: done
+      name: Done
+  velocityConfig:
+    baseScore: 1
+- id: task
+  label: Task
+  icon: check-square
+  color: '#10b981'
+  shape: roundedSquare
+  allowed_children: []
+  properties:
+  - id: name
+    label: Name
+    type: text
+    required: true
+  - id: estimated_cost
+    label: Estimated Cost
+    type: currency
+  - id: actual_cost
+    label: Actual Cost
+    type: currency
+  - id: estimated_hours
+    label: Estimated Hours
+    type: number
+  - id: status
+    label: Status
+    type: select
+    options:
+    - id: to_do
+      name: To Do
+    - id: in_progress
+      name: In Progress
+    - id: done
+      name: Done
+  - id: start_date
+    label: Start Date
+    type: date
+  - id: end_date
+    label: End Date
+    type: date
+  - id: assigned_to
+    label: Assigned To
+    type: person
+  velocityConfig:
+    baseScore: 3
+- id: person
+  label: Person
+  icon: user
+  color: '#8b5cf6'
+  shape: rounded
+  features:
+  - is_person
+  allowed_children: []
+  properties:
+  - id: name
+    label: Name
+    type: text
+    required: true
+  - id: email
+    label: Email
+    type: text
+  - id: daily_capacity
+    label: Daily Capacity (hrs)
+    type: number
+  velocityConfig:
+    baseScore: 0
+uuid: e25eab50-938e-4c76-b7bb-25f818099f81

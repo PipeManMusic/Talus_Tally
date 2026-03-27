@@ -152,6 +152,8 @@ def download_export(session_id):
         
         # Build status label map from blueprint if available
         status_label_map: Dict[str, str] = {}
+        # Map node_type_uuid → status property UUID for resolving status from node.properties
+        status_prop_uuid_map: Dict[str, str] = {}
         blueprint = session_data.get('blueprint')
         if blueprint and hasattr(blueprint, 'node_types'):
             for node_type in blueprint.node_types:
@@ -163,31 +165,33 @@ def download_export(session_id):
                 status_prop = next((p for p in properties if p.get('id') == 'status'), None)
                 if not status_prop:
                     continue
+                if status_prop.get('uuid') and node_type.uuid:
+                    status_prop_uuid_map[node_type.uuid] = status_prop['uuid']
                 for option in status_prop.get('options', []) or []:
                     option_id = option.get('id')
                     option_name = option.get('name')
                     if option_id and option_name:
                         status_label_map[str(option_id)] = option_name
 
-        # Build UUID-to-legacy-id map for export template backward compatibility
-        uuid_to_legacy_id: Dict[str, str] = {}
+        # Build UUID-to-key map for export templates that use human-readable type names
+        uuid_to_key: Dict[str, str] = {}
         if blueprint and hasattr(blueprint, 'node_types'):
             for nt in blueprint.node_types:
                 if nt.uuid and nt.id:
-                    uuid_to_legacy_id[nt.uuid] = nt.id
+                    uuid_to_key[nt.uuid] = nt.id
 
         # Flatten graph nodes into list of dicts
         nodes = []
         for node_id, node in graph.nodes.items():
-            status_value = node.properties.get('status', 'unknown')
+            status_key = status_prop_uuid_map.get(node.blueprint_type_id, 'status')
+            status_value = node.properties.get(status_key, 'unknown')
             status_label = status_label_map.get(str(status_value), status_value)
-            # Resolve legacy type id for backward-compatible export templates
-            legacy_type = uuid_to_legacy_id.get(node.blueprint_type_id, node.blueprint_type_id)
+            type_key = uuid_to_key.get(node.blueprint_type_id, node.blueprint_type_id)
             node_dict = {
                 'id': str(node.id),
                 'name': node.name,
-                'type': legacy_type,
-                'type_uuid': node.blueprint_type_id,
+                'type': node.blueprint_type_id,
+                'type_key': type_key,
                 'properties': node.properties,
                 'status': status_value,
                 'status_label': status_label,
@@ -235,12 +239,13 @@ def download_export(session_id):
                             node = graph_nodes.get(UUID(node_id), {})
                         except (ValueError, KeyError):
                             node = {}
-                    if hasattr(node, 'properties'):
-                        node_name = node.properties.get('name', 'Unnamed')
+                    if hasattr(node, 'name'):
+                        node_name = node.name or 'Unnamed'
                         node_type = node.blueprint_type_id if hasattr(node, 'blueprint_type_id') else 'unknown'
-                        status_value = node.properties.get('status')
+                        s_key = status_prop_uuid_map.get(node_type, 'status') if hasattr(node, 'properties') else 'status'
+                        status_value = node.properties.get(s_key) if hasattr(node, 'properties') else None
                     else:
-                        node_name = node.get('properties', {}).get('name', 'Unnamed')
+                        node_name = node.get('name', 'Unnamed')
                         node_type = node.get('type', 'unknown')
                         status_value = node.get('properties', {}).get('status')
                     status_label = status_label_map.get(str(status_value), status_value)

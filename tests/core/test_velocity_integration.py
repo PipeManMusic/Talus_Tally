@@ -27,12 +27,30 @@ def project_files():
     blueprint = loader.load('project_talus.yaml')
     schema = {'id': 'project_talus', 'node_types': []}
     for node_type in blueprint.node_types:
+        # Use UUID as the id to match project_talus.json node types
+        # (mirrors _build_velocity_schema_snapshot in routes.py)
+        nt_id = node_type.uuid if hasattr(node_type, 'uuid') and node_type.uuid else (
+            node_type.id if hasattr(node_type, 'id') else str(node_type)
+        )
         nt_dict = {
-            'id': node_type.id if hasattr(node_type, 'id') else str(node_type),
+            'id': nt_id,
             'velocityConfig': node_type._extra_props.get('velocityConfig', {})
             if hasattr(node_type, '_extra_props') else {},
-            'properties': node_type.properties or []
         }
+        # Remap property ids to UUIDs (mirrors _build_velocity_schema_snapshot)
+        if hasattr(node_type, 'properties') and node_type.properties:
+            remapped_props = []
+            for p in node_type.properties:
+                if isinstance(p, dict) and p.get('uuid'):
+                    rp = dict(p)
+                    rp['key'] = rp.get('id', '')
+                    rp['id'] = rp['uuid']
+                    remapped_props.append(rp)
+                else:
+                    remapped_props.append(p)
+            nt_dict['properties'] = remapped_props
+        else:
+            nt_dict['properties'] = []
         schema['node_types'].append(nt_dict)
     
     with open(json_path, 'r') as f:

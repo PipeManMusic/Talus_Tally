@@ -212,21 +212,29 @@ class MigrationRegistry:
                     )
                     continue
 
+                # Resolve the property UUID map for this node type
+                prop_uuid_map = blueprint.build_property_uuid_map(node.blueprint_type_id)
+
                 icon_default = node_type_def._extra_props.get('icon')
-                if icon_default and 'icon' not in node.properties:
-                    node.properties['icon'] = icon_default
-                    messages.append(
-                        f"[FIX] Set default icon for node {node.name} ({node.id}) to '{icon_default}'"
-                    )
+                if icon_default:
+                    icon_key = prop_uuid_map.get('icon', 'icon') if prop_uuid_map else 'icon'
+                    if icon_key not in node.properties:
+                        node.properties[icon_key] = icon_default
+                        messages.append(
+                            f"[FIX] Set default icon for node {node.name} ({node.id}) to '{icon_default}'"
+                        )
 
                 properties = node_type_def._extra_props.get('properties', [])
                 for prop in properties:
                     if prop.get('type') != 'select' or 'options' not in prop:
                         continue
 
-                    prop_id = prop.get('id') or prop.get('name')
-                    if not prop_id:
+                    legacy_id = prop.get('id') or prop.get('name')
+                    if not legacy_id:
                         continue
+
+                    # Use UUID key for node.properties access
+                    prop_key = prop.get('uuid') or legacy_id
 
                     valid_option_ids = {
                         str(opt.get('id'))
@@ -239,7 +247,7 @@ class MigrationRegistry:
                         if isinstance(opt, dict) and opt.get('id') is not None
                     }
 
-                    current_val = node.properties.get(prop_id)
+                    current_val = node.properties.get(prop_key)
                     if current_val is None:
                         continue
 
@@ -248,15 +256,15 @@ class MigrationRegistry:
                         continue
 
                     if current_val in name_to_id:
-                        node.properties[prop_id] = name_to_id[current_val]
+                        node.properties[prop_key] = name_to_id[current_val]
                         messages.append(
-                            f"[FIX] Normalized select value for node {node.name} ({node.id}) property '{prop_id}' to option UUID"
+                            f"[FIX] Normalized select value for node {node.name} ({node.id}) property '{legacy_id}' to option UUID"
                         )
                     elif prop['options']:
                         fallback_id = str(prop['options'][0].get('id'))
-                        node.properties[prop_id] = fallback_id
+                        node.properties[prop_key] = fallback_id
                         messages.append(
-                            f"[FIX] Set default select value for node {node.name} ({node.id}) property '{prop_id}' to '{fallback_id}'"
+                            f"[FIX] Set default select value for node {node.name} ({node.id}) property '{legacy_id}' to '{fallback_id}'"
                         )
         except Exception as e:
             messages.append(

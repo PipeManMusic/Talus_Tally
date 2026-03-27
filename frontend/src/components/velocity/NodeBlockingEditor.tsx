@@ -1078,7 +1078,7 @@ export function NodeBlockingEditor({ sessionId, nodes, velocityScores = {}, sele
                     className="pointer-events-none select-none"
                     fill="#ffffff"
                   >
-                    {node.type.toUpperCase()}
+                    {(nodeTypeSchemasById[node.type]?.name || node.type).toUpperCase()}
                   </text>
 
                   {/* Parent breadcrumb */}

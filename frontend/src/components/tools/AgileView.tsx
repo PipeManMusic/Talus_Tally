@@ -3,6 +3,7 @@ import { apiClient, type Node, type VelocityScore, type TemplateSchema } from '.
 import { useGraphStore } from '../../store';
 import { useFilterStore } from '../../store/filterStore';
 import { evaluateNodeVisibility } from '../../utils/filterEngine';
+import { propertyKey, buildPropertyUuidMap } from '../../utils/propertyResolver';
 
 interface AgileViewProps {
   nodes?: Record<string, Node>;
@@ -21,7 +22,7 @@ interface AgileViewProps {
 
 const STATUS_COLUMNS = ['To Do', 'In Progress', 'Done'] as const;
 type KanbanStatus = (typeof STATUS_COLUMNS)[number];
-const AGILE_STATUS_PROPERTY_ID = 'status';
+const STATUS_PROPERTY_KEY = 'status';
 
 function normalizeStatus(raw: string): KanbanStatus {
   const lower = raw.trim().toLowerCase();
@@ -52,11 +53,17 @@ export function AgileView({
     return map;
   }, [templateSchema]);
 
+  const typeLabels = useMemo(() => {
+    const map = new Map<string, string>();
+    templateSchema?.node_types?.forEach(nt => map.set(nt.id, nt.name));
+    return map;
+  }, [templateSchema]);
+
   // Build a lookup from option UUID → option name for the status property across all node types.
   const statusOptionNames = useMemo(() => {
     const map = new Map<string, string>();
     templateSchema?.node_types?.forEach(nt => {
-      const statusProp = nt.properties?.find(p => p.id === AGILE_STATUS_PROPERTY_ID);
+      const statusProp = nt.properties?.find(p => propertyKey(p) === STATUS_PROPERTY_KEY);
       if (statusProp?.options) {
         for (const opt of statusProp.options) {
           if (opt && typeof opt === 'object' && opt.id && opt.name) {
@@ -67,6 +74,45 @@ export function AgileView({
     });
     return map;
   }, [templateSchema]);
+
+  // Reverse lookup: per node type, normalized status display name → option UUID.
+  const statusNameToUuidByType = useMemo(() => {
+    const outerMap = new Map<string, Map<string, string>>();
+    templateSchema?.node_types?.forEach(nt => {
+      const statusProp = nt.properties?.find(p => propertyKey(p) === STATUS_PROPERTY_KEY);
+      if (statusProp?.options) {
+        const inner = new Map<string, string>();
+        for (const opt of statusProp.options) {
+          if (opt && typeof opt === 'object' && opt.id && opt.name) {
+            inner.set(normalizeStatus(opt.name), opt.id);
+          }
+        }
+        outerMap.set(nt.id, inner);
+      }
+    });
+    return outerMap;
+  }, [templateSchema]);
+
+  // Resolve the UUID-based property id for status from the schema.
+  // Since status UUID differs per node type, we resolve per-node.
+  const resolveStatusUuid = (nodeType: string): string => {
+    return resolvePropUuid(nodeType, STATUS_PROPERTY_KEY);
+  };
+
+  // Build per-type property key→UUID maps for resolving property access.
+  const propUuidMaps = useMemo(() => {
+    const maps = new Map<string, Map<string, string>>();
+    templateSchema?.node_types?.forEach(nt => {
+      const m = buildPropertyUuidMap(nt);
+      if (m) maps.set(nt.id, m);
+    });
+    return maps;
+  }, [templateSchema]);
+
+  /** Resolve a property UUID for a given node type and semantic key. */
+  const resolvePropUuid = (nodeType: string, key: string): string => {
+    return propUuidMaps.get(nodeType)?.get(key) ?? key;
+  };
 
   const effectiveNodes = useMemo(() => {
     return Object.keys(nodes).length > 0 ? nodes : storeNodes;
@@ -85,10 +131,10 @@ export function AgileView({
         },
         rules,
       );
-      const estimatedHours = Number(node.properties?.estimated_hours);
+      const estimatedHours = Number(node.properties?.[resolvePropUuid(node.type, 'estimated_hours')]);
       const hasEstimatedHours = Number.isFinite(estimatedHours) && estimatedHours > 0;
 
-      const nodeVelocity = Number(node.properties?.velocity);
+      const nodeVelocity = Number(node.properties?.[resolvePropUuid(node.type, 'velocity')]);
       const scoreVelocity = Number(velocityScores[node.id]?.totalVelocity);
       const hasVelocity = (Number.isFinite(nodeVelocity) && nodeVelocity !== 0)
         || (Number.isFinite(scoreVelocity) && scoreVelocity !== 0);
@@ -101,7 +147,7 @@ export function AgileView({
     const override = statusOverrides[node.id];
     if (override) return override;
 
-    const statusRaw = node.properties?.[AGILE_STATUS_PROPERTY_ID];
+    const statusRaw = node.properties?.[resolveStatusUuid(node.type)];
     if (typeof statusRaw === 'string' && statusRaw.trim()) {
       // Resolve option UUID to name if the value is a UUID
       const resolved = statusOptionNames.get(statusRaw) ?? statusRaw;
@@ -133,26 +179,28 @@ export function AgileView({
     }
 
     const nodeId = node.id;
-    const oldValue = node.properties?.[AGILE_STATUS_PROPERTY_ID] ?? null;
-    const previousOverride = statusOverrides[nodeId];
+    const statusUuid = resolveStatusUuid(node.type);
+    const oldValue = node.properties?.[statusUuid] ?? null;
 
     setStatusOverrides((prev) => ({ ...prev, [nodeId]: nextStatus }));
     setSavingByNodeId((prev) => ({ ...prev, [nodeId]: true }));
 
     try {
+      const typeMap = statusNameToUuidByType.get(node.type);
+      const newValue = typeMap?.get(nextStatus) ?? nextStatus;
       if (onNodePropertyChange) {
         await onNodePropertyChange({
           nodeId,
-          propertyId: AGILE_STATUS_PROPERTY_ID,
+          propertyId: statusUuid,
           oldValue,
-          newValue: nextStatus,
+          newValue,
         });
       } else {
         await apiClient.executeCommand(sessionId, 'UpdateProperty', {
           node_id: nodeId,
-          property_id: AGILE_STATUS_PROPERTY_ID,
+          property_id: statusUuid,
           old_value: oldValue,
-          new_value: nextStatus,
+          new_value: newValue,
         });
       }
     } catch (error) {
@@ -177,7 +225,7 @@ export function AgileView({
 
   // Backlog projection
   const totalBacklogHours = useMemo(
-    () => columns['To Do'].reduce((sum, node) => sum + (Number(node.properties?.estimated_hours) || 0), 0),
+    () => columns['To Do'].reduce((sum, node) => sum + (Number(node.properties?.[resolvePropUuid(node.type, 'estimated_hours')]) || 0), 0),
     [columns],
   );
 
@@ -185,7 +233,7 @@ export function AgileView({
     const persons = Object.values(effectiveNodes).filter(n => typeFeatures.get(n.type)?.includes('is_person'));
     if (persons.length === 0) return 8;
     const caps = persons
-      .map(p => Number(p.properties?.daily_capacity) || 0)
+      .map(p => Number(p.properties?.[resolvePropUuid(p.type, 'daily_capacity')]) || 0)
       .filter(c => c > 0);
     if (caps.length === 0) return 8;
     return caps.reduce((a, b) => a + b, 0) / caps.length;
@@ -324,8 +372,8 @@ export function AgileView({
                       : '';
                     const isOrphaned = Boolean((node as any).metadata?.orphaned)
                       && (orphanedReason.includes('not found in current template') || orphanedReason.includes('removed from template'));
-                    const name = node.properties?.name || node.id;
-                    const hours = Number(node.properties?.estimated_hours) || 0;
+                    const name = node.properties?.[resolvePropUuid(node.type, 'name')] || node.id;
+                    const hours = Number(node.properties?.[resolvePropUuid(node.type, 'estimated_hours')]) || 0;
                     const vel = velocity?.totalVelocity ?? 0;
                     const isSelected = selectedNodeId === node.id;
                     const isSaving = Boolean(savingByNodeId[node.id]);
@@ -379,7 +427,7 @@ export function AgileView({
                               ⚡{vel > 0 ? '+' : ''}{vel.toFixed(0)}
                             </span>
                           )}
-                          <span className="text-[10px] text-fg-muted capitalize">{node.type}</span>
+                          <span className="text-[10px] text-fg-muted capitalize">{typeLabels.get(node.type) || node.type}</span>
                         </div>
                       </div>
                     );

@@ -44,11 +44,11 @@ def test_template_schema_includes_markup_profile(client):
     data = response.get_json()
 
     node_types = data.get("node_types", [])
-    root_type = next((nt for nt in node_types if nt.get("legacy_id") == "root"), None)
+    root_type = next((nt for nt in node_types if nt.get("key") == "root"), None)
     assert root_type is not None
 
     props = root_type.get("properties", [])
-    script_prop = next((p for p in props if p.get("id") == "script"), None)
+    script_prop = next((p for p in props if p.get("key") == "script"), None)
     assert script_prop is not None
     assert script_prop.get("type") == "editor"
     assert script_prop.get("markup_profile") == "script_default"
@@ -72,7 +72,8 @@ def test_graph_serialization_includes_property_markup(client):
 
     property_markup = root.get("property_markup")
     assert isinstance(property_markup, dict)
-    assert "script" in property_markup
-    script_markup = property_markup["script"]
+    # Property markup now uses UUID keys; find the script markup by profile
+    script_markup = next((v for v in property_markup.values() if v.get('profile_id') == 'script_default'), None)
+    assert script_markup is not None
     assert script_markup.get("profile_id") == "script_default"
     assert isinstance(script_markup.get("blocks"), list)

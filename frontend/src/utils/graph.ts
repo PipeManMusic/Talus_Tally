@@ -109,7 +109,11 @@ export function normalizeGraph(graphLike: any): Graph {
       return { id: 'default', nodes, edges: [] };
     }
 
-    console.log('[normalizeGraph] No valid graph structure found, returning empty');
+    const keys = Object.keys(source || {});
+    console.warn('[normalizeGraph] No valid graph structure found. Expected "nodes" (array) or "roots" (array). Found keys:', keys);
+    if (source && typeof source.nodes === 'object' && !Array.isArray(source.nodes)) {
+      console.warn('[normalizeGraph] "nodes" is an object (dict), not an array. This file may have been saved in backend persistence format rather than frontend format.');
+    }
     return { id: 'default', nodes: [], edges: [] };
   } catch (error) {
     const elapsed = performance.now() - startTime;

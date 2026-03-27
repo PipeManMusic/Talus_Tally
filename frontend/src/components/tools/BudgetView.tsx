@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { AlertCircle, DollarSign, ChevronRight, ChevronDown } from 'lucide-react';
-import { apiClient, type BudgetPayload, type BudgetNode, type VelocityScore } from '../../api/client';
+import { apiClient, type BudgetPayload, type BudgetNode, type VelocityScore, type TemplateSchema } from '../../api/client';
 import { useWebSocket } from '../../hooks/useWebSocket';
 import { useFilterStore, type FilterRule } from '../../store/filterStore';
 import { evaluateNodeVisibility } from '../../utils/filterEngine';
@@ -11,6 +11,7 @@ interface BudgetViewProps {
   velocityScores?: Record<string, VelocityScore>;
   selectedNodeId?: string | null;
   onNodeSelect?: (nodeId: string | null) => void;
+  templateSchema?: TemplateSchema | null;
 }
 
 function formatCurrency(value: number): string {
@@ -30,6 +31,7 @@ function BudgetTreeRow({
   onNodeSelect,
   filterRules,
   filterMode,
+  getTypeLabel,
 }: {
   node: BudgetNode;
   selectedNodeId?: string | null;
@@ -38,6 +40,7 @@ function BudgetTreeRow({
   onNodeSelect?: (nodeId: string | null) => void;
   filterRules: FilterRule[];
   filterMode: 'hide' | 'ghost';
+  getTypeLabel?: (typeId: string) => string;
 }) {
   const [expanded, setExpanded] = useState(true);
   const hasChildren = node.children.length > 0;
@@ -110,7 +113,7 @@ function BudgetTreeRow({
         <div className="flex-1 py-3 min-w-0">
           <div className="flex items-center gap-2">
             <span className="font-medium text-fg-primary truncate">{node.nodeName}</span>
-            <span className="text-xs text-fg-secondary flex-shrink-0">{node.nodeType}</span>
+            <span className="text-xs text-fg-secondary flex-shrink-0">{getTypeLabel ? getTypeLabel(node.nodeType) : node.nodeType}</span>
           </div>
         </div>
 
@@ -150,6 +153,7 @@ function BudgetTreeRow({
             onNodeSelect={onNodeSelect}
             filterRules={filterRules}
             filterMode={filterMode}
+            getTypeLabel={getTypeLabel}
           />
         ))}
     </>
@@ -163,12 +167,14 @@ function BudgetFlatRow({
   nodes,
   velocityScores,
   onNodeSelect,
+  getTypeLabel,
 }: {
   node: BudgetNode;
   selectedNodeId?: string | null;
   nodes?: Record<string, any>;
   velocityScores?: Record<string, any>;
   onNodeSelect?: (nodeId: string | null) => void;
+  getTypeLabel?: (typeId: string) => string;
 }) {
   const varianceClass =
     node.variance > 0
@@ -191,7 +197,7 @@ function BudgetFlatRow({
       <div className="flex items-center justify-between gap-4">
         <div className="flex-1">
           <div className="font-medium text-fg-primary">{node.nodeName}</div>
-          <div className="text-xs text-fg-secondary">{node.nodeType}</div>
+          <div className="text-xs text-fg-secondary">{getTypeLabel ? getTypeLabel(node.nodeType) : node.nodeType}</div>
         </div>
 
         <div className="grid grid-cols-3 gap-6 text-right">
@@ -219,12 +225,14 @@ function BudgetTreeContent({
   nodes,
   velocityScores,
   onNodeSelect,
+  getTypeLabel,
 }: {
   trees: BudgetNode[];
   selectedNodeId?: string | null;
   nodes?: Record<string, any>;
   velocityScores?: Record<string, any>;
   onNodeSelect?: (nodeId: string | null) => void;
+  getTypeLabel?: (typeId: string) => string;
 }) {
   const { rules, filterMode } = useFilterStore();
 
@@ -283,6 +291,7 @@ function BudgetTreeContent({
                 nodes={nodes}
                 velocityScores={velocityScores}
                 onNodeSelect={onNodeSelect}
+                getTypeLabel={getTypeLabel}
               />
             ))
           )}
@@ -300,6 +309,7 @@ function BudgetTreeContent({
               onNodeSelect={onNodeSelect}
               filterRules={rules}
               filterMode={filterMode}
+              getTypeLabel={getTypeLabel}
             />
           ))}
         </>
@@ -308,12 +318,18 @@ function BudgetTreeContent({
   );
 }
 
-export function BudgetView({ sessionId, nodes, velocityScores, selectedNodeId, onNodeSelect }: BudgetViewProps) {
+export function BudgetView({ sessionId, nodes, velocityScores, selectedNodeId, onNodeSelect, templateSchema }: BudgetViewProps) {
   const [data, setData] = useState<BudgetPayload | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const refreshPendingRef = useRef(false);
   const refreshingRef = useRef(false);
+
+  const getTypeLabel = useMemo(() => {
+    const map = new Map<string, string>();
+    templateSchema?.node_types?.forEach(nt => map.set(nt.id, nt.name));
+    return (typeId: string) => map.get(typeId) || typeId;
+  }, [templateSchema]);
 
   const fetchBudget = useCallback(async () => {
     if (!sessionId) return;
@@ -410,6 +426,7 @@ export function BudgetView({ sessionId, nodes, velocityScores, selectedNodeId, o
             nodes={nodes}
             velocityScores={velocityScores}
             onNodeSelect={onNodeSelect}
+            getTypeLabel={getTypeLabel}
           />
         </div>
       )}

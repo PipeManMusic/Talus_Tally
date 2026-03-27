@@ -2,9 +2,7 @@ description: Minimal template with predictable node types for automated E2E cove
 name: E2E Test Template
 node_types:
 - allowed_asset_types: []
-  allowed_children:
-  - e2e_task
-  - person
+  allowed_children: []
   features:
   - budgeting
   - is_root
@@ -16,94 +14,26 @@ node_types:
     label: Project Name
     required: false
     type: text
+    uuid: f1927967-4dc6-cc0d-e8ad-9f79009c51b2
   - id: objective
     label: Objective
     required: false
     type: text
+    uuid: ea6fd22e-17e0-dd9b-e08a-e8c7b7f95a0d
   - id: estimated_cost
     label: Estimated Cost
-    type: currency
+    required: false
     system_locked: true
+    type: currency
     ui_group: Financial
+    uuid: 1f2be75b-8aa9-3cab-9402-6797e9a7df3c
   - id: actual_cost
     label: Actual Cost
+    required: false
+    system_locked: true
     type: currency
-    system_locked: true
     ui_group: Financial
-- allowed_asset_types: []
-  allowed_children: []
-  features:
-  - scheduling
-  - budgeting
-  icon: check-square
-  id: e2e_task
-  label: Task
-  properties:
-  - id: name
-    label: Task Name
-    required: true
-    type: text
-  - id: status
-    label: Status
-    type: select
-    options:
-    - not_started
-    - in_progress
-    - completed
-  - id: description
-    label: Description
-    type: textarea
-  - id: start_date
-    label: Start Date
-    type: date
-    system_locked: true
-    ui_group: Schedule
-  - id: end_date
-    label: End Date
-    type: date
-    system_locked: true
-    ui_group: Schedule
-  - id: assigned_to
-    label: Assigned To
-    type: text
-    system_locked: true
-    ui_group: Schedule
-  - id: estimated_cost
-    label: Estimated Cost
-    type: currency
-    system_locked: true
-    ui_group: Financial
-  - id: actual_cost
-    label: Actual Cost
-    type: currency
-    system_locked: true
-    ui_group: Financial
-- allowed_asset_types: []
-  allowed_children: []
-  features:
-  - is_person
-  icon: user
-  id: person
-  label: Person
-  properties:
-  - id: name
-    label: Person Name
-    required: true
-    type: text
-  - id: capacity_monday
-    label: Monday Capacity
-    type: number
-  - id: capacity_tuesday
-    label: Tuesday Capacity
-    type: number
-  - id: capacity_wednesday
-    label: Wednesday Capacity
-    type: number
-  - id: capacity_thursday
-    label: Thursday Capacity
-    type: number
-  - id: capacity_friday
-    label: Friday Capacity
-    type: number
+    uuid: 1995af96-4af9-f0eb-b3eb-2ba8e75ae6da
+  uuid: c772d629-7d55-ad53-b487-4a755b02317c
 uuid: 314d7e8b-173a-40ea-9b06-d055510feb83
 version: '1.0'

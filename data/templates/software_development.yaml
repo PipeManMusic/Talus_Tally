@@ -270,6 +270,10 @@ node_types:
       statusScores:
         In Progress: 2
         To Do: 1
+  - id: prop_1774552679703
+    indicator_set: status
+    label: Notes
+    type: editor
   uuid: 70a3bbf1-e0be-754e-a1ef-0913bda3506a
 - allowed_asset_types: []
   allowed_children:
@@ -439,6 +443,7 @@ node_types:
   - id: prop_1774551003137
     indicator_set: status
     label: Regression Tests Created
+    required: false
     type: checkbox
   uuid: f5f146a0-94f7-7638-59de-50d292517482
 uuid: 2dac86dd-3f6b-401d-ba03-67372db4ec4d

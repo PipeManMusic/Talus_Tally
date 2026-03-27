@@ -47,6 +47,7 @@ export interface Session {
 
 export interface Node {
   id: string;
+  name?: string;
   type: string;
   properties: Record<string, any>;
   children: string[]; // IDs of child nodes
@@ -101,6 +102,7 @@ export interface NodeTypeSchema {
   features?: string[];
   properties: Array<{
     id: string;
+    key?: string;
     name: string;
     type: string;
     required: boolean;

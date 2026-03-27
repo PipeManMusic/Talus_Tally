@@ -37,6 +37,7 @@ const PERSON_SPECIAL_PROPERTY_IDS = new Set([
 
 export interface NodeProperty {
   id: string;
+  key?: string;
   name: string;
   type: 'text' | 'number' | 'select' | 'textarea' | 'currency' | 'date' | 'checkbox' | 'editor';
   value:
@@ -596,7 +597,17 @@ export const Inspector = memo(function Inspector({
   };
 
   const isPersonNode = nodeTypeSchemas?.[nodeType ?? '']?.features?.includes('is_person') ?? false;
-  const propertyMap = useMemo(() => new Map(properties.map((property) => [property.id, property])), [properties]);
+  // Build a lookup map that indexes properties by both their UUID id and semantic key
+  const propertyMap = useMemo(() => {
+    const map = new Map<string, NodeProperty>();
+    for (const property of properties) {
+      map.set(property.id, property);
+      if (property.key && property.key !== property.id) {
+        map.set(property.key, property);
+      }
+    }
+    return map;
+  }, [properties]);
   const estimatedHoursValue = useMemo(() => {
     const raw = propertyMap.get('estimated_hours')?.value;
     const parsed = Number(raw ?? 0);
@@ -608,7 +619,13 @@ export const Inspector = memo(function Inspector({
     }
     return null;
   }, [propertyMap]);
-  const personPropertyMap = new Map(properties.map((property) => [property.id, property]));
+  const personPropertyMap = new Map<string, NodeProperty>();
+  for (const property of properties) {
+    personPropertyMap.set(property.id, property);
+    if (property.key && property.key !== property.id) {
+      personPropertyMap.set(property.key, property);
+    }
+  }
 
   const getPersonPropertyNumericValue = (propertyId: string, fallback: number) => {
     const raw = personPropertyMap.get(propertyId)?.value;
@@ -769,7 +786,7 @@ export const Inspector = memo(function Inspector({
         <div className="mb-3">
           <div className="text-xs text-fg-secondary mb-1">Node Type</div>
           <div data-testid="inspector-node-type" className="text-sm text-fg-primary font-semibold bg-accent-primary/10 rounded px-2 py-1 capitalize">
-            {nodeType || 'Unknown'}
+            {(nodeType && nodeTypeSchemas?.[nodeType]?.name) || nodeType || 'Unknown'}
           </div>
         </div>
         <div className="mb-3">
@@ -831,7 +848,7 @@ export const Inspector = memo(function Inspector({
 
           // Bucket properties by group
           const sourceProperties = isPersonNode
-            ? properties.filter((property) => !PERSON_SPECIAL_PROPERTY_IDS.has(property.id))
+            ? properties.filter((property) => !PERSON_SPECIAL_PROPERTY_IDS.has(property.key ?? property.id))
             : properties;
 
           const groups: Record<string, NodeProperty[]> = {};
@@ -853,8 +870,9 @@ export const Inspector = memo(function Inspector({
 
           // Helper to render a single property field
           const renderPropertyField = (prop: NodeProperty) => {
+            const propKey = prop.key ?? prop.id;
             if (
-              prop.id === 'allocations'
+              propKey === 'allocations'
               && activeAllocationPropertyId
               && prop.id !== activeAllocationPropertyId
             ) {
@@ -864,9 +882,9 @@ export const Inspector = memo(function Inspector({
             const displayValue = prop.value;
             const draftKey = makeDraftKey(prop.id, false);
             const draftValue = draftValues[draftKey] ?? String(displayValue ?? '');
-            const isAssigneeField = prop.id === 'assigned_to';
+            const isAssigneeField = propKey === 'assigned_to';
             const isManualAllocationsField =
-              prop.id === 'allocations'
+              propKey === 'allocations'
               && (!activeAllocationPropertyId || prop.id === activeAllocationPropertyId);
             const assignedIds = isAssigneeField ? parseAssignedToValue(displayValue) : [];
             const pendingAssignee = pendingAssigneeByProp[prop.id] ?? '';

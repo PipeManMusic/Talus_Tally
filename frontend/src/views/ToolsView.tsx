@@ -119,6 +119,7 @@ export function ToolsView({
             velocityScores={velocityScores}
             selectedNodeId={selectedNodeId}
             onNodeSelect={onNodeSelect}
+            templateSchema={templateSchema}
           />
         )}
         {activeTab === 'gantt' && (
@@ -129,6 +130,7 @@ export function ToolsView({
             refreshSignal={ganttRefreshSignal}
             selectedNodeId={selectedNodeId}
             onNodeSelect={onNodeSelect}
+            templateSchema={templateSchema}
           />
         )}
         {activeTab === 'manpower' && (

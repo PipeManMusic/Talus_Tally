@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { AlertCircle, Calendar } from 'lucide-react';
-import { apiClient, type GanttPayload, type GanttBar, type VelocityScore } from '../../api/client';
+import { apiClient, type GanttPayload, type GanttBar, type VelocityScore, type TemplateSchema } from '../../api/client';
 import { useWebSocket } from '../../hooks/useWebSocket';
 import { useFilterStore } from '../../store/filterStore';
 import { evaluateNodeVisibility } from '../../utils/filterEngine';
@@ -12,6 +12,7 @@ interface GanttViewProps {
   refreshSignal?: number;
   selectedNodeId?: string | null;
   onNodeSelect?: (nodeId: string | null) => void;
+  templateSchema?: TemplateSchema | null;
 }
 
 /** Depth-based bar colour palette */
@@ -37,6 +38,7 @@ function GanttBarsContent({
   onDragStart,
   onDragEnd,
   onNodeSelect,
+  getTypeLabel,
 }: {
   bars: GanttBar[];
   nodes?: Record<string, any>;
@@ -46,6 +48,7 @@ function GanttBarsContent({
   onDragStart: (e: React.DragEvent<HTMLDivElement>, bar: GanttBar) => void;
   onDragEnd: (e: React.DragEvent<HTMLDivElement>) => void;
   onNodeSelect?: (nodeId: string | null) => void;
+  getTypeLabel?: (typeId: string) => string;
 }) {
   const { rules, filterMode } = useFilterStore();
 
@@ -99,7 +102,7 @@ function GanttBarsContent({
               <div className="font-medium text-sm text-fg-primary truncate">
                 {bar.nodeName}
               </div>
-              <div className="text-xs text-fg-secondary">{bar.nodeType}</div>
+              <div className="text-xs text-fg-secondary">{getTypeLabel ? getTypeLabel(bar.nodeType) : bar.nodeType}</div>
             </div>
 
             {/* Bar track */}
@@ -132,12 +135,18 @@ function GanttBarsContent({
   );
 }
 
-export function GanttView({ sessionId, nodes, velocityScores, refreshSignal, selectedNodeId, onNodeSelect }: GanttViewProps) {
+export function GanttView({ sessionId, nodes, velocityScores, refreshSignal, selectedNodeId, onNodeSelect, templateSchema }: GanttViewProps) {
   const [data, setData] = useState<GanttPayload | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const refreshPendingRef = useRef(false);
   const refreshingRef = useRef(false);
+
+  const getTypeLabel = useMemo(() => {
+    const map = new Map<string, string>();
+    templateSchema?.node_types?.forEach(nt => map.set(nt.id, nt.name));
+    return (typeId: string) => map.get(typeId) || typeId;
+  }, [templateSchema]);
 
   // Drag state
   const [draggingBarId, setDraggingBarId] = useState<string | null>(null);
@@ -305,6 +314,7 @@ export function GanttView({ sessionId, nodes, velocityScores, refreshSignal, sel
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
             onNodeSelect={onNodeSelect}
+            getTypeLabel={getTypeLabel}
           />
         </div>
       )}

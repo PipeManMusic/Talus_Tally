@@ -43,8 +43,10 @@ class BudgetEngine:
     (keyed by UUID) whose values are Node objects or plain dicts.
     """
 
-    def __init__(self, graph_nodes: Dict[Any, Any]) -> None:
+    def __init__(self, graph_nodes: Dict[Any, Any], blueprint=None) -> None:
+        from backend.core.property_resolver import PropertyResolver
         self._nodes = graph_nodes
+        self._pr = PropertyResolver(blueprint)
         self._parent_map: Dict[str, str] = {}
         self._children_map: Dict[str, List[str]] = {}
         self._build_maps()
@@ -65,18 +67,19 @@ class BudgetEngine:
             for cid in child_strs:
                 self._parent_map[cid] = nid_str
 
-    @staticmethod
-    def _get_prop(node: Any, key: str, default: Any = None) -> Any:
-        """Read a property from a Node object or dict."""
+    def _get_prop(self, node: Any, key: str, default: Any = None) -> Any:
+        """Read a property from a Node object or dict, resolving UUID keys."""
+        if hasattr(node, "properties") and hasattr(node, "blueprint_type_id"):
+            return self._pr.get(node, key, default)
         if hasattr(node, "properties"):
             return node.properties.get(key, default)
         return node.get("properties", {}).get(key, default)
 
     @staticmethod
     def _get_name(node: Any) -> str:
-        if hasattr(node, "properties"):
-            return node.properties.get("name", "Unnamed")
-        return node.get("properties", {}).get("name", "Unnamed")
+        if hasattr(node, "name"):
+            return node.name or "Unnamed"
+        return node.get("name", "Unnamed")
 
     @staticmethod
     def _get_type(node: Any) -> str:

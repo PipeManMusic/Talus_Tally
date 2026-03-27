@@ -365,11 +365,17 @@ class OrphanManager:
             type_uuid = node_type.get('uuid')
             if not type_id and not type_uuid:
                 continue
-            allowed_props = {'name'}
+            # Use UUID property keys as the canonical identifiers,
+            # falling back to the semantic key when no UUID is present.
+            allowed_props: Set[str] = {'name'}
             for prop in node_type.get('properties', []) or []:
-                prop_key = prop.get('id') or prop.get('key')
-                if prop_key:
-                    allowed_props.add(prop_key)
+                prop_uuid = prop.get('uuid')
+                if prop_uuid:
+                    allowed_props.add(prop_uuid)
+                else:
+                    prop_key = prop.get('key') or prop.get('id')
+                    if prop_key:
+                        allowed_props.add(prop_key)
             if type_id:
                 allowed_props_by_type[type_id] = allowed_props
             if type_uuid:

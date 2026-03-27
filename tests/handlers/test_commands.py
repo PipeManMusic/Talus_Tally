@@ -116,7 +116,11 @@ def test_create_node_default_status_initialized():
 
     node = graph.get_node(node_id)
     assert node is not None
-    assert node.properties.get("status") is not None
+    # Properties are keyed by UUID; verify a status value is set under
+    # the UUID for the "status" property.
+    status_uuid = blueprint.build_property_uuid_map(node.blueprint_type_id).get("status")
+    assert status_uuid is not None
+    assert node.properties.get(status_uuid) is not None
 
 
 def test_update_property_command_rejects_orphaned_node_edits():

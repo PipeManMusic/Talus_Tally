@@ -48,9 +48,8 @@ class ProjectManager:
 
         # Create a root node with first node type from blueprint
         if blueprint and blueprint.node_types:
-            print("[DEBUG] blueprint.node_types just before use:")
-            for idx, nt in enumerate(blueprint.node_types):
-                print(f"  idx={idx} type={type(nt)} value={nt}")
+            logger.debug("blueprint.node_types just before use: %s",
+                         [(idx, type(nt).__name__) for idx, nt in enumerate(blueprint.node_types)])
             # Defensive: ensure node_types is a list of NodeTypeDef, not UUIDs or other types
             node_types = [nt for nt in blueprint.node_types if hasattr(nt, 'id') and hasattr(nt, 'name')]
             if not node_types:
@@ -68,7 +67,8 @@ class ProjectManager:
                     # Use the first option as default
                     default_status_uuid = prop['options'][0].get('id')
                     if default_status_uuid:
-                        root_node.properties['status'] = default_status_uuid
+                        status_key = prop.get('uuid') or prop.get('id')
+                        root_node.properties[status_key] = default_status_uuid
                     break
         else:
             # Fallback: create generic root node

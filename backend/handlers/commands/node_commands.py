@@ -108,9 +108,11 @@ class CreateNodeCommand(Command):
         if not default_id:
             return
 
+        status_key = status_prop.get("uuid") or status_prop.get("id")
+
         # Initialize status property with first option if not already set
-        if self.node.properties.get("status") is None:
-            self.node.properties["status"] = default_id
+        if self.node.properties.get(status_key) is None:
+            self.node.properties[status_key] = default_id
     
     def undo(self) -> None:
         """Undo the command by removing the node."""

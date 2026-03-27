@@ -191,7 +191,7 @@ class Blueprint:
         """Get an option definition by its UUID.
         
         Args:
-            property_id: The property ID (e.g., "status")
+            property_id: The property ID (legacy or uuid)
             option_uuid: The UUID of the option
             
         Returns:
@@ -200,7 +200,7 @@ class Blueprint:
         for node_type in self.node_types:
             properties = node_type._extra_props.get('properties', [])
             for prop in properties:
-                if prop.get('id') == property_id and 'options' in prop:
+                if (prop.get('id') == property_id or prop.get('uuid') == property_id) and 'options' in prop:
                     for option in prop['options']:
                         if option.get('id') == option_uuid:
                             return option
@@ -211,7 +211,7 @@ class Blueprint:
         
         Args:
             node_type_id: The node type uuid (or legacy id)
-            property_id: The property ID (e.g., "status")
+            property_id: The property ID (legacy or uuid)
             option_name: The option name/value
             
         Returns:
@@ -223,12 +223,39 @@ class Blueprint:
         properties = node_type._extra_props.get('properties', [])
         
         for prop in properties:
-            if prop.get('id') == property_id and 'options' in prop:
+            if (prop.get('id') == property_id or prop.get('uuid') == property_id) and 'options' in prop:
                 for option in prop['options']:
                     if option.get('name') == option_name:
                         return option.get('id')
         
         return None
+
+    def build_property_uuid_map(self, node_type_ref: str) -> Dict[str, str]:
+        """Return ``{prop_key: property_uuid}`` for a given node type.
+
+        Maps semantic property keys (e.g., "name", "status") to their
+        deterministic UUIDs.  Used by backend engines that need to look
+        up well-known properties by semantic key.
+        """
+        node_type = self.get_node_type(node_type_ref)
+        if not node_type:
+            return {}
+        result: Dict[str, str] = {}
+        for prop in node_type._extra_props.get('properties', []):
+            lid = prop.get('id', '')
+            puuid = prop.get('uuid', '')
+            if lid and puuid:
+                result[lid] = puuid
+        return result
+
+    def build_all_property_uuid_maps(self) -> Dict[str, Dict[str, str]]:
+        """Return ``{node_type_uuid: {prop_key: property_uuid}}`` for all types."""
+        result: Dict[str, Dict[str, str]] = {}
+        for nt in self.node_types:
+            m = self.build_property_uuid_map(nt.uuid)
+            if m:
+                result[nt.uuid] = m
+        return result
 
 
 class SchemaLoader:
@@ -421,6 +448,7 @@ class SchemaLoader:
             if not isinstance(nt_data, dict):
                 continue
             self._generate_option_uuids(nt_data)
+            self._generate_property_uuids(nt_data)
             node_type = NodeTypeDef(**nt_data)
             node_types.append(node_type)
         
@@ -457,4 +485,24 @@ class SchemaLoader:
                     else:
                         normalized_options.append(option)
                 prop['options'] = normalized_options
+
+    def _generate_property_uuids(self, node_type_data: Dict[str, Any]) -> None:
+        """Generate deterministic UUIDs for properties in a node type.
+
+        Modifies each property dict in place, adding a ``uuid`` field.
+        The original ``id`` is kept unchanged so that internal code
+        (feature macros, option UUID generation) that already ran can
+        still reference it.  Downstream serialisers (schema endpoint,
+        velocity schema) will expose ``uuid`` as the primary ``id``.
+        """
+        node_type_legacy_id = node_type_data.get('id', '')
+        properties = node_type_data.get('properties', [])
+        for prop in properties:
+            if not isinstance(prop, dict):
+                continue
+            legacy_id = prop.get('id', '')
+            if not prop.get('uuid'):
+                prop['uuid'] = _generate_stable_uuid(
+                    f"property.{node_type_legacy_id}", legacy_id
+                )
 

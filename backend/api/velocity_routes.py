@@ -52,10 +52,20 @@ def _convert_blueprint_to_schema(blueprint) -> Optional[Dict]:
             elif hasattr(node_type, 'velocityConfig'):
                 nt_dict['velocityConfig'] = node_type.velocityConfig
             
-            # Extract properties with their velocity configs
-            # Now NodeTypeDef preserves properties, so we can use them directly
+            # Extract properties with their velocity configs.
+            # Remap property 'id' to 'uuid' so the engine uses UUID keys
+            # that match the UUID-keyed node.properties dict.
             if hasattr(node_type, 'properties') and node_type.properties:
-                nt_dict['properties'] = node_type.properties
+                remapped_props = []
+                for p in node_type.properties:
+                    if isinstance(p, dict) and p.get('uuid'):
+                        rp = dict(p)
+                        rp['key'] = rp.get('id', '')
+                        rp['id'] = rp['uuid']
+                        remapped_props.append(rp)
+                    else:
+                        remapped_props.append(p)
+                nt_dict['properties'] = remapped_props
             
             schema['node_types'].append(nt_dict)
         return schema
@@ -182,11 +192,11 @@ def get_velocity_ranking(session_id: str):
                     node = {}
             
             # Get node properties safely
-            if hasattr(node, 'properties'):
-                node_name = node.properties.get('name', 'Unnamed')
+            if hasattr(node, 'name'):
+                node_name = node.name or 'Unnamed'
                 node_type = node.blueprint_type_id if hasattr(node, 'blueprint_type_id') else 'unknown'
             else:
-                node_name = node.get('properties', {}).get('name', 'Unnamed')
+                node_name = node.get('name', 'Unnamed')
                 node_type = node.get('type', 'unknown')
             
             nodes.append({
@@ -264,11 +274,11 @@ def get_node_velocity(session_id: str, node_id: str):
         node = graph_nodes.get(node_uuid, {})
         
         # Get node properties safely
-        if hasattr(node, 'properties'):
-            node_name = node.properties.get('name', 'Unnamed')
+        if hasattr(node, 'name'):
+            node_name = node.name or 'Unnamed'
             node_type = node.blueprint_type_id if hasattr(node, 'blueprint_type_id') else 'unknown'
         else:
-            node_name = node.get('properties', {}).get('name', 'Unnamed')
+            node_name = node.get('name', 'Unnamed')
             node_type = node.get('type', 'unknown')
         
         total_ms = (time.perf_counter() - request_start) * 1000

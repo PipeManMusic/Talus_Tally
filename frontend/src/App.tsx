@@ -58,6 +58,7 @@ import { useGraphStore } from './store';
 import { useGraphSync } from './hooks';
 import { apiClient, type Node, type Template, type Graph, type TemplateSchema, type NodeTypeSchema, type VelocityScore, API_BASE_URL } from './api/client';
 import { normalizeGraph } from './utils/graph';
+import { propertyKey } from './utils/propertyResolver';
 import { preloadStatusIndicators } from './utils/indicatorCache';
 import { validateTemplateSchema, safeExtractOptions } from './utils/templateValidation';
 
@@ -592,8 +593,9 @@ function App() {
   };
 
   /** Assign a display group to a property. */
-  const assignGroup = (propId: string, propType: string, schemaUiGroup?: string): string => {
-    if (propId === 'name') return 'Identity';
+  const assignGroup = (propId: string, propType: string, schemaUiGroup?: string, propKey?: string): string => {
+    const k = propKey ?? propId;
+    if (k === 'name') return 'Identity';
     if (schemaUiGroup) return schemaUiGroup;
     return typeToGroup[propType] ?? 'Details';
   };
@@ -746,11 +748,12 @@ function App() {
     };
 
     // Build properties from schema
-    const schemaProperties = nodeTypeSchema.properties.filter((prop) => prop.id !== 'name').map((prop) => {
-      const isAllocationSchemaProperty = prop.id === 'allocations';
+    const schemaProperties = nodeTypeSchema.properties.filter((prop) => propertyKey(prop) !== 'name').map((prop) => {
+      const pk = propertyKey(prop);
+      const isAllocationSchemaProperty = pk === 'allocations';
 
       let value = currentSelectedNodeData.properties?.[prop.id];
-      if (value === undefined && prop.id === 'name') {
+      if (value === undefined && pk === 'name') {
         value = currentSelectedNodeData.properties?.name || '';
       }
       let type: NodeProperty['type'] = 'text';
@@ -781,6 +784,7 @@ function App() {
       
       return {
         id: isAllocationSchemaProperty ? 'allocations' : prop.id,
+        key: pk,
         name: prop.name,
         type,
         value: value ?? '',
@@ -788,7 +792,7 @@ function App() {
         required: prop.required,
         markupTokens,
         markupProfile,
-        group: assignGroup(prop.id, type, (prop as any).ui_group),
+        group: assignGroup(prop.id, type, (prop as any).ui_group, pk),
       };
     });
 
@@ -819,7 +823,7 @@ function App() {
     // Build asset properties
     const assetProperties = (assetTypeSchema.properties || []).map((prop) => {
       let value = assetNode.properties?.[prop.id];
-      if (value === undefined && prop.id === 'name') {
+      if (value === undefined && propertyKey(prop) === 'name') {
         value = assetNode.properties?.name || '';
       }
       let type: NodeProperty['type'] = 'text';
@@ -1230,6 +1234,16 @@ function App() {
       return;
     }
 
+    if (!normalizedGraph.nodes || normalizedGraph.nodes.length === 0) {
+      console.error('✗ Project file produced an empty graph after normalization');
+      alert(
+        'Could not load project: the file has an unrecognized graph structure.\n\n' +
+        'Expected "graph.nodes" as an array or "graph.roots" as an array.\n' +
+        'The file may be corrupted or saved in an incompatible format.'
+      );
+      return;
+    }
+
     const templateId = parsed.template_id || parsed.graph?.template_id || null;
     let finalGraph = normalizedGraph;
 
@@ -1269,6 +1283,10 @@ function App() {
       );
       console.log('✓ Graph loaded into backend session');
       finalGraph = normalizeGraph(loadResult.graph ?? loadResult);
+      if (!finalGraph.nodes || finalGraph.nodes.length === 0) {
+        console.warn('⚠ Backend returned a graph that normalized to 0 nodes, falling back to local graph');
+        finalGraph = normalizedGraph;
+      }
       setCurrentTemplateId(templateId);
 
       const orphanInfo = loadResult?.orphan_info;

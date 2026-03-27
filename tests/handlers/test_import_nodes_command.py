@@ -27,6 +27,15 @@ class DummyBlueprint:
             return False
         return child_type in node_type.allowed_children
 
+    def get_node_type(self, ref):
+        return self._node_type_map.get(ref)
+
+    def build_property_uuid_map(self, node_type_ref):
+        return {}
+
+    def build_all_property_uuid_maps(self):
+        return {}
+
 
 @pytest.fixture(autouse=True)
 def mute_emit(monkeypatch):

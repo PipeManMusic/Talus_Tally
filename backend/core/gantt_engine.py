@@ -17,6 +17,8 @@ from datetime import date, datetime
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import UUID
 
+from backend.core.property_resolver import PropertyResolver
+
 logger = logging.getLogger(__name__)
 
 
@@ -42,8 +44,9 @@ class GanttEngine:
     (keyed by UUID) whose values are Node objects or plain dicts.
     """
 
-    def __init__(self, graph_nodes: Dict[Any, Any]) -> None:
+    def __init__(self, graph_nodes: Dict[Any, Any], blueprint=None) -> None:
         self._nodes = graph_nodes
+        self._pr = PropertyResolver(blueprint)
         self._parent_map: Dict[str, str] = {}
         self._children_map: Dict[str, List[str]] = {}
         self._build_maps()
@@ -63,17 +66,11 @@ class GanttEngine:
             for cid in child_strs:
                 self._parent_map[cid] = nid_str
 
-    @staticmethod
-    def _get_prop(node: Any, key: str, default: Any = None) -> Any:
-        if hasattr(node, "properties"):
-            return node.properties.get(key, default)
-        return node.get("properties", {}).get(key, default)
+    def _get_prop(self, node: Any, key: str, default: Any = None) -> Any:
+        return self._pr.get(node, key, default)
 
-    @staticmethod
-    def _get_name(node: Any) -> str:
-        if hasattr(node, "properties"):
-            return node.properties.get("name", "Unnamed")
-        return node.get("properties", {}).get("name", "Unnamed")
+    def _get_name(self, node: Any) -> str:
+        return self._pr.get(node, "name") or getattr(node, "name", None) or "Unnamed"
 
     @staticmethod
     def _get_type(node: Any) -> str:

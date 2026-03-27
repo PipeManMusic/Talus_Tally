@@ -78,7 +78,7 @@ def get_budget(session_id: str):
 
         from backend.core.budget_engine import BudgetEngine
 
-        engine = BudgetEngine(graph_nodes)
+        engine = BudgetEngine(graph_nodes, blueprint=session_data.get('blueprint'))
         trees = engine.calculate()
         grand_estimated = sum(t.total_estimated for t in trees)
         grand_actual = sum(t.total_actual for t in trees)
@@ -118,7 +118,8 @@ def get_gantt(session_id: str):
 
         from backend.core.gantt_engine import GanttEngine
 
-        engine = GanttEngine(graph_nodes)
+        blueprint = session_data.get('blueprint') if session_data else None
+        engine = GanttEngine(graph_nodes, blueprint=blueprint)
         bars = engine.calculate()
         timeline_range = engine.get_timeline_range()
 
@@ -166,7 +167,8 @@ def get_manpower(session_id: str):
         from backend.core.resource_engine import calculate_manpower_load
 
         person_ids = _get_person_type_ids(session_data)
-        payload = calculate_manpower_load(list(graph_nodes.values()), person_type_ids=person_ids)
+        blueprint = session_data.get('blueprint') if session_data else None
+        payload = calculate_manpower_load(list(graph_nodes.values()), person_type_ids=person_ids, blueprint=blueprint)
         payload['timestamp'] = int(time.time() * 1000)
         return jsonify(payload)
 
@@ -197,8 +199,10 @@ def recalculate_manpower(session_id: str):
 
         person_ids = _get_person_type_ids(session_data)
 
+        blueprint = session_data.get('blueprint')
+
         # Get the list of changes (does not mutate nodes directly)
-        recalc_result = recalculate_manpower_allocations(list(graph_nodes.values()), person_type_ids=person_ids)
+        recalc_result = recalculate_manpower_allocations(list(graph_nodes.values()), person_type_ids=person_ids, blueprint=blueprint)
         
         # Apply each change via UpdatePropertyCommand to ensure undo/redo support
         for change in recalc_result.get("changes", []):
@@ -214,7 +218,7 @@ def recalculate_manpower(session_id: str):
             dispatcher.execute(command)
         
         # Calculate fresh payload
-        payload = calculate_manpower_load(list(graph_nodes.values()), person_type_ids=person_ids)
+        payload = calculate_manpower_load(list(graph_nodes.values()), person_type_ids=person_ids, blueprint=blueprint)
         payload.update({
             "updated_tasks": recalc_result["updated_tasks"],
             "total_tasks": recalc_result["total_tasks"],

@@ -2,6 +2,7 @@ import csv
 from typing import Callable, Dict, Iterable, List, Optional, TextIO
 
 from backend.core.imports import (
+    CSVColumnBinding,
     CSVImportBatch,
     CSVImportPlan,
     CSVImportPlanError,
@@ -25,6 +26,24 @@ class CSVImportService:
                 f"Unknown blueprint type '{plan.blueprint_type_id}' for CSV import"
             )
 
+        # Build a key → uuid map so bindings using semantic property keys
+        # (e.g., "name", "cost") are resolved to their UUID equivalents.
+        key_to_uuid: Dict[str, str] = {}
+        for prop in schema:
+            pkey = prop.get("key")
+            pid = str(prop.get("id", ""))
+            if pkey and pkey != pid:
+                key_to_uuid[pkey] = pid
+
+        # Resolve each binding's property_id from semantic key to UUID if needed.
+        resolved_bindings: List[CSVColumnBinding] = []
+        for binding in plan.column_bindings:
+            resolved_pid = key_to_uuid.get(binding.property_id, binding.property_id)
+            resolved_bindings.append(
+                CSVColumnBinding(header=binding.header, property_id=resolved_pid)
+            )
+        plan.column_bindings = resolved_bindings
+
         schema_by_id = {
             str(prop.get("id")): prop
             for prop in schema
@@ -38,11 +57,21 @@ class CSVImportService:
         }
         valid_properties = {prop["id"] for prop in schema}
 
+        # Identify the UUID-based id for the "name" property.
+        name_prop_id: Optional[str] = None
+        for prop in schema:
+            pkey = prop.get("key") or prop.get("id")
+            if pkey == "name":
+                name_prop_id = str(prop.get("id"))
+                break
+        if name_prop_id is None:
+            name_prop_id = "name"
+
         # Name is a system field used by node creation and CSV import payloads.
         # Some custom templates may omit it from node_type.properties, but import
         # still needs to accept and require the name binding consistently.
-        required_properties.add("name")
-        valid_properties.add("name")
+        required_properties.add(name_prop_id)
+        valid_properties.add(name_prop_id)
 
         missing = plan.missing_required_properties(required_properties)
         if missing:
@@ -89,7 +118,7 @@ class CSVImportService:
                         errors.append(f"Missing value for '{binding.property_id}'")
                     continue
 
-                if binding.property_id == "name":
+                if binding.property_id == name_prop_id:
                     name_value = value
                 else:
                     properties[binding.property_id] = _normalize_property_value(
