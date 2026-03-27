@@ -55,13 +55,14 @@ interface Props {
   onNodeSelect?: (nodeId: string | null) => void;
   onCountsChange?: (nodeCount: number, edgeCount: number) => void;
   onDirtyChange?: (isDirty: boolean) => void;
+  onRelationshipsChange?: () => void;
   fitToViewSignal?: number;
   refreshSignal?: number;
   blockingViewConfig?: TemplateSchema['blocking_view'];
   templateSchema?: TemplateSchema | null;
 }
 
-export function NodeBlockingEditor({ sessionId, nodes, velocityScores = {}, selectedNodeId, onNodeSelect, onCountsChange, onDirtyChange, fitToViewSignal, refreshSignal, blockingViewConfig, templateSchema }: Props) {
+export function NodeBlockingEditor({ sessionId, nodes, velocityScores = {}, selectedNodeId, onNodeSelect, onCountsChange, onDirtyChange, onRelationshipsChange, fitToViewSignal, refreshSignal, blockingViewConfig, templateSchema }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
   const isDev = import.meta.env.DEV;
   const { rules, filterMode } = useFilterStore();
@@ -535,6 +536,7 @@ export function NodeBlockingEditor({ sessionId, nodes, velocityScores = {}, sele
       } else {
         onDirtyChange?.(true);
       }
+      onRelationshipsChange?.();
       setTimeout(() => setMessage(null), 3000);
     } catch (error) {
       setMessage({ type: 'error', text: 'Failed to create relationship' });

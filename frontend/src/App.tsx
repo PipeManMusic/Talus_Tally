@@ -1332,6 +1332,10 @@ function App() {
     recordRecentFile(filePath);
     console.log('[DEBUG] File opened and lastFilePath set to:', filePath);
     
+    // Fetch blocking relationships from backend (they were stored during loadGraphIntoSession)
+    await fetchBlockingRelationships();
+    setBlockingGraphRefreshSignal((prev) => prev + 1);
+
     if (parsed.expanded_map && typeof parsed.expanded_map === 'object') {
       setExpandedMap(parsed.expanded_map);
       console.log('✓ Restored tree expansion state');
@@ -1343,7 +1347,7 @@ function App() {
     }
     
     console.log('✓ Project opened:', filePath);
-  }, [normalizeGraph, setCurrentGraph, sessionId, setSessionId, setExpandedMap, setTemplateSchema, setCurrentTemplateId, recordRecentFile, setSavedFilterSets]);
+  }, [normalizeGraph, setCurrentGraph, sessionId, setSessionId, setExpandedMap, setTemplateSchema, setCurrentTemplateId, recordRecentFile, setSavedFilterSets, fetchBlockingRelationships]);
 
   const handleOpen = useCallback(async () => {
     try {
@@ -2451,6 +2455,7 @@ function App() {
               activeTab={activeToolsTab}
               onBlockingCountsChange={handleBlockingCountsChange}
               onBlockingDirtyChange={setIsDirty}
+              onBlockingRelationshipsChange={fetchBlockingRelationships}
               blockingFitToViewSignal={blockingFitSignal}
               blockingRefreshSignal={blockingGraphRefreshSignal}
               ganttRefreshSignal={ganttRefreshSignal}

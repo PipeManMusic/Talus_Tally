@@ -24,6 +24,7 @@ interface ToolsViewProps {
   activeTab?: ToolsTab;
   onBlockingCountsChange?: (nodeCount: number, edgeCount: number) => void;
   onBlockingDirtyChange?: (isDirty: boolean) => void;
+  onBlockingRelationshipsChange?: () => void;
   blockingFitToViewSignal?: number;
   blockingRefreshSignal?: number;
   ganttRefreshSignal?: number;
@@ -41,6 +42,7 @@ export function ToolsView({
   activeTab = 'velocity',
   onBlockingCountsChange,
   onBlockingDirtyChange,
+  onBlockingRelationshipsChange,
   blockingFitToViewSignal,
   blockingRefreshSignal,
   ganttRefreshSignal,
@@ -106,6 +108,7 @@ export function ToolsView({
             onNodeSelect={onNodeSelect}
             onCountsChange={onBlockingCountsChange}
             onDirtyChange={onBlockingDirtyChange}
+            onRelationshipsChange={onBlockingRelationshipsChange}
             fitToViewSignal={blockingFitToViewSignal}
             refreshSignal={blockingRefreshSignal}
             blockingViewConfig={blockingViewConfig}

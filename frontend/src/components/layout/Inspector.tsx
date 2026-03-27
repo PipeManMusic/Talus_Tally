@@ -1192,7 +1192,7 @@ export const Inspector = memo(function Inspector({
                 <div className="space-y-1">
                   {blockedByNodes.map((blockerId) => {
                     const blocker = nodes[blockerId];
-                    const blockerName = blocker?.properties?.name || blockerId;
+                    const blockerName = blocker?.name || blocker?.properties?.name || blockerId;
                     return (
                       <div key={blockerId} className="flex items-center justify-between gap-1 text-sm text-fg-primary bg-bg-dark/50 rounded px-2 py-1">
                         <span className="truncate" title={blockerName}>{blockerName}</span>
@@ -1229,7 +1229,7 @@ export const Inspector = memo(function Inspector({
                 <div className="space-y-1">
                   {blocksNodes.map((blockedId) => {
                     const blocked = nodes[blockedId];
-                    const blockedName = blocked?.properties?.name || blockedId;
+                    const blockedName = blocked?.name || blocked?.properties?.name || blockedId;
                     return (
                       <div key={blockedId} className="flex items-center justify-between gap-1 text-sm text-fg-primary bg-bg-dark/50 rounded px-2 py-1">
                         <span className="truncate" title={blockedName}>{blockedName}</span>
