@@ -413,3 +413,189 @@ def test_reconcile_graph_with_template_surfaces_property_mismatch_candidates():
     hints = episode_node.metadata.get('property_mismatch_hints', {})
     assert 'manual_allocations' in hints
     assert hints['manual_allocations']['suggested_property'] == 'allocations'
+
+
+# ---------------------------------------------------------------------------
+# Regression tests: UUID-keyed properties must not be orphaned
+# ---------------------------------------------------------------------------
+
+
+def test_uuid_keyed_properties_are_not_orphaned():
+    """Properties stored with UUID keys must match template properties with uuid field.
+
+    Regression: after the property UUID migration, node properties are keyed by
+    deterministic UUIDs.  The reconciliation must recognise those UUIDs via the
+    template's ``uuid`` field and NOT move them to orphaned_properties.
+    """
+    graph = ProjectGraph(template_id='test_template', template_version='1.0.0')
+
+    name_uuid = 'aaaa1111-0000-0000-0000-000000000001'
+    status_uuid = 'aaaa1111-0000-0000-0000-000000000002'
+    node_type_uuid = 'bbbb2222-0000-0000-0000-000000000001'
+
+    node = Node(blueprint_type_id=node_type_uuid, name='My Node')
+    node.properties = {
+        name_uuid: 'My Node',
+        status_uuid: 'some-option-uuid',
+    }
+    graph.add_node(node)
+
+    template = {
+        'id': 'test_template',
+        'node_types': [
+            {
+                'id': 'feature',
+                'uuid': node_type_uuid,
+                'properties': [
+                    {'id': 'name', 'uuid': name_uuid},
+                    {'id': 'status', 'uuid': status_uuid},
+                ],
+            }
+        ],
+    }
+
+    result = OrphanManager.reconcile_graph_with_template(graph, template)
+
+    assert result['affected_properties'] == 0, (
+        'UUID-keyed properties were incorrectly orphaned'
+    )
+    assert node.properties.get(name_uuid) == 'My Node'
+    assert node.properties.get(status_uuid) == 'some-option-uuid'
+    assert 'orphaned_properties' not in node.metadata
+
+
+def test_previously_orphaned_properties_are_restored():
+    """If a property was previously orphaned but its UUID is now in allowed_props,
+    the reconciliation must MOVE it back to properties.
+
+    Regression: the old code removed the key from orphaned_properties but never
+    put the value back in ``properties``, causing data loss.
+    """
+    graph = ProjectGraph(template_id='test_template', template_version='1.0.0')
+
+    name_uuid = 'aaaa1111-0000-0000-0000-000000000001'
+    status_uuid = 'aaaa1111-0000-0000-0000-000000000002'
+    hours_uuid = 'aaaa1111-0000-0000-0000-000000000003'
+    node_type_uuid = 'bbbb2222-0000-0000-0000-000000000001'
+
+    # Simulate a node that was saved with properties in orphaned_properties
+    node = Node(blueprint_type_id=node_type_uuid, name='Orphaned Node')
+    node.properties = {}  # Empty — all data was moved to orphaned_properties
+    node.metadata = {
+        'orphaned_properties': {
+            name_uuid: 'Orphaned Node',
+            status_uuid: 'some-option-uuid',
+            hours_uuid: '5',
+        }
+    }
+    graph.add_node(node)
+
+    template = {
+        'id': 'test_template',
+        'node_types': [
+            {
+                'id': 'feature',
+                'uuid': node_type_uuid,
+                'properties': [
+                    {'id': 'name', 'uuid': name_uuid},
+                    {'id': 'status', 'uuid': status_uuid},
+                    {'id': 'estimated_hours', 'uuid': hours_uuid},
+                ],
+            }
+        ],
+    }
+
+    result = OrphanManager.reconcile_graph_with_template(graph, template)
+
+    # All three properties should be restored to properties
+    assert node.properties[name_uuid] == 'Orphaned Node'
+    assert node.properties[status_uuid] == 'some-option-uuid'
+    assert node.properties[hours_uuid] == '5'
+
+    # orphaned_properties should be cleared
+    assert 'orphaned_properties' not in node.metadata or \
+        len(node.metadata.get('orphaned_properties', {})) == 0
+
+
+def test_partial_orphan_restoration():
+    """Only properties whose UUIDs are in the template should be restored;
+    genuinely orphaned properties must stay in orphaned_properties."""
+    graph = ProjectGraph(template_id='test_template', template_version='1.0.0')
+
+    name_uuid = 'aaaa1111-0000-0000-0000-000000000001'
+    status_uuid = 'aaaa1111-0000-0000-0000-000000000002'
+    removed_uuid = 'cccc3333-0000-0000-0000-000000000099'
+    node_type_uuid = 'bbbb2222-0000-0000-0000-000000000001'
+
+    node = Node(blueprint_type_id=node_type_uuid, name='Mixed Node')
+    node.properties = {}
+    node.metadata = {
+        'orphaned_properties': {
+            name_uuid: 'Mixed Node',
+            status_uuid: 'option-uuid',
+            removed_uuid: 'stale data',
+        }
+    }
+    graph.add_node(node)
+
+    template = {
+        'id': 'test_template',
+        'node_types': [
+            {
+                'id': 'feature',
+                'uuid': node_type_uuid,
+                'properties': [
+                    {'id': 'name', 'uuid': name_uuid},
+                    {'id': 'status', 'uuid': status_uuid},
+                    # removed_uuid is NOT in the template
+                ],
+            }
+        ],
+    }
+
+    OrphanManager.reconcile_graph_with_template(graph, template)
+
+    # Valid properties should be restored
+    assert node.properties[name_uuid] == 'Mixed Node'
+    assert node.properties[status_uuid] == 'option-uuid'
+
+    # Genuinely orphaned property stays orphaned
+    assert node.metadata['orphaned_properties'][removed_uuid] == 'stale data'
+    # Only the stale one should remain
+    assert len(node.metadata['orphaned_properties']) == 1
+
+
+def test_reconcile_does_not_duplicate_property_in_restore():
+    """If a property already exists in properties AND in orphaned_properties,
+    the restore should not overwrite the current value with the stale orphan."""
+    graph = ProjectGraph(template_id='test_template', template_version='1.0.0')
+
+    name_uuid = 'aaaa1111-0000-0000-0000-000000000001'
+    node_type_uuid = 'bbbb2222-0000-0000-0000-000000000001'
+
+    node = Node(blueprint_type_id=node_type_uuid, name='Current Name')
+    node.properties = {name_uuid: 'Current Name'}
+    node.metadata = {
+        'orphaned_properties': {name_uuid: 'Stale Name'}
+    }
+    graph.add_node(node)
+
+    template = {
+        'id': 'test_template',
+        'node_types': [
+            {
+                'id': 'feature',
+                'uuid': node_type_uuid,
+                'properties': [
+                    {'id': 'name', 'uuid': name_uuid},
+                ],
+            }
+        ],
+    }
+
+    OrphanManager.reconcile_graph_with_template(graph, template)
+
+    # Current value is preserved, stale orphan discarded
+    assert node.properties[name_uuid] == 'Current Name'
+    assert 'orphaned_properties' not in node.metadata or \
+        name_uuid not in node.metadata.get('orphaned_properties', {})

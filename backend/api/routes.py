@@ -940,6 +940,20 @@ def reload_blueprint(session_id):
             from backend.infra.template_persistence import TemplatePersistence
             persistence = TemplatePersistence()
             new_template_dict = persistence.load_template(template_id)
+            # Enrich template dict with UUIDs and feature macros so reconciliation
+            # can match UUID-keyed properties against the allowed set.
+            if new_template_dict:
+                from backend.core.feature_macros import apply_feature_macros
+                from backend.infra.schema_loader import _generate_stable_uuid as _gen_uuid
+                apply_feature_macros(new_template_dict)
+                _uuid_gen = SchemaLoader()
+                for nt_data in (new_template_dict.get('node_types', []) or []):
+                    if isinstance(nt_data, dict):
+                        if not nt_data.get('uuid'):
+                            legacy_id = nt_data.get('id', '')
+                            if legacy_id:
+                                nt_data['uuid'] = _gen_uuid('node_type', legacy_id)
+                        _uuid_gen._generate_property_uuids(nt_data)
         except Exception as tp_err:
             logger.warning(f"Could not load template dict for orphan detection: {tp_err}")
 
@@ -2332,8 +2346,10 @@ def load_graph_into_session(session_id):
                     from backend.infra.template_persistence import TemplatePersistence
                     persistence = TemplatePersistence()
                     template_dict = persistence.load_template(template_id)
-                    # Inject UUIDs into template_dict so orphan reconciliation
-                    # can match nodes whose blueprint_type_id was migrated to UUID.
+                    # Apply feature macros and inject UUIDs into template_dict so orphan
+                    # reconciliation can match UUID-keyed properties against the allowed set.
+                    from backend.core.feature_macros import apply_feature_macros as _apply_macros
+                    _apply_macros(template_dict)
                     _uuid_gen = SchemaLoader()
                     for nt_data in (template_dict.get('node_types', []) or []):
                         if isinstance(nt_data, dict) and not nt_data.get('uuid'):

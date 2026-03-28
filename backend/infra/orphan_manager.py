@@ -436,10 +436,13 @@ class OrphanManager:
                     **hint,
                 })
 
-            # If template now supports a previously orphaned property, remove stale marker
+            # If template now supports a previously orphaned property, restore it
             for key in list(orphaned_props.keys()):
                 if key in allowed_props:
-                    orphaned_props.pop(key, None)
+                    value = orphaned_props.pop(key)
+                    # Restore to properties if not already present
+                    if key not in properties:
+                        properties[key] = value
 
             if orphaned_props:
                 metadata['orphaned_properties'] = orphaned_props
