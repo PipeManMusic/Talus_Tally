@@ -122,7 +122,7 @@ function App() {
   const [manpowerOverloadCount, setManpowerOverloadCount] = useState(0);
   const [indicatorRefreshSignal, setIndicatorRefreshSignal] = useState(0);
   const [templateRefreshSignal, setTemplateRefreshSignal] = useState(0);
-  const [lastFilePath, setLastFilePath] = useState<string | null>(null);
+  const [lastFilePath, setLastFilePath] = useState<string | null>(() => localStorage.getItem('talus_tally_last_file_path'));
   const [currentTemplateId, setCurrentTemplateId] = useState<string | null>(null);
   const [expandAllSignal, setExpandAllSignal] = useState(0);
   const [collapseAllSignal, setCollapseAllSignal] = useState(0);
@@ -1060,6 +1060,7 @@ function App() {
       setSessionId(newSessionId);
       setCurrentTemplateId(templateId);
       setLastFilePath(null);  // New project has no file path yet
+      localStorage.removeItem('talus_tally_last_file_path');
       localStorage.setItem('talus_tally_session_id', newSessionId);
       localStorage.setItem('sessionId', newSessionId);
       setCurrentGraph(graph);
@@ -1129,6 +1130,7 @@ function App() {
         if (!filePath) return false;
         console.log('[DEBUG] User selected save path:', filePath);
         setLastFilePath(filePath);
+        localStorage.setItem('talus_tally_last_file_path', filePath);
         recordRecentFile(filePath);
         const { writeTextFile } = await import('@tauri-apps/plugin-fs');
         await writeTextFile(filePath, payload);
@@ -1182,6 +1184,7 @@ function App() {
       });
       if (!filePath) return false;
       setLastFilePath(filePath);
+      localStorage.setItem('talus_tally_last_file_path', filePath);
       const { writeTextFile } = await import('@tauri-apps/plugin-fs');
       await writeTextFile(filePath, payload);
       // Mark session as clean after saving
@@ -1331,6 +1334,7 @@ function App() {
 
     setCurrentGraph(finalGraph);
     setLastFilePath(filePath);
+    localStorage.setItem('talus_tally_last_file_path', filePath);
     recordRecentFile(filePath);
     console.log('[DEBUG] File opened and lastFilePath set to:', filePath);
     
