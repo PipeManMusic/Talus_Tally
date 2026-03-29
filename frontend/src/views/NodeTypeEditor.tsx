@@ -994,17 +994,6 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
             {/* Node Type Details */}
             {expandedNodeType === getNodeTypeEditorKey(nodeTypeIndex) && (
               <div className="border-t border-border p-4 space-y-4 bg-bg-dark/50">
-                {/* Node Type ID */}
-                <div>
-                  <label className="block text-sm text-fg-secondary mb-1">ID</label>
-                  <input
-                    type="text"
-                    value={nodeType.id}
-                    onChange={(e) => updateNodeType(nodeType.id, { id: e.target.value })}
-                    className="w-full px-3 py-2 bg-bg-light border border-border rounded text-fg-primary font-mono text-sm"
-                  />
-                </div>
-
                 {/* Node Type Label */}
                 <div>
                   <label className="block text-sm text-fg-secondary mb-1">Label</label>
@@ -1575,28 +1564,7 @@ const PropertyEditor = memo(function PropertyEditor({
       {/* Property Details */}
       {isExpanded && (
         <div className="border-t border-border/50 p-3 space-y-3 bg-bg-dark/30">
-          {/* Property ID */}
-          <div>
-            <label className="text-xs text-fg-secondary mb-1 block">ID</label>
-            {property.system_locked ? (
-              <input
-                type="text"
-                value={property.id}
-                disabled
-                className="w-full px-2 py-1 bg-bg-light border border-border rounded text-fg-primary text-sm font-mono opacity-70 cursor-not-allowed"
-              />
-            ) : (
-              <input
-                type="text"
-                value={property.id}
-                onChange={(e) => onUpdate({ id: e.target.value })}
-                className="w-full px-2 py-1 bg-bg-light border border-border rounded text-fg-primary text-sm font-mono"
-              />
-            )}
-          </div>
-
-          {/* Property Label */}
-          <div>
+          {/* Property Label */}          <div>
             <label className="text-xs text-fg-secondary mb-1 block">Label</label>
             <input
               type="text"
