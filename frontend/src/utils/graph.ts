@@ -68,6 +68,7 @@ export function normalizeGraph(graphLike: any): Graph {
 
         const node: Node = {
           id: nodeId,
+          name: nestedNode.name || 'Unnamed',
           type: nestedNode.blueprint_type_id || 'unknown',
           properties: {
             name: nestedNode.name || 'Unnamed',

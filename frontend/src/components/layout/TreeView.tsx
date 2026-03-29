@@ -955,8 +955,8 @@ export function TreeView({
 }: TreeViewProps) {
   const [internalExpandedMap, setInternalExpandedMap] = useState<Record<string, boolean>>({});
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const prevExpandSignalRef = useRef<number | undefined>(undefined);
-  const prevCollapseSignalRef = useRef<number | undefined>(undefined);
+  const prevExpandSignalRef = useRef<number | undefined>(expandAllSignal);
+  const prevCollapseSignalRef = useRef<number | undefined>(collapseAllSignal);
 
   const expandedMap = externalExpandedMap || internalExpandedMap;
   const setExpandedMap = externalSetExpandedMap || setInternalExpandedMap;

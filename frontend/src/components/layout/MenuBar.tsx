@@ -75,7 +75,7 @@ export function MenuBar({ menus }: MenuBarProps) {
   }, []);
 
   return (
-    <nav className="h-menubar bg-bg-light border-b border-border flex items-center" ref={menuBarRef}>
+    <nav className="h-menubar bg-bg-light border-b border-border flex items-center relative z-[60]" ref={menuBarRef}>
       <div className="flex h-full">
         {Object.entries(menus).map(([menuName, items]) => (
           <div key={menuName} className="relative">

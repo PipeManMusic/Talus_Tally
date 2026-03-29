@@ -4,13 +4,14 @@
     "nodes": [
       {
         "id": "fea6876e-968b-573a-8775-10e4ffd38a31",
-        "type": "project_root",
+        "type": "292b9e11-45c7-94f4-20db-7f6085266a4f",
         "properties": {
           "name": "Manpower Tracking Smoke Test",
-          "actual_cost": 6200,
-          "budget": 24000,
-          "project_lead": "Danel Worth",
-          "vehicle": "Bronco II"
+          "185942a9-990f-a752-023d-8074ddea9b85": "Bronco II",
+          "19419fc9-6b1c-c58c-8c6b-2b00ae2dbcc2": "Manpower Tracking Smoke Test",
+          "346c937b-e080-4baa-2749-483a38ef1602": 6200,
+          "8414d88b-e8c6-5b15-59f1-061fc52d5d6f": "Danel Worth",
+          "f2300937-eec4-630c-1e05-fdeb74860715": 24000
         },
         "children": [
           "6f2fa0ae-8053-5ae7-ba01-881e9866ce77",
@@ -19,21 +20,22 @@
         "metadata": {},
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": null,
+        "icon_id": "film",
         "schema_shape": "hexagon",
         "schema_color": "#6366f1",
         "allowed_children": [
-          "inventory_root",
-          "season",
-          "task",
-          "personnel_assets"
+          "02dd5d8c-9134-ad55-fe18-88e7117745c5",
+          "6af49a72-a129-e754-a0af-ff1c8e509673",
+          "df26a76a-47e9-229d-25cb-fb1b64e3d621",
+          "1b7cedf8-5697-2dac-6a63-e977869dc40f"
         ]
       },
       {
         "id": "6f2fa0ae-8053-5ae7-ba01-881e9866ce77",
-        "type": "season",
+        "type": "6af49a72-a129-e754-a0af-ff1c8e509673",
         "properties": {
-          "name": "Shop Work Sprint"
+          "name": "Shop Work Sprint",
+          "bb24d5e0-d1b6-a9fd-23c1-ed5204bd0f57": "Shop Work Sprint"
         },
         "children": [
           "239c1ff4-dcdd-5098-87ef-4ff8d9bda17c",
@@ -46,212 +48,212 @@
         "metadata": {},
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": null,
+        "icon_id": "film",
         "schema_shape": "circle",
         "schema_color": "#8b5cf6",
         "allowed_children": [
-          "episode",
-          "task"
+          "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
+          "df26a76a-47e9-229d-25cb-fb1b64e3d621"
         ]
       },
       {
         "id": "239c1ff4-dcdd-5098-87ef-4ff8d9bda17c",
-        "type": "episode",
+        "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Engine Teardown",
-          "actual_hours": 0,
-          "assigned_to": "bd09c5f2-6a90-5e98-8bd6-93512f177f57",
-          "end_date": "2026-04-10",
-          "estimated_hours": 20,
-          "manual_allocations": {},
-          "start_date": "2026-04-06",
-          "status": "Planning"
+          "26ec34d3-4b5f-e946-cbd4-d74d19820ca5": 0,
+          "29127f82-3f89-4b74-1e41-da626fba5e63": "Planning",
+          "2a657481-c4de-443b-9100-bab8d36cfdb6": "2026-04-06",
+          "3f78e521-337d-90f3-cf74-a7caa32d44e6": 20,
+          "6fbc3751-46f1-41d5-71da-6a00886e686c": "2026-04-10",
+          "a84fb7a9-d19a-29ca-dba5-d0fabe2971bc": "bd09c5f2-6a90-5e98-8bd6-93512f177f57",
+          "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Engine Teardown"
         },
         "children": [],
-        "metadata": {},
-        "indicator_id": null,
-        "indicator_set": null,
-        "icon_id": null,
+        "metadata": {
+          "orphaned_properties": {}
+        },
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "video-camera",
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
-          "task",
-          "footage",
-          "location_scout",
-          "uses_camera_gear",
-          "uses_car_part",
-          "uses_tool"
+          "df26a76a-47e9-229d-25cb-fb1b64e3d621",
+          "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
+          "a6ec5377-8b62-3ed0-851f-2d49cea38ac1",
+          "37c98aa8-1ecf-f734-aae6-2147962200ef",
+          "64c246cc-0e2e-98b3-edb0-c0bb252e6a45",
+          "85253198-5a24-cc0b-09b8-3104ed399bec"
         ]
       },
       {
         "id": "dc896a37-ff5a-57cc-9dc9-4bd8b6200e4e",
-        "type": "episode",
+        "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Brake Fitment",
-          "actual_hours": 0,
-          "assigned_to": [
+          "26ec34d3-4b5f-e946-cbd4-d74d19820ca5": 0,
+          "29127f82-3f89-4b74-1e41-da626fba5e63": "Planning",
+          "2a657481-c4de-443b-9100-bab8d36cfdb6": "2026-04-08",
+          "3f78e521-337d-90f3-cf74-a7caa32d44e6": 12,
+          "6fbc3751-46f1-41d5-71da-6a00886e686c": "2026-04-10",
+          "a84fb7a9-d19a-29ca-dba5-d0fabe2971bc": [
             "bd09c5f2-6a90-5e98-8bd6-93512f177f57",
             "61a5785e-741d-53b8-8973-edf5708d4a7f"
           ],
-          "end_date": "2026-04-10",
-          "estimated_hours": 12,
-          "manual_allocations": {},
-          "start_date": "2026-04-08",
-          "status": "Planning"
+          "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Brake Fitment"
         },
         "children": [],
-        "metadata": {},
-        "indicator_id": null,
-        "indicator_set": null,
-        "icon_id": null,
+        "metadata": {
+          "orphaned_properties": {}
+        },
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "video-camera",
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
-          "task",
-          "footage",
-          "location_scout",
-          "uses_camera_gear",
-          "uses_car_part",
-          "uses_tool"
+          "df26a76a-47e9-229d-25cb-fb1b64e3d621",
+          "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
+          "a6ec5377-8b62-3ed0-851f-2d49cea38ac1",
+          "37c98aa8-1ecf-f734-aae6-2147962200ef",
+          "64c246cc-0e2e-98b3-edb0-c0bb252e6a45",
+          "85253198-5a24-cc0b-09b8-3104ed399bec"
         ]
       },
       {
         "id": "85b73c92-3e3c-5193-b1f6-826f5d735cb5",
-        "type": "episode",
+        "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Wiring Diagnosis",
-          "actual_hours": 0,
-          "assigned_to": "61a5785e-741d-53b8-8973-edf5708d4a7f",
-          "end_date": "2026-04-15",
-          "estimated_hours": 10,
-          "manual_allocations": {},
-          "start_date": "2026-04-13",
-          "status": "Planning"
+          "26ec34d3-4b5f-e946-cbd4-d74d19820ca5": 0,
+          "29127f82-3f89-4b74-1e41-da626fba5e63": "Planning",
+          "2a657481-c4de-443b-9100-bab8d36cfdb6": "2026-04-13",
+          "3f78e521-337d-90f3-cf74-a7caa32d44e6": 10,
+          "6fbc3751-46f1-41d5-71da-6a00886e686c": "2026-04-15",
+          "a84fb7a9-d19a-29ca-dba5-d0fabe2971bc": "61a5785e-741d-53b8-8973-edf5708d4a7f",
+          "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Wiring Diagnosis"
         },
         "children": [],
-        "metadata": {},
-        "indicator_id": null,
-        "indicator_set": null,
-        "icon_id": null,
+        "metadata": {
+          "orphaned_properties": {}
+        },
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "video-camera",
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
-          "task",
-          "footage",
-          "location_scout",
-          "uses_camera_gear",
-          "uses_car_part",
-          "uses_tool"
+          "df26a76a-47e9-229d-25cb-fb1b64e3d621",
+          "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
+          "a6ec5377-8b62-3ed0-851f-2d49cea38ac1",
+          "37c98aa8-1ecf-f734-aae6-2147962200ef",
+          "64c246cc-0e2e-98b3-edb0-c0bb252e6a45",
+          "85253198-5a24-cc0b-09b8-3104ed399bec"
         ]
       },
       {
         "id": "ddbebc73-a27b-5506-8686-3eb9615d8cb2",
-        "type": "episode",
+        "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Paint Prep",
-          "actual_hours": 0,
-          "assigned_to": "5a4e7080-ea15-5873-965f-9004c5a1455e",
-          "end_date": "2026-04-16",
-          "estimated_hours": 24,
-          "manual_allocations": {
-            "2026-04-13": {
-              "person-casey-morgan-003": 8
-            },
-            "2026-04-14": {
-              "person-casey-morgan-003": 8
-            },
-            "2026-04-15": {
-              "person-casey-morgan-003": 4
-            },
-            "2026-04-16": {
-              "person-casey-morgan-003": 4
-            }
-          },
-          "start_date": "2026-04-13",
-          "status": "Shooting"
+          "26ec34d3-4b5f-e946-cbd4-d74d19820ca5": 0,
+          "29127f82-3f89-4b74-1e41-da626fba5e63": "Shooting",
+          "2a657481-c4de-443b-9100-bab8d36cfdb6": "2026-04-13",
+          "3f78e521-337d-90f3-cf74-a7caa32d44e6": 24,
+          "6fbc3751-46f1-41d5-71da-6a00886e686c": "2026-04-16",
+          "a84fb7a9-d19a-29ca-dba5-d0fabe2971bc": "5a4e7080-ea15-5873-965f-9004c5a1455e",
+          "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Paint Prep"
         },
         "children": [],
-        "metadata": {},
-        "indicator_id": null,
-        "indicator_set": null,
-        "icon_id": null,
+        "metadata": {
+          "orphaned_properties": {}
+        },
+        "indicator_id": "partial",
+        "indicator_set": "status",
+        "icon_id": "video-camera",
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
-          "task",
-          "footage",
-          "location_scout",
-          "uses_camera_gear",
-          "uses_car_part",
-          "uses_tool"
+          "df26a76a-47e9-229d-25cb-fb1b64e3d621",
+          "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
+          "a6ec5377-8b62-3ed0-851f-2d49cea38ac1",
+          "37c98aa8-1ecf-f734-aae6-2147962200ef",
+          "64c246cc-0e2e-98b3-edb0-c0bb252e6a45",
+          "85253198-5a24-cc0b-09b8-3104ed399bec"
         ]
       },
       {
         "id": "ff11979e-a2a5-525e-95bf-b6691bac104c",
-        "type": "episode",
+        "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Weekend Rollover Check",
-          "actual_hours": 0,
-          "assigned_to": "bd09c5f2-6a90-5e98-8bd6-93512f177f57",
-          "end_date": "2026-04-20",
-          "estimated_hours": 8,
-          "manual_allocations": {},
-          "start_date": "2026-04-17",
-          "status": "Planning"
+          "26ec34d3-4b5f-e946-cbd4-d74d19820ca5": 0,
+          "29127f82-3f89-4b74-1e41-da626fba5e63": "Planning",
+          "2a657481-c4de-443b-9100-bab8d36cfdb6": "2026-04-17",
+          "3f78e521-337d-90f3-cf74-a7caa32d44e6": 8,
+          "6fbc3751-46f1-41d5-71da-6a00886e686c": "2026-04-20",
+          "a84fb7a9-d19a-29ca-dba5-d0fabe2971bc": "bd09c5f2-6a90-5e98-8bd6-93512f177f57",
+          "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Weekend Rollover Check"
         },
         "children": [],
-        "metadata": {},
-        "indicator_id": null,
-        "indicator_set": null,
-        "icon_id": null,
+        "metadata": {
+          "orphaned_properties": {}
+        },
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "video-camera",
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
-          "task",
-          "footage",
-          "location_scout",
-          "uses_camera_gear",
-          "uses_car_part",
-          "uses_tool"
+          "df26a76a-47e9-229d-25cb-fb1b64e3d621",
+          "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
+          "a6ec5377-8b62-3ed0-851f-2d49cea38ac1",
+          "37c98aa8-1ecf-f734-aae6-2147962200ef",
+          "64c246cc-0e2e-98b3-edb0-c0bb252e6a45",
+          "85253198-5a24-cc0b-09b8-3104ed399bec"
         ]
       },
       {
         "id": "33d16572-0999-561b-b978-fe55b61fa500",
-        "type": "episode",
+        "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Calibration Pass",
-          "actual_hours": 0,
-          "assigned_to": [
+          "26ec34d3-4b5f-e946-cbd4-d74d19820ca5": 0,
+          "29127f82-3f89-4b74-1e41-da626fba5e63": "Planning",
+          "2a657481-c4de-443b-9100-bab8d36cfdb6": "2026-04-15",
+          "3f78e521-337d-90f3-cf74-a7caa32d44e6": 18,
+          "6fbc3751-46f1-41d5-71da-6a00886e686c": "2026-04-17",
+          "a84fb7a9-d19a-29ca-dba5-d0fabe2971bc": [
             "61a5785e-741d-53b8-8973-edf5708d4a7f",
             "5a4e7080-ea15-5873-965f-9004c5a1455e"
           ],
-          "end_date": "2026-04-17",
-          "estimated_hours": 18,
-          "manual_allocations": {},
-          "start_date": "2026-04-15",
-          "status": "Planning"
+          "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Calibration Pass"
         },
         "children": [],
-        "metadata": {},
-        "indicator_id": null,
-        "indicator_set": null,
-        "icon_id": null,
+        "metadata": {
+          "orphaned_properties": {}
+        },
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "video-camera",
         "schema_shape": "roundedSquare",
         "schema_color": "#06b6d4",
         "allowed_children": [
-          "task",
-          "footage",
-          "location_scout",
-          "uses_camera_gear",
-          "uses_car_part",
-          "uses_tool"
+          "df26a76a-47e9-229d-25cb-fb1b64e3d621",
+          "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
+          "a6ec5377-8b62-3ed0-851f-2d49cea38ac1",
+          "37c98aa8-1ecf-f734-aae6-2147962200ef",
+          "64c246cc-0e2e-98b3-edb0-c0bb252e6a45",
+          "85253198-5a24-cc0b-09b8-3104ed399bec"
         ]
       },
       {
         "id": "4ca90444-9d26-5ad1-9a38-644485479b5a",
-        "type": "personnel_assets",
+        "type": "1b7cedf8-5697-2dac-6a63-e977869dc40f",
         "properties": {
-          "name": "Personnel"
+          "name": "Personnel",
+          "1efe9935-9e1d-a32d-f769-1e2a0e60eee5": "Personnel"
         },
         "children": [
           "bd09c5f2-6a90-5e98-8bd6-93512f177f57",
@@ -261,105 +263,108 @@
         "metadata": {},
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": null,
+        "icon_id": "users",
         "schema_shape": "rounded",
         "schema_color": "#60a5fa",
         "allowed_children": [
-          "person"
+          "7230f246-66ef-dfb4-1010-c4ade5ac5418"
         ]
       },
       {
         "id": "bd09c5f2-6a90-5e98-8bd6-93512f177f57",
-        "type": "person",
+        "type": "7230f246-66ef-dfb4-1010-c4ade5ac5418",
         "properties": {
           "name": "Alex Rivera",
-          "capacity_friday": 8,
-          "capacity_monday": 8,
-          "capacity_saturday": 0,
-          "capacity_sunday": 0,
-          "capacity_thursday": 8,
-          "capacity_tuesday": 8,
-          "capacity_wednesday": 8,
-          "email": "alex.rivera@example.com",
-          "overtime_capacity": 0,
-          "overtime_capacity_friday": 0,
-          "overtime_capacity_monday": 0,
-          "overtime_capacity_saturday": 0,
-          "overtime_capacity_sunday": 0,
-          "overtime_capacity_thursday": 0,
-          "overtime_capacity_tuesday": 0,
-          "overtime_capacity_wednesday": 0,
-          "system_role": "Lead Technician"
+          "22001717-2eed-c5a9-1d12-cba4706a9826": 0,
+          "2fb88aae-c453-28fc-d636-d479c08e4545": 8,
+          "3c4347c9-42a4-844d-939d-679087cd2ea4": "Alex Rivera",
+          "4d6d5ca3-0915-2eb8-3129-e34cf09c1062": 8,
+          "5484142f-36ed-996a-7dce-d218c4423559": 0,
+          "58d94770-71a8-fe2e-9a36-d16ed8c53409": 8,
+          "683acc96-3455-5fde-3f29-5f26cb3ee46c": 0,
+          "6c6b73c7-dca2-310f-918a-d2325505eee2": 0,
+          "718ace6a-c51a-6d4b-b0b8-9f3c0d528ce2": 0,
+          "736d74f5-3782-cd8f-e884-8dddffaa6cbf": 0,
+          "787c6562-dc36-4fa8-3c5f-276f2664300c": 8,
+          "8171069b-cc55-6bb6-32c2-41ec502a80b4": 0,
+          "8171e2bf-f6d2-642b-020c-83e77a0d3815": "Lead Technician",
+          "9407c701-9e69-a48c-b661-1be4ad2e3fef": "alex.rivera@example.com",
+          "c82cc034-284f-f206-a9ad-74be0153aac6": 0,
+          "d63eced9-7fe5-523d-1b65-de8629bf79f9": 0,
+          "ee58a28b-20b9-1ff9-ec07-d61ab0f5270c": 8,
+          "f6cda5d0-d158-14d6-bf25-dd8550ffbd6d": 0
         },
         "children": [],
         "metadata": {},
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": null,
+        "icon_id": "user",
         "schema_shape": "circle",
         "schema_color": "#3b82f6",
         "allowed_children": []
       },
       {
         "id": "61a5785e-741d-53b8-8973-edf5708d4a7f",
-        "type": "person",
+        "type": "7230f246-66ef-dfb4-1010-c4ade5ac5418",
         "properties": {
           "name": "Blair Chen",
-          "capacity_friday": 4,
-          "capacity_monday": 4,
-          "capacity_saturday": 0,
-          "capacity_sunday": 0,
-          "capacity_thursday": 4,
-          "capacity_tuesday": 4,
-          "capacity_wednesday": 4,
-          "email": "blair.chen@example.com",
-          "overtime_capacity": 0,
-          "overtime_capacity_friday": 2,
-          "overtime_capacity_monday": 2,
-          "overtime_capacity_saturday": 0,
-          "overtime_capacity_sunday": 0,
-          "overtime_capacity_thursday": 2,
-          "overtime_capacity_tuesday": 2,
-          "overtime_capacity_wednesday": 2,
-          "system_role": "Part-Time Electrical Support"
+          "22001717-2eed-c5a9-1d12-cba4706a9826": 2,
+          "2fb88aae-c453-28fc-d636-d479c08e4545": 4,
+          "3c4347c9-42a4-844d-939d-679087cd2ea4": "Blair Chen",
+          "4d6d5ca3-0915-2eb8-3129-e34cf09c1062": 4,
+          "5484142f-36ed-996a-7dce-d218c4423559": 2,
+          "58d94770-71a8-fe2e-9a36-d16ed8c53409": 4,
+          "683acc96-3455-5fde-3f29-5f26cb3ee46c": 2,
+          "6c6b73c7-dca2-310f-918a-d2325505eee2": 2,
+          "718ace6a-c51a-6d4b-b0b8-9f3c0d528ce2": 0,
+          "736d74f5-3782-cd8f-e884-8dddffaa6cbf": 2,
+          "787c6562-dc36-4fa8-3c5f-276f2664300c": 4,
+          "8171069b-cc55-6bb6-32c2-41ec502a80b4": 0,
+          "8171e2bf-f6d2-642b-020c-83e77a0d3815": "Part-Time Electrical Support",
+          "9407c701-9e69-a48c-b661-1be4ad2e3fef": "blair.chen@example.com",
+          "c82cc034-284f-f206-a9ad-74be0153aac6": 0,
+          "d63eced9-7fe5-523d-1b65-de8629bf79f9": 0,
+          "ee58a28b-20b9-1ff9-ec07-d61ab0f5270c": 4,
+          "f6cda5d0-d158-14d6-bf25-dd8550ffbd6d": 0
         },
         "children": [],
         "metadata": {},
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": null,
+        "icon_id": "user",
         "schema_shape": "circle",
         "schema_color": "#3b82f6",
         "allowed_children": []
       },
       {
         "id": "5a4e7080-ea15-5873-965f-9004c5a1455e",
-        "type": "person",
+        "type": "7230f246-66ef-dfb4-1010-c4ade5ac5418",
         "properties": {
           "name": "Casey Morgan",
-          "capacity_friday": 6,
-          "capacity_monday": 6,
-          "capacity_saturday": 0,
-          "capacity_sunday": 0,
-          "capacity_thursday": 6,
-          "capacity_tuesday": 6,
-          "capacity_wednesday": 6,
-          "email": "casey.morgan@example.com",
-          "overtime_capacity": 0,
-          "overtime_capacity_friday": 2,
-          "overtime_capacity_monday": 2,
-          "overtime_capacity_saturday": 0,
-          "overtime_capacity_sunday": 0,
-          "overtime_capacity_thursday": 2,
-          "overtime_capacity_tuesday": 2,
-          "overtime_capacity_wednesday": 2,
-          "system_role": "Bodywork Specialist"
+          "22001717-2eed-c5a9-1d12-cba4706a9826": 2,
+          "2fb88aae-c453-28fc-d636-d479c08e4545": 6,
+          "3c4347c9-42a4-844d-939d-679087cd2ea4": "Casey Morgan",
+          "4d6d5ca3-0915-2eb8-3129-e34cf09c1062": 6,
+          "5484142f-36ed-996a-7dce-d218c4423559": 2,
+          "58d94770-71a8-fe2e-9a36-d16ed8c53409": 6,
+          "683acc96-3455-5fde-3f29-5f26cb3ee46c": 2,
+          "6c6b73c7-dca2-310f-918a-d2325505eee2": 2,
+          "718ace6a-c51a-6d4b-b0b8-9f3c0d528ce2": 0,
+          "736d74f5-3782-cd8f-e884-8dddffaa6cbf": 2,
+          "787c6562-dc36-4fa8-3c5f-276f2664300c": 6,
+          "8171069b-cc55-6bb6-32c2-41ec502a80b4": 0,
+          "8171e2bf-f6d2-642b-020c-83e77a0d3815": "Bodywork Specialist",
+          "9407c701-9e69-a48c-b661-1be4ad2e3fef": "casey.morgan@example.com",
+          "c82cc034-284f-f206-a9ad-74be0153aac6": 0,
+          "d63eced9-7fe5-523d-1b65-de8629bf79f9": 0,
+          "ee58a28b-20b9-1ff9-ec07-d61ab0f5270c": 6,
+          "f6cda5d0-d158-14d6-bf25-dd8550ffbd6d": 0
         },
         "children": [],
         "metadata": {},
         "indicator_id": null,
         "indicator_set": null,
-        "icon_id": null,
+        "icon_id": "user",
         "schema_shape": "circle",
         "schema_color": "#3b82f6",
         "allowed_children": []

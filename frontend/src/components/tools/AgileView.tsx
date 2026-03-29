@@ -372,7 +372,7 @@ export function AgileView({
                       : '';
                     const isOrphaned = Boolean((node as any).metadata?.orphaned)
                       && (orphanedReason.includes('not found in current template') || orphanedReason.includes('removed from template'));
-                    const name = node.properties?.[resolvePropUuid(node.type, 'name')] || node.id;
+                    const name = node.properties?.[resolvePropUuid(node.type, 'name')] || node.name || node.id;
                     const hours = Number(node.properties?.[resolvePropUuid(node.type, 'estimated_hours')]) || 0;
                     const vel = velocity?.totalVelocity ?? 0;
                     const isSelected = selectedNodeId === node.id;

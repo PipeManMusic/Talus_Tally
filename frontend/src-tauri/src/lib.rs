@@ -402,6 +402,8 @@ fn exit_app(window: tauri::Window, app: tauri::AppHandle, state: tauri::State<Ba
   if let Ok(mut allowed) = close_state.0.lock() {
     *allowed = true;
   }
+  // Brief pause to allow any pending filesystem writes to flush before termination
+  std::thread::sleep(std::time::Duration::from_millis(250));
   terminate_backend_process(&state.0, "exit_app command");
   let _ = window.close();
   app.exit(0);

@@ -14,6 +14,10 @@ interface UseManpowerPayloadResult {
   loading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
+  /** Silently refresh without showing loading indicator. */
+  silentRefresh: () => Promise<void>;
+  /** Directly patch the local payload (for optimistic UI). */
+  patchData: (updater: (prev: ManpowerPayload) => ManpowerPayload) => void;
 }
 
 export function useManpowerPayload({
@@ -27,7 +31,7 @@ export function useManpowerPayload({
   const refreshPendingRef = useRef(false);
   const refreshingRef = useRef(false);
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (silent = false) => {
     if (!sessionId) {
       setData(null);
       setError(null);
@@ -43,7 +47,7 @@ export function useManpowerPayload({
     refreshingRef.current = true;
 
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       setError(null);
       const result = await apiClient.getManpowerPayload(sessionId);
       setData(result);
@@ -51,30 +55,41 @@ export function useManpowerPayload({
       setError(err instanceof Error ? err.message : 'Failed to load manpower data');
       console.error('Error loading manpower:', err);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
       refreshingRef.current = false;
       if (refreshPendingRef.current) {
         refreshPendingRef.current = false;
-        void refresh();
+        void refresh(silent);
       }
     }
   }, [sessionId]);
+
+  const silentRefresh = useCallback(() => refresh(true), [refresh]);
+
+  const patchData = useCallback(
+    (updater: (prev: ManpowerPayload) => ManpowerPayload) => {
+      setData((prev) => (prev ? updater(prev) : prev));
+    },
+    [],
+  );
 
   useEffect(() => {
     void refresh();
   }, [refresh, refreshSignal]);
 
   useWebSocket(live ? {
-    onNodeCreated: refresh,
-    onNodeUpdated: refresh,
-    onNodeDeleted: refresh,
-    onPropertyChanged: refresh,
+    onNodeCreated: silentRefresh,
+    onNodeUpdated: silentRefresh,
+    onNodeDeleted: silentRefresh,
+    onPropertyChanged: silentRefresh,
   } : {});
 
   return {
     data,
     loading,
     error,
-    refresh,
+    refresh: useCallback(() => refresh(false), [refresh]),
+    silentRefresh,
+    patchData,
   };
 }
