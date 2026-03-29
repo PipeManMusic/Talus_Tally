@@ -38,7 +38,7 @@ describe('NodeTypeEditor', () => {
     });
   });
 
-  it('allows typing full node type and property ids without remounting the editor row', async () => {
+  it('allows typing full node type and property labels without remounting the editor row', async () => {
     const user = userEvent.setup();
 
     function Harness() {
@@ -66,19 +66,19 @@ describe('NodeTypeEditor', () => {
 
     await user.click(screen.getByRole('heading', { name: 'Task' }));
 
-    const nodeTypeIdInput = screen.getByDisplayValue('task');
-    await user.clear(nodeTypeIdInput);
-    await user.type(nodeTypeIdInput, 'task_custom');
+    const nodeTypeLabelInput = screen.getByDisplayValue('Task');
+    await user.clear(nodeTypeLabelInput);
+    await user.type(nodeTypeLabelInput, 'Task Custom');
 
-    expect(screen.getByDisplayValue('task_custom')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Task Custom')).toBeInTheDocument();
 
     await user.click(screen.getByRole('heading', { name: 'Status' }));
 
-    const propertyIdInput = screen.getByDisplayValue('status');
-    await user.clear(propertyIdInput);
-    await user.type(propertyIdInput, 'workflow_status');
+    const propertyLabelInput = screen.getByDisplayValue('Status');
+    await user.clear(propertyLabelInput);
+    await user.type(propertyLabelInput, 'Workflow Status');
 
-    expect(screen.getByDisplayValue('workflow_status')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Workflow Status')).toBeInTheDocument();
   });
 
   it('persists selected primary status property when checkbox is toggled', async () => {

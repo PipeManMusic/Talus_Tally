@@ -24,13 +24,23 @@ export function getPropertyLabelMap(templateSchema: TemplateSchema | null | unde
 
   templateSchema.node_types.forEach((nodeType) => {
     nodeType.properties?.forEach((property) => {
+      const propertyKey = String(property.key || property.id || '').trim();
       const propertyId = String(property.id || '').trim();
-      if (!propertyId || labels[propertyId]) {
+      if (!propertyKey) {
         return;
       }
 
       const propertyName = String((property as { name?: string }).name ?? '').trim();
-      labels[propertyId] = propertyName || formatPropertyIdLabel(propertyId);
+      const label = propertyName || formatPropertyIdLabel(propertyKey);
+
+      // Index by key (human-readable) if not already set
+      if (!labels[propertyKey]) {
+        labels[propertyKey] = label;
+      }
+      // Also index by id (UUID) so node data keyed by UUID gets a label
+      if (propertyId && propertyId !== propertyKey && !labels[propertyId]) {
+        labels[propertyId] = label;
+      }
     });
   });
 
@@ -50,7 +60,9 @@ export function getSelectOptionsByProperty(templateSchema: TemplateSchema | null
         return;
       }
 
-      const propertyOptions = optionMaps.get(property.id) ?? new Map<string, string>();
+      const propertyKey = property.key || property.id;
+      const propertyId = property.id;
+      const propertyOptions = optionMaps.get(propertyKey) ?? new Map<string, string>();
       property.options.forEach((option) => {
         if (!option) return;
         const value = String(option.id ?? option.name ?? '').trim();
@@ -60,7 +72,11 @@ export function getSelectOptionsByProperty(templateSchema: TemplateSchema | null
           propertyOptions.set(value, label || value);
         }
       });
-      optionMaps.set(property.id, propertyOptions);
+      optionMaps.set(propertyKey, propertyOptions);
+      // Also index by UUID so lookups from node data work
+      if (propertyId && propertyId !== propertyKey && !optionMaps.has(propertyId)) {
+        optionMaps.set(propertyId, propertyOptions);
+      }
     });
   });
 
@@ -91,7 +107,7 @@ export function resolvePropertyValueLabel(
 
   const fromNodeType = templateSchema.node_types
     .find((nodeType) => nodeType.id === nodeTypeId)
-    ?.properties?.find((property) => property.id === propertyId)
+    ?.properties?.find((property) => (property.key || property.id) === propertyId)
     ?.options
     ?.find((option) => String(option.id) === raw);
 
@@ -100,7 +116,7 @@ export function resolvePropertyValueLabel(
   }
 
   for (const nodeType of templateSchema.node_types) {
-    const property = nodeType.properties?.find((item) => item.id === propertyId);
+    const property = nodeType.properties?.find((item) => (item.key || item.id) === propertyId);
     const option = property?.options?.find((item) => String(item.id) === raw);
     if (option?.name) {
       return option.name;

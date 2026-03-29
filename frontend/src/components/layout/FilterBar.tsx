@@ -4,7 +4,7 @@ import { useFilterStore, type FilterOperator } from '../../store/filterStore';
 import { extractUniquePropertyKeys } from '../../utils/filterEngine';
 import { useGraphStore } from '../../store';
 import type { TemplateSchema } from '../../api/client';
-import { getSelectOptionsByProperty } from '../../utils/propertyValueDisplay';
+import { getSelectOptionsByProperty, getPropertyLabelMap } from '../../utils/propertyValueDisplay';
 
 const OPERATORS: FilterOperator[] = ['equals', 'not_equals', 'contains', 'greater_than', 'less_than'];
 
@@ -83,6 +83,11 @@ export function FilterBar({
 
   const selectOptionsByProperty = useMemo(
     () => getSelectOptionsByProperty(templateSchema),
+    [templateSchema],
+  );
+
+  const propertyLabelMap = useMemo(
+    () => getPropertyLabelMap(templateSchema),
     [templateSchema],
   );
 
@@ -169,7 +174,7 @@ export function FilterBar({
                         <option value="">Select property...</option>
                         {availableProperties.map((prop) => (
                           <option key={prop} value={prop}>
-                            {PROPERTY_LABELS[prop as keyof typeof PROPERTY_LABELS] || prop}
+                            {PROPERTY_LABELS[prop as keyof typeof PROPERTY_LABELS] || propertyLabelMap[prop] || prop}
                           </option>
                         ))}
                       </select>
@@ -233,7 +238,7 @@ export function FilterBar({
                         <option value="">Select property...</option>
                         {availableProperties.map((prop) => (
                           <option key={prop} value={prop}>
-                            {PROPERTY_LABELS[prop as keyof typeof PROPERTY_LABELS] || prop}
+                            {PROPERTY_LABELS[prop as keyof typeof PROPERTY_LABELS] || propertyLabelMap[prop] || prop}
                           </option>
                         ))}
                       </select>
