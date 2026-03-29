@@ -10,9 +10,10 @@ interface VelocityViewProps {
   nodes?: Record<string, any>;
   selectedNodeId?: string | null;
   onNodeSelect?: (nodeId: string | null) => void;
+  refreshSignal?: number;
 }
 
-export function VelocityView({ sessionId, nodes = {}, selectedNodeId, onNodeSelect }: VelocityViewProps) {
+export function VelocityView({ sessionId, nodes = {}, selectedNodeId, onNodeSelect, refreshSignal }: VelocityViewProps) {
   const [ranking, setRanking] = useState<(VelocityScore & { nodeName: string; nodeType: string })[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +49,7 @@ export function VelocityView({ sessionId, nodes = {}, selectedNodeId, onNodeSele
 
   useEffect(() => {
     fetchRanking();
-  }, [fetchRanking]);
+  }, [fetchRanking, refreshSignal]);
 
   useWebSocket({
     onNodeCreated: fetchRanking,

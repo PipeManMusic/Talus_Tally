@@ -12,6 +12,7 @@ interface BudgetViewProps {
   selectedNodeId?: string | null;
   onNodeSelect?: (nodeId: string | null) => void;
   templateSchema?: TemplateSchema | null;
+  refreshSignal?: number;
 }
 
 function formatCurrency(value: number): string {
@@ -318,7 +319,7 @@ function BudgetTreeContent({
   );
 }
 
-export function BudgetView({ sessionId, nodes, velocityScores, selectedNodeId, onNodeSelect, templateSchema }: BudgetViewProps) {
+export function BudgetView({ sessionId, nodes, velocityScores, selectedNodeId, onNodeSelect, templateSchema, refreshSignal }: BudgetViewProps) {
   const [data, setData] = useState<BudgetPayload | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -359,7 +360,7 @@ export function BudgetView({ sessionId, nodes, velocityScores, selectedNodeId, o
 
   useEffect(() => {
     fetchBudget();
-  }, [fetchBudget]);
+  }, [fetchBudget, refreshSignal]);
 
   useWebSocket({
     onNodeCreated: fetchBudget,

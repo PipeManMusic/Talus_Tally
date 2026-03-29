@@ -460,7 +460,7 @@ def _build_people_resources(node_list: List[Any], person_type_ids: Optional[set]
     return people
 
 
-def recalculate_manpower_allocations(nodes: Iterable[Any], _today: Optional[date] = None, person_type_ids: Optional[set] = None, blueprint=None) -> Dict[str, Any]:
+def recalculate_manpower_allocations(nodes: Iterable[Any], _today: Optional[date] = None, person_type_ids: Optional[set] = None, blueprint=None, node_ids: Optional[set] = None) -> Dict[str, Any]:
     """
     Recalculate and return manual manpower allocations for all schedulable tasks.
 
@@ -476,6 +476,7 @@ def recalculate_manpower_allocations(nodes: Iterable[Any], _today: Optional[date
                 it's for testing purposes.
         person_type_ids: Optional set of type IDs that identify person nodes (UUIDs and/or legacy IDs).
         blueprint: Optional Blueprint for property UUID resolution.
+        node_ids: Optional set of node ID strings to restrict recalculation to.
     
     Returns:
         {
@@ -496,6 +497,10 @@ def recalculate_manpower_allocations(nodes: Iterable[Any], _today: Optional[date
     node_list = list(nodes or [])
     people = _build_people_resources(node_list, person_type_ids=person_type_ids, pr=pr)
     tasks = _iter_schedulable_tasks(node_list, people, pr=pr)
+
+    # When node_ids filter is provided, only recalculate matching tasks
+    if node_ids:
+        tasks = [t for t in tasks if t["node_id"] in node_ids]
 
     updated_task_count = 0
     changes = []

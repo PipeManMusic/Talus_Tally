@@ -104,6 +104,7 @@ function App() {
   const [exportTargetNodeId, setExportTargetNodeId] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<{ nodeIds: string[]; label: string } | null>(null);
   const pendingCloseActionRef = useRef<(() => Promise<void>) | null>(null);
+  const closeInProgressRef = useRef(false);
   const [addChildParentId, setAddChildParentId] = useState<string | null>(null);
   const [addChildTitle, setAddChildTitle] = useState<string | undefined>(undefined);
   const [assetSelectParentId, setAssetSelectParentId] = useState<string | null>(null);
@@ -1064,6 +1065,7 @@ function App() {
       setCurrentGraph(graph);
       setShowNewProjectDialog(false);
       setIsDirty(false);  // New project is clean
+      setGanttRefreshSignal((prev) => prev + 1);
       console.log('✓ Project created with session:', newSessionId);
     } catch (err) {
       console.error('✗ Failed to create project:', err);
@@ -1335,6 +1337,7 @@ function App() {
     // Fetch blocking relationships from backend (they were stored during loadGraphIntoSession)
     await fetchBlockingRelationships();
     setBlockingGraphRefreshSignal((prev) => prev + 1);
+    setGanttRefreshSignal((prev) => prev + 1);
 
     if (parsed.expanded_map && typeof parsed.expanded_map === 'object') {
       setExpandedMap(parsed.expanded_map);
@@ -1881,6 +1884,12 @@ function App() {
         
         // Listen for the custom close event emitted by Rust
         unlisten = await listen('talus://close-requested', async () => {
+          // Guard against re-entry (e.g. user clicks close button again while save dialog is open)
+          if (closeInProgressRef.current) {
+            console.log('[CLOSE REQUESTED] Already handling close, ignoring duplicate event');
+            return;
+          }
+          closeInProgressRef.current = true;
           const currentIsDirty = isDirtyRef.current;
           console.log('====================================');
           console.log('[CLOSE REQUESTED] EVENT RECEIVED!');
@@ -1952,6 +1961,13 @@ function App() {
     console.log('[SAVE DIALOG] User selected action:', action);
     setShowSaveConfirmDialog(false);
 
+    if (action === 'cancel') {
+      console.log('[SAVE DIALOG] Cancel, staying open');
+      pendingCloseActionRef.current = null;
+      closeInProgressRef.current = false;
+      return;
+    }
+
     // Execute the action
     if (action === 'save') {
       console.log('[SAVE DIALOG] Saving...');
@@ -1959,6 +1975,7 @@ function App() {
       if (!saved) {
         console.log('[SAVE DIALOG] Save canceled or failed, staying open');
         pendingCloseActionRef.current = null;
+        closeInProgressRef.current = false;
         return;
       }
     } else if (action === 'save-as') {
@@ -1967,14 +1984,11 @@ function App() {
       if (!savedAs) {
         console.log('[SAVE DIALOG] Save As canceled or failed, staying open');
         pendingCloseActionRef.current = null;
+        closeInProgressRef.current = false;
         return;
       }
     } else if (action === 'dont-save') {
       console.log('[SAVE DIALOG] Don\'t save, closing immediately');
-    } else if (action === 'cancel') {
-      console.log('[SAVE DIALOG] Cancel, staying open');
-      pendingCloseActionRef.current = null;
-      return;
     }
 
     // Execute the pending close action if user didn't cancel
@@ -2672,6 +2686,7 @@ function App() {
           console.log('[SAVE DIALOG] User clicked Cancel');
           setShowSaveConfirmDialog(false);
           pendingCloseActionRef.current = null;
+          closeInProgressRef.current = false;
         }}
       />
 

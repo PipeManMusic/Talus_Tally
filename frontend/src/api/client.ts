@@ -1173,13 +1173,28 @@ export class APIClient {
     return response.json();
   }
 
-  async recalculateManpower(sessionId: string): Promise<ManpowerPayload> {
+  async recalculateManpower(sessionId: string, nodeIds?: string[]): Promise<ManpowerPayload> {
     const response = await fetch(`${this.baseUrl}/api/v1/sessions/${sessionId}/manpower/recalculate`, {
       method: 'POST',
+      headers: nodeIds ? { 'Content-Type': 'application/json' } : undefined,
+      body: nodeIds ? JSON.stringify({ node_ids: nodeIds }) : undefined,
     });
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.error?.message || 'Failed to recalculate manpower data');
+    }
+    return response.json();
+  }
+
+  async clearManpowerAllocations(sessionId: string, nodeIds: string[]): Promise<ManpowerPayload> {
+    const response = await fetch(`${this.baseUrl}/api/v1/sessions/${sessionId}/manpower/clear`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ node_ids: nodeIds }),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || 'Failed to clear manpower allocations');
     }
     return response.json();
   }

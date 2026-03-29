@@ -85,7 +85,7 @@ export function ToolsView({
     };
 
     fetchVelocity();
-  }, [sessionId]);
+  }, [sessionId, ganttRefreshSignal]);
 
   return (
     <div className="flex flex-col h-full bg-bg-dark text-fg-primary">
@@ -97,6 +97,7 @@ export function ToolsView({
             nodes={nodes}
             selectedNodeId={selectedNodeId}
             onNodeSelect={onNodeSelect}
+            refreshSignal={ganttRefreshSignal}
           />
         )}
         {activeTab === 'blocking' && (
@@ -123,6 +124,7 @@ export function ToolsView({
             selectedNodeId={selectedNodeId}
             onNodeSelect={onNodeSelect}
             templateSchema={templateSchema}
+            refreshSignal={ganttRefreshSignal}
           />
         )}
         {activeTab === 'gantt' && (
@@ -145,6 +147,7 @@ export function ToolsView({
             selectedNodeId={selectedNodeId}
             onNodeSelect={onNodeSelect}
             onOverloadChange={onManpowerOverloadChange}
+            onDirtyChange={onBlockingDirtyChange}
           />
         )}
         {activeTab === 'charts' && (

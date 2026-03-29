@@ -1,5 +1,5 @@
 import { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
-import { AlertCircle, RefreshCcw, Users } from 'lucide-react';
+import { AlertCircle, RefreshCcw, Trash2, Users } from 'lucide-react';
 
 import { apiClient, type Node, type VelocityScore } from '../../api/client';
 import { useManpowerPayload } from '../../hooks/useManpowerPayload';
@@ -16,6 +16,8 @@ interface ManpowerViewProps {
   onNodeSelect?: (nodeId: string | null) => void;
   /** Called whenever the number of overloaded person-days changes. */
   onOverloadChange?: (overloadedDayCount: number) => void;
+  /** Called when an edit makes the project dirty (e.g. manual allocation change). */
+  onDirtyChange?: (isDirty: boolean) => void;
 }
 
 interface SelectedCellTask {
@@ -138,8 +140,9 @@ export const ManpowerView = memo(function ManpowerView({
   selectedNodeId,
   onNodeSelect,
   onOverloadChange,
+  onDirtyChange,
 }: ManpowerViewProps) {
-  const { data, loading, error, refresh } = useManpowerPayload({
+  const { data, loading, error, refresh, silentRefresh, patchData } = useManpowerPayload({
     sessionId,
     refreshSignal,
   });
@@ -149,6 +152,7 @@ export const ManpowerView = memo(function ManpowerView({
   // Per-task save queue: ensures concurrent edits to the same task are serialized,
   // so each save reads the Zustand store AFTER the previous save's updateNode has run.
   const saveQueues = useRef<Record<string, Promise<void>>>({});
+  const debouncedRefreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isRecalculating, setIsRecalculating] = useState(false);
   // Per-cell inline draft: key = `${taskId}:${personId}:${date}`. Auto-saved to API on input blur.
   const [inlineDrafts, setInlineDrafts] = useState<Record<string, string>>({});
@@ -159,6 +163,16 @@ export const ManpowerView = memo(function ManpowerView({
   const effectiveSelection = localSelection ?? selectedNodeId;
   // Clear local override once the parent prop catches up
   useEffect(() => { setLocalSelection(null); }, [selectedNodeId]);
+  // Cleanup debounced refresh timer on unmount
+  useEffect(() => () => { if (debouncedRefreshTimer.current) clearTimeout(debouncedRefreshTimer.current); }, []);
+  /** Schedule a silent background refresh, debounced so rapid edits batch. */
+  const scheduleSilentRefresh = useCallback((delayMs = 800) => {
+    if (debouncedRefreshTimer.current) clearTimeout(debouncedRefreshTimer.current);
+    debouncedRefreshTimer.current = setTimeout(() => {
+      debouncedRefreshTimer.current = null;
+      void silentRefresh();
+    }, delayMs);
+  }, [silentRefresh]);
   const handleSelect = useCallback((nodeId: string) => {
     setLocalSelection(nodeId);
     onNodeSelect?.(nodeId);
@@ -285,6 +299,30 @@ export const ManpowerView = memo(function ManpowerView({
     return map;
   }, [data, resources]);
 
+  // Compute the set of task IDs that pass the current filter rules.
+  // Used to scope AutoCalc and Clear to visible tasks only.
+  const filteredTaskIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const [, tasks] of personTaskMap) {
+      for (const task of tasks) {
+        if (ids.has(task.id)) continue;
+        const taskNode = nodes?.[task.id];
+        const nodeForFilter = {
+          id: task.id,
+          name: task.name,
+          type: taskNode?.type,
+          properties: { ...taskNode?.properties, name: task.name },
+        };
+        if (evaluateNodeVisibility(nodeForFilter, rules)) {
+          ids.add(task.id);
+        }
+      }
+    }
+    return ids;
+  }, [personTaskMap, nodes, rules]);
+
+  const hasActiveFilter = rules.length > 0;
+
   useEffect(() => {
     if (!selectedNodeId) {
       return;
@@ -377,9 +415,50 @@ export const ManpowerView = memo(function ManpowerView({
           properties: { ...taskNode.properties, allocations: nextManual },
         });
 
-        await refresh();
+        // Optimistic local patch: update the cell value in the payload data
+        // immediately so the UI reflects the edit without a full backend round-trip.
+        const newHours = rawValue.trim() === '' ? 0 : Number(rawValue);
+        patchData((prev) => {
+          const resource = prev.resources[personId];
+          if (!resource) return prev;
+          const nextResources = { ...prev.resources };
+          const nextResource = { ...resource, load: { ...resource.load } };
+          const existingLoad = nextResource.load[date];
+          const oldTasks = existingLoad?.tasks ?? [];
+          const existingTask = oldTasks.find((t) => t.id === taskId);
+          const prevHours = existingTask?.hours ?? 0;
+          const hoursDelta = newHours - prevHours;
+          const nextTasks = existingTask
+            ? oldTasks.map((t) => (t.id === taskId ? { ...t, hours: newHours } : t))
+            : [...oldTasks, { id: taskId, name: taskNode.name ?? taskId, hours: newHours }];
+          nextResource.load[date] = {
+            total: (existingLoad?.total ?? 0) + hoursDelta,
+            tasks: nextTasks.filter((t) => t.hours > 0),
+          };
+          nextResources[personId] = nextResource;
+
+          // Also patch task_allocations totals for the sidebar status indicators
+          const nextTaskAllocations = (prev.task_allocations ?? []).map((ta) => {
+            if (ta.node_id === taskId && ta.person_id === personId) {
+              const nextAllocated = ta.allocated_hours + hoursDelta;
+              const delta = nextAllocated - ta.target_hours;
+              const status = Math.abs(delta) <= 0.05 ? 'full' : delta > 0 ? 'over' : 'under';
+              return { ...ta, allocated_hours: nextAllocated, status } as typeof ta;
+            }
+            return ta;
+          });
+
+          return { ...prev, resources: nextResources, task_allocations: nextTaskAllocations };
+        });
+
+        onDirtyChange?.(true);
+        // Schedule a debounced silent refresh so totals/status fully reconcile
+        // from the backend without a visible flash.
+        scheduleSilentRefresh();
       } catch (updateError) {
         console.error('Failed to update manual allocation:', updateError);
+        // On error, force a full refresh to reset to server truth
+        await refresh();
       } finally {
         setIsSavingAllocation(false);
       }
@@ -443,11 +522,13 @@ export const ManpowerView = memo(function ManpowerView({
     }
     setIsRecalculating(true);
     try {
-      const result = await apiClient.recalculateManpower(sessionId);
+      // When a filter is active, only recalculate visible tasks
+      const nodeIds = hasActiveFilter ? Array.from(filteredTaskIds) : undefined;
+      const result = await apiClient.recalculateManpower(sessionId, nodeIds);
 
       // Sync allocation changes into the graph store so subsequent manual
       // edits read the auto-allocated data instead of stale empty values.
-      if (result.changes) {
+      if (result.changes && result.changes.length > 0) {
         const { nodes: storeNodes } = useGraphStore.getState();
         for (const change of result.changes) {
           const existing = storeNodes[change.node_id];
@@ -458,6 +539,7 @@ export const ManpowerView = memo(function ManpowerView({
             });
           }
         }
+        onDirtyChange?.(true);
       }
 
       await refresh();
@@ -465,6 +547,38 @@ export const ManpowerView = memo(function ManpowerView({
       console.error('Failed to recalculate manpower allocations:', recalculateError);
     } finally {
       setIsRecalculating(false);
+    }
+  };
+
+  const [isClearing, setIsClearing] = useState(false);
+
+  const handleClearFiltered = async () => {
+    if (!sessionId || filteredTaskIds.size === 0) {
+      return;
+    }
+    setIsClearing(true);
+    try {
+      const result = await apiClient.clearManpowerAllocations(sessionId, Array.from(filteredTaskIds));
+
+      if (result.changes && result.changes.length > 0) {
+        const { nodes: storeNodes } = useGraphStore.getState();
+        for (const change of result.changes) {
+          const existing = storeNodes[change.node_id];
+          if (existing) {
+            updateNode(change.node_id, {
+              ...existing,
+              properties: { ...existing.properties, [change.property_id]: change.new_value },
+            });
+          }
+        }
+        onDirtyChange?.(true);
+      }
+
+      await refresh();
+    } catch (clearError) {
+      console.error('Failed to clear manpower allocations:', clearError);
+    } finally {
+      setIsClearing(false);
     }
   };
 
@@ -565,10 +679,24 @@ export const ManpowerView = memo(function ManpowerView({
                 onClick={handleRecalculate}
                 disabled={isRecalculating || loading}
                 className="inline-flex items-center gap-1.5 rounded border border-border px-2.5 py-1.5 text-xs font-semibold text-fg-primary hover:bg-bg-dark/60 disabled:opacity-50 disabled:cursor-not-allowed"
-                title="AutoCalc: evenly distribute allocations based on personnel standard availability"
+                title={hasActiveFilter
+                  ? `AutoCalc filtered (${filteredTaskIds.size} tasks): evenly distribute allocations for visible tasks only`
+                  : 'AutoCalc: evenly distribute allocations based on personnel standard availability'}
               >
                 <RefreshCcw size={14} className={isRecalculating ? 'animate-spin' : ''} />
-                {isRecalculating ? 'AutoCalc…' : 'AutoCalc'}
+                {isRecalculating ? 'AutoCalc…' : hasActiveFilter ? `AutoCalc (${filteredTaskIds.size})` : 'AutoCalc'}
+              </button>
+              <button
+                type="button"
+                onClick={handleClearFiltered}
+                disabled={isClearing || loading || filteredTaskIds.size === 0}
+                className="inline-flex items-center gap-1.5 rounded border border-border px-2.5 py-1.5 text-xs font-semibold text-status-danger hover:bg-status-danger/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                title={hasActiveFilter
+                  ? `Clear allocations for ${filteredTaskIds.size} filtered tasks`
+                  : 'Clear all task allocations'}
+              >
+                <Trash2 size={14} />
+                {isClearing ? 'Clearing…' : hasActiveFilter ? `Clear (${filteredTaskIds.size})` : 'Clear All'}
               </button>
             </div>
           </div>
