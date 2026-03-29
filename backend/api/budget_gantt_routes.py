@@ -269,7 +269,10 @@ def clear_manpower_allocations(session_id: str):
         changes = []
 
         for nid in node_ids:
-            node = graph_nodes.get(nid)
+            try:
+                node = graph_nodes.get(UUID(nid))
+            except (ValueError, AttributeError):
+                node = graph_nodes.get(nid)
             if not node:
                 continue
             props = node.properties if hasattr(node, 'properties') else {}
