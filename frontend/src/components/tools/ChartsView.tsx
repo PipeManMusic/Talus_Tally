@@ -171,13 +171,14 @@ export function ChartsView({ nodes = {}, velocityScores = {}, templateSchema }: 
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 p-4">
+      <div className="flex-1 min-h-0 p-4 relative">
         {chartData.length === 0 ? (
           <div className="h-full flex items-center justify-center text-fg-secondary text-sm">
             No chart data available for the current filter and pivot settings.
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height="100%">
+          <div className="absolute inset-0 m-4">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
             {chartType === 'bar' ? (
               <BarChart data={chartData} margin={{ top: 12, right: 20, left: 8, bottom: 60 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
@@ -220,6 +221,7 @@ export function ChartsView({ nodes = {}, velocityScores = {}, templateSchema }: 
               </LineChart>
             )}
           </ResponsiveContainer>
+          </div>
         )}
       </div>
     </div>
