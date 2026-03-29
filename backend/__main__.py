@@ -3,6 +3,7 @@ Entry point for running backend as a module: python -m backend
 """
 import sys
 import os
+import signal
 
 # Ensure user data dir is populated with defaults on first run
 try:
@@ -19,10 +20,14 @@ if __name__ == '__main__':
     
     # Import socketio from app module
     from backend.app import socketio
-    
-    # Detect if running as PyInstaller executable
-    # In production/packaged mode, always allow unsafe werkzeug since we're using it as the app server
-    is_production = getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS')
+
+    # Graceful shutdown on SIGTERM (sent by Tauri on app close)
+    def _shutdown(signum, frame):
+        print(f"[Backend] Received signal {signum}, shutting down...")
+        sys.exit(0)
+
+    signal.signal(signal.SIGTERM, _shutdown)
+    signal.signal(signal.SIGINT, _shutdown)
     
     # Always allow unsafe werkzeug for now since we're using Flask/Werkzeug as the production server
     # In a real production deployment, you'd use gunicorn/waitress instead
