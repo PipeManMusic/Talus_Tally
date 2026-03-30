@@ -148,6 +148,7 @@ export function ToolsView({
             onNodeSelect={onNodeSelect}
             onOverloadChange={onManpowerOverloadChange}
             onDirtyChange={onBlockingDirtyChange}
+            templateSchema={templateSchema}
           />
         )}
         {activeTab === 'charts' && (

@@ -460,7 +460,7 @@ def _build_people_resources(node_list: List[Any], person_type_ids: Optional[set]
     return people
 
 
-def recalculate_manpower_allocations(nodes: Iterable[Any], _today: Optional[date] = None, person_type_ids: Optional[set] = None, blueprint=None, node_ids: Optional[set] = None) -> Dict[str, Any]:
+def recalculate_manpower_allocations(nodes: Iterable[Any], _today: Optional[date] = None, person_type_ids: Optional[set] = None, blueprint=None, node_ids: Optional[set] = None, dates: Optional[set] = None) -> Dict[str, Any]:
     """
     Recalculate and return manual manpower allocations for all schedulable tasks.
 
@@ -477,6 +477,7 @@ def recalculate_manpower_allocations(nodes: Iterable[Any], _today: Optional[date
         person_type_ids: Optional set of type IDs that identify person nodes (UUIDs and/or legacy IDs).
         blueprint: Optional Blueprint for property UUID resolution.
         node_ids: Optional set of node ID strings to restrict recalculation to.
+        dates: Optional set of date strings (e.g. "2026-03-30") to restrict recalculation to specific days.
     
     Returns:
         {
@@ -508,16 +509,43 @@ def recalculate_manpower_allocations(nodes: Iterable[Any], _today: Optional[date
     for task in tasks:
         per_person_target = task["estimated_hours"] / len(task["assigned_person_ids"])
 
-        # AutoCalc always produces a clean-slate allocation — it overwrites
-        # whatever was stored previously.  Manual cell edits and AutoCalc both
-        # write to the same property; there is no separate "manual" vs "auto"
-        # distinction in the data model.
+        # When a dates filter is active, only compute hours for those dates
+        # and keep existing allocations for all other dates intact.
+        target_days_in_window = task["days_in_window"]
+        if dates:
+            target_days_in_window = [d for d in target_days_in_window if d in dates]
+            if not target_days_in_window:
+                continue
+
+        # Count total working days per person across the FULL window to compute
+        # the correct daily rate, even when we only write to a subset of dates.
+        all_working_days_count: Dict[str, int] = {}
+        for person_id in task["assigned_person_ids"]:
+            person_weekday_capacity = people[person_id]["weekday_capacity"]
+            count = 0
+            for day in task["days_in_window"]:
+                weekday_index = datetime.strptime(day, "%Y-%m-%d").weekday()
+                if weekday_index >= 5:
+                    continue
+                if person_weekday_capacity.get(weekday_index, 0.0) <= 0:
+                    continue
+                count += 1
+            all_working_days_count[person_id] = count
+
         next_manual: Dict[str, Dict[str, float]] = {}
+
+        # If dates filter is active, start with a copy of existing allocations
+        if dates:
+            props_existing = _resolved_properties(task["node"], pr)
+            existing_alloc = _parse_allocations(props_existing.get(ALLOCATIONS_PROPERTY_ID))
+            if existing_alloc:
+                import copy
+                next_manual = copy.deepcopy(existing_alloc)
 
         for person_id in task["assigned_person_ids"]:
             person_weekday_capacity = people[person_id]["weekday_capacity"]
             auto_days: List[str] = []
-            for day in task["days_in_window"]:
+            for day in target_days_in_window:
                 weekday_index = datetime.strptime(day, "%Y-%m-%d").weekday()
                 if weekday_index >= 5:
                     continue
@@ -528,7 +556,8 @@ def recalculate_manpower_allocations(nodes: Iterable[Any], _today: Optional[date
             if not auto_days:
                 continue
 
-            daily_hours = per_person_target / len(auto_days)
+            total_working = all_working_days_count.get(person_id, len(auto_days))
+            daily_hours = per_person_target / total_working if total_working > 0 else 0.0
             for day in auto_days:
                 day_bucket = next_manual.setdefault(day, {})
                 day_bucket[person_id] = daily_hours

@@ -139,7 +139,12 @@ export function AgileView({
       const hasVelocity = (Number.isFinite(nodeVelocity) && nodeVelocity !== 0)
         || (Number.isFinite(scoreVelocity) && scoreVelocity !== 0);
 
-      return isVisible && (hasEstimatedHours || hasVelocity);
+      // Include nodes that have a status property set (they belong on the board
+      // even when velocity/estimated_hours are zero, e.g. releases marked "Done")
+      const statusVal = node.properties?.[resolvePropUuid(node.type, STATUS_PROPERTY_KEY)];
+      const hasStatus = typeof statusVal === 'string' && statusVal.trim() !== '';
+
+      return isVisible && (hasEstimatedHours || hasVelocity || hasStatus);
     });
   }, [effectiveNodes, rules, velocityScores]);
 

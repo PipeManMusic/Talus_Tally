@@ -1,11 +1,18 @@
 import { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { AlertCircle, RefreshCcw, Trash2, Users } from 'lucide-react';
 
-import { apiClient, type Node, type VelocityScore } from '../../api/client';
+import { apiClient, type Node, type TemplateSchema, type VelocityScore } from '../../api/client';
 import { useManpowerPayload } from '../../hooks/useManpowerPayload';
 import { useGraphStore } from '../../store';
 import { useFilterStore } from '../../store/filterStore';
 import { evaluateNodeVisibility } from '../../utils/filterEngine';
+import { buildPropertyUuidMap } from '../../utils/propertyResolver';
+
+// Context menu state for row (person) and column (date) right-click menus
+type ManpowerContextMenu =
+  | { type: 'row'; id: string; x: number; y: number }
+  | { type: 'col'; id: string; x: number; y: number }
+  | null;
 
 interface ManpowerViewProps {
   sessionId: string | null;
@@ -18,6 +25,7 @@ interface ManpowerViewProps {
   onOverloadChange?: (overloadedDayCount: number) => void;
   /** Called when an edit makes the project dirty (e.g. manual allocation change). */
   onDirtyChange?: (isDirty: boolean) => void;
+  templateSchema?: TemplateSchema | null;
 }
 
 interface SelectedCellTask {
@@ -141,6 +149,7 @@ export const ManpowerView = memo(function ManpowerView({
   onNodeSelect,
   onOverloadChange,
   onDirtyChange,
+  templateSchema,
 }: ManpowerViewProps) {
   const { data, loading, error, refresh, silentRefresh, patchData } = useManpowerPayload({
     sessionId,
@@ -160,11 +169,26 @@ export const ManpowerView = memo(function ManpowerView({
   // Local optimistic selection — provides instant visual feedback while the
   // full App re-render happens inside a React transition (non-blocking).
   const [localSelection, setLocalSelection] = useState<string | null>(null);
+  const [contextMenu, setContextMenu] = useState<ManpowerContextMenu>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const hasScrolledToTodayRef = useRef(false);
   const effectiveSelection = localSelection ?? selectedNodeId;
   // Clear local override once the parent prop catches up
   useEffect(() => { setLocalSelection(null); }, [selectedNodeId]);
   // Cleanup debounced refresh timer on unmount
   useEffect(() => () => { if (debouncedRefreshTimer.current) clearTimeout(debouncedRefreshTimer.current); }, []);
+  // Close context menu on escape or click outside
+  useEffect(() => {
+    if (!contextMenu) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setContextMenu(null); };
+    const onClick = () => setContextMenu(null);
+    window.addEventListener('keydown', onKey as any);
+    window.addEventListener('mousedown', onClick);
+    return () => {
+      window.removeEventListener('keydown', onKey as any);
+      window.removeEventListener('mousedown', onClick);
+    };
+  }, [contextMenu]);
   /** Schedule a silent background refresh, debounced so rapid edits batch. */
   const scheduleSilentRefresh = useCallback((delayMs = 800) => {
     if (debouncedRefreshTimer.current) clearTimeout(debouncedRefreshTimer.current);
@@ -209,6 +233,18 @@ export const ManpowerView = memo(function ManpowerView({
     () => Boolean(data?.date_columns?.some((day) => normalizeDateKey(day) === todayKey)),
     [data?.date_columns, todayKey],
   );
+  // Auto-scroll to today's date column on initial data load
+  useEffect(() => {
+    if (hasScrolledToTodayRef.current || !todayInRange || !scrollContainerRef.current) return;
+    const todayTh = scrollContainerRef.current.querySelector<HTMLElement>('[data-date-today]');
+    if (todayTh) {
+      // Scroll so today is the first visible date column (offset by the sticky columns)
+      const stickyOffset = todayTh.closest('table')?.querySelector<HTMLElement>('th:nth-child(2)');
+      const leftOffset = stickyOffset ? stickyOffset.offsetLeft + stickyOffset.offsetWidth : 0;
+      scrollContainerRef.current.scrollLeft = todayTh.offsetLeft - leftOffset;
+      hasScrolledToTodayRef.current = true;
+    }
+  }, [todayInRange, hasData]);
   const getDayCapacity = (resource: { capacity: number; capacity_by_day?: Record<string, number> }, day: string) => {
     return resource.capacity_by_day?.[day] ?? resource.capacity;
   };
@@ -216,8 +252,31 @@ export const ManpowerView = memo(function ManpowerView({
     return resource.overtime_capacity_by_day?.[day] ?? resource.overtime_capacity ?? 0;
   };
 
-  const getAllocationPropertyId = (_taskNode: Node): 'allocations' => {
-    return 'allocations';
+  // Build per-node-type allocation UUID map so reads/writes target the UUID key
+  const allocationUuidByType = useMemo(() => {
+    const map = new Map<string, string>();
+    if (!templateSchema?.node_types) return map;
+    for (const nt of templateSchema.node_types) {
+      const uuidMap = buildPropertyUuidMap(nt);
+      const allocUuid = uuidMap?.get('allocations');
+      if (allocUuid) map.set(nt.id, allocUuid);
+    }
+    return map;
+  }, [templateSchema]);
+
+  const getAllocationPropertyId = (taskNode: Node): string => {
+    return allocationUuidByType.get(taskNode.type) ?? 'allocations';
+  };
+
+  /** Read allocation data from a task node's properties (UUID key, fallback to semantic). */
+  const getTaskAllocations = (taskNode: Node): Record<string, Record<string, number>> | undefined => {
+    const uuid = allocationUuidByType.get(taskNode.type);
+    const raw = (uuid ? taskNode.properties?.[uuid] : undefined) ?? taskNode.properties?.allocations;
+    if (!raw) return undefined;
+    if (typeof raw === 'string') {
+      try { return JSON.parse(raw); } catch { return undefined; }
+    }
+    return raw as Record<string, Record<string, number>>;
   };
 
   // Build a task date range lookup from the backend's person_tasks so the
@@ -368,17 +427,11 @@ export const ManpowerView = memo(function ManpowerView({
 
       const allocationPropertyId = getAllocationPropertyId(taskNode);
 
-      const currentManual = taskNode.properties?.allocations;
+      const currentManual = getTaskAllocations(taskNode);
       let nextManual: Record<string, Record<string, number>> = {};
 
       if (currentManual && typeof currentManual === 'object' && !Array.isArray(currentManual)) {
         nextManual = JSON.parse(JSON.stringify(currentManual));
-      } else if (typeof currentManual === 'string') {
-        try {
-          nextManual = JSON.parse(currentManual);
-        } catch {
-          nextManual = {};
-        }
       }
 
       if (rawValue.trim() === '') {
@@ -403,16 +456,19 @@ export const ManpowerView = memo(function ManpowerView({
       try {
         await apiClient.executeCommand(sessionId, 'UpdateProperty', {
           node_id: taskId,
-          property_id: 'allocations',
-          old_value: taskNode.properties?.allocations ?? null,
+          property_id: allocationPropertyId,
+          old_value: currentManual ?? null,
           new_value: nextManual,
         });
 
         // Immediately patch the Zustand store so the NEXT queued save for this
         // task reads the correct accumulated state.
+        const updatedProps = { ...taskNode.properties, [allocationPropertyId]: nextManual };
+        // Clean up legacy semantic key if different from the UUID key
+        if (allocationPropertyId !== 'allocations') delete updatedProps['allocations'];
         updateNode(taskId, {
           ...taskNode,
-          properties: { ...taskNode.properties, allocations: nextManual },
+          properties: updatedProps,
         });
 
         // Optimistic local patch: update the cell value in the payload data
@@ -516,6 +572,29 @@ export const ManpowerView = memo(function ManpowerView({
     }
   };
 
+  /** Sync changes from a backend result into the graph store and trigger refresh. */
+  const applyChangesAndRefresh = async (result: any) => {
+    if (result.changes && result.changes.length > 0) {
+      const { nodes: storeNodes } = useGraphStore.getState();
+      for (const change of result.changes) {
+        const existing = storeNodes[change.node_id];
+        if (existing) {
+          const updatedProps = { ...existing.properties, [change.property_id]: change.new_value };
+          // Clean up legacy semantic "allocations" key if the change is under a UUID key
+          if (change.property_id !== 'allocations' && 'allocations' in updatedProps) {
+            delete updatedProps['allocations'];
+          }
+          updateNode(change.node_id, {
+            ...existing,
+            properties: updatedProps,
+          });
+        }
+      }
+      onDirtyChange?.(true);
+    }
+    await refresh();
+  };
+
   const handleRecalculate = async () => {
     if (!sessionId) {
       return;
@@ -525,24 +604,7 @@ export const ManpowerView = memo(function ManpowerView({
       // When a filter is active, only recalculate visible tasks
       const nodeIds = hasActiveFilter ? Array.from(filteredTaskIds) : undefined;
       const result = await apiClient.recalculateManpower(sessionId, nodeIds);
-
-      // Sync allocation changes into the graph store so subsequent manual
-      // edits read the auto-allocated data instead of stale empty values.
-      if (result.changes && result.changes.length > 0) {
-        const { nodes: storeNodes } = useGraphStore.getState();
-        for (const change of result.changes) {
-          const existing = storeNodes[change.node_id];
-          if (existing) {
-            updateNode(change.node_id, {
-              ...existing,
-              properties: { ...existing.properties, [change.property_id]: change.new_value },
-            });
-          }
-        }
-        onDirtyChange?.(true);
-      }
-
-      await refresh();
+      await applyChangesAndRefresh(result);
     } catch (recalculateError) {
       console.error('Failed to recalculate manpower allocations:', recalculateError);
     } finally {
@@ -556,29 +618,74 @@ export const ManpowerView = memo(function ManpowerView({
     if (!sessionId || filteredTaskIds.size === 0) {
       return;
     }
+    const count = filteredTaskIds.size;
+    const msg = hasActiveFilter
+      ? `Clear allocations for ${count} filtered task${count === 1 ? '' : 's'}?`
+      : 'Clear ALL task allocations? This cannot be undone easily.';
+    if (!window.confirm(msg)) return;
     setIsClearing(true);
     try {
       const result = await apiClient.clearManpowerAllocations(sessionId, Array.from(filteredTaskIds));
-
-      if (result.changes && result.changes.length > 0) {
-        const { nodes: storeNodes } = useGraphStore.getState();
-        for (const change of result.changes) {
-          const existing = storeNodes[change.node_id];
-          if (existing) {
-            updateNode(change.node_id, {
-              ...existing,
-              properties: { ...existing.properties, [change.property_id]: change.new_value },
-            });
-          }
-        }
-        onDirtyChange?.(true);
-      }
-
-      await refresh();
+      await applyChangesAndRefresh(result);
     } catch (clearError) {
       console.error('Failed to clear manpower allocations:', clearError);
     } finally {
       setIsClearing(false);
+    }
+  };
+
+  /** Context-menu action for a person row: clear or autocalc tasks assigned to this person. */
+  const handleRowAction = async (personId: string, action: 'clear' | 'autocalc') => {
+    if (!sessionId) return;
+    // Intersect this person's tasks with the current filter set
+    const personTasks = personTaskMap.get(personId) ?? [];
+    const nodeIds = personTasks.map((t) => t.id).filter((id) => filteredTaskIds.has(id));
+    if (nodeIds.length === 0) return;
+    if (action === 'clear') {
+      const personName = data?.resources?.[personId]?.name ?? personId;
+      if (!window.confirm(`Clear allocations for "${personName}" (${nodeIds.length} task${nodeIds.length === 1 ? '' : 's'})?`)) return;
+    }
+    try {
+      if (action === 'clear') {
+        setIsClearing(true);
+        const result = await apiClient.clearManpowerAllocations(sessionId, nodeIds);
+        await applyChangesAndRefresh(result);
+      } else {
+        setIsRecalculating(true);
+        const result = await apiClient.recalculateManpower(sessionId, nodeIds);
+        await applyChangesAndRefresh(result);
+      }
+    } catch (err) {
+      console.error(`Failed to ${action} row for person ${personId}:`, err);
+    } finally {
+      setIsClearing(false);
+      setIsRecalculating(false);
+    }
+  };
+
+  /** Context-menu action for a date column: clear or autocalc for a specific date. */
+  const handleColAction = async (day: string, action: 'clear' | 'autocalc') => {
+    if (!sessionId) return;
+    const nodeIds = Array.from(filteredTaskIds);
+    if (nodeIds.length === 0) return;
+    if (action === 'clear') {
+      if (!window.confirm(`Clear allocations for ${day}?`)) return;
+    }
+    try {
+      if (action === 'clear') {
+        setIsClearing(true);
+        const result = await apiClient.clearManpowerAllocations(sessionId, nodeIds, [day]);
+        await applyChangesAndRefresh(result);
+      } else {
+        setIsRecalculating(true);
+        const result = await apiClient.recalculateManpower(sessionId, nodeIds, [day]);
+        await applyChangesAndRefresh(result);
+      }
+    } catch (err) {
+      console.error(`Failed to ${action} column for day ${day}:`, err);
+    } finally {
+      setIsClearing(false);
+      setIsRecalculating(false);
     }
   };
 
@@ -711,7 +818,7 @@ export const ManpowerView = memo(function ManpowerView({
 
       {hasData && data && (
         <div className="flex-1 flex flex-col min-h-0">
-          <div className="flex-1 overflow-auto">
+          <div className="flex-1 overflow-auto" ref={scrollContainerRef}>
             <table className="min-w-full border-separate border-spacing-0 text-sm">
             <thead className="sticky top-0 z-50">
               <tr>
@@ -728,6 +835,7 @@ export const ManpowerView = memo(function ManpowerView({
                     return (
                   <th
                     key={day}
+                    data-date-today={isTodayColumn ? '' : undefined}
                     className={`px-3 py-3 text-center font-semibold border-b border-r border-border min-w-24 ${
                       isTodayColumn
                         ? 'bg-emerald-500/60 text-fg-primary border-emerald-300/80'
@@ -735,6 +843,10 @@ export const ManpowerView = memo(function ManpowerView({
                     }`}
                     style={isTodayColumn ? undefined : { backgroundColor: '#121212' }}
                     title={isTodayColumn ? 'Today' : undefined}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      setContextMenu({ type: 'col', id: day, x: e.clientX, y: e.clientY });
+                    }}
                   >
                     {day}
                   </th>
@@ -780,6 +892,10 @@ export const ManpowerView = memo(function ManpowerView({
                           : 'hover:bg-bg-light/60'
                       }`}
                       onClick={() => onNodeSelect?.(personId)}
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                        setContextMenu({ type: 'row', id: personId, x: e.clientX, y: e.clientY });
+                      }}
                     >
                       <td
                         className={`relative sticky left-0 z-40 px-4 py-2 border-b border-r border-border w-56 min-w-56 max-w-56 overflow-hidden ${
@@ -870,6 +986,10 @@ export const ManpowerView = memo(function ManpowerView({
                               : 'bg-bg-darker/40 hover:bg-bg-darker/60'
                           }${isTaskGhosted ? ' opacity-30' : ''}`}
                           onClick={() => onNodeSelect?.(task.id)}
+                          onContextMenu={(e) => {
+                            e.preventDefault();
+                            setContextMenu({ type: 'row', id: personId, x: e.clientX, y: e.clientY });
+                          }}
                         >
                           <td
                             className={`relative sticky left-0 z-40 px-4 py-2 border-b border-r border-border w-56 min-w-56 max-w-56 overflow-hidden ${
@@ -976,6 +1096,54 @@ export const ManpowerView = memo(function ManpowerView({
             </table>
           </div>
 
+        </div>
+      )}
+
+      {/* Context menu for row/column actions (matches tree view style) */}
+      {contextMenu && (
+        <div
+          className="fixed bg-bg-light border border-border rounded-sm shadow-lg z-50 min-w-max"
+          style={{ top: `${contextMenu.y}px`, left: `${contextMenu.x}px` }}
+          onMouseDown={(e) => e.stopPropagation()}
+          onMouseLeave={() => setContextMenu(null)}
+        >
+          {contextMenu.type === 'row' && (() => {
+            const personName = data?.resources?.[contextMenu.id]?.name ?? contextMenu.id;
+            return (
+              <>
+                <button
+                  className="w-full text-left px-4 py-2 text-sm text-fg-primary hover:bg-bg-selection transition-colors first:rounded-t-sm"
+                  onClick={() => { handleRowAction(contextMenu.id, 'autocalc'); setContextMenu(null); }}
+                >
+                  ⚡ AutoCalc &ldquo;{personName}&rdquo;
+                </button>
+                <div className="border-t border-border my-0.5" />
+                <button
+                  className="w-full text-left px-4 py-2 text-sm text-fg-primary hover:bg-status-danger hover:text-fg-primary transition-colors last:rounded-b-sm"
+                  onClick={() => { handleRowAction(contextMenu.id, 'clear'); setContextMenu(null); }}
+                >
+                  🧹 Clear &ldquo;{personName}&rdquo;
+                </button>
+              </>
+            );
+          })()}
+          {contextMenu.type === 'col' && (
+            <>
+              <button
+                className="w-full text-left px-4 py-2 text-sm text-fg-primary hover:bg-bg-selection transition-colors first:rounded-t-sm"
+                onClick={() => { handleColAction(contextMenu.id, 'autocalc'); setContextMenu(null); }}
+              >
+                ⚡ AutoCalc {contextMenu.id}
+              </button>
+              <div className="border-t border-border my-0.5" />
+              <button
+                className="w-full text-left px-4 py-2 text-sm text-fg-primary hover:bg-status-danger hover:text-fg-primary transition-colors last:rounded-b-sm"
+                onClick={() => { handleColAction(contextMenu.id, 'clear'); setContextMenu(null); }}
+              >
+                🧹 Clear {contextMenu.id}
+              </button>
+            </>
+          )}
         </div>
       )}
 

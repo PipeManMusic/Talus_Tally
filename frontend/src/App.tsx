@@ -104,6 +104,7 @@ function App() {
   const [exportTargetNodeId, setExportTargetNodeId] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<{ nodeIds: string[]; label: string } | null>(null);
   const pendingCloseActionRef = useRef<(() => Promise<void>) | null>(null);
+  const pendingDialogResolveRef = useRef<((action: SaveAction) => void) | null>(null);
   const closeInProgressRef = useRef(false);
   const [addChildParentId, setAddChildParentId] = useState<string | null>(null);
   const [addChildTitle, setAddChildTitle] = useState<string | undefined>(undefined);
@@ -975,43 +976,6 @@ function App() {
   }, [ensureSession, restoreGraphToSession]);
 
   // Menu handlers
-  const handleNew = useCallback(async () => {
-    try {
-      // Check if current project has unsaved changes
-      if (isDirty && sessionId) {
-        const confirmed = window.confirm(
-          'You have unsaved changes. Do you want to discard them and create a new project?'
-        );
-        if (!confirmed) {
-          return;
-        }
-        // Discard changes
-        try {
-          await apiClient.resetDirtyState(sessionId);
-          setIsDirty(false);
-        } catch (err) {
-          console.warn('Failed to reset dirty state:', err);
-          setIsDirty(false);  // Reset locally anyway
-        }
-      }
-      
-      // Load templates if not already loaded
-      if (templates.length === 0) {
-        const loadedTemplates = await apiClient.listTemplates();
-        console.log('Loaded templates:', loadedTemplates);
-        setTemplates(loadedTemplates);
-        if (loadedTemplates.length === 0) {
-          alert('No templates available. Please add templates to the backend.');
-          return;
-        }
-      }
-      // Show new project dialog
-      setShowNewProjectDialog(true);
-    } catch (err) {
-      console.error('✗ Failed to load templates:', err);
-      alert(`Failed to load templates. Error: ${err instanceof Error ? err.message : String(err)}`);
-    }
-  }, [templates.length, isDirty, sessionId]);
 
   const handleCreateProject = useCallback(async (templateId: string, projectName: string) => {
     try {
@@ -1206,9 +1170,81 @@ function App() {
     }
   }, [currentGraph, sessionId, currentTemplateId, expandedMap, blockingRelationships, savedFilterSets]);
 
+  const handleNew = useCallback(async () => {
+    try {
+      // Check if current project has unsaved changes
+      if (isDirtyRef.current && sessionId) {
+        const action: SaveAction = await new Promise((resolve) => {
+          pendingDialogResolveRef.current = resolve;
+          setShowSaveConfirmDialog(true);
+        });
+
+        if (action === 'cancel') return;
+
+        if (action === 'save') {
+          const saved = await handleSave();
+          if (!saved) return;
+        } else if (action === 'save-as') {
+          const saved = await handleSaveAs();
+          if (!saved) return;
+        }
+        // 'dont-save': fall through — reset dirty state and continue
+        try {
+          await apiClient.resetDirtyState(sessionId);
+          setIsDirty(false);
+        } catch (err) {
+          console.warn('Failed to reset dirty state:', err);
+          setIsDirty(false);
+        }
+      }
+      
+      // Load templates if not already loaded
+      if (templates.length === 0) {
+        const loadedTemplates = await apiClient.listTemplates();
+        console.log('Loaded templates:', loadedTemplates);
+        setTemplates(loadedTemplates);
+        if (loadedTemplates.length === 0) {
+          alert('No templates available. Please add templates to the backend.');
+          return;
+        }
+      }
+      // Show new project dialog
+      setShowNewProjectDialog(true);
+    } catch (err) {
+      console.error('✗ Failed to load templates:', err);
+      alert(`Failed to load templates. Error: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }, [templates.length, sessionId, handleSave, handleSaveAs]);
+
   const handleOpenRecent = useCallback(async (filePath: string) => {
     console.log('📂 Opening recent file:', filePath);
-    
+
+    // Check if current project has unsaved changes
+    if (isDirtyRef.current && sessionId) {
+      const action: SaveAction = await new Promise((resolve) => {
+        pendingDialogResolveRef.current = resolve;
+        setShowSaveConfirmDialog(true);
+      });
+
+      if (action === 'cancel') return;
+
+      if (action === 'save') {
+        const saved = await handleSave();
+        if (!saved) return; // Save failed or was cancelled
+      } else if (action === 'save-as') {
+        const saved = await handleSaveAs();
+        if (!saved) return;
+      }
+      // 'dont-save': fall through — reset dirty state and continue
+      try {
+        await apiClient.resetDirtyState(sessionId);
+        setIsDirty(false);
+      } catch (err) {
+        console.warn('Failed to reset dirty state:', err);
+        setIsDirty(false);
+      }
+    }
+
     // Read and parse file
     let fileContents: string;
     let parsed: any;
@@ -1354,7 +1390,7 @@ function App() {
     }
     
     console.log('✓ Project opened:', filePath);
-  }, [normalizeGraph, setCurrentGraph, sessionId, setSessionId, setExpandedMap, setTemplateSchema, setCurrentTemplateId, recordRecentFile, setSavedFilterSets, fetchBlockingRelationships]);
+  }, [normalizeGraph, setCurrentGraph, sessionId, setSessionId, setExpandedMap, setTemplateSchema, setCurrentTemplateId, recordRecentFile, setSavedFilterSets, fetchBlockingRelationships, handleSave, handleSaveAs]);
 
   const handleOpen = useCallback(async () => {
     try {
@@ -1964,6 +2000,14 @@ function App() {
   const handleSaveConfirm = useCallback(async (action: SaveAction) => {
     console.log('[SAVE DIALOG] User selected action:', action);
     setShowSaveConfirmDialog(false);
+
+    // If this dialog was shown via the async Promise pattern (navigation actions),
+    // resolve the promise and let the caller handle the action
+    if (pendingDialogResolveRef.current) {
+      pendingDialogResolveRef.current(action);
+      pendingDialogResolveRef.current = null;
+      return;
+    }
 
     if (action === 'cancel') {
       console.log('[SAVE DIALOG] Cancel, staying open');
@@ -2689,6 +2733,11 @@ function App() {
         onCancel={() => {
           console.log('[SAVE DIALOG] User clicked Cancel');
           setShowSaveConfirmDialog(false);
+          if (pendingDialogResolveRef.current) {
+            pendingDialogResolveRef.current('cancel');
+            pendingDialogResolveRef.current = null;
+            return;
+          }
           pendingCloseActionRef.current = null;
           closeInProgressRef.current = false;
         }}

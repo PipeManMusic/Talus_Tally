@@ -246,6 +246,12 @@ class Blueprint:
             puuid = prop.get('uuid', '')
             if lid and puuid:
                 result[lid] = puuid
+                # Also index by explicit semantic key (set by feature macros
+                # on disambiguated properties, e.g. key="status" when
+                # id="_feat_scheduling_status").
+                pkey = prop.get('key', '')
+                if pkey and pkey != lid:
+                    result[pkey] = puuid
         return result
 
     def build_all_property_uuid_maps(self) -> Dict[str, Dict[str, str]]:

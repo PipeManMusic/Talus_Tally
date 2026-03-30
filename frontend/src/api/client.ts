@@ -1173,11 +1173,15 @@ export class APIClient {
     return response.json();
   }
 
-  async recalculateManpower(sessionId: string, nodeIds?: string[]): Promise<ManpowerPayload> {
+  async recalculateManpower(sessionId: string, nodeIds?: string[], dates?: string[]): Promise<ManpowerPayload> {
+    const hasBody = nodeIds || dates;
+    const bodyObj: Record<string, any> = {};
+    if (nodeIds) bodyObj.node_ids = nodeIds;
+    if (dates) bodyObj.dates = dates;
     const response = await fetch(`${this.baseUrl}/api/v1/sessions/${sessionId}/manpower/recalculate`, {
       method: 'POST',
-      headers: nodeIds ? { 'Content-Type': 'application/json' } : undefined,
-      body: nodeIds ? JSON.stringify({ node_ids: nodeIds }) : undefined,
+      headers: hasBody ? { 'Content-Type': 'application/json' } : undefined,
+      body: hasBody ? JSON.stringify(bodyObj) : undefined,
     });
     if (!response.ok) {
       const error = await response.json();
@@ -1186,11 +1190,13 @@ export class APIClient {
     return response.json();
   }
 
-  async clearManpowerAllocations(sessionId: string, nodeIds: string[]): Promise<ManpowerPayload> {
+  async clearManpowerAllocations(sessionId: string, nodeIds: string[], dates?: string[]): Promise<ManpowerPayload> {
+    const bodyObj: Record<string, any> = { node_ids: nodeIds };
+    if (dates) bodyObj.dates = dates;
     const response = await fetch(`${this.baseUrl}/api/v1/sessions/${sessionId}/manpower/clear`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ node_ids: nodeIds }),
+      body: JSON.stringify(bodyObj),
     });
     if (!response.ok) {
       const error = await response.json();

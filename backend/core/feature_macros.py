@@ -128,14 +128,22 @@ def apply_feature_macros(template_data: Dict[str, Any]) -> Dict[str, Any]:
             for macro_prop in macro_props:
                 pid = macro_prop["id"]
                 if pid in prop_index:
-                    # Property already defined in the template — merge
-                    # macro-only fields (system_locked, ui_group, etc.)
-                    # without overwriting the template's options,
-                    # velocityConfig, or other customisations.
                     existing = properties[prop_index[pid]]
-                    for key, value in macro_prop.items():
-                        if key not in existing:
-                            existing[key] = value
+                    if existing.get("system_locked"):
+                        # Previously injected macro property — update it
+                        for key, value in macro_prop.items():
+                            if key not in existing:
+                                existing[key] = value
+                    else:
+                        # User-defined property with the same id — append the
+                        # macro property alongside it with a unique id so each
+                        # gets its own UUID during _generate_property_uuids.
+                        new_prop = dict(macro_prop)
+                        unique_id = f"_feat_{feature}_{pid}"
+                        new_prop["id"] = unique_id
+                        new_prop["key"] = pid  # preserve semantic key for lookups
+                        properties.append(new_prop)
+                        prop_index[unique_id] = len(properties) - 1
                 else:
                     properties.append(dict(macro_prop))
                     prop_index[pid] = len(properties) - 1
@@ -151,7 +159,9 @@ def apply_feature_macros(template_data: Dict[str, Any]) -> Dict[str, Any]:
         if ids_to_remove:
             properties = [
                 p for p in properties
-                if not (p.get("system_locked") and p["id"] in ids_to_remove)
+                if not (p.get("system_locked") and (
+                    p["id"] in ids_to_remove or p.get("key") in ids_to_remove
+                ))
             ]
 
         nt["properties"] = properties

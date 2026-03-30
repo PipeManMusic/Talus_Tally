@@ -206,7 +206,8 @@ def recalculate_manpower(session_id: str):
         body = request.get_json(silent=True) or {}
         if body.get('node_ids'):
             node_ids_filter = set(str(nid) for nid in body['node_ids'])
-        recalc_result = recalculate_manpower_allocations(list(graph_nodes.values()), person_type_ids=person_ids, blueprint=blueprint, node_ids=node_ids_filter)
+        dates_filter = set(body.get('dates', []))  # e.g. ["2026-03-30"]
+        recalc_result = recalculate_manpower_allocations(list(graph_nodes.values()), person_type_ids=person_ids, blueprint=blueprint, node_ids=node_ids_filter, dates=dates_filter or None)
         
         # Apply each change via UpdatePropertyCommand to ensure undo/redo support
         for change in recalc_result.get("changes", []):
@@ -255,12 +256,14 @@ def clear_manpower_allocations(session_id: str):
         node_ids = set(str(nid) for nid in body.get('node_ids', []))
         if not node_ids:
             return jsonify({'error': 'node_ids is required'}), 400
+        # Optional dates filter: only clear allocations for these dates
+        dates_filter = set(body.get('dates', []))  # e.g. ["2026-03-30"]
 
         graph_nodes = graph.nodes if hasattr(graph, 'nodes') else {}
         blueprint = session_data.get('blueprint')
         person_ids = _get_person_type_ids(session_data)
 
-        from backend.core.resource_engine import calculate_manpower_load, ALLOCATIONS_PROPERTY_ID, _node_type
+        from backend.core.resource_engine import calculate_manpower_load, ALLOCATIONS_PROPERTY_ID, _parse_allocations, _node_type
         from backend.core.property_resolver import PropertyResolver
         from backend.handlers.commands.node_commands import UpdatePropertyCommand
         from uuid import UUID
@@ -281,11 +284,29 @@ def clear_manpower_allocations(session_id: str):
             old_value = props.get(ALLOCATIONS_PROPERTY_ID) or props.get(alloc_uuid)
             if not old_value:
                 continue
+
+            if dates_filter:
+                # Parse allocation value (may be JSON string) to a dict
+                import copy
+                parsed = _parse_allocations(old_value)
+                if not parsed:
+                    continue
+                new_value = copy.deepcopy(parsed)
+                removed_any = False
+                for d in dates_filter:
+                    if d in new_value:
+                        del new_value[d]
+                        removed_any = True
+                if not removed_any:
+                    continue
+            else:
+                new_value = {}
+
             changes.append({
                 'node_id': nid,
                 'property_id': alloc_uuid,
                 'old_value': old_value,
-                'new_value': {},
+                'new_value': new_value,
             })
 
         for change in changes:

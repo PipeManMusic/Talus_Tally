@@ -2538,7 +2538,10 @@ def get_template_schema(template_id):
             props_data = node_type._extra_props.get('properties', [])
             for prop_data in props_data:
                 # prop_id is the database key (from 'name' field), prop_display is the UI label
+                # Prefer an explicit 'key' field (set by feature macros on
+                # disambiguated properties) over the raw 'id'.
                 prop_id = prop_data.get('id') or prop_data.get('name')
+                prop_key = prop_data.get('key') or prop_id
                 prop_display = prop_data.get('label') or prop_data.get('name')
                 prop_type = prop_data.get('type', 'text')
                 required = prop_data.get('required', False)
@@ -2571,7 +2574,7 @@ def get_template_schema(template_id):
                 
                 properties.append({
                     'id': prop_data.get('uuid') or prop_id,
-                    'key': prop_id,
+                    'key': prop_key,
                     'name': prop_display,
                     'type': prop_type,
                     'required': required,
@@ -3318,6 +3321,15 @@ def execute_command():
                             'message': 'UpdateProperty requires node_id and property_id'
                         }
                     }), 400
+                # Resolve semantic property keys (e.g. "allocations") to their
+                # UUID counterpart so all writes go through the UUID-based path.
+                blueprint = session_data.get('blueprint')
+                node = graph.get_node(UUID(node_id))
+                if node and blueprint:
+                    prop_map = blueprint.build_property_uuid_map(node.blueprint_type_id)
+                    resolved_uuid = prop_map.get(property_id)
+                    if resolved_uuid:
+                        property_id = resolved_uuid
                 command = UpdatePropertyCommand(
                     node_id=UUID(node_id),
                     property_id=property_id,
@@ -3329,8 +3341,6 @@ def execute_command():
                 )
                 dispatcher.execute(command)
                 # Keep node.name in sync when the name property is updated
-                blueprint = session_data.get('blueprint')
-                node = graph.get_node(UUID(node_id))
                 if node and blueprint:
                     prop_map = blueprint.build_property_uuid_map(node.blueprint_type_id)
                     name_uuid = prop_map.get('name') if prop_map else None

@@ -4,6 +4,7 @@
     "nodes": [
       {
         "id": "fea6876e-968b-573a-8775-10e4ffd38a31",
+        "name": "Manpower Tracking Smoke Test",
         "type": "292b9e11-45c7-94f4-20db-7f6085266a4f",
         "properties": {
           "name": "Manpower Tracking Smoke Test",
@@ -32,6 +33,7 @@
       },
       {
         "id": "6f2fa0ae-8053-5ae7-ba01-881e9866ce77",
+        "name": "Shop Work Sprint",
         "type": "6af49a72-a129-e754-a0af-ff1c8e509673",
         "properties": {
           "name": "Shop Work Sprint",
@@ -58,6 +60,7 @@
       },
       {
         "id": "239c1ff4-dcdd-5098-87ef-4ff8d9bda17c",
+        "name": "Engine Teardown",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Engine Teardown",
@@ -70,9 +73,7 @@
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Engine Teardown"
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {}
-        },
+        "metadata": {},
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "video-camera",
@@ -89,6 +90,7 @@
       },
       {
         "id": "dc896a37-ff5a-57cc-9dc9-4bd8b6200e4e",
+        "name": "Brake Fitment",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Brake Fitment",
@@ -104,9 +106,7 @@
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Brake Fitment"
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {}
-        },
+        "metadata": {},
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "video-camera",
@@ -123,6 +123,7 @@
       },
       {
         "id": "85b73c92-3e3c-5193-b1f6-826f5d735cb5",
+        "name": "Wiring Diagnosis",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Wiring Diagnosis",
@@ -135,9 +136,7 @@
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Wiring Diagnosis"
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {}
-        },
+        "metadata": {},
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "video-camera",
@@ -154,6 +153,7 @@
       },
       {
         "id": "ddbebc73-a27b-5506-8686-3eb9615d8cb2",
+        "name": "Paint Prep",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Paint Prep",
@@ -166,9 +166,7 @@
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Paint Prep"
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {}
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "video-camera",
@@ -185,6 +183,7 @@
       },
       {
         "id": "ff11979e-a2a5-525e-95bf-b6691bac104c",
+        "name": "Weekend Rollover Check",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Weekend Rollover Check",
@@ -197,9 +196,7 @@
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Weekend Rollover Check"
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {}
-        },
+        "metadata": {},
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "video-camera",
@@ -216,6 +213,7 @@
       },
       {
         "id": "33d16572-0999-561b-b978-fe55b61fa500",
+        "name": "Calibration Pass",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Calibration Pass",
@@ -231,9 +229,7 @@
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Calibration Pass"
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {}
-        },
+        "metadata": {},
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "video-camera",
@@ -250,6 +246,7 @@
       },
       {
         "id": "4ca90444-9d26-5ad1-9a38-644485479b5a",
+        "name": "Personnel",
         "type": "1b7cedf8-5697-2dac-6a63-e977869dc40f",
         "properties": {
           "name": "Personnel",
@@ -272,6 +269,7 @@
       },
       {
         "id": "bd09c5f2-6a90-5e98-8bd6-93512f177f57",
+        "name": "Alex Rivera",
         "type": "7230f246-66ef-dfb4-1010-c4ade5ac5418",
         "properties": {
           "name": "Alex Rivera",
@@ -305,6 +303,7 @@
       },
       {
         "id": "61a5785e-741d-53b8-8973-edf5708d4a7f",
+        "name": "Blair Chen",
         "type": "7230f246-66ef-dfb4-1010-c4ade5ac5418",
         "properties": {
           "name": "Blair Chen",
@@ -338,6 +337,7 @@
       },
       {
         "id": "5a4e7080-ea15-5873-965f-9004c5a1455e",
+        "name": "Casey Morgan",
         "type": "7230f246-66ef-dfb4-1010-c4ade5ac5418",
         "properties": {
           "name": "Casey Morgan",
