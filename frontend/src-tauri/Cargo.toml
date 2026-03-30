@@ -1,6 +1,6 @@
 [package]
 name = "talus-tally"
-version = "0.1.6-alpha.1"
+version = "0.1.8-alpha.1"
 description = "Talus Tally - Screenplay & Writing Project Manager"
 authors = ["you"]
 license = ""

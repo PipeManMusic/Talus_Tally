@@ -1,3 +1,25 @@
+talus-tally (0.1.8~alpha1-1) jammy; urgency=medium
+
+  * Alpha 0.1.8 release
+  * Node Type UUID migration and feature macros integration
+  * Property UUID migration, legacy cleanup, and bug fixes
+  * Manpower context menus for row/column clear and AutoCalc
+  * Date-filtered clear/recalculate in manpower backend endpoints
+  * UUID-based allocation property reads/writes throughout
+  * Confirmation prompts before destructive manpower clear operations
+  * Auto-scroll manpower view to today's date column
+  * Save confirmation dialog on project switch/new (replaces window.confirm)
+  * Fix releases disappearing from Agile Done column (velocity=0 filter)
+  * Fix inspector status property collision with user-defined properties
+  * Fix filter dropdowns showing UUIDs instead of property labels
+  * Fix chart negative dimensions on project switch
+  * Fix blocking relationships not showing in Inspector
+  * Restore orphaned properties during template reconciliation
+  * Add SIGTERM/SIGINT signal handlers for graceful backend shutdown
+  * Persist lastFilePath to localStorage so Save survives app restart
+
+ -- Talus Tally Dev <dev@talusstally.local>  Sun, 30 Mar 2026 00:00:00 +0000
+
 talus-tally (0.1.7~alpha1-1) jammy; urgency=medium
 
   * Alpha 0.1.7 release
