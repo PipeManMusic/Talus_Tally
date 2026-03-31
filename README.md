@@ -109,3 +109,9 @@ Talus Tally is a strong fit for teams managing:
 ## Contributing
 
 Issues, ideas, and feedback are welcome. If you are evaluating Talus Tally for serious operational use, open an issue and share your use case.
+
+---
+
+## Community
+
+Join the conversation on [Discord](https://discord.gg/UEuepzDvB).
