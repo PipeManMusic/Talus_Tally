@@ -41,5 +41,8 @@ talus-tally.json
 /frontend/dist/
 /frontend/src-tauri/resources/
 
+# User-created templates
+data/templates/new_template.yaml
+
 # Dependency artifacts
 /node_modules/

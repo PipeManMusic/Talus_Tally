@@ -26,11 +26,15 @@ if [ "${SKIP_DOCKER:-0}" != "1" ] && [ ! -f /.dockerenv ]; then
         echo "🤖 CI detected - running container as root to avoid bind mount permission issues."
         DOCKER_USER_FLAGS=("--user" "0:0")
     else
-        echo "👷 Local build detected - using builder user inside the container."
+        echo "👷 Local build detected - mapping host user into container."
+        DOCKER_USER_FLAGS=("--user" "$(id -u):$(id -g)")
     fi
 
     exec docker run --rm \
         "${DOCKER_USER_FLAGS[@]}" \
+        -e HOME=/tmp \
+        -e CARGO_HOME=/tmp/.cargo \
+        -e PATH="/opt/rust/cargo/bin:/tmp/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
         -v "$(pwd):/build" \
         -w /build \
         talus-tally-builder \
@@ -69,6 +73,9 @@ fi
 
 echo "📦 Step 1/3: Installing frontend dependencies"
 pushd frontend >/dev/null
+# Remove any host-owned node_modules that the bind mount may carry in,
+# which causes EACCES errors when npm ci tries to unlink files.
+rm -rf node_modules
 npm ci
 popd >/dev/null
 

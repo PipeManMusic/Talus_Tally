@@ -35,20 +35,20 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y --no-install-recommends nodejs \
     && rm -rf /var/lib/apt/lists/*
 
-# Create non-root builder user and workspace mountpoint
-RUN useradd -m builder
-RUN mkdir -p /build && chown -R builder:builder /build
-ENV CARGO_HOME="/home/builder/.cargo"
-ENV RUSTUP_HOME="/home/builder/.rustup"
+# Install Rust system-wide so any UID can use it (needed for --user builds)
+ENV CARGO_HOME="/opt/rust/cargo"
+ENV RUSTUP_HOME="/opt/rust/rustup"
 ENV PATH="${CARGO_HOME}/bin:${PATH}"
-USER builder
+RUN mkdir -p /opt/rust && \
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable && \
+    chmod -R a+rX /opt/rust
+
+# Create workspace mountpoint writable by any user
+RUN mkdir -p /build && chmod 777 /build
 WORKDIR /build
-# Install Rust inside the builder user's home for proper permissions
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
+
 # Set PKG_CONFIG_PATH to include system libraries for Tauri builds
 ENV PKG_CONFIG_PATH="/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig"
-# Pre-download common Rust dependencies for faster builds
-RUN cargo install cargo-watch --locked 2>/dev/null || true
 ENV PYTHON_BIN=python3
 ENV CARGO_PROFILE_RELEASE_OPT_LEVEL=3
 ENV CARGO_PROFILE_RELEASE_LTO=true
