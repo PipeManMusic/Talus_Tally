@@ -4,7 +4,7 @@
   "version": "0.1.8-alpha",
   "identifier": "com.talus.tally",
   "build": {
-    "beforeDevCommand": "mkdir -p src-tauri/resources/talus-tally-backend src-tauri/resources/assets src-tauri/resources/data && npm run dev",
+    "beforeDevCommand": "mkdir -p src-tauri/resources/talus-tally-backend src-tauri/resources/assets src-tauri/resources/data && (fuser -k 5173/tcp 2>/dev/null || true) && npm run dev",
     "beforeBuildCommand": "npm run build && npm run stage:icons && npm run stage:resources",
     "devUrl": "http://localhost:5173",
     "frontendDist": "../dist"
