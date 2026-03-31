@@ -186,6 +186,7 @@ export function AgileView({
     const nodeId = node.id;
     const statusUuid = resolveStatusUuid(node.type);
     const oldValue = node.properties?.[statusUuid] ?? null;
+    const previousOverride = statusOverrides[nodeId];
 
     setStatusOverrides((prev) => ({ ...prev, [nodeId]: nextStatus }));
     setSavingByNodeId((prev) => ({ ...prev, [nodeId]: true }));
