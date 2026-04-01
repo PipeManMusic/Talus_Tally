@@ -1,3 +1,11 @@
+talus-tally (0.1.8.1~alpha1-1) jammy; urgency=medium
+
+  * Alpha 0.1.8.1 hotfix release
+  * Property orphan fix, editor UI fixes, clean exit fix
+  * ManpowerView cancel button fix, stale template sync
+
+ -- Talus Tally Dev <dev@talusstally.local>  Tue, 01 Apr 2026 00:00:00 +0000
+
 talus-tally (0.1.8~alpha1-1) jammy; urgency=medium
 
   * Alpha 0.1.8 release
