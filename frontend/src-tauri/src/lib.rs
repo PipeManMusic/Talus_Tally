@@ -162,21 +162,17 @@ fn start_backend(backend_process: Arc<Mutex<Option<Child>>>, app_handle: tauri::
   diag("Checking for existing backend processes...");
   #[cfg(target_os = "linux")]
   {
-    for pattern in ["python.*backend.app", "talus-tally-backend"] {
-      let _ = Command::new("pkill")
-        .args(&["-f", pattern])
-        .output();
-    }
+    let _ = Command::new("pkill")
+      .args(&["-f", "python.*backend.app"])
+      .output();
     diag("Killed any existing backend processes (Linux)");
   }
 
   #[cfg(target_os = "macos")]
   {
-    for pattern in ["python.*backend.app", "talus-tally-backend"] {
-      let _ = Command::new("pkill")
-        .args(&["-f", pattern])
-        .output();
-    }
+    let _ = Command::new("pkill")
+      .args(&["-f", "python.*backend.app"])
+      .output();
     diag("Killed any existing backend processes (macOS)");
   }
 
@@ -285,8 +281,8 @@ fn determine_project_root(app_handle: Option<&tauri::AppHandle>) -> PathBuf {
     let exe_dir = exe_path.parent().unwrap_or_else(|| Path::new("."));
     diag(&format!("exe_dir = {}", exe_dir.display()));
 
-    // Installed package layout (Linux deb: /usr/lib/Talus Tally/ or legacy /opt/talus-tally/)
-    for prefix in ["/usr/lib/Talus Tally", "/opt/talus-tally"] {
+    // Installed package layout (Linux deb: /usr/lib/Talus Tally/)
+    for prefix in ["/usr/lib/Talus Tally"] {
       if exe_dir.starts_with(prefix) {
         return PathBuf::from(prefix);
       }

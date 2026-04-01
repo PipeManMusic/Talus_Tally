@@ -21,74 +21,42 @@ def _is_development_mode() -> bool:
     return not _is_packaged_runtime()
 
 def _resolve_assets_subpath(*parts: str, prefer_writable: bool = False) -> Path:
-    """Resolve an assets subpath with environment-aware path preference.
-    
+    """Resolve an assets subpath from repo root or PyInstaller bundle.
+
     Args:
         *parts: Path components to join (e.g., 'assets', 'indicators', 'catalog.yaml')
         prefer_writable: If True, prefer paths with write access (for create/update operations)
-    
+
     Returns:
-        Path to the asset, respecting TALUS_ENV environment variable:
-        - TALUS_ENV=development: Prefer repo/development paths
-        - TALUS_ENV=production: Prefer /opt/talus_tally paths
-        - Not set: Auto-detect (prefer development if repo exists and is writable)
+        Path to the asset.  Checks the repo source tree first (dev) or
+        PyInstaller bundle (production), falling back as needed.
     """
-    env_mode = os.environ.get('TALUS_ENV', 'auto').lower()
-    if env_mode == 'auto':
-        env_mode = 'development' if _is_development_mode() else 'production'
-    
-    production_root = Path('/opt/talus_tally')
     repo_root = Path(__file__).resolve().parent.parent.parent
     pyinstaller_root = Path(sys._MEIPASS) if hasattr(sys, '_MEIPASS') else None
-    
-    # Build candidate list based on environment mode
-    if env_mode == 'development':
-        # Development mode: prefer repo first
-        candidates = [repo_root]
-        if production_root.exists():
-            candidates.append(production_root)
+
+    candidates: list[Path] = []
+    if _is_development_mode():
+        candidates.append(repo_root)
         if pyinstaller_root:
             candidates.append(pyinstaller_root)
-    elif env_mode == 'production':
-        # Production mode: prefer production install
-        candidates = []
-        if production_root.exists():
-            candidates.append(production_root)
+    else:
         if pyinstaller_root:
             candidates.append(pyinstaller_root)
         candidates.append(repo_root)
-    else:
-        # Auto mode: prefer development if writable, otherwise production
-        if prefer_writable:
-            # For write operations, prefer writable paths
-            candidates = [repo_root]
-            if production_root.exists() and os.access(production_root, os.W_OK):
-                candidates.insert(0, production_root)
-        else:
-            # For read operations, prefer what exists
-            candidates = []
-            if production_root.exists():
-                candidates.append(production_root)
-            if pyinstaller_root:
-                candidates.append(pyinstaller_root)
-            candidates.append(repo_root)
-    
-    # Find first existing path
+
     for base in candidates:
         candidate = base.joinpath(*parts)
         if candidate.exists():
             if prefer_writable:
-                # Verify write access
                 parent = candidate.parent if candidate.is_file() else candidate
                 if os.access(parent, os.W_OK):
                     return candidate
             else:
                 return candidate
-    
+
     # Fallback: return repo path (will be created if needed for write operations)
     fallback = repo_root.joinpath(*parts)
     if prefer_writable:
-        # Ensure parent directory exists for write operations
         fallback.parent.mkdir(parents=True, exist_ok=True)
     return fallback
 
@@ -1894,8 +1862,17 @@ def get_icon_catalog():
                 }
             }), 404
 
+        # Merge source catalog icons so built-in icons always appear
+        icons_map = {}
+        source = getattr(loader, '_source_icon_catalog', None)
+        if source:
+            for icon in source.list_icons():
+                icons_map[icon['id']] = icon
+        for icon in loader.icon_catalog.list_icons():
+            icons_map[icon['id']] = icon  # user icons override source
+
         return jsonify({
-            'icons': loader.icon_catalog.list_icons()
+            'icons': list(icons_map.values())
         }), 200
     except Exception as e:
         logger.error(f"Error loading icon catalog: {e}")
@@ -1921,6 +1898,11 @@ def get_icon(icon_id):
             }), 404
 
         icon_path = loader.icon_catalog.get_icon_file(icon_id)
+        if not icon_path or not os.path.isfile(icon_path):
+            # Fall back to source asset catalog for built-in icons
+            source = getattr(loader, '_source_icon_catalog', None)
+            if source:
+                icon_path = source.get_icon_file(icon_id)
         if not icon_path or not os.path.isfile(icon_path):
             return jsonify({'error': {'code': 'ICON_NOT_FOUND', 'message': f'Icon {icon_id} not found'}}), 404
 
@@ -2324,6 +2306,31 @@ def load_graph_into_session(session_id):
                 if prop_migrated_count:
                     logger.info("[API] Migrated property keys from legacy IDs to UUIDs on %s nodes", prop_migrated_count)
 
+                # Migrate legacy keys inside metadata.orphaned_properties so the
+                # reconciliation pass can match them against UUID-keyed allowed sets.
+                orphan_key_migrated = 0
+                for node in graph.nodes.values():
+                    meta = node.metadata if isinstance(node.metadata, dict) else {}
+                    orphaned = meta.get('orphaned_properties')
+                    if not isinstance(orphaned, dict) or not orphaned:
+                        continue
+                    pmap = prop_uuid_maps.get(node.blueprint_type_id)
+                    if not pmap:
+                        continue
+                    remapped: dict = {}
+                    changed = False
+                    for key, value in orphaned.items():
+                        if key in pmap:
+                            remapped[pmap[key]] = value
+                            changed = True
+                        else:
+                            remapped[key] = value
+                    if changed:
+                        meta['orphaned_properties'] = remapped
+                        orphan_key_migrated += 1
+                if orphan_key_migrated:
+                    logger.info("[API] Migrated orphaned-property keys from legacy IDs to UUIDs on %s nodes", orphan_key_migrated)
+
                 # Fix up node.name for nodes whose properties were already UUID-keyed
                 # (no migration occurred, so node.name may still be 'Unnamed').
                 name_fixed = 0
@@ -2719,77 +2726,41 @@ def editor_get_template(template_id):
                         logger.warning(f"Property {node_type['id']}.{prop.get('id')} missing type, defaulting to 'text'")
                         prop['type'] = 'text'
 
-                # Person node has strict required properties for manpower features
+                # Person node: migrate legacy single-value fields and mark required
                 if 'is_person' in (node_type.get('features') or []):
                     properties = node_type.get('properties', [])
                     prop_by_id = {prop.get('id'): prop for prop in properties if isinstance(prop, dict)}
 
-                    legacy_daily_capacity = prop_by_id.get('daily_capacity', {}).get('value', 8)
+                    # Seed weekday fields from legacy single-value properties
+                    legacy_daily_capacity = prop_by_id.get('daily_capacity', {}).get('value')
                     legacy_hourly_rate = prop_by_id.get('hourly_rate', {}).get('value')
+                    legacy_overtime = prop_by_id.get('overtime_capacity', {}).get('value')
 
-                    weekday_capacity_specs = [
-                        ('capacity_monday', 'Capacity Monday (Hours)', 8),
-                        ('capacity_tuesday', 'Capacity Tuesday (Hours)', 8),
-                        ('capacity_wednesday', 'Capacity Wednesday (Hours)', 8),
-                        ('capacity_thursday', 'Capacity Thursday (Hours)', 8),
-                        ('capacity_friday', 'Capacity Friday (Hours)', 8),
-                        ('capacity_saturday', 'Capacity Saturday (Hours)', 0),
-                        ('capacity_sunday', 'Capacity Sunday (Hours)', 0),
-                    ]
-                    weekday_hourly_rate_specs = [
-                        ('hourly_rate_monday', 'Hourly Rate Monday'),
-                        ('hourly_rate_tuesday', 'Hourly Rate Tuesday'),
-                        ('hourly_rate_wednesday', 'Hourly Rate Wednesday'),
-                        ('hourly_rate_thursday', 'Hourly Rate Thursday'),
-                        ('hourly_rate_friday', 'Hourly Rate Friday'),
-                        ('hourly_rate_saturday', 'Hourly Rate Saturday'),
-                        ('hourly_rate_sunday', 'Hourly Rate Sunday'),
-                    ]
-
-                    for prop_id, label, default_value in weekday_capacity_specs:
-                        if prop_id not in prop_by_id:
-                            properties.append({
-                                'id': prop_id,
-                                'label': label,
-                                'type': 'number',
-                                'required': True,
-                                'system_locked': True,
-                                'value': legacy_daily_capacity if legacy_daily_capacity is not None else default_value,
-                            })
-
-                    for prop_id, label in weekday_hourly_rate_specs:
-                        if prop_id not in prop_by_id:
-                            new_prop = {
-                                'id': prop_id,
-                                'label': label,
-                                'type': 'number',
-                                'required': False,
-                                'system_locked': True,
-                            }
-                            if legacy_hourly_rate is not None:
-                                new_prop['value'] = legacy_hourly_rate
-                            properties.append(new_prop)
+                    if legacy_daily_capacity is not None:
+                        for day in ('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'):
+                            p = prop_by_id.get(f'capacity_{day}')
+                            if p and 'value' not in p:
+                                p['value'] = legacy_daily_capacity
+                    if legacy_hourly_rate is not None:
+                        for day in ('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'):
+                            p = prop_by_id.get(f'hourly_rate_{day}')
+                            if p and 'value' not in p:
+                                p['value'] = legacy_hourly_rate
+                    if legacy_overtime is not None:
+                        for day in ('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'):
+                            p = prop_by_id.get(f'overtime_capacity_{day}')
+                            if p and 'value' not in p:
+                                p['value'] = legacy_overtime
 
                     # Remove legacy single-value fields once migrated
                     node_type['properties'] = [
                         prop for prop in properties
-                        if prop.get('id') not in {'daily_capacity', 'hourly_rate'}
+                        if prop.get('id') not in {'daily_capacity', 'hourly_rate', 'overtime_capacity'}
                     ]
 
-                    required_person_prop_ids = {
-                        'name',
-                        'email',
-                        'capacity_monday',
-                        'capacity_tuesday',
-                        'capacity_wednesday',
-                        'capacity_thursday',
-                        'capacity_friday',
-                        'capacity_saturday',
-                        'capacity_sunday',
-                    }
+                    # Mark name/email as required (user-defined props, not macro-injected)
                     for prop in node_type.get('properties', []):
-                        prop_id = prop.get('id')
-                        if prop_id in required_person_prop_ids:
+                        if prop.get('id') in {'name', 'email'}:
                             prop['required'] = True
         
         return jsonify(template), 200
@@ -3875,13 +3846,24 @@ def get_icon_file(icon_id: str):
                 target_icon = icon
                 break
 
-        if not target_icon:
-            return jsonify({'error': 'Icon not found'}), 404
+        icon_file = None
+        if target_icon:
+            filename = target_icon.get('file') or f'{icon_id}.svg'
+            icon_file = catalog_file.parent / filename
 
-        filename = target_icon.get('file') or f'{icon_id}.svg'
-        icon_file = catalog_file.parent / filename
+        # Fall back to source assets catalog for built-in icons
+        if not icon_file or not icon_file.exists():
+            source_catalog = _resolve_assets_subpath('assets', 'icons', 'catalog.yaml')
+            if source_catalog.exists() and str(source_catalog) != str(catalog_file):
+                with open(source_catalog, 'r', encoding='utf-8') as f:
+                    source_data = yaml.safe_load(f) or {}
+                for icon in source_data.get('icons', []):
+                    if icon.get('id') == icon_id:
+                        filename = icon.get('file') or f'{icon_id}.svg'
+                        icon_file = source_catalog.parent / filename
+                        break
 
-        if not icon_file.exists():
+        if not icon_file or not icon_file.exists():
             return jsonify({'error': 'Icon file not found'}), 404
 
         with open(icon_file, 'r', encoding='utf-8') as f:

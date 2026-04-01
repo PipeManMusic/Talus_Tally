@@ -271,6 +271,7 @@ class SchemaLoader:
         """Initialize schema loader with optional indicator catalog."""
         self.indicator_catalog = None
         self.icon_catalog = None
+        self._source_icon_catalog = None
 
         env_mode = os.environ.get('TALUS_ENV', '').strip().lower()
         if env_mode in {'development', 'dev'}:
@@ -284,19 +285,14 @@ class SchemaLoader:
         schema_loader_dir = Path(__file__).resolve().parent  # backend/infra
         project_root = schema_loader_dir.parent.parent  # Go up 2 levels to project root
 
-        # Look for assets in environment-aware order.
+        # Look for assets in repo source tree or PyInstaller bundle.
         asset_roots = []
-        production_root = Path('/opt/talus_tally')
         pyinstaller_root = Path(sys._MEIPASS) if hasattr(sys, '_MEIPASS') else None
         if is_development_mode:
             asset_roots.append(project_root)
-            if production_root.exists():
-                asset_roots.append(production_root)
             if pyinstaller_root:
                 asset_roots.append(pyinstaller_root)
         else:
-            if production_root.exists():
-                asset_roots.append(production_root)
             if pyinstaller_root:
                 asset_roots.append(pyinstaller_root)
             asset_roots.append(project_root)
@@ -360,6 +356,16 @@ class SchemaLoader:
         if icon_catalog_path:
             try:
                 self.icon_catalog = IconCatalog.load(str(icon_catalog_path))
+                # When loading from a user/custom catalog, also load the
+                # source asset catalog so built-in icons are still reachable.
+                for root in asset_roots:
+                    source_icon_path = root / 'assets' / 'icons' / 'catalog.yaml'
+                    if source_icon_path.exists() and str(source_icon_path) != str(icon_catalog_path):
+                        try:
+                            self._source_icon_catalog = IconCatalog.load(str(source_icon_path))
+                        except Exception:
+                            pass
+                        break
             except Exception as e:
                 print(f"[WARN] Failed to load icon catalog: {e}")
         

@@ -122,10 +122,12 @@ def get_default_paths() -> Dict[str, str]:
 
     These are the paths the application would use when no custom override
     is configured (i.e. the setting value is ``None``).
-    """
-    import os
-    import sys
 
+    In all environments the defaults point to the user-data directories
+    (``~/.local/share/talus_tally/…`` on Linux).  Built-in / source assets
+    are merged separately by the listing endpoints so users always see
+    both built-in and user-created content.
+    """
     from backend.infra.user_data_dir import (
         get_user_icons_dir,
         get_user_indicators_dir,
@@ -133,60 +135,10 @@ def get_default_paths() -> Dict[str, str]:
         get_user_templates_dir,
     )
 
-    env_mode = os.environ.get('TALUS_ENV', '').strip().lower()
-    if env_mode in {'development', 'dev'}:
-        is_dev = True
-    elif env_mode in {'production', 'prod'}:
-        is_dev = False
-    else:
-        is_dev = not (getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'))
-
-    repo_root = Path(__file__).resolve().parent.parent.parent
-    production_root = Path('/opt/talus_tally')
-
-    def _first_existing(*candidates: Path) -> str:
-        for c in candidates:
-            if c.exists():
-                return str(c)
-        return str(candidates[0])
-
-    if is_dev:
-        blueprint_default = _first_existing(
-            repo_root / 'data' / 'templates',
-        )
-        export_default = _first_existing(
-            repo_root / 'data' / 'templates' / 'exports',
-        )
-        markup_default = str(get_user_markups_dir())
-        indicators_default = _first_existing(
-            repo_root / 'assets' / 'indicators',
-        )
-        icons_default = _first_existing(
-            repo_root / 'assets' / 'icons',
-        )
-    else:
-        blueprint_default = _first_existing(
-            production_root / 'data' / 'templates',
-            repo_root / 'data' / 'templates',
-        )
-        export_default = _first_existing(
-            production_root / 'data' / 'templates' / 'exports',
-            repo_root / 'data' / 'templates' / 'exports',
-        )
-        markup_default = str(get_user_markups_dir())
-        indicators_default = _first_existing(
-            production_root / 'assets' / 'indicators',
-            repo_root / 'assets' / 'indicators',
-        )
-        icons_default = _first_existing(
-            production_root / 'assets' / 'icons',
-            repo_root / 'assets' / 'icons',
-        )
-
     return {
-        CUSTOM_BLUEPRINT_TEMPLATES_DIR_KEY: blueprint_default,
-        CUSTOM_EXPORT_TEMPLATES_DIR_KEY: export_default,
-        CUSTOM_MARKUP_TEMPLATES_DIR_KEY: markup_default,
-        CUSTOM_INDICATORS_DIR_KEY: indicators_default,
-        CUSTOM_ICONS_DIR_KEY: icons_default,
+        CUSTOM_BLUEPRINT_TEMPLATES_DIR_KEY: str(get_user_templates_dir()),
+        CUSTOM_EXPORT_TEMPLATES_DIR_KEY: str(get_user_templates_dir() / 'exports'),
+        CUSTOM_MARKUP_TEMPLATES_DIR_KEY: str(get_user_markups_dir()),
+        CUSTOM_INDICATORS_DIR_KEY: str(get_user_indicators_dir()),
+        CUSTOM_ICONS_DIR_KEY: str(get_user_icons_dir()),
     }

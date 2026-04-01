@@ -40,12 +40,20 @@ def _node_type(node: Any) -> str:
     return str(getattr(node, "type", getattr(node, "blueprint_type_id", "")) or "")
 
 
-def _node_name(node: Any) -> str:
-    if isinstance(node, dict):
+def _node_name(node: Any, pr: PropertyResolver = None) -> str:
+    if pr is not None:
+        props = _resolved_properties(node, pr)
+    elif isinstance(node, dict):
         props = node.get("properties") or {}
-        return str(props.get("name") or node.get("name") or _node_id(node))
-    props = getattr(node, "properties", {}) or {}
-    return str(props.get("name") or getattr(node, "name", "") or _node_id(node))
+    else:
+        props = getattr(node, "properties", {}) or {}
+    name = props.get("name")
+    if name:
+        return str(name)
+    # Fallback: top-level name attribute, then node ID
+    if isinstance(node, dict):
+        return str(node.get("name") or _node_id(node))
+    return str(getattr(node, "name", "") or _node_id(node))
 
 
 def _node_properties(node: Any) -> Dict[str, Any]:
@@ -406,7 +414,7 @@ def _iter_schedulable_tasks(node_list: List[Any], people: Dict[str, Dict[str, An
             {
                 "node": node,
                 "node_id": _node_id(node),
-                "name": _node_name(node),
+                "name": _node_name(node, pr=pr),
                 "estimated_hours": estimated_hours,
                 "assigned_person_ids": assigned_person_ids,
                 "start_date": start_date,
@@ -452,7 +460,7 @@ def _build_people_resources(node_list: List[Any], person_type_ids: Optional[set]
         weekday_overtime_profile = _build_weekday_overtime_profile(props)
 
         people[node_id] = {
-            "name": _node_name(node),
+            "name": _node_name(node, pr=pr),
             "weekday_capacity": weekday_capacity_profile,
             "weekday_overtime_capacity": weekday_overtime_profile,
             "load": {},

@@ -45,7 +45,8 @@ node_types:
   allowed_children: []
   base_type: asset
   color: '#3b82f6'
-  features: []
+  features:
+  - is_person
   icon: user
   id: person
   label: Person

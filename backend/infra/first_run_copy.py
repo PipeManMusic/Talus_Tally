@@ -14,7 +14,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-SYSTEM_ROOT = Path('/opt/talus_tally')
 SYSTEM_ROOT_DEB = Path('/usr/lib/Talus Tally')
 
 
@@ -49,6 +48,14 @@ def copy_if_empty(user_dir: Path, source_dirs):
         for item in source.iterdir():
             dest = user_dir / item.name
             if skip_existing and dest.exists():
+                # Always update built-in files when the source is newer
+                if item.is_file() and dest.is_file():
+                    try:
+                        if item.stat().st_mtime > dest.stat().st_mtime:
+                            shutil.copy2(item, dest)
+                            logger.info(f"[first_run_copy] Updated stale built-in file: {dest.name}")
+                    except OSError:
+                        pass
                 continue
             if item.is_file():
                 shutil.copy2(item, dest)
@@ -67,10 +74,9 @@ def ensure_user_data_populated():
     # Discover the Tauri-bundled resources root (if running as a packaged binary)
     bundled_root = _get_bundled_resource_root()
 
-    # Build candidate source directories: system install → Tauri deb → bundled → repo checkout
+    # Build candidate source directories: Tauri deb → bundled → repo checkout
     def _sources(*relative_parts):
         candidates = [
-            SYSTEM_ROOT.joinpath(*relative_parts),
             SYSTEM_ROOT_DEB.joinpath('resources', *relative_parts),
         ]
         if bundled_root:

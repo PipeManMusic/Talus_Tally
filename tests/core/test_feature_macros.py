@@ -282,8 +282,9 @@ class TestEdgeCases:
 
         assert original_props == result_props
 
-    def test_empty_features_list_removes_macros(self):
-        """Empty features list should clean up any leftover system_locked macro props."""
+    def test_empty_features_list_preserves_template_authored_props(self):
+        """Template-authored system_locked properties are preserved even when
+        their matching feature is disabled (they were not macro-injected)."""
         template = {
             "id": "t",
             "name": "T",
@@ -299,6 +300,35 @@ class TestEdgeCases:
             }],
         }
         result = apply_feature_macros(template)
+        prop_ids = [p["id"] for p in result["node_types"][0]["properties"]]
+        # Template-authored properties are kept even without the feature enabled
+        assert "start_date" in prop_ids
+        assert "name" in prop_ids
+
+    def test_empty_features_list_removes_macro_injected_props(self):
+        """Properties that were dynamically injected by a macro ARE removed
+        when their feature is subsequently disabled."""
+        template = {
+            "id": "t",
+            "name": "T",
+            "version": "1.0",
+            "node_types": [{
+                "id": "x",
+                "label": "X",
+                "features": ["scheduling"],
+                "properties": [
+                    {"id": "name", "label": "Name", "type": "text"},
+                ],
+            }],
+        }
+        # First pass: inject scheduling properties
+        result = apply_feature_macros(template)
+        prop_ids = [p["id"] for p in result["node_types"][0]["properties"]]
+        assert "start_date" in prop_ids
+
+        # Disable the feature
+        result["node_types"][0]["features"] = []
+        result = apply_feature_macros(result)
         prop_ids = [p["id"] for p in result["node_types"][0]["properties"]]
         assert "start_date" not in prop_ids
         assert "name" in prop_ids

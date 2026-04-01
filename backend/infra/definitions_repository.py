@@ -59,8 +59,6 @@ def _collect_meta_schema_candidates() -> List[Path]:
     tauri_candidate = _tauri_resource_candidate()
 
     production_candidates = [
-        Path('/opt/talus_tally/data/definitions/meta_schema.yaml'),
-        Path('/opt/talus-tally/data/definitions/meta_schema.yaml'),
         # Deb package system install
         Path('/usr/lib/Talus Tally/resources/data/definitions/meta_schema.yaml'),
     ]

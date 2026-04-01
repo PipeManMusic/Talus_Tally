@@ -51,10 +51,7 @@ BACKEND_DIR = Path(__file__).parent.parent
 # 1. Development: frontend/dist in source tree
 STATIC_DIR = BACKEND_DIR / 'frontend' / 'dist'
 if not STATIC_DIR.exists():
-    # 2. Packaged: /opt/talus-tally/dist
-    STATIC_DIR = Path('/opt/talus-tally/dist')
-if not STATIC_DIR.exists():
-    # 3. PyInstaller temporary: _internal/frontend/dist
+    # 2. PyInstaller temporary: _internal/frontend/dist
     STATIC_DIR = Path(getattr(sys, '_MEIPASS', '.')) / 'frontend' / 'dist'
 if not STATIC_DIR.exists():
     STATIC_DIR = None

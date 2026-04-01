@@ -2700,28 +2700,28 @@ function App() {
 
       {/* Template Editor View */}
       {showTemplateEditor && (
-        <div className="absolute inset-0 bg-bg-dark z-50">
+        <div className="absolute inset-0 bg-bg-dark z-[70]">
           <TemplateEditor onClose={handleTemplateEditorClose} />
         </div>
       )}
 
       {/* Indicator Editor View */}
       {showIndicatorEditor && (
-        <div className="absolute inset-0 bg-bg-dark z-50">
+        <div className="absolute inset-0 bg-bg-dark z-[70]">
           <IndicatorEditor onClose={() => setShowIndicatorEditor(false)} refreshSignal={indicatorRefreshSignal} />
         </div>
       )}
 
       {/* Markup Editor View */}
       {showMarkupEditor && (
-        <div className="absolute inset-0 bg-bg-dark z-50">
+        <div className="absolute inset-0 bg-bg-dark z-[70]">
           <MarkupEditor onClose={() => setShowMarkupEditor(false)} />
         </div>
       )}
 
       {/* Icon Editor View */}
       {showIconEditor && (
-        <div className="absolute inset-0 bg-bg-dark z-50">
+        <div className="absolute inset-0 bg-bg-dark z-[70]">
           <IconEditor onClose={handleIconEditorClose} />
         </div>
       )}

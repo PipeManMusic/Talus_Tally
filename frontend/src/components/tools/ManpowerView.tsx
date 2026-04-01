@@ -1,5 +1,6 @@
 import { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { AlertCircle, RefreshCcw, Trash2, Users } from 'lucide-react';
+import { ask } from '@tauri-apps/plugin-dialog';
 
 import { apiClient, type Node, type TemplateSchema, type VelocityScore } from '../../api/client';
 import { useManpowerPayload } from '../../hooks/useManpowerPayload';
@@ -622,7 +623,7 @@ export const ManpowerView = memo(function ManpowerView({
     const msg = hasActiveFilter
       ? `Clear allocations for ${count} filtered task${count === 1 ? '' : 's'}?`
       : 'Clear ALL task allocations? This cannot be undone easily.';
-    if (!window.confirm(msg)) return;
+    if (!await ask(msg, { title: 'Confirm Clear', kind: 'warning' })) return;
     setIsClearing(true);
     try {
       const result = await apiClient.clearManpowerAllocations(sessionId, Array.from(filteredTaskIds));
@@ -643,7 +644,7 @@ export const ManpowerView = memo(function ManpowerView({
     if (nodeIds.length === 0) return;
     if (action === 'clear') {
       const personName = data?.resources?.[personId]?.name ?? personId;
-      if (!window.confirm(`Clear allocations for "${personName}" (${nodeIds.length} task${nodeIds.length === 1 ? '' : 's'})?`)) return;
+      if (!await ask(`Clear allocations for "${personName}" (${nodeIds.length} task${nodeIds.length === 1 ? '' : 's'})?`, { title: 'Confirm Clear', kind: 'warning' })) return;
     }
     try {
       if (action === 'clear') {
@@ -669,7 +670,7 @@ export const ManpowerView = memo(function ManpowerView({
     const nodeIds = Array.from(filteredTaskIds);
     if (nodeIds.length === 0) return;
     if (action === 'clear') {
-      if (!window.confirm(`Clear allocations for ${day}?`)) return;
+      if (!await ask(`Clear allocations for ${day}?`, { title: 'Confirm Clear', kind: 'warning' })) return;
     }
     try {
       if (action === 'clear') {
