@@ -461,3 +461,56 @@ class OrphanManager:
             'mismatch_count': len(mismatch_candidates),
             'mismatch_candidates': mismatch_candidates,
         }
+
+    @staticmethod
+    def backfill_select_defaults(graph: Any, template: Dict[str, Any]) -> int:
+        """Backfill missing select property defaults for existing nodes.
+
+        For every node in *graph*, check each ``select`` property defined in
+        the template.  If the node has no value for that property, set it to
+        the first option's UUID.
+
+        Returns the number of property values that were backfilled.
+        """
+        node_types = template.get('node_types', []) if isinstance(template, dict) else []
+
+        # Build map: node_type_id/uuid → list of (prop_key, default_option_id)
+        select_defaults_by_type: Dict[str, List[tuple]] = {}
+        for nt in node_types:
+            defaults: List[tuple] = []
+            for prop in nt.get('properties', []) or []:
+                if prop.get('type') != 'select':
+                    continue
+                options = prop.get('options', [])
+                if not options:
+                    continue
+                default_id = options[0].get('id')
+                if not default_id:
+                    continue
+                prop_key = prop.get('uuid') or prop.get('id')
+                if prop_key:
+                    defaults.append((prop_key, default_id))
+            if defaults:
+                for key in (nt.get('id'), nt.get('uuid')):
+                    if key:
+                        select_defaults_by_type[key] = defaults
+
+        if not select_defaults_by_type:
+            return 0
+
+        backfilled = 0
+        for _node_id, node in OrphanManager._iter_graph_nodes(graph):
+            node_type = OrphanManager._get_node_type(node)
+            defaults = select_defaults_by_type.get(node_type)
+            if not defaults:
+                continue
+            properties = OrphanManager._get_node_properties(node)
+            metadata = OrphanManager._get_node_metadata(node)
+            # Skip orphaned nodes — they are outside the template
+            if metadata.get('orphaned'):
+                continue
+            for prop_key, default_id in defaults:
+                if properties.get(prop_key) is None:
+                    properties[prop_key] = default_id
+                    backfilled += 1
+        return backfilled

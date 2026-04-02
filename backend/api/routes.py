@@ -163,7 +163,7 @@ def _build_velocity_schema_snapshot(blueprint) -> dict:
             for p in node_type.properties:
                 if isinstance(p, dict) and p.get('uuid'):
                     rp = dict(p)
-                    rp['key'] = rp.get('id', '')
+                    rp['key'] = rp.get('key') or rp.get('id', '')
                     rp['id'] = rp['uuid']
                     remapped_props.append(rp)
                 else:
@@ -2365,6 +2365,7 @@ def load_graph_into_session(session_id):
                                 nt_data['uuid'] = _legacy_to_uuid.get(legacy_id, '')
                         # Inject property UUIDs so reconciliation recognises UUID-keyed properties
                         if isinstance(nt_data, dict):
+                            _uuid_gen._generate_option_uuids(nt_data)
                             _uuid_gen._generate_property_uuids(nt_data)
                     remapped_reference_count = _remap_node_reference_properties(template_dict)
                     if remapped_reference_count > 0:
@@ -2397,6 +2398,14 @@ def load_graph_into_session(session_id):
                         )
                 except Exception as orphan_err:
                     logger.warning("[API] Failed to reconcile graph orphans during load: %s", orphan_err, exc_info=True)
+
+                # Backfill missing select property defaults (e.g. status) for existing nodes
+                try:
+                    backfilled = OrphanManager.backfill_select_defaults(graph, template_dict)
+                    if backfilled > 0:
+                        logger.info("[API] Backfilled %s missing select property defaults", backfilled)
+                except Exception as backfill_err:
+                    logger.warning("[API] Failed to backfill select defaults: %s", backfill_err, exc_info=True)
                 
                 # Check if migration is needed
                 if graph.template_version and graph.template_version != current_version:

@@ -75,3 +75,51 @@ def test_option_uuids_stable(sample_blueprint_path):
     for opt1, opt2 in zip(options1, options2):
         assert opt1['id'] == opt2['id'], f"UUID for '{opt1['name']}' should be stable"
         assert opt1['name'] == opt2['name'], "Option names should match"
+
+
+def test_option_value_converted_to_uuid():
+    """Property 'value' matching an option name is converted to its UUID."""
+    loader = SchemaLoader()
+    node_type_data = {
+        'id': 'task',
+        'properties': [{
+            'id': 'status',
+            'type': 'select',
+            'value': 'To Do',
+            'options': [
+                {'name': 'To Do'},
+                {'name': 'In Progress'},
+                {'name': 'Done'},
+            ],
+        }],
+    }
+
+    loader._generate_option_uuids(node_type_data)
+
+    prop = node_type_data['properties'][0]
+    todo_option_id = prop['options'][0]['id']
+    # The "value" field should now be the UUID, not the raw string
+    assert prop['value'] == todo_option_id
+    assert prop['value'] != 'To Do'
+
+
+def test_option_value_not_converted_when_no_match():
+    """Property 'value' that doesn't match any option name is left alone."""
+    loader = SchemaLoader()
+    node_type_data = {
+        'id': 'task',
+        'properties': [{
+            'id': 'priority',
+            'type': 'select',
+            'value': 'Unknown',
+            'options': [
+                {'name': 'Low'},
+                {'name': 'High'},
+            ],
+        }],
+    }
+
+    loader._generate_option_uuids(node_type_data)
+
+    prop = node_type_data['properties'][0]
+    assert prop['value'] == 'Unknown'

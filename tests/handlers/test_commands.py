@@ -123,6 +123,58 @@ def test_create_node_default_status_initialized():
     assert node.properties.get(status_uuid) is not None
 
 
+def test_create_node_initializes_all_select_defaults():
+    """Verify CreateNodeCommand initializes ALL select properties, not just status."""
+    from backend.infra.schema_loader import Blueprint, NodeTypeDef
+
+    node_type = NodeTypeDef(**{
+        "id": "widget",
+        "label": "Widget",
+        "properties": [
+            {
+                "id": "priority",
+                "type": "select",
+                "uuid": "prop-priority-uuid",
+                "options": [
+                    {"name": "Low", "id": "opt-low-uuid"},
+                    {"name": "Medium", "id": "opt-med-uuid"},
+                    {"name": "High", "id": "opt-high-uuid"},
+                ],
+            },
+            {
+                "id": "color",
+                "type": "select",
+                "uuid": "prop-color-uuid",
+                "options": [
+                    {"name": "Red", "id": "opt-red-uuid"},
+                    {"name": "Blue", "id": "opt-blue-uuid"},
+                ],
+            },
+            {
+                "id": "description",
+                "type": "text",
+            },
+        ],
+    })
+    blueprint = Blueprint(id="test", name="Test", version="1.0", node_types=[node_type])
+
+    graph = ProjectGraph()
+    cmd = CreateNodeCommand(
+        blueprint_type_id="widget",
+        name="My Widget",
+        blueprint=blueprint,
+        graph=graph,
+    )
+    node_id = cmd.execute()
+    node = graph.get_node(node_id)
+
+    # Both select properties should be initialized to their first option UUID
+    assert node.properties.get("prop-priority-uuid") == "opt-low-uuid"
+    assert node.properties.get("prop-color-uuid") == "opt-red-uuid"
+    # Non-select properties should NOT be set
+    assert "description" not in node.properties
+
+
 def test_update_property_command_rejects_orphaned_node_edits():
     """Orphaned nodes are read-only until template/schema is fixed."""
     graph = ProjectGraph()

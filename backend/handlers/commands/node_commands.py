@@ -48,7 +48,7 @@ class CreateNodeCommand(Command):
         # Only create the node on the first execute
         if self.node is None:
             self.node = Node(blueprint_type_id=self.blueprint_type_id, name=self.name)
-            self._initialize_default_status()
+            self._initialize_select_defaults()
         if self.graph:
             self.graph.add_node(self.node)
 
@@ -82,8 +82,8 @@ class CreateNodeCommand(Command):
         
         return self.node.id
 
-    def _initialize_default_status(self) -> None:
-        """Initialize default status from blueprint if available."""
+    def _initialize_select_defaults(self) -> None:
+        """Initialize all select properties to their first option value."""
         if not self.blueprint:
             return
 
@@ -96,23 +96,18 @@ class CreateNodeCommand(Command):
             return
 
         properties = node_def._extra_props.get("properties", [])
-        status_prop = next((p for p in properties if p.get("id") == "status"), None)
-        if not status_prop:
-            return
-
-        options = status_prop.get("options", [])
-        if not options:
-            return
-
-        default_id = options[0].get("id")
-        if not default_id:
-            return
-
-        status_key = status_prop.get("uuid") or status_prop.get("id")
-
-        # Initialize status property with first option if not already set
-        if self.node.properties.get(status_key) is None:
-            self.node.properties[status_key] = default_id
+        for prop in properties:
+            if prop.get("type") != "select":
+                continue
+            options = prop.get("options", [])
+            if not options:
+                continue
+            default_id = options[0].get("id")
+            if not default_id:
+                continue
+            prop_key = prop.get("uuid") or prop.get("id")
+            if self.node.properties.get(prop_key) is None:
+                self.node.properties[prop_key] = default_id
     
     def undo(self) -> None:
         """Undo the command by removing the node."""

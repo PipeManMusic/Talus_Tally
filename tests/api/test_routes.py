@@ -77,3 +77,32 @@ def test_graph_serialization_includes_property_markup(client):
     assert script_markup is not None
     assert script_markup.get("profile_id") == "script_default"
     assert isinstance(script_markup.get("blocks"), list)
+
+
+def test_velocity_schema_preserves_disambiguated_key():
+    """Ensure _build_velocity_schema_snapshot keeps explicit 'key' on disambiguated properties."""
+    from backend.api.routes import _build_velocity_schema_snapshot
+    from backend.infra.schema_loader import Blueprint, NodeTypeDef
+
+    node_type = NodeTypeDef(**{
+        "id": "phase",
+        "label": "Phase",
+        "properties": [
+            {"id": "status", "uuid": "uuid-user-status", "type": "text"},
+            {"id": "_feat_scheduling_status", "key": "status", "uuid": "uuid-macro-status",
+             "type": "select", "system_locked": True,
+             "options": [{"name": "To Do", "id": "opt-todo"}]},
+        ],
+    })
+    blueprint = Blueprint(id="test", name="Test", version="1.0", node_types=[node_type])
+
+    schema = _build_velocity_schema_snapshot(blueprint)
+    props = schema["node_types"][0]["properties"]
+
+    # The user-defined property should have key="status" (from original id)
+    user_prop = next(p for p in props if p["id"] == "uuid-user-status")
+    assert user_prop["key"] == "status"
+
+    # The macro property should KEEP key="status" (not be overwritten to "_feat_scheduling_status")
+    macro_prop = next(p for p in props if p["id"] == "uuid-macro-status")
+    assert macro_prop["key"] == "status"

@@ -60,14 +60,17 @@ export function AgileView({
   }, [templateSchema]);
 
   // Build a lookup from option UUID → option name for the status property across all node types.
+  // Uses filter() to collect ALL properties with key="status" (handles disambiguated macro properties).
   const statusOptionNames = useMemo(() => {
     const map = new Map<string, string>();
     templateSchema?.node_types?.forEach(nt => {
-      const statusProp = nt.properties?.find(p => propertyKey(p) === STATUS_PROPERTY_KEY);
-      if (statusProp?.options) {
-        for (const opt of statusProp.options) {
-          if (opt && typeof opt === 'object' && opt.id && opt.name) {
-            map.set(opt.id, opt.name);
+      const statusProps = nt.properties?.filter(p => propertyKey(p) === STATUS_PROPERTY_KEY) ?? [];
+      for (const statusProp of statusProps) {
+        if (statusProp?.options) {
+          for (const opt of statusProp.options) {
+            if (opt && typeof opt === 'object' && opt.id && opt.name) {
+              map.set(opt.id, opt.name);
+            }
           }
         }
       }
@@ -76,19 +79,22 @@ export function AgileView({
   }, [templateSchema]);
 
   // Reverse lookup: per node type, normalized status display name → option UUID.
+  // Collects options from ALL status properties to handle disambiguated macro properties.
   const statusNameToUuidByType = useMemo(() => {
     const outerMap = new Map<string, Map<string, string>>();
     templateSchema?.node_types?.forEach(nt => {
-      const statusProp = nt.properties?.find(p => propertyKey(p) === STATUS_PROPERTY_KEY);
-      if (statusProp?.options) {
-        const inner = new Map<string, string>();
-        for (const opt of statusProp.options) {
-          if (opt && typeof opt === 'object' && opt.id && opt.name) {
-            inner.set(normalizeStatus(opt.name), opt.id);
+      const statusProps = nt.properties?.filter(p => propertyKey(p) === STATUS_PROPERTY_KEY) ?? [];
+      const inner = new Map<string, string>();
+      for (const statusProp of statusProps) {
+        if (statusProp?.options) {
+          for (const opt of statusProp.options) {
+            if (opt && typeof opt === 'object' && opt.id && opt.name) {
+              inner.set(normalizeStatus(opt.name), opt.id);
+            }
           }
         }
-        outerMap.set(nt.id, inner);
       }
+      if (inner.size > 0) outerMap.set(nt.id, inner);
     });
     return outerMap;
   }, [templateSchema]);

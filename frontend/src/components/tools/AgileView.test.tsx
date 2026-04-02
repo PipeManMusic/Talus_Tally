@@ -221,4 +221,180 @@ describe('AgileView', () => {
     const toDoColumn = screen.getByTestId('agile-column-to-do');
     expect(toDoColumn).not.toHaveTextContent('Bug with UUID status');
   });
+
+  it('resolves disambiguated macro status when user-defined status also exists', () => {
+    // Simulates a node type like "phase" that has BOTH a user-defined "status" text property
+    // AND a macro-injected select status (key="status") from the scheduling feature.
+    const nodes = {
+      'phase-1': {
+        id: 'phase-1',
+        type: 'phase-uuid',
+        properties: {
+          name: 'Phase 1',
+          estimated_hours: 5,
+          // The STATUS value is stored under the macro property UUID
+          'macro-status-uuid': 'opt-in-progress',
+        },
+      },
+    } as any;
+
+    const templateSchema = {
+      node_types: [
+        {
+          id: 'phase-uuid',
+          name: 'Phase',
+          features: ['scheduling'],
+          properties: [
+            // User-defined "status" (text, no options) — appears FIRST
+            { id: 'user-status-uuid', key: 'status', type: 'text' },
+            // Macro-injected scheduling status (select with options) — appears SECOND
+            {
+              id: 'macro-status-uuid',
+              key: 'status',
+              type: 'select',
+              options: [
+                { id: 'opt-to-do', name: 'To Do', indicator_id: 'empty' },
+                { id: 'opt-in-progress', name: 'In Progress', indicator_id: 'partial' },
+                { id: 'opt-done', name: 'Done', indicator_id: 'filled' },
+              ],
+            },
+          ],
+        },
+      ],
+    } as any;
+
+    render(
+      <AgileView
+        sessionId="session-1"
+        nodes={nodes}
+        velocityScores={{}}
+        templateSchema={templateSchema}
+      />,
+    );
+
+    // Node should be in "In Progress" — not stuck in "To Do" due to .find() picking wrong property
+    const inProgressColumn = screen.getByTestId('agile-column-in-progress');
+    expect(inProgressColumn).toHaveTextContent('Phase 1');
+
+    const toDoColumn = screen.getByTestId('agile-column-to-do');
+    expect(toDoColumn).not.toHaveTextContent('Phase 1');
+  });
+
+  it('nodes with initialized default status appear in To Do column', () => {
+    // After the select-defaults initialization fix, new nodes get the first option UUID as status.
+    const nodes = {
+      'task-new': {
+        id: 'task-new',
+        type: 'task-uuid',
+        properties: {
+          name: 'Brand New Task',
+          'status-uuid': 'opt-to-do',
+        },
+      },
+    } as any;
+
+    const templateSchema = {
+      node_types: [
+        {
+          id: 'task-uuid',
+          name: 'Task',
+          features: ['scheduling'],
+          properties: [
+            {
+              id: 'status-uuid',
+              key: 'status',
+              type: 'select',
+              options: [
+                { id: 'opt-to-do', name: 'To Do' },
+                { id: 'opt-in-progress', name: 'In Progress' },
+                { id: 'opt-done', name: 'Done' },
+              ],
+            },
+          ],
+        },
+      ],
+    } as any;
+
+    render(
+      <AgileView
+        sessionId="session-1"
+        nodes={nodes}
+        velocityScores={{}}
+        templateSchema={templateSchema}
+      />,
+    );
+
+    const toDoColumn = screen.getByTestId('agile-column-to-do');
+    expect(toDoColumn).toHaveTextContent('Brand New Task');
+  });
+
+  it('drag-and-drop sends correct UUID values for disambiguated status', async () => {
+    const nodes = {
+      'task-1': {
+        id: 'task-1',
+        type: 'phase-uuid',
+        properties: {
+          name: 'Task A',
+          // Stored under macro-injected UUID
+          'macro-status-uuid': 'opt-to-do',
+        },
+      },
+    } as any;
+
+    const templateSchema = {
+      node_types: [
+        {
+          id: 'phase-uuid',
+          name: 'Phase',
+          features: ['scheduling'],
+          properties: [
+            { id: 'user-status-uuid', key: 'status', type: 'text' },
+            {
+              id: 'macro-status-uuid',
+              key: 'status',
+              type: 'select',
+              options: [
+                { id: 'opt-to-do', name: 'To Do' },
+                { id: 'opt-in-progress', name: 'In Progress' },
+                { id: 'opt-done', name: 'Done' },
+              ],
+            },
+          ],
+        },
+      ],
+    } as any;
+
+    render(
+      <AgileView
+        sessionId="session-1"
+        nodes={nodes}
+        velocityScores={{}}
+        templateSchema={templateSchema}
+      />,
+    );
+
+    const card = screen.getByTestId('agile-card-task-1');
+    const doneColumn = screen.getByTestId('agile-column-done');
+    const dataTransfer = {
+      data: {} as Record<string, string>,
+      setData(type: string, value: string) { this.data[type] = value; },
+      getData(type: string) { return this.data[type] || ''; },
+      effectAllowed: 'move',
+      dropEffect: 'move',
+    };
+
+    fireEvent.dragStart(card, { dataTransfer });
+    fireEvent.dragOver(doneColumn, { dataTransfer });
+    fireEvent.drop(doneColumn, { dataTransfer });
+
+    await waitFor(() => {
+      expect(apiClientMock.executeCommand).toHaveBeenCalledWith('session-1', 'UpdateProperty', {
+        node_id: 'task-1',
+        // Should use the macro-injected UUID, not the user-defined one
+        property_id: 'macro-status-uuid',
+        old_value: 'opt-to-do',
+        new_value: 'opt-done',
+      });
+    });
+  });
 });

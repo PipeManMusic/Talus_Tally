@@ -599,3 +599,120 @@ def test_reconcile_does_not_duplicate_property_in_restore():
     assert node.properties[name_uuid] == 'Current Name'
     assert 'orphaned_properties' not in node.metadata or \
         name_uuid not in node.metadata.get('orphaned_properties', {})
+
+
+# ---------------------------------------------------------------------------
+# backfill_select_defaults
+# ---------------------------------------------------------------------------
+
+def test_backfill_select_defaults_fills_missing():
+    """Nodes missing a select property value get the first option UUID."""
+    graph = ProjectGraph()
+    node = Node(blueprint_type_id="task", name="Backfill Me")
+    node.properties = {}  # explicitly empty
+    graph.add_node(node)
+
+    template = {
+        'node_types': [{
+            'id': 'task',
+            'properties': [{
+                'id': 'status',
+                'uuid': 'prop-status-uuid',
+                'type': 'select',
+                'options': [
+                    {'name': 'To Do', 'id': 'opt-todo-uuid'},
+                    {'name': 'Done', 'id': 'opt-done-uuid'},
+                ],
+            }],
+        }],
+    }
+
+    count = OrphanManager.backfill_select_defaults(graph, template)
+    assert count == 1
+    assert node.properties['prop-status-uuid'] == 'opt-todo-uuid'
+
+
+def test_backfill_select_defaults_preserves_existing():
+    """If a node already has a value for a select property, do NOT overwrite."""
+    graph = ProjectGraph()
+    node = Node(blueprint_type_id="task", name="Already Set")
+    node.properties = {'prop-status-uuid': 'opt-done-uuid'}
+    graph.add_node(node)
+
+    template = {
+        'node_types': [{
+            'id': 'task',
+            'properties': [{
+                'id': 'status',
+                'uuid': 'prop-status-uuid',
+                'type': 'select',
+                'options': [
+                    {'name': 'To Do', 'id': 'opt-todo-uuid'},
+                    {'name': 'Done', 'id': 'opt-done-uuid'},
+                ],
+            }],
+        }],
+    }
+
+    count = OrphanManager.backfill_select_defaults(graph, template)
+    assert count == 0
+    assert node.properties['prop-status-uuid'] == 'opt-done-uuid'
+
+
+def test_backfill_select_defaults_skips_orphaned_nodes():
+    """Orphaned nodes should NOT receive backfilled defaults."""
+    graph = ProjectGraph()
+    node = Node(blueprint_type_id="task", name="Orphaned")
+    node.properties = {}
+    node.metadata = {'orphaned': True}
+    graph.add_node(node)
+
+    template = {
+        'node_types': [{
+            'id': 'task',
+            'properties': [{
+                'id': 'status',
+                'uuid': 'prop-status-uuid',
+                'type': 'select',
+                'options': [{'name': 'To Do', 'id': 'opt-todo-uuid'}],
+            }],
+        }],
+    }
+
+    count = OrphanManager.backfill_select_defaults(graph, template)
+    assert count == 0
+    assert 'prop-status-uuid' not in node.properties
+
+
+def test_backfill_select_defaults_handles_multiple_selects():
+    """Multiple select properties on one node type are all backfilled."""
+    graph = ProjectGraph()
+    node = Node(blueprint_type_id="widget", name="Multi")
+    node.properties = {}
+    graph.add_node(node)
+
+    template = {
+        'node_types': [{
+            'id': 'widget',
+            'properties': [
+                {
+                    'id': 'priority',
+                    'uuid': 'prop-pri',
+                    'type': 'select',
+                    'options': [{'name': 'Low', 'id': 'o-low'}, {'name': 'High', 'id': 'o-high'}],
+                },
+                {
+                    'id': 'color',
+                    'uuid': 'prop-col',
+                    'type': 'select',
+                    'options': [{'name': 'Red', 'id': 'o-red'}],
+                },
+                {'id': 'desc', 'type': 'text'},
+            ],
+        }],
+    }
+
+    count = OrphanManager.backfill_select_defaults(graph, template)
+    assert count == 2
+    assert node.properties['prop-pri'] == 'o-low'
+    assert node.properties['prop-col'] == 'o-red'

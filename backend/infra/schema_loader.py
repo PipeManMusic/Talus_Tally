@@ -497,6 +497,13 @@ class SchemaLoader:
                     else:
                         normalized_options.append(option)
                 prop['options'] = normalized_options
+                # Convert property "value" from option name to option UUID
+                prop_value = prop.get('value')
+                if isinstance(prop_value, str):
+                    for opt in normalized_options:
+                        if opt.get('name') == prop_value and opt.get('id'):
+                            prop['value'] = opt['id']
+                            break
 
     def _generate_property_uuids(self, node_type_data: Dict[str, Any]) -> None:
         """Generate deterministic UUIDs for properties in a node type.
