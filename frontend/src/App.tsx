@@ -2521,6 +2521,11 @@ function App() {
               blockingFitToViewSignal={blockingFitSignal}
               blockingRefreshSignal={blockingGraphRefreshSignal}
               ganttRefreshSignal={ganttRefreshSignal}
+              onGanttGraphChanged={(result) => {
+                const graph = normalizeGraph(result.graph ?? result);
+                setCurrentGraph(graph);
+                setIsDirty(result.is_dirty ?? true);
+              }}
               blockingViewConfig={templateSchema?.blocking_view}
               templateSchema={templateSchema}
               onManpowerOverloadChange={setManpowerOverloadCount}

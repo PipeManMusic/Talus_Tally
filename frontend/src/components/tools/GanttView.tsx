@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo, type WheelEvent as ReactWheelEvent } from 'react';
 import { AlertCircle, Calendar, ZoomIn, ZoomOut } from 'lucide-react';
 import { apiClient, type GanttPayload, type GanttBar, type VelocityScore, type TemplateSchema } from '../../api/client';
 import { useWebSocket } from '../../hooks/useWebSocket';
@@ -12,6 +12,7 @@ interface GanttViewProps {
   refreshSignal?: number;
   selectedNodeId?: string | null;
   onNodeSelect?: (nodeId: string | null) => void;
+  onGraphChanged?: (result: { graph?: any; is_dirty?: boolean }) => void;
   templateSchema?: TemplateSchema | null;
 }
 
@@ -56,6 +57,7 @@ function daysBetween(a: Date, b: Date): number {
 }
 
 const SHORT_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const SHORT_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 function formatShortDate(d: Date): string {
   return `${SHORT_MONTHS[d.getMonth()]} ${d.getDate()}`;
@@ -79,7 +81,7 @@ function generateColumns(earliest: Date, latest: Date, zoom: ZoomLevel): Timelin
     for (let i = 0; i < totalDays; i++) {
       const d = addDays(earliest, i);
       const dow = d.getDay();
-      const label = dow === 0 || dow === 6 ? '' : `${d.getDate()}`;
+      const label = `${SHORT_DAYS[dow]} ${d.getDate()}`;
       cols.push({
         label,
         startDate: d,
@@ -145,14 +147,26 @@ export function GanttView({
   refreshSignal,
   selectedNodeId,
   onNodeSelect,
+  onGraphChanged,
   templateSchema,
 }: GanttViewProps) {
   const [data, setData] = useState<GanttPayload | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [zoom, setZoom] = useState<ZoomLevel>('week');
+  const [scale, setScale] = useState(1);          // horizontal zoom 0.5× – 5×
   const refreshPendingRef = useRef(false);
   const refreshingRef = useRef(false);
+
+  const zoomIn  = useCallback(() => setScale(s => Math.min(s + 0.25, 5)), []);
+  const zoomOut = useCallback(() => setScale(s => Math.max(s - 0.25, 0.5)), []);
+
+  /** Ctrl+Wheel → horizontal zoom */
+  const handleWheel = useCallback((e: ReactWheelEvent<HTMLDivElement>) => {
+    if (!e.ctrlKey && !e.metaKey) return;
+    e.preventDefault();
+    if (e.deltaY < 0) zoomIn(); else zoomOut();
+  }, [zoomIn, zoomOut]);
 
   // ── Template feature helper ─────────────────────────────────────
 
@@ -207,12 +221,34 @@ export function GanttView({
     onPropertyChanged: fetchGantt,
   });
 
+  // ── Shared drag math ─────────────────────────────────────────────
+
+  const trackWidthRef = useRef(0);
+  const timelineRef = useRef<{ earliest: string; latest: string } | null>(null);
+  const sessionIdRef = useRef(sessionId);
+  sessionIdRef.current = sessionId;
+
+  /** Convert a pixel delta to a day-snapped shift using the stored timeline range. */
+  const pixelsToDayShift = useCallback(
+    (deltaX: number): number => {
+      const tl = timelineRef.current;
+      if (!tl) return 0;
+      const trackW = trackWidthRef.current || 1;
+      const deltaPercent = (deltaX / trackW) * 100;
+      const earliest = parseDate(tl.earliest);
+      const latest = parseDate(tl.latest);
+      const totalDays = Math.max(daysBetween(earliest, latest), 1);
+      return Math.round((deltaPercent / 100) * totalDays);
+    },
+    [],                          // no deps — reads from refs only
+  );
+
   // ── Drag (whole-bar shift) ──────────────────────────────────────
 
   const [draggingBarId, setDraggingBarId] = useState<string | null>(null);
+  const [dragDayShift, setDragDayShift] = useState(0);
   const dragStartXRef = useRef(0);
   const dragBarRef = useRef<GanttBar | null>(null);
-  const trackWidthRef = useRef(0);
 
   const handleDragStart = useCallback(
     (e: React.MouseEvent, bar: GanttBar) => {
@@ -220,51 +256,58 @@ export function GanttView({
       dragBarRef.current = bar;
       dragStartXRef.current = e.clientX;
       setDraggingBarId(bar.nodeId);
+      setDragDayShift(0);
       const track = (e.currentTarget.closest('[data-gantt-track]') as HTMLElement);
       trackWidthRef.current = track?.offsetWidth || 1;
+      // Snapshot timeline at drag start so closures never go stale
+      timelineRef.current = data?.timelineRange ?? null;
 
       const handleMouseMove = (me: MouseEvent) => {
         me.preventDefault();
+        setDragDayShift(pixelsToDayShift(me.clientX - dragStartXRef.current));
       };
       const handleMouseUp = async (me: MouseEvent) => {
         window.removeEventListener('mousemove', handleMouseMove);
         window.removeEventListener('mouseup', handleMouseUp);
         const b = dragBarRef.current;
-        setDraggingBarId(null);
+        const sid = sessionIdRef.current;
+        const shift = pixelsToDayShift(me.clientX - dragStartXRef.current);
         dragBarRef.current = null;
-        if (!b || !sessionId || !data?.timelineRange) return;
+        if (!b || !sid || !timelineRef.current || shift === 0) {
+          setDraggingBarId(null);
+          setDragDayShift(0);
+          return;
+        }
 
-        const deltaX = me.clientX - dragStartXRef.current;
-        const trackW = trackWidthRef.current || 1;
-        const deltaPercent = (deltaX / trackW) * 100;
-        const earliest = parseDate(data.timelineRange.earliest);
-        const latest = parseDate(data.timelineRange.latest);
-        const totalDays = Math.max(daysBetween(earliest, latest), 1);
-        const dayShift = Math.round((deltaPercent / 100) * totalDays);
-        if (dayShift === 0) return;
-
-        const newStart = addDays(parseDate(b.startDate), dayShift);
-        const newEnd = addDays(parseDate(b.endDate), dayShift);
+        const newStart = addDays(parseDate(b.startDate), shift);
+        const newEnd = addDays(parseDate(b.endDate), shift);
         try {
-          await apiClient.executeCommand(sessionId, 'UpdateProperty', {
+          await apiClient.executeCommand(sid, 'UpdateProperty', {
             node_id: b.nodeId, property_id: 'start_date',
             old_value: b.startDate, new_value: toIso(newStart),
           });
-          await apiClient.executeCommand(sessionId, 'UpdateProperty', {
+          const endResult = await apiClient.executeCommand(sid, 'UpdateProperty', {
             node_id: b.nodeId, property_id: 'end_date',
             old_value: b.endDate, new_value: toIso(newEnd),
           });
+          onGraphChanged?.(endResult);
+          // Fetch fresh gantt data directly — bypass the debounce guard
+          const result = await apiClient.getGanttPayload(sid);
+          setData(result);
         } catch (err) { console.error('Failed to shift dates:', err); }
+        setDraggingBarId(null);
+        setDragDayShift(0);
       };
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
     },
-    [sessionId, data],
+    [data, pixelsToDayShift],
   );
 
   // ── Resize (single-edge drag) ──────────────────────────────────
 
   const [resizingBarId, setResizingBarId] = useState<string | null>(null);
+  const [resizeDayShift, setResizeDayShift] = useState(0);
   const resizeEdgeRef = useRef<ResizeEdge>('right');
   const resizeBarRef = useRef<GanttBar | null>(null);
   const resizeStartXRef = useRef(0);
@@ -277,52 +320,59 @@ export function GanttView({
       resizeEdgeRef.current = edge;
       resizeStartXRef.current = e.clientX;
       setResizingBarId(bar.nodeId);
+      setResizeDayShift(0);
       const track = (e.currentTarget.closest('[data-gantt-track]') as HTMLElement);
       trackWidthRef.current = track?.offsetWidth || 1;
+      // Snapshot timeline at resize start
+      timelineRef.current = data?.timelineRange ?? null;
 
-      const handleMouseMove = (me: MouseEvent) => { me.preventDefault(); };
+      const handleMouseMove = (me: MouseEvent) => {
+        me.preventDefault();
+        setResizeDayShift(pixelsToDayShift(me.clientX - resizeStartXRef.current));
+      };
       const handleMouseUp = async (me: MouseEvent) => {
         window.removeEventListener('mousemove', handleMouseMove);
         window.removeEventListener('mouseup', handleMouseUp);
         const b = resizeBarRef.current;
         const edg = resizeEdgeRef.current;
-        setResizingBarId(null);
+        const sid = sessionIdRef.current;
+        const shift = pixelsToDayShift(me.clientX - resizeStartXRef.current);
         resizeBarRef.current = null;
-        if (!b || !sessionId || !data?.timelineRange) return;
+        if (!b || !sid || !timelineRef.current || shift === 0) {
+          setResizingBarId(null);
+          setResizeDayShift(0);
+          return;
+        }
 
-        const deltaX = me.clientX - resizeStartXRef.current;
-        const trackW = trackWidthRef.current || 1;
-        const deltaPercent = (deltaX / trackW) * 100;
-        const earliest = parseDate(data.timelineRange.earliest);
-        const latest = parseDate(data.timelineRange.latest);
-        const totalDays = Math.max(daysBetween(earliest, latest), 1);
-        const dayShift = Math.round((deltaPercent / 100) * totalDays);
-        if (dayShift === 0) return;
-
-        if (edg === 'left') {
-          const newStart = addDays(parseDate(b.startDate), dayShift);
-          if (newStart >= parseDate(b.endDate)) return;
-          try {
-            await apiClient.executeCommand(sessionId, 'UpdateProperty', {
+        try {
+          if (edg === 'left') {
+            const newStart = addDays(parseDate(b.startDate), shift);
+            if (newStart >= parseDate(b.endDate)) { setResizingBarId(null); setResizeDayShift(0); return; }
+            const cmdResult = await apiClient.executeCommand(sid, 'UpdateProperty', {
               node_id: b.nodeId, property_id: 'start_date',
               old_value: b.startDate, new_value: toIso(newStart),
             });
-          } catch (err) { console.error('Failed to resize start:', err); }
-        } else {
-          const newEnd = addDays(parseDate(b.endDate), dayShift);
-          if (newEnd <= parseDate(b.startDate)) return;
-          try {
-            await apiClient.executeCommand(sessionId, 'UpdateProperty', {
+            onGraphChanged?.(cmdResult);
+          } else {
+            const newEnd = addDays(parseDate(b.endDate), shift);
+            if (newEnd <= parseDate(b.startDate)) { setResizingBarId(null); setResizeDayShift(0); return; }
+            const cmdResult = await apiClient.executeCommand(sid, 'UpdateProperty', {
               node_id: b.nodeId, property_id: 'end_date',
               old_value: b.endDate, new_value: toIso(newEnd),
             });
-          } catch (err) { console.error('Failed to resize end:', err); }
-        }
+            onGraphChanged?.(cmdResult);
+          }
+          // Fetch fresh gantt data directly — bypass the debounce guard
+          const result = await apiClient.getGanttPayload(sid);
+          setData(result);
+        } catch (err) { console.error('Failed to resize:', err); }
+        setResizingBarId(null);
+        setResizeDayShift(0);
       };
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
     },
-    [sessionId, data],
+    [data, pixelsToDayShift],
   );
 
   // ── Derived data ────────────────────────────────────────────────
@@ -471,144 +521,240 @@ export function GanttView({
             >Month</button>
             <span className="ml-2 text-border">|</span>
             <button
-              onClick={() => setZoom(z => z === 'month' ? 'week' : z === 'week' ? 'day' : 'day')}
-              className="p-1 rounded text-fg-secondary hover:bg-bg-dark transition-colors"
-              title="Zoom in"
-            ><ZoomIn size={14} /></button>
-            <button
-              onClick={() => setZoom(z => z === 'day' ? 'week' : z === 'week' ? 'month' : 'month')}
-              className="p-1 rounded text-fg-secondary hover:bg-bg-dark transition-colors"
-              title="Zoom out"
+              onClick={zoomOut}
+              disabled={scale <= 0.5}
+              className="p-1 rounded text-fg-secondary hover:bg-bg-dark transition-colors disabled:opacity-30"
+              title="Zoom out (Ctrl+Scroll)"
             ><ZoomOut size={14} /></button>
+            <span className="text-[10px] text-fg-secondary min-w-[3ch] text-center">{Math.round(scale * 100)}%</span>
+            <button
+              onClick={zoomIn}
+              disabled={scale >= 5}
+              className="p-1 rounded text-fg-secondary hover:bg-bg-dark transition-colors disabled:opacity-30"
+              title="Zoom in (Ctrl+Scroll)"
+            ><ZoomIn size={14} /></button>
           </div>
         </div>
       )}
 
       {/* Main chart area */}
       {data && visibleBars.length > 0 && (
-        <div className="flex-1 overflow-auto" data-testid="gantt-chart">
+        <div className="flex-1 overflow-auto" data-testid="gantt-chart" onWheel={handleWheel}>
           <div className="min-w-max">
             {/* ── Column header row ─────────────────────────────── */}
-            <div className="flex sticky top-0 z-10 bg-bg-light border-b border-border">
+            <div className="flex sticky top-0 z-20 bg-bg-light border-b border-border">
               <div className="flex-shrink-0 px-4 py-2 text-xs font-semibold text-fg-secondary border-r border-border"
                    style={{ width: LABEL_COL_WIDTH }}>
                 Task
               </div>
-              <div className="flex-1 relative" style={{ minWidth: 600 }}>
+              <div className="flex-1 relative" style={{ minWidth: 600 * scale }}>
                 <div className="flex h-full">
-                  {columns.map((col, i) => (
-                    <div
-                      key={i}
-                      className="border-r border-border/40 text-center text-[10px] text-fg-secondary py-2 truncate"
-                      style={{ width: `${col.widthPercent}%`, minWidth: zoom === 'day' ? 24 : undefined }}
-                    >
-                      {col.label}
-                    </div>
-                  ))}
+                  {columns.map((col, i) => {
+                    const isWeekend = zoom === 'day' && (col.startDate.getDay() === 0 || col.startDate.getDay() === 6);
+                    return (
+                      <div
+                        key={i}
+                        className={`border-r border-border text-center text-[10px] py-2 truncate ${
+                          isWeekend ? 'text-fg-secondary/50 bg-[#1a1a1a]' : 'text-fg-secondary'
+                        }`}
+                        style={{ width: `${col.widthPercent}%`, minWidth: zoom === 'day' ? 28 * scale : undefined }}
+                      >
+                        {col.label}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
 
-            {/* ── Bar rows ──────────────────────────────────────── */}
-            {visibleBars.map((bar) => {
-              const isGhost = ghostBarIds.has(bar.nodeId);
-              const isSelected = selectedNodeId === bar.nodeId;
-              const isDragging = draggingBarId === bar.nodeId || resizingBarId === bar.nodeId;
-              const { bg, fill } = statusColor(bar.status);
-
-              return (
-                <div
-                  key={bar.nodeId}
-                  className={`flex items-center border-b transition-colors cursor-pointer ${
-                    isSelected
-                      ? 'bg-accent-primary/10 border-accent-primary/30'
-                      : 'border-border/30 hover:bg-bg-light/50'
-                  } ${isGhost ? 'opacity-25' : ''}`}
-                  style={{ height: ROW_HEIGHT }}
-                  onClick={() => onNodeSelect?.(bar.nodeId)}
-                >
-                  {/* Label column */}
-                  <div
-                    className="flex-shrink-0 px-3 truncate border-r border-border/30"
-                    style={{ width: LABEL_COL_WIDTH, paddingLeft: `${bar.depth * 14 + 12}px` }}
-                  >
-                    <div className="font-medium text-xs text-fg-primary truncate leading-tight">
-                      {bar.nodeName}
-                    </div>
-                    <div className="text-[10px] text-fg-secondary truncate leading-tight">
-                      {getTypeLabel(bar.nodeType)}
-                      {bar.estimatedHours > 0 && ` · ${bar.estimatedHours}h`}
-                    </div>
-                  </div>
-
-                  {/* Bar track */}
-                  <div className="flex-1 relative" style={{ minWidth: 600 }} data-gantt-track>
-                    {/* Grid lines */}
-                    {columns.map((col, i) => (
-                      <div
-                        key={i}
-                        className="absolute top-0 bottom-0 border-r border-border/10"
-                        style={{ left: `${col.leftPercent}%`, width: `${col.widthPercent}%` }}
-                      />
-                    ))}
-
-                    {/* Today marker */}
-                    {todayPercent !== null && (
-                      <div
-                        className="absolute top-0 bottom-0 w-px bg-status-danger/70 z-[2] pointer-events-none"
-                        style={{ left: `${todayPercent}%` }}
-                      />
-                    )}
-
-                    {/* Bar */}
+            {/* ── Body: labels + chart grid ─────────────────────── */}
+            <div className="flex">
+              {/* ── Label column ─────────────── */}
+              <div className="flex-shrink-0 border-r border-border" style={{ width: LABEL_COL_WIDTH }}>
+                {visibleBars.map((bar, rowIdx) => {
+                  const isSelected = selectedNodeId === bar.nodeId;
+                  const isGhost = ghostBarIds.has(bar.nodeId);
+                  return (
                     <div
-                      className={`absolute top-1.5 rounded group ${bg} ${
-                        isDragging ? 'opacity-50' : 'opacity-90 hover:opacity-100'
-                      } transition-opacity cursor-grab active:cursor-grabbing`}
-                      style={{
-                        left: `${bar.leftPercent}%`,
-                        width: `${bar.widthPercent}%`,
-                        height: ROW_HEIGHT - 12,
-                        minWidth: 6,
-                      }}
-                      onMouseDown={(e) => handleDragStart(e, bar)}
-                      title={`${bar.nodeName}\n${bar.startDate} → ${bar.endDate}\nStatus: ${bar.status || 'None'}\nProgress: ${Math.round(bar.progress * 100)}%`}
+                      key={bar.nodeId}
+                      className={`flex items-center px-3 truncate border-b cursor-pointer transition-colors ${
+                        isSelected
+                          ? 'bg-accent-primary/10 border-accent-primary/30'
+                          : rowIdx % 2 === 0
+                            ? 'border-border bg-transparent hover:bg-bg-light/50'
+                            : 'border-border bg-[#181818] hover:bg-bg-light/50'
+                      } ${isGhost ? 'opacity-25' : ''}`}
+                      style={{ height: ROW_HEIGHT, paddingLeft: `${bar.depth * 14 + 12}px` }}
+                      onClick={() => onNodeSelect?.(bar.nodeId)}
                     >
-                      {/* Progress fill overlay */}
-                      {bar.progress > 0 && bar.progress < 1 && (
-                        <div
-                          className={`absolute inset-y-0 left-0 rounded-l ${fill} opacity-60`}
-                          style={{ width: `${bar.progress * 100}%` }}
-                        />
-                      )}
-
-                      {/* Bar text */}
-                      {bar.widthPercent > 6 && (
-                        <span className="relative z-[1] flex items-center h-full px-1.5 text-[10px] text-white font-medium truncate">
+                      <div className="min-w-0">
+                        <div className="font-medium text-xs text-fg-primary truncate leading-tight">
                           {bar.nodeName}
-                          {bar.progress > 0 && (
-                            <span className="ml-1 opacity-75">
-                              {Math.round(bar.progress * 100)}%
-                            </span>
-                          )}
-                        </span>
-                      )}
-
-                      {/* Resize handle: left edge */}
-                      <div
-                        className="absolute left-0 top-0 bottom-0 w-1.5 cursor-col-resize opacity-0 group-hover:opacity-100 hover:bg-white/30 rounded-l transition-opacity"
-                        onMouseDown={(e) => handleResizeStart(e, bar, 'left')}
-                      />
-                      {/* Resize handle: right edge */}
-                      <div
-                        className="absolute right-0 top-0 bottom-0 w-1.5 cursor-col-resize opacity-0 group-hover:opacity-100 hover:bg-white/30 rounded-r transition-opacity"
-                        onMouseDown={(e) => handleResizeStart(e, bar, 'right')}
-                      />
+                        </div>
+                        <div className="text-[10px] text-fg-secondary truncate leading-tight">
+                          {getTypeLabel(bar.nodeType)}
+                          {bar.estimatedHours > 0 && ` · ${bar.estimatedHours}h`}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              );
-            })}
+                  );
+                })}
+              </div>
+
+              {/* ── Chart area with full-height grid ─── */}
+              <div
+                className="flex-1 relative"
+                style={{ minWidth: 600 * scale, height: visibleBars.length * ROW_HEIGHT }}
+                data-gantt-track
+              >
+                {/* Horizontal row dividers (full-width) — rendered first so grid lines paint on top */}
+                {visibleBars.map((bar, rowIdx) => {
+                  const isSelected = selectedNodeId === bar.nodeId;
+                  return (
+                    <div
+                      key={`row-bg-${bar.nodeId}`}
+                      className={`absolute left-0 right-0 border-b ${
+                        isSelected
+                          ? 'bg-accent-primary/10 border-accent-primary/30'
+                          : rowIdx % 2 === 0
+                            ? 'border-border bg-transparent'
+                            : 'border-border bg-[#181818]'
+                      }`}
+                      style={{ top: rowIdx * ROW_HEIGHT, height: ROW_HEIGHT }}
+                    />
+                  );
+                })}
+
+                {/* Full-height vertical grid lines — rendered after row backgrounds so they stay visible */}
+                {columns.map((col, i) => {
+                  const isWeekend = zoom === 'day' && (col.startDate.getDay() === 0 || col.startDate.getDay() === 6);
+                  return (
+                    <div
+                      key={`grid-${i}`}
+                      className={`absolute top-0 bottom-0 border-r pointer-events-none ${
+                        isWeekend
+                          ? 'bg-[#1a1a1a] border-border'
+                          : 'border-border'
+                      }`}
+                      style={{ left: `${col.leftPercent}%`, width: `${col.widthPercent}%` }}
+                    />
+                  );
+                })}
+
+                {/* Today marker (full height) */}
+                {todayPercent !== null && (
+                  <div
+                    className="absolute top-0 bottom-0 w-px bg-status-danger/70 z-[5] pointer-events-none"
+                    style={{ left: `${todayPercent}%` }}
+                    data-testid="gantt-today-marker"
+                  />
+                )}
+
+                {/* ── Bar overlays ────────────── */}
+                {visibleBars.map((bar, rowIdx) => {
+                  const isGhost = ghostBarIds.has(bar.nodeId);
+                  const isDrag = draggingBarId === bar.nodeId;
+                  const isResize = resizingBarId === bar.nodeId;
+                  const isActive = isDrag || isResize;
+                  const { bg, fill } = statusColor(bar.status);
+
+                  // Compute visual offsets for the active bar
+                  let adjLeft = bar.leftPercent;
+                  let adjWidth = bar.widthPercent;
+                  let tooltipDates: { start: string; end: string } | null = null;
+
+                  if ((isDrag || isResize) && data?.timelineRange) {
+                    const earliest = parseDate(data.timelineRange.earliest);
+                    const latest = parseDate(data.timelineRange.latest);
+                    const totalDays = Math.max(daysBetween(earliest, latest), 1);
+                    const shiftPct = ((isDrag ? dragDayShift : resizeDayShift) / totalDays) * 100;
+
+                    if (isDrag) {
+                      adjLeft = bar.leftPercent + shiftPct;
+                      const newStart = addDays(parseDate(bar.startDate), dragDayShift);
+                      const newEnd = addDays(parseDate(bar.endDate), dragDayShift);
+                      tooltipDates = { start: toIso(newStart), end: toIso(newEnd) };
+                    } else if (isResize) {
+                      const edge = resizeEdgeRef.current;
+                      if (edge === 'left') {
+                        adjLeft = bar.leftPercent + shiftPct;
+                        adjWidth = bar.widthPercent - shiftPct;
+                        const newStart = addDays(parseDate(bar.startDate), resizeDayShift);
+                        tooltipDates = { start: toIso(newStart), end: bar.endDate };
+                      } else {
+                        adjWidth = bar.widthPercent + shiftPct;
+                        const newEnd = addDays(parseDate(bar.endDate), resizeDayShift);
+                        tooltipDates = { start: bar.startDate, end: toIso(newEnd) };
+                      }
+                    }
+                    // Clamp to non-negative width
+                    if (adjWidth < 0.5) adjWidth = 0.5;
+                  }
+
+                  return (
+                    <div
+                      key={bar.nodeId}
+                      className={`absolute ${isGhost ? 'opacity-25' : ''}`}
+                      style={{
+                        top: rowIdx * ROW_HEIGHT + 6,
+                        left: `${adjLeft}%`,
+                        width: `${adjWidth}%`,
+                        height: ROW_HEIGHT - 12,
+                        zIndex: isActive ? 10 : undefined,
+                        transition: isActive ? 'none' : undefined,
+                      }}
+                      onClick={() => onNodeSelect?.(bar.nodeId)}
+                    >
+                      <div
+                        className={`w-full h-full rounded group ${bg} ${
+                          isActive ? 'opacity-80 ring-1 ring-accent-primary shadow-lg' : 'opacity-90 hover:opacity-100'
+                        } transition-opacity cursor-move relative`}
+                        style={{ minWidth: 6 }}
+                        onMouseDown={(e) => handleDragStart(e, bar)}
+                        title={`${bar.nodeName}\n${bar.startDate} → ${bar.endDate}\nStatus: ${bar.status || 'None'}\nProgress: ${Math.round(bar.progress * 100)}%`}
+                      >
+                        {/* Date tooltip during drag/resize */}
+                        {tooltipDates && (
+                          <div className="absolute -top-6 left-1/2 -translate-x-1/2 whitespace-nowrap bg-bg-dark border border-border rounded px-1.5 py-0.5 text-[10px] text-fg-primary shadow-md z-20 pointer-events-none">
+                            {tooltipDates.start} → {tooltipDates.end}
+                          </div>
+                        )}
+                        {/* Progress fill overlay */}
+                        {bar.progress > 0 && bar.progress < 1 && (
+                          <div
+                            className={`absolute inset-y-0 left-0 rounded-l ${fill} opacity-60`}
+                            style={{ width: `${bar.progress * 100}%` }}
+                          />
+                        )}
+
+                        {/* Bar text */}
+                        {bar.widthPercent > 6 && (
+                          <span className="relative z-[1] flex items-center h-full px-1.5 text-[10px] text-white font-medium truncate">
+                            {bar.nodeName}
+                            {bar.progress > 0 && (
+                              <span className="ml-1 opacity-75">
+                                {Math.round(bar.progress * 100)}%
+                              </span>
+                            )}
+                          </span>
+                        )}
+
+                        {/* Resize handle: left edge */}
+                        <div
+                          className="absolute left-0 top-0 bottom-0 w-3 z-10 cursor-ew-resize bg-white/10 hover:bg-white/30 rounded-l transition-colors"
+                          onMouseDown={(e) => handleResizeStart(e, bar, 'left')}
+                        />
+                        {/* Resize handle: right edge */}
+                        <div
+                          className="absolute right-0 top-0 bottom-0 w-3 z-10 cursor-ew-resize bg-white/10 hover:bg-white/30 rounded-r transition-colors"
+                          onMouseDown={(e) => handleResizeStart(e, bar, 'right')}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
       )}

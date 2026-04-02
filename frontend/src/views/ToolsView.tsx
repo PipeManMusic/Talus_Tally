@@ -28,6 +28,7 @@ interface ToolsViewProps {
   blockingFitToViewSignal?: number;
   blockingRefreshSignal?: number;
   ganttRefreshSignal?: number;
+  onGanttGraphChanged?: (result: { graph?: any; is_dirty?: boolean }) => void;
   blockingViewConfig?: TemplateSchema['blocking_view'];
   templateSchema?: TemplateSchema | null;
   onManpowerOverloadChange?: (count: number) => void;
@@ -46,6 +47,7 @@ export function ToolsView({
   blockingFitToViewSignal,
   blockingRefreshSignal,
   ganttRefreshSignal,
+  onGanttGraphChanged,
   blockingViewConfig,
   templateSchema,
   onManpowerOverloadChange,
@@ -135,6 +137,7 @@ export function ToolsView({
             refreshSignal={ganttRefreshSignal}
             selectedNodeId={selectedNodeId}
             onNodeSelect={onNodeSelect}
+            onGraphChanged={onGanttGraphChanged}
             templateSchema={templateSchema}
           />
         )}
