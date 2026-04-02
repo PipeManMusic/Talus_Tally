@@ -121,6 +121,7 @@ export function AgileView({
   const filteredNodes = useMemo(() => {
     return Object.values(effectiveNodes).filter(node => {
       const features = typeFeatures.get(node.type) || [];
+      if (!features.includes('scheduling')) return false;
       if (features.includes('is_root') || features.includes('is_person')) return false;
       const isVisible = evaluateNodeVisibility(
         {

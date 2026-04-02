@@ -103,7 +103,7 @@ FEATURE_MACROS: Dict[str, List[Dict[str, Any]]] = {
         {"id": "capacity_friday", "label": "Capacity Friday (Hours)", "type": "number", "value": 8, "required": True, "system_locked": True, "ui_group": "Capacity"},
         {"id": "capacity_saturday", "label": "Capacity Saturday (Hours)", "type": "number", "value": 0, "required": True, "system_locked": True, "ui_group": "Capacity"},
         {"id": "capacity_sunday", "label": "Capacity Sunday (Hours)", "type": "number", "value": 0, "required": True, "system_locked": True, "ui_group": "Capacity"},
-        # Overtime capacity
+        # Overtime capacity (per-day)
         {"id": "overtime_capacity_monday", "label": "Overtime Monday (Hours)", "type": "number", "value": 0, "system_locked": True, "ui_group": "Overtime"},
         {"id": "overtime_capacity_tuesday", "label": "Overtime Tuesday (Hours)", "type": "number", "value": 0, "system_locked": True, "ui_group": "Overtime"},
         {"id": "overtime_capacity_wednesday", "label": "Overtime Wednesday (Hours)", "type": "number", "value": 0, "system_locked": True, "ui_group": "Overtime"},
@@ -111,6 +111,10 @@ FEATURE_MACROS: Dict[str, List[Dict[str, Any]]] = {
         {"id": "overtime_capacity_friday", "label": "Overtime Friday (Hours)", "type": "number", "value": 0, "system_locked": True, "ui_group": "Overtime"},
         {"id": "overtime_capacity_saturday", "label": "Overtime Saturday (Hours)", "type": "number", "value": 0, "system_locked": True, "ui_group": "Overtime"},
         {"id": "overtime_capacity_sunday", "label": "Overtime Sunday (Hours)", "type": "number", "value": 0, "system_locked": True, "ui_group": "Overtime"},
+        # Legacy rollup fields — kept so existing node data is not orphaned
+        {"id": "overtime_capacity", "label": "Overtime Capacity (Hours)", "type": "number", "value": 0, "system_locked": True, "ui_group": "Overtime"},
+        {"id": "daily_capacity", "label": "Daily Capacity (Hours)", "type": "number", "value": 8, "system_locked": True, "ui_group": "Capacity"},
+        {"id": "hourly_rate", "label": "Hourly Rate", "type": "number", "value": 0, "system_locked": True, "ui_group": "Rates"},
         # Hourly rates
         {"id": "hourly_rate_monday", "label": "Hourly Rate Monday", "type": "number", "system_locked": True, "ui_group": "Rates"},
         {"id": "hourly_rate_tuesday", "label": "Hourly Rate Tuesday", "type": "number", "system_locked": True, "ui_group": "Rates"},

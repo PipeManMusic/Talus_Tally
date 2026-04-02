@@ -7,6 +7,7 @@ Endpoints:
 """
 
 from flask import Blueprint, jsonify, request
+from datetime import date
 import logging
 import time
 
@@ -134,10 +135,15 @@ def get_gantt(session_id: str):
                     'leftPercent': b.left_percent,
                     'widthPercent': b.width_percent,
                     'depth': b.depth,
+                    'progress': b.progress,
+                    'status': b.status,
+                    'assignedTo': b.assigned_to,
+                    'estimatedHours': b.estimated_hours,
                 }
                 for b in bars
             ],
             'timelineRange': timeline_range,
+            'today': date.today().isoformat(),
             'timestamp': int(time.time() * 1000),
         })
 

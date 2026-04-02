@@ -326,11 +326,16 @@ export interface GanttBar {
   leftPercent: number;
   widthPercent: number;
   depth: number;
+  progress: number;
+  status: string;
+  assignedTo: string[];
+  estimatedHours: number;
 }
 
 export interface GanttPayload {
   bars: GanttBar[];
   timelineRange: { earliest: string; latest: string } | null;
+  today: string;
   timestamp: number;
 }
 

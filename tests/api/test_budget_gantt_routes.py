@@ -210,3 +210,164 @@ def test_load_graph_with_string_ids_remaps_assigned_to_for_manpower(client):
     finally:
         api_routes._sessions.pop(session_id, None)
         api_routes._session_metadata.pop(session_id, None)
+
+
+def test_gantt_engine_resolves_status_option_uuid_to_name():
+    """Status select property stores an option UUID; GanttEngine should resolve it to the display name."""
+    from backend.core.gantt_engine import GanttEngine
+
+    status_option_uuid = "624a65b3-0dd3-5060-f581-2ebcade3874e"
+    status_prop_uuid = "prop-status-uuid"
+
+    blueprint = {
+        "node_types": [
+            {
+                "id": "task",
+                "label": "Task",
+                "properties": [
+                    {"id": "start_date", "type": "date"},
+                    {"id": "end_date", "type": "date"},
+                    {
+                        "id": "status",
+                        "type": "select",
+                        "options": [
+                            {"id": "opt-todo", "name": "To Do", "indicator_id": "empty"},
+                            {"id": status_option_uuid, "name": "In Progress", "indicator_id": "partial"},
+                            {"id": "opt-done", "name": "Done", "indicator_id": "filled"},
+                        ],
+                    },
+                ],
+            }
+        ]
+    }
+
+    nodes = {
+        "n1": {
+            "type": "task",
+            "children": [],
+            "properties": {
+                "name": "Alpha",
+                "start_date": "2026-03-01",
+                "end_date": "2026-03-15",
+                "status": status_option_uuid,
+            },
+        },
+        "n2": {
+            "type": "task",
+            "children": [],
+            "properties": {
+                "name": "Beta",
+                "start_date": "2026-04-01",
+                "end_date": "2026-04-10",
+                "status": "opt-done",
+            },
+        },
+    }
+
+    engine = GanttEngine(nodes, blueprint=blueprint)
+    bars = engine.calculate()
+
+    bar_map = {b.node_name: b for b in bars}
+    assert bar_map["Alpha"].status == "In Progress"
+    assert bar_map["Beta"].status == "Done"
+
+
+def test_gantt_engine_resolves_status_with_blueprint_object():
+    """Same resolution should work when blueprint is a real Blueprint object (not a dict)."""
+    from backend.core.gantt_engine import GanttEngine
+    from backend.infra.schema_loader import SchemaLoader
+
+    loader = SchemaLoader()
+    blueprint = loader.load("software_development.yaml")
+
+    # Build a property UUID map so we can set node properties with correct UUID keys
+    pr_maps = blueprint.build_all_property_uuid_maps()
+
+    # Find the first node type that has a status property with select options
+    status_opt_map = {}
+    node_type_uuid = None
+    for nt in blueprint.node_types:
+        if not nt.properties:
+            continue
+        for prop in nt.properties:
+            if prop.get("id") == "status" and prop.get("type") == "select":
+                node_type_uuid = nt.uuid
+                for opt in prop.get("options", []):
+                    status_opt_map[opt["name"]] = opt["id"]
+                break
+        if node_type_uuid:
+            break
+
+    assert node_type_uuid, "Expected a node type with status select property"
+    assert "In Progress" in status_opt_map
+
+    type_map = pr_maps.get(node_type_uuid, {})
+    nodes = {
+        "n1": {
+            "type": node_type_uuid,
+            "children": [],
+            "properties": {
+                type_map.get("name", "name"): "Test Task",
+                type_map.get("start_date", "start_date"): "2026-03-01",
+                type_map.get("end_date", "end_date"): "2026-03-15",
+                type_map.get("status", "status"): status_opt_map["In Progress"],
+            },
+        },
+    }
+
+    engine = GanttEngine(nodes, blueprint=blueprint)
+    bars = engine.calculate()
+    assert len(bars) == 1
+    assert bars[0].status == "In Progress"
+
+
+def test_gantt_engine_resolves_disambiguated_feat_status():
+    """When a template has a user-defined 'status' property AND the feature macro
+    injects '_feat_scheduling_status' (key='status'), the engine should resolve
+    option UUIDs from BOTH properties."""
+    from backend.core.gantt_engine import GanttEngine
+    from backend.infra.schema_loader import SchemaLoader
+
+    loader = SchemaLoader()
+    blueprint = loader.load("project_talus.yaml")
+
+    # project_talus has an 'episode' node type with both:
+    #  - id="status" (user-defined: Planning, Shooting, Editing, Uploaded)
+    #  - id="_feat_scheduling_status" key="status" (macro: To Do, In Progress, Done)
+    pr_maps = blueprint.build_all_property_uuid_maps()
+
+    # Find the episode node type
+    episode = None
+    for nt in blueprint.node_types:
+        if nt.id == "episode":
+            episode = nt
+            break
+    assert episode, "Expected 'episode' node type in project_talus"
+
+    # Find the scheduling status option UUIDs
+    sched_opts = {}
+    for prop in episode.properties:
+        if prop.get("key") == "status" or (prop.get("id") == "_feat_scheduling_status"):
+            for opt in prop.get("options", []):
+                sched_opts[opt["name"]] = opt["id"]
+            break
+    assert "In Progress" in sched_opts, f"Expected scheduling options, got {sched_opts}"
+
+    type_map = pr_maps.get(episode.uuid, {})
+    nodes = {
+        "ep1": {
+            "type": episode.uuid,
+            "children": [],
+            "properties": {
+                type_map.get("name", "name"): "Episode 1",
+                type_map.get("start_date", "start_date"): "2026-06-01",
+                type_map.get("end_date", "end_date"): "2026-06-15",
+                type_map.get("status", "status"): sched_opts["In Progress"],
+            },
+        },
+    }
+
+    engine = GanttEngine(nodes, blueprint=blueprint)
+    bars = engine.calculate()
+    assert len(bars) == 1
+    assert bars[0].status == "In Progress"

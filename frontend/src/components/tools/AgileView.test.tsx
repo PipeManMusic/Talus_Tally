@@ -27,6 +27,12 @@ vi.mock('../../utils/filterEngine', () => ({
   evaluateNodeVisibility: () => true,
 }));
 
+const defaultSchema = {
+  node_types: [
+    { id: 'task', name: 'Task', features: ['scheduling'], properties: [] },
+  ],
+} as any;
+
 describe('AgileView', () => {
   beforeEach(() => {
     apiClientMock.executeCommand.mockReset();
@@ -51,6 +57,7 @@ describe('AgileView', () => {
         sessionId="session-1"
         nodes={nodes}
         velocityScores={{}}
+        templateSchema={defaultSchema}
       />,
     );
 
@@ -100,6 +107,7 @@ describe('AgileView', () => {
         sessionId={null}
         nodes={nodes}
         velocityScores={{}}
+        templateSchema={defaultSchema}
       />,
     );
 
@@ -155,6 +163,7 @@ describe('AgileView', () => {
         sessionId="session-1"
         nodes={nodes}
         velocityScores={{}}
+        templateSchema={defaultSchema}
       />,
     );
 
@@ -180,6 +189,7 @@ describe('AgileView', () => {
         {
           id: 'bug-type-uuid',
           name: 'Bug',
+          features: ['scheduling'],
           properties: [
             {
               id: 'status',

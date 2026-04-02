@@ -34,6 +34,10 @@ class GanttBar:
     left_percent: float       # 0-100, position from left edge
     width_percent: float      # 0-100, bar width
     depth: int                # tree depth for indentation
+    progress: float           # 0.0-1.0, actual_hours / estimated_hours
+    status: str               # "To Do", "In Progress", "Done", or ""
+    assigned_to: List[str]    # list of assigned person node IDs
+    estimated_hours: float    # total estimated hours
 
 
 class GanttEngine:
@@ -49,11 +53,43 @@ class GanttEngine:
         self._pr = PropertyResolver(blueprint)
         self._parent_map: Dict[str, str] = {}
         self._children_map: Dict[str, List[str]] = {}
+        self._status_option_map = self._build_status_map(blueprint)
         self._build_maps()
 
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
+
+    @staticmethod
+    def _build_status_map(blueprint) -> Dict[str, str]:
+        """Build option-UUID → display-name map for all status properties."""
+        mapping: Dict[str, str] = {}
+        if not blueprint:
+            return mapping
+        # Blueprint is an object with .node_types list of NodeTypeDef objects
+        node_types = getattr(blueprint, 'node_types', None)
+        if node_types is None:
+            # Fallback for raw dict blueprints (e.g. in tests)
+            if isinstance(blueprint, dict):
+                node_types = blueprint.get("node_types", [])
+            else:
+                return mapping
+        for nt in node_types:
+            props = nt.properties if hasattr(nt, 'properties') else nt.get("properties", [])
+            if not props:
+                continue
+            for prop in props:
+                prop_id = prop.get("id", "") if isinstance(prop, dict) else getattr(prop, "id", "")
+                prop_key = prop.get("key", "") if isinstance(prop, dict) else getattr(prop, "key", "")
+                prop_type = prop.get("type", "") if isinstance(prop, dict) else getattr(prop, "type", "")
+                if (prop_id == "status" or prop_key == "status") and prop_type == "select":
+                    options = prop.get("options", []) if isinstance(prop, dict) else getattr(prop, "options", [])
+                    for opt in (options or []):
+                        opt_id = opt.get("id", "") if isinstance(opt, dict) else getattr(opt, "id", "")
+                        opt_name = opt.get("name", opt_id) if isinstance(opt, dict) else getattr(opt, "name", opt_id)
+                        if opt_id:
+                            mapping[opt_id] = opt_name
+        return mapping
 
     def _build_maps(self) -> None:
         for nid, node in self._nodes.items():
@@ -199,6 +235,36 @@ class GanttEngine:
             bar_days = (e - s).days
             width_percent = max((bar_days / total_days) * 100.0, 0.5)  # min 0.5% visibility
 
+            # Progress from actual vs estimated hours
+            est = 0.0
+            act = 0.0
+            raw_est = self._get_prop(node, "estimated_hours", 0)
+            raw_act = self._get_prop(node, "actual_hours", 0)
+            try:
+                est = float(raw_est) if raw_est else 0.0
+            except (TypeError, ValueError):
+                pass
+            try:
+                act = float(raw_act) if raw_act else 0.0
+            except (TypeError, ValueError):
+                pass
+            progress = min(act / est, 1.0) if est > 0 else 0.0
+
+            # Status – resolve option UUID to display name
+            raw_status = self._get_prop(node, "status", "")
+            status_str = ""
+            if raw_status:
+                raw_str = str(raw_status).strip()
+                status_str = self._status_option_map.get(raw_str, raw_str)
+
+            # Assigned person IDs
+            raw_assigned = self._get_prop(node, "assigned_to", None)
+            assigned_list: List[str] = []
+            if isinstance(raw_assigned, list):
+                assigned_list = [str(a) for a in raw_assigned]
+            elif isinstance(raw_assigned, str) and raw_assigned:
+                assigned_list = [raw_assigned]
+
             bars.append(
                 GanttBar(
                     node_id=nid_str,
@@ -209,6 +275,10 @@ class GanttEngine:
                     left_percent=round(left_percent, 2),
                     width_percent=round(width_percent, 2),
                     depth=self._node_depth(nid_str),
+                    progress=round(progress, 3),
+                    status=status_str,
+                    assigned_to=assigned_list,
+                    estimated_hours=est,
                 )
             )
 

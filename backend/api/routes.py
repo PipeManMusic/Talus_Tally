@@ -2752,12 +2752,6 @@ def editor_get_template(template_id):
                             if p and 'value' not in p:
                                 p['value'] = legacy_overtime
 
-                    # Remove legacy single-value fields once migrated
-                    node_type['properties'] = [
-                        prop for prop in properties
-                        if prop.get('id') not in {'daily_capacity', 'hourly_rate', 'overtime_capacity'}
-                    ]
-
                     # Mark name/email as required (user-defined props, not macro-injected)
                     for prop in node_type.get('properties', []):
                         if prop.get('id') in {'name', 'email'}:
