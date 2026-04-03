@@ -124,21 +124,23 @@ function isOverbooked(load: number, capacity: number, overtimeCapacity: number =
   return load > totalSafe + ALLOCATION_EPSILON;
 }
 
-function cellTone(load: number, capacity: number, overtimeCapacity: number = 0): string {
+function cellTone(load: number, capacity: number, overtimeCapacity: number = 0): { className: string; style: React.CSSProperties } {
   if (capacity <= 0) {
-    return load > ALLOCATION_EPSILON ? 'bg-status-warning/60 text-fg-primary' : 'bg-neutral-600/40 text-fg-secondary';
+    return load > ALLOCATION_EPSILON
+      ? { className: 'text-fg-primary', style: { backgroundColor: '#a57f10' } }
+      : { className: 'text-fg-secondary', style: { backgroundColor: '#323232' } };
   }
   if (Math.abs(load - capacity) <= ALLOCATION_EPSILON) {
-    return 'bg-emerald-500/60 text-fg-primary';
+    return { className: 'text-fg-primary', style: { backgroundColor: '#157b59' } };
   }
   if (load < capacity - ALLOCATION_EPSILON) {
-    return 'bg-status-warning/60 text-fg-primary';
+    return { className: 'text-fg-primary', style: { backgroundColor: '#a57f10' } };
   }
   const totalSafe = capacity + overtimeCapacity;
   if (overtimeCapacity > ALLOCATION_EPSILON && load <= totalSafe + ALLOCATION_EPSILON) {
-    return 'bg-orange-500/60 text-fg-primary';
+    return { className: 'text-fg-primary', style: { backgroundColor: '#a15119' } };
   }
-  return 'bg-status-danger/60 text-fg-primary';
+  return { className: 'text-fg-primary', style: { backgroundColor: '#902b35' } };
 }
 
 export const ManpowerView = memo(function ManpowerView({
@@ -712,21 +714,25 @@ export const ManpowerView = memo(function ManpowerView({
 
   const statusSummary = error
     ? {
-      toneClass: 'text-status-danger bg-status-danger/15 border-status-danger/50',
+      toneClass: 'text-status-danger border-status-danger',
+      toneBg: '#2c1517',
       text: error,
     }
     : unallocatedTasks.length > 0
       ? {
-        toneClass: 'text-status-warning bg-status-warning/15 border-status-warning/50',
+        toneClass: 'text-status-warning border-status-warning',
+        toneBg: '#302a10',
         text: `${unallocatedTasks.length} task${unallocatedTasks.length === 1 ? '' : 's'} not fully allocated`,
       }
       : overloadedDayCount > 0
         ? {
-          toneClass: 'text-status-danger bg-status-danger/15 border-status-danger/50',
+          toneClass: 'text-status-danger border-status-danger',
+          toneBg: '#2c1517',
           text: `${overloadedDayCount} overbooked person-${overloadedDayCount === 1 ? 'day' : 'days'}`,
         }
         : {
-          toneClass: 'text-emerald-300 bg-emerald-500/15 border-emerald-500/40',
+          toneClass: 'text-emerald-300 border-emerald-500',
+          toneBg: '#142b21',
           text: 'No allocation issues',
         };
 
@@ -809,7 +815,7 @@ export const ManpowerView = memo(function ManpowerView({
             </div>
           </div>
           <div className="mt-3">
-            <div className={`inline-flex items-center gap-2 rounded border px-3 py-1.5 text-xs font-semibold ${statusSummary.toneClass}`}>
+            <div className={`inline-flex items-center gap-2 rounded border px-3 py-1.5 text-xs font-semibold ${statusSummary.toneClass}`} style={{ backgroundColor: statusSummary.toneBg }}>
               <AlertCircle size={14} />
               <span>{statusSummary.text}</span>
             </div>
@@ -819,8 +825,8 @@ export const ManpowerView = memo(function ManpowerView({
 
       {hasData && data && (
         <div className="flex-1 flex flex-col min-h-0">
-          <div className="flex-1 overflow-auto" ref={scrollContainerRef}>
-            <table className="min-w-full border-separate border-spacing-0 text-sm">
+          <div className="flex-1 overflow-auto bg-bg-dark" ref={scrollContainerRef}>
+            <table className="min-w-full border-separate border-spacing-0 text-sm bg-bg-dark">
             <thead className="sticky top-0 z-50">
               <tr>
                 <th className="sticky left-0 z-50 px-4 py-3 text-left font-semibold text-fg-secondary border-b border-r border-border w-56 min-w-56 max-w-56 overflow-hidden" style={{ backgroundColor: '#121212' }}>
@@ -839,10 +845,10 @@ export const ManpowerView = memo(function ManpowerView({
                     data-date-today={isTodayColumn ? '' : undefined}
                     className={`px-3 py-3 text-center font-semibold border-b border-r border-border min-w-24 ${
                       isTodayColumn
-                        ? 'bg-emerald-500/60 text-fg-primary border-emerald-300/80'
+                        ? 'text-fg-primary'
                         : 'text-fg-secondary'
                     }`}
-                    style={isTodayColumn ? undefined : { backgroundColor: '#121212' }}
+                    style={isTodayColumn ? { backgroundColor: '#157b59', borderColor: '#6ee7b7' } : { backgroundColor: '#121212' }}
                     title={isTodayColumn ? 'Today' : undefined}
                     onContextMenu={(e) => {
                       e.preventDefault();
@@ -874,24 +880,28 @@ export const ManpowerView = memo(function ManpowerView({
                   0,
                 );
                 const totalSafeCap = resource.capacity + totalOvertimeCap;
-                const personCapacityTone = totalPersonAssigned > totalSafeCap + ALLOCATION_EPSILON
-                  ? 'bg-status-danger text-fg-primary'
+                const personCapacityStyle: React.CSSProperties = totalPersonAssigned > totalSafeCap + ALLOCATION_EPSILON
+                  ? { backgroundColor: '#902b35' }
                   : totalPersonAssigned > resource.capacity + ALLOCATION_EPSILON && totalOvertimeCap > ALLOCATION_EPSILON
-                    ? 'bg-orange-500 text-fg-primary'
+                    ? { backgroundColor: '#a15119' }
                     : Math.abs(remainingCapacity) <= ALLOCATION_EPSILON
-                      ? 'bg-status-success text-fg-primary'
+                      ? { backgroundColor: '#157b59' }
                       : resource.capacity > ALLOCATION_EPSILON
-                        ? 'bg-status-warning text-fg-primary'
-                        : 'bg-bg-dark text-fg-secondary';
+                        ? { backgroundColor: '#a57f10' }
+                        : { backgroundColor: '#121212' };
+                const personCapacityTextClass = resource.capacity <= ALLOCATION_EPSILON && Math.abs(remainingCapacity) > ALLOCATION_EPSILON
+                  ? 'text-fg-secondary'
+                  : 'text-fg-primary';
                 return (
                   <Fragment key={personId}>
                     {/* Person summary row */}
                     <tr
                       className={`transition-colors cursor-pointer ${
                         isSelectedCluster
-                          ? 'bg-accent-primary/25 ring-2 ring-accent-primary/60'
-                          : 'hover:bg-bg-light/60'
+                          ? 'ring-2 ring-accent-primary'
+                          : 'hover:bg-bg-light'
                       }`}
+                      style={{ backgroundColor: isSelectedCluster ? '#432115' : '#1e1e1e' }}
                       onClick={() => onNodeSelect?.(personId)}
                       onContextMenu={(e) => {
                         e.preventDefault();
@@ -921,10 +931,10 @@ export const ManpowerView = memo(function ManpowerView({
                         </div>
                       </td>
                       <td
-                        className={`relative sticky left-[14rem] z-30 px-3 py-2 text-right font-mono border-b border-r border-border ${personCapacityTone} ${
+                        className={`relative sticky left-[14rem] z-30 px-3 py-2 text-right font-mono border-b border-r border-border ${personCapacityTextClass} ${
                           isSelectedCluster ? 'bg-bg-selection' : ''
                         }`}
-                        style={isSelectedCluster ? undefined : { backgroundColor: '#121212' }}
+                        style={isSelectedCluster ? undefined : personCapacityStyle}
                         title={`Total capacity: ${formatHours(resource.capacity)}h, Assigned: ${formatHours(totalPersonAssigned)}h, Remaining: ${formatHours(remainingCapacity)}h`}
                       >
                         {isSelectedCluster && <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-bg-darker" />}
@@ -936,10 +946,12 @@ export const ManpowerView = memo(function ManpowerView({
                         const dayCapacity = getDayCapacity(resource, day);
                         const overtimeCap = getDayOvertimeCapacity(resource, day);
                         const totalSafe = dayCapacity + overtimeCap;
+                        const tone = cellTone(loadTotal, dayCapacity, overtimeCap);
                         return (
                           <td
                             key={day}
-                            className={`px-3 py-2 text-center font-mono border-b border-r border-border ${cellTone(loadTotal, dayCapacity, overtimeCap)}`}
+                            className={`px-3 py-2 text-center font-mono border-b border-r border-border ${tone.className}`}
+                            style={tone.style}
                             title={`Load ${formatHours(loadTotal)} / Regular ${formatHours(dayCapacity)}${overtimeCap > 0 ? ` / OT limit ${formatHours(totalSafe)}` : ''}`}
                           >
                             {loadTotal > 0 ? formatHours(loadTotal) : '—'}
@@ -983,9 +995,10 @@ export const ManpowerView = memo(function ManpowerView({
                           key={task.id}
                           className={`cursor-pointer transition-colors ${
                             isTaskSelected
-                              ? 'bg-accent-primary/25 ring-2 ring-accent-primary/60'
-                              : 'bg-bg-darker/40 hover:bg-bg-darker/60'
+                              ? 'ring-2 ring-accent-primary'
+                              : 'hover:bg-bg-selection'
                           }${isTaskGhosted ? ' opacity-30' : ''}`}
+                          style={{ backgroundColor: isTaskSelected ? '#432115' : '#181818' }}
                           onClick={() => onNodeSelect?.(task.id)}
                           onContextMenu={(e) => {
                             e.preventDefault();
@@ -1047,9 +1060,10 @@ export const ManpowerView = memo(function ManpowerView({
                                 key={day}
                                 className={`px-2 py-2 border-2 ${
                                   isOutsideScheduledWindow
-                                    ? 'bg-bg-dark/70 border-border/80'
-                                    : 'border-emerald-500/80'
+                                    ? 'border-border'
+                                    : 'border-emerald-500'
                                 }`}
+                                style={{ backgroundColor: isOutsideScheduledWindow ? '#121212' : '#181818' }}
                                 title={isOutsideScheduledWindow ? 'Outside scheduled task duration' : undefined}
                               >
                                 <input
@@ -1165,7 +1179,7 @@ export const ManpowerView = memo(function ManpowerView({
         <div className="relative z-50 border-t border-border px-6 py-3 bg-bg-light flex items-center gap-6 text-xs text-fg-secondary flex-wrap">
           <span className="font-semibold text-fg-primary">Legend:</span>
           <span className="flex items-center gap-1.5">
-            <span className="inline-block w-3 h-3 rounded-sm bg-neutral-600/40 border border-border" />
+            <span className="inline-block w-3 h-3 rounded-sm border border-border" style={{ backgroundColor: '#323232' }} />
             Unavailable
           </span>
           <span className="flex items-center gap-1.5">
@@ -1173,26 +1187,26 @@ export const ManpowerView = memo(function ManpowerView({
             Empty
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="inline-block w-3 h-3 rounded-sm bg-status-warning/60" />
+            <span className="inline-block w-3 h-3 rounded-sm" style={{ backgroundColor: '#a57f10' }} />
             Under Allocated
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="inline-block w-3 h-3 rounded-sm bg-emerald-500/60" />
+            <span className="inline-block w-3 h-3 rounded-sm" style={{ backgroundColor: '#157b59' }} />
             Fully Allocated
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="inline-block w-3 h-3 rounded-sm bg-orange-500/60" />
+            <span className="inline-block w-3 h-3 rounded-sm" style={{ backgroundColor: '#a15119' }} />
             Overtime
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="inline-block w-3 h-3 rounded-sm bg-status-danger/60" />
+            <span className="inline-block w-3 h-3 rounded-sm" style={{ backgroundColor: '#902b35' }} />
             Over Allocated
           </span>
         </div>
       )}
 
       {error && !hasData && (
-        <div className="px-6 py-3 bg-status-danger/10 border-t border-status-danger text-status-danger">
+        <div className="px-6 py-3 border-t border-status-danger text-status-danger" style={{ backgroundColor: '#2c1517' }}>
           <div className="flex items-center gap-2">
             <AlertCircle size={18} />
             <span className="text-sm">{error}</span>
