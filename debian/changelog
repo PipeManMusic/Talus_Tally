@@ -1,3 +1,14 @@
+talus-tally (0.1.9~alpha1-1) jammy; urgency=medium
+
+  * Alpha 0.1.9 release
+  * Full Gantt chart view with drag/resize scheduling
+  * Robust status initialization and AgileView column placement
+  * ManpowerView solid backgrounds fix (no more transparency artifacts)
+  * Inspector updates from Gantt drag/resize operations
+  * CI: auto-create GitHub Release with artifacts on tag push
+
+ -- Talus Tally Dev <dev@talusstally.local>  Fri, 03 Apr 2026 00:00:00 +0000
+
 talus-tally (0.1.8.1~alpha1-1) jammy; urgency=medium
 
   * Alpha 0.1.8.1 hotfix release
