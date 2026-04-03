@@ -110,6 +110,9 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -118,12 +121,25 @@ jobs:
       - name: List downloaded files
         run: find artifacts -type f | head -20
 
+      - name: Resolve release notes file
+        id: notes
+        run: |
+          # Derive version from tag: v0.1.9-alpha → 0.1.9-alpha
+          VERSION="${GITHUB_REF_NAME#v}"
+          NOTES_FILE="docs/RELEASE_NOTES_${VERSION}.md"
+          if [ -f "$NOTES_FILE" ]; then
+            echo "file=$NOTES_FILE" >> "$GITHUB_OUTPUT"
+          else
+            echo "file=" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           draft: false
           prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') }}
-          generate_release_notes: true
+          body_path: ${{ steps.notes.outputs.file || '' }}
+          generate_release_notes: ${{ steps.notes.outputs.file == '' }}
           files: |
             artifacts/**/*.deb
             artifacts/**/*.dmg
