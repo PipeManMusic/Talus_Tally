@@ -406,3 +406,35 @@ class TestMacroDefinitions:
         for feature, props in FEATURE_MACROS.items():
             for prop in props:
                 assert "ui_group" in prop, f"{feature}/{prop['id']}: missing ui_group"
+
+
+class TestPersonFeatureAutoCorrection:
+    """is_person feature is auto-added to node types with id=='person'."""
+
+    def test_person_node_type_gets_is_person_feature(self):
+        template = {
+            "node_types": [
+                {"id": "person", "label": "Person", "features": [], "properties": []},
+            ]
+        }
+        apply_feature_macros(template)
+        nt = template["node_types"][0]
+        assert "is_person" in nt["features"]
+
+    def test_person_feature_not_duplicated_when_already_present(self):
+        template = {
+            "node_types": [
+                {"id": "person", "label": "Person", "features": ["is_person"], "properties": []},
+            ]
+        }
+        apply_feature_macros(template)
+        assert template["node_types"][0]["features"].count("is_person") == 1
+
+    def test_non_person_node_type_not_affected(self):
+        template = {
+            "node_types": [
+                {"id": "task", "label": "Task", "features": [], "properties": []},
+            ]
+        }
+        apply_feature_macros(template)
+        assert "is_person" not in template["node_types"][0]["features"]

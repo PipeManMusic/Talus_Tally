@@ -147,6 +147,13 @@ def apply_feature_macros(template_data: Dict[str, Any]) -> Dict[str, Any]:
 
     for nt in node_types:
         enabled_features: List[str] = nt.get("features") or []
+
+        # Auto-correct: node types with legacy id 'person' must have
+        # the is_person feature so the manpower engine can identify them.
+        if nt.get("id") == "person" and "is_person" not in enabled_features:
+            enabled_features.append("is_person")
+            nt["features"] = enabled_features
+
         properties: List[Dict[str, Any]] = nt.get("properties") or []
 
         # Build a quick lookup of existing property IDs → index
