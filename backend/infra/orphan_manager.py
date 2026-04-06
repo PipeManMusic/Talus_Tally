@@ -360,26 +360,40 @@ class OrphanManager:
                 template_type_ids.add(nt['uuid'])
 
         allowed_props_by_type: Dict[str, Set[str]] = {}
+        # Map legacy property IDs to their canonical UUIDs per node type,
+        # so orphaned properties stored under legacy keys can be restored
+        # under the correct UUID key.
+        legacy_to_uuid_by_type: Dict[str, Dict[str, str]] = {}
         for node_type in node_types:
             type_id = node_type.get('id')
             type_uuid = node_type.get('uuid')
             if not type_id and not type_uuid:
                 continue
-            # Use UUID property keys as the canonical identifiers,
-            # falling back to the semantic key when no UUID is present.
             allowed_props: Set[str] = {'name'}
+            id_to_uuid: Dict[str, str] = {}
             for prop in node_type.get('properties', []) or []:
                 prop_uuid = prop.get('uuid')
+                prop_id = prop.get('id')
+                prop_key = prop.get('key') or prop_id
                 if prop_uuid:
                     allowed_props.add(prop_uuid)
+                    # Also allow legacy ID/key so properties stored under
+                    # old string keys aren't incorrectly orphaned.
+                    if prop_id:
+                        allowed_props.add(prop_id)
+                        id_to_uuid[prop_id] = prop_uuid
+                    if prop_key and prop_key != prop_id:
+                        allowed_props.add(prop_key)
+                        id_to_uuid[prop_key] = prop_uuid
                 else:
-                    prop_key = prop.get('key') or prop.get('id')
                     if prop_key:
                         allowed_props.add(prop_key)
             if type_id:
                 allowed_props_by_type[type_id] = allowed_props
+                legacy_to_uuid_by_type[type_id] = id_to_uuid
             if type_uuid:
                 allowed_props_by_type[type_uuid] = allowed_props
+                legacy_to_uuid_by_type[type_uuid] = id_to_uuid
 
         orphaned_node_ids: List[str] = []
         orphaned_properties_count = 0
@@ -404,6 +418,7 @@ class OrphanManager:
                 metadata.pop('orphaned_reason', None)
 
             allowed_props = allowed_props_by_type.get(node_type, {'name'})
+            id_to_uuid = legacy_to_uuid_by_type.get(node_type, {})
             existing_orphaned = metadata.get('orphaned_properties')
             orphaned_props = dict(existing_orphaned) if isinstance(existing_orphaned, dict) else {}
 
@@ -414,6 +429,13 @@ class OrphanManager:
                         orphaned_properties_count += 1
                     orphaned_props[key] = value
                     del properties[key]
+                elif key in id_to_uuid:
+                    # Property is stored under a legacy ID but should use its UUID.
+                    canonical = id_to_uuid[key]
+                    if canonical not in properties:
+                        properties[canonical] = properties.pop(key)
+                    else:
+                        del properties[key]
 
             rename_hints: Dict[str, Dict[str, Union[str, float]]] = {}
             for orphaned_key in orphaned_props.keys():
@@ -436,13 +458,15 @@ class OrphanManager:
                     **hint,
                 })
 
-            # If template now supports a previously orphaned property, restore it
+            # If template now supports a previously orphaned property, restore it.
+            # Re-key legacy ID orphans to their canonical UUID on restore.
             for key in list(orphaned_props.keys()):
                 if key in allowed_props:
                     value = orphaned_props.pop(key)
-                    # Restore to properties if not already present
-                    if key not in properties:
-                        properties[key] = value
+                    # Determine the canonical key (UUID preferred over legacy ID)
+                    canonical = id_to_uuid.get(key, key)
+                    if canonical not in properties:
+                        properties[canonical] = value
 
             if orphaned_props:
                 metadata['orphaned_properties'] = orphaned_props

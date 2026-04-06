@@ -601,6 +601,90 @@ def test_reconcile_does_not_duplicate_property_in_restore():
         name_uuid not in node.metadata.get('orphaned_properties', {})
 
 
+def test_reconcile_restores_legacy_keyed_orphans_under_uuid():
+    """Orphaned properties stored under legacy string IDs (e.g. 'estimated_cost')
+    should be restored under their canonical UUID key when the template defines
+    a UUID for that property."""
+    graph = ProjectGraph(template_id='test_template', template_version='1.0.0')
+
+    node_type_uuid = 'bbbb2222-0000-0000-0000-000000000002'
+    name_uuid = 'aaaa1111-0000-0000-0000-000000000001'
+    cost_uuid = 'cccc3333-0000-0000-0000-000000000001'
+    actual_uuid = 'cccc3333-0000-0000-0000-000000000002'
+
+    node = Node(blueprint_type_id=node_type_uuid, name='Engine Bolts')
+    node.properties = {name_uuid: 'Engine Bolts'}
+    # Simulate properties that were orphaned under their legacy string IDs
+    node.metadata = {
+        'orphaned_properties': {
+            'estimated_cost': 500,
+            'actual_cost': 300,
+        }
+    }
+    graph.add_node(node)
+
+    template = {
+        'id': 'test_template',
+        'node_types': [
+            {
+                'id': 'part_asset',
+                'uuid': node_type_uuid,
+                'properties': [
+                    {'id': 'name', 'uuid': name_uuid},
+                    {'id': 'estimated_cost', 'uuid': cost_uuid},
+                    {'id': 'actual_cost', 'uuid': actual_uuid},
+                ],
+            }
+        ],
+    }
+
+    result = OrphanManager.reconcile_graph_with_template(graph, template)
+
+    # Properties should be restored under their UUID keys
+    assert node.properties[cost_uuid] == 500
+    assert node.properties[actual_uuid] == 300
+    # No orphaned properties should remain
+    assert not node.metadata.get('orphaned_properties')
+    assert result['affected_properties'] == 0
+
+
+def test_reconcile_rekeys_active_legacy_properties_to_uuid():
+    """Active properties stored under legacy IDs should be re-keyed to UUIDs."""
+    graph = ProjectGraph(template_id='test_template', template_version='1.0.0')
+
+    node_type_uuid = 'bbbb2222-0000-0000-0000-000000000003'
+    name_uuid = 'aaaa1111-0000-0000-0000-000000000001'
+    cost_uuid = 'cccc3333-0000-0000-0000-000000000003'
+
+    node = Node(blueprint_type_id=node_type_uuid, name='Brake Pads')
+    node.properties = {
+        name_uuid: 'Brake Pads',
+        'estimated_cost': 150,  # Legacy ID key
+    }
+    graph.add_node(node)
+
+    template = {
+        'id': 'test_template',
+        'node_types': [
+            {
+                'id': 'part',
+                'uuid': node_type_uuid,
+                'properties': [
+                    {'id': 'name', 'uuid': name_uuid},
+                    {'id': 'estimated_cost', 'uuid': cost_uuid},
+                ],
+            }
+        ],
+    }
+
+    OrphanManager.reconcile_graph_with_template(graph, template)
+
+    # Property re-keyed from legacy ID to UUID
+    assert node.properties[cost_uuid] == 150
+    assert 'estimated_cost' not in node.properties
+    assert not node.metadata.get('orphaned_properties')
+
+
 # ---------------------------------------------------------------------------
 # backfill_select_defaults
 # ---------------------------------------------------------------------------
