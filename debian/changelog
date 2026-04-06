@@ -1,3 +1,12 @@
+talus-tally (0.1.9.1~alpha1-1) jammy; urgency=medium
+
+  * Alpha 0.1.9.1 hotfix release
+  * Restore is_person feature on person node type (template editor round-trip fix)
+  * Fix legacy-keyed property orphaning in reconciliation
+  * Orphaned budget properties (estimated_cost, actual_cost) auto-restored on load
+
+ -- Talus Tally Dev <dev@talusstally.local>  Mon, 06 Apr 2026 00:00:00 +0000
+
 talus-tally (0.1.9~alpha1-1) jammy; urgency=medium
 
   * Alpha 0.1.9 release
