@@ -1,0 +1,36 @@
+{#
+  Project node dump: always print status as 'status' if present, and all other metadata
+#}
+
+# Project Full Node Dump
+
+{% for node in nodes %}
+---
+Node ID: {{ node.id }}
+Type: {{ node.type }}
+Name: {{ node.name }}
+Parent ID: {{ node.parent_id | default('None') }}
+
+{# Find the status property, regardless of its key #}
+{% set status_key = None %}
+{% for k, v in node.items() %}
+  {% if k != 'id' and k != 'type' and k != 'name' and k != 'parent_id' %}
+    {% if k == 'status' %}
+      {% set status_key = 'status' %}
+    {% elif k in node and node[k + '_indicator_set'] == 'status' %}
+      {% set status_key = k %}
+    {% endif %}
+  {% endif %}
+{% endfor %}
+
+{% if status_key %}
+Status: {{ node[status_key] }}
+{% endif %}
+
+{# Print all other properties except status and the standard fields #}
+{% for k, v in node.items() if k not in ['id', 'type', 'name', 'parent_id', status_key] and not k.endswith('_indicator_set') %}
+{{ k }}: {{ v }}
+{% endfor %}
+
+{% endfor %}
+*End of Report*

@@ -1,0 +1,107 @@
+id: trelby_screenplay
+label: Trelby Screenplay
+description: "Professional screenplay formatting inspired by Trelby screenplay editor"
+
+tokens:
+  # Scene headers - uppercase, bold
+  - id: scene_heading
+    label: Scene Heading
+    prefix: "INT."
+    format_scope: "line"
+    format:
+      text_transform: "uppercase"
+      bold: true
+
+  - id: ext_scene
+    label: Exterior Scene
+    prefix: "EXT."
+    format_scope: "line"
+    format:
+      text_transform: "uppercase"
+      bold: true
+
+  # Action description
+  - id: action
+    label: Action
+    prefix: "[ACTION]"
+    format_scope: "line"
+
+  # Character names - centered, uppercase
+  - id: character
+    label: Character Name
+    prefix: "[CHAR]"
+    format_scope: "line"
+    format:
+      text_transform: "uppercase"
+      align: "center"
+
+  # Dialogue
+  - id: dialogue
+    label: Dialogue
+    prefix: "[DIALOGUE]"
+    format_scope: "line"
+
+  # Parentheticals
+  - id: parenthetical
+    label: Parenthetical
+    prefix: "("
+    format_scope: "line"
+
+  # Transitions - right aligned, uppercase
+  - id: transition
+    label: Transition
+    prefix: "TRANS:"
+    format_scope: "line"
+    format:
+      text_transform: "uppercase"
+      align: "right"
+      bold: true
+
+  # Shot descriptions
+  - id: shot
+    label: Shot
+    prefix: "[SHOT]"
+    format_scope: "line"
+    format:
+      text_transform: "uppercase"
+
+  # Emotional cues or beats
+  - id: beat
+    label: Emotional Beat
+    prefix: "[BEAT]"
+    format_scope: "line"
+    format:
+      italic: true
+
+  # Sound effects - uppercase
+  - id: sound
+    label: Sound Effect
+    prefix: "SFX:"
+    format_scope: "line"
+    format:
+      text_transform: "uppercase"
+      bold: true
+
+  # Music cues
+  - id: music
+    label: Music Cue
+    prefix: "MUSIC:"
+    format_scope: "line"
+    format:
+      text_transform: "uppercase"
+
+  # Emphasis/important notes
+  - id: emphasis
+    label: Important Note
+    prefix: "NOTE:"
+    format_scope: "line"
+    format:
+      bold: true
+
+  # Comments (usually italic, dimmed in professional scripts)
+  - id: comment
+    label: Comment
+    prefix: "# "
+    format_scope: "line"
+    format:
+      italic: true

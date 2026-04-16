@@ -1,0 +1,1098 @@
+blocking_view:
+  node_size:
+    base_height: 100
+    base_width: 200
+    direction: down
+    max_depth: 6
+    max_scale: 1.7
+    min_scale: 0.7
+description: Production workflow for YouTube channel and Restomod build with footage
+  tracking and asset management.
+name: Project Talus
+node_types:
+- allowed_asset_types: []
+  allowed_children:
+  - inventory_root
+  - season
+  - task
+  - personnel_assets
+  color: '#6366f1'
+  features:
+  - is_root
+  icon: film
+  id: project_root
+  label: Project
+  properties:
+  - id: name
+    label: Project Name
+    required: false
+    type: text
+    uuid: 19419fc9-6b1c-c58c-8c6b-2b00ae2dbcc2
+  - id: vehicle
+    label: Vehicle Name
+    required: false
+    type: text
+    uuid: 185942a9-990f-a752-023d-8074ddea9b85
+  - id: vin
+    label: VIN
+    required: false
+    type: text
+    uuid: 7e6d7053-2ea4-9e7a-42db-785c4b6f6744
+  - id: purchase_date
+    label: Purchase Date
+    required: false
+    type: date
+    uuid: 28d06bf1-c999-5005-44cb-a929535ed272
+  - id: budget
+    label: Estimated Budget
+    required: false
+    type: currency
+    uuid: f2300937-eec4-630c-1e05-fdeb74860715
+  - id: actual_cost
+    label: Actual Cost
+    required: false
+    type: currency
+    uuid: 346c937b-e080-4baa-2749-483a38ef1602
+  - id: project_lead
+    label: Project Lead
+    required: false
+    type: text
+    uuid: 8414d88b-e8c6-5b15-59f1-061fc52d5d6f
+  shape: hexagon
+  uuid: 292b9e11-45c7-94f4-20db-7f6085266a4f
+  velocityConfig:
+    baseScore: 0
+- allowed_asset_types: []
+  allowed_children:
+  - camera_gear_inventory
+  - car_parts_inventory
+  - personnel_assets
+  - tools_inventory
+  color: '#a78bfa'
+  features:
+  - is_inventory_container
+  icon: archive-box
+  id: inventory_root
+  label: Assets
+  properties:
+  - id: name
+    label: Assets
+    required: false
+    type: text
+    uuid: a3e61a3d-7439-aea4-fba0-aecb859b7810
+  shape: hexagon
+  uuid: 02dd5d8c-9134-ad55-fe18-88e7117745c5
+- allowed_asset_types: []
+  allowed_children:
+  - camera_gear_category
+  color: '#60a5fa'
+  features:
+  - is_inventory_container
+  icon: camera
+  id: camera_gear_inventory
+  label: Camera Gear Inventory
+  properties:
+  - id: name
+    label: Camera Gear Inventory
+    required: false
+    type: text
+    uuid: 39fd0756-7317-1176-9f08-62f25228bf92
+  shape: rounded
+  uuid: 1fffcccd-cbb7-7146-8745-ef0979f5c20f
+- allowed_asset_types: []
+  allowed_children:
+  - camera_gear_asset
+  color: '#3b82f6'
+  icon: camera
+  id: camera_gear_category
+  label: Camera Gear Category
+  properties:
+  - description: e.g., Cameras, Lenses, Accessories, Audio
+    id: name
+    label: Category Name
+    required: false
+    type: text
+    uuid: 62c7a344-2cfe-503c-df46-15da77997a28
+  shape: roundedSquare
+  uuid: 5f871fa1-5f20-f7f1-4d3d-3dc0f8a8a13d
+- allowed_asset_types: []
+  allowed_children: []
+  color: '#0ea5e9'
+  icon: camera
+  id: camera_gear_asset
+  label: Camera Gear
+  properties:
+  - id: name
+    label: Equipment Name
+    required: false
+    type: text
+    uuid: 58a1ddaa-1841-bfce-9cfe-b6ee5008e9c4
+  - id: model
+    label: Model Name
+    required: false
+    type: text
+    uuid: 00beff78-35fc-c608-031c-1ce257479526
+  - id: serial
+    label: Serial Number
+    required: false
+    type: text
+    uuid: bea8238f-80a6-6bcb-909f-9787602c8f7c
+  - id: purchase_date
+    label: Purchase Date
+    required: false
+    type: date
+    uuid: cc9df73b-0d85-d729-3eea-76070a709a8d
+  - id: acquisition_cost
+    label: Acquisition Cost
+    required: false
+    type: currency
+    uuid: 0fbc80f9-0f25-39f4-fe12-9749764fc5ae
+  - id: status
+    indicator_set: status
+    label: Status
+    options:
+    - id: c94096f7-4637-2728-1c2d-c3bf7e3ccb2d
+      indicator_id: available
+      name: Available
+    - id: 3a73d262-1091-63c6-094c-941f8b085f9c
+      indicator_id: partial
+      name: In Use
+    - id: a16ed6be-842f-6c9a-b5c5-e59c7a39dfab
+      indicator_id: alert
+      name: Maintenance
+    - id: 51de0ba5-5e26-448d-47cf-2c440db36787
+      indicator_id: empty
+      name: Retired
+    required: false
+    type: select
+    uuid: f6642e96-2e74-ab03-539c-5a0bdf778144
+  - id: notes
+    label: Notes
+    required: false
+    type: text
+    uuid: 1d879858-04ce-0679-1f14-669eda381f77
+  shape: circle
+  uuid: 6ee44fd2-c931-5cba-bbf2-990c509f95cc
+- allowed_asset_types: []
+  allowed_children:
+  - part_category
+  color: '#ef4444'
+  features:
+  - is_inventory_container
+  icon: cog
+  id: car_parts_inventory
+  label: Car Parts Inventory
+  properties:
+  - id: name
+    label: Car Parts Inventory
+    required: false
+    type: text
+    uuid: 58648883-b417-56fe-be88-16d45c72a44b
+  shape: hexagon
+  uuid: a528b149-5cc9-cb6f-8772-922d688235a7
+- allowed_asset_types: []
+  allowed_children:
+  - part_asset
+  color: '#f87171'
+  features:
+  - budgeting
+  icon: cog
+  id: part_category
+  label: Part Category
+  properties:
+  - description: e.g., Engine, Suspension, Body, Interior, Electrical
+    id: name
+    label: Category Name
+    required: false
+    type: text
+    uuid: 88dede94-ffe9-0568-07ec-698935357b80
+  - _macro_injected: true
+    id: estimated_cost
+    label: Estimated Cost
+    required: false
+    system_locked: true
+    type: currency
+    ui_group: Financial
+    uuid: 7358748a-b8f0-aea9-2b60-11fbb7d199e9
+  - _macro_injected: true
+    id: actual_cost
+    label: Actual Cost
+    required: false
+    system_locked: true
+    type: currency
+    ui_group: Financial
+    uuid: 119c6c76-e05d-8136-becc-fc5b2e21b0f8
+  shape: rounded
+  uuid: 459f58ca-bce4-59ea-bca9-82e83ec03013
+- allowed_asset_types: []
+  allowed_children: []
+  color: '#fb7185'
+  features:
+  - budgeting
+  icon: cog
+  id: part_asset
+  label: Car Part
+  properties:
+  - id: name
+    label: Part Name
+    required: false
+    type: text
+    uuid: 2e17d1a4-3869-1f05-fc0c-675b6b3bef0e
+  - id: part_number
+    label: OEM Part Number
+    required: false
+    type: text
+    uuid: 4ed6c417-615e-4745-e50f-49434eb4e1f4
+  - id: supplier
+    label: Vendor/Source
+    required: false
+    type: text
+    uuid: c87572aa-ee3c-eebb-794b-87231be5b9e4
+  - id: unit_cost
+    label: Unit Cost
+    required: false
+    type: currency
+    uuid: e5385df7-3cf2-6b4f-9f98-72c0927b8500
+    velocityConfig:
+      enabled: true
+      mode: multiplier
+      multiplierFactor: -0.01
+  - id: quantity_on_hand
+    label: Quantity On Hand
+    required: false
+    type: number
+    uuid: 8a7b2d25-7add-79b1-e953-02069a478fdc
+  - id: status
+    indicator_set: status
+    label: Status
+    options:
+    - id: 49ea8160-2c4d-4d91-4800-1c3176029d26
+      indicator_id: empty
+      name: Wishlist
+    - id: b3b79228-4930-102f-7da4-6b0cbb28cf76
+      indicator_id: alert
+      name: Ordered
+    - id: 33e4c8cb-5b8b-ff4d-660c-fd282fb93abf
+      indicator_id: partial
+      name: Arrived
+    - id: ec911e69-6edd-a843-3958-39a2f773cf58
+      indicator_id: filled
+      name: Installed
+    required: false
+    type: select
+    uuid: b1b8f8d4-1ce4-8889-5e03-89f035762ca4
+    velocityConfig:
+      enabled: true
+      mode: status
+      statusScores:
+        Arrived: 2
+        Installed: -1
+        Ordered: 1
+        Wishlist: -1
+  - id: notes
+    label: Notes
+    required: false
+    type: text
+    uuid: 45cbca7f-0214-bad0-6035-01ae376584cc
+  - _macro_injected: true
+    id: estimated_cost
+    label: Estimated Cost
+    system_locked: true
+    type: currency
+    ui_group: Financial
+    uuid: 7e5304d1-7583-8e9a-3117-03eb04177987
+  - _macro_injected: true
+    id: actual_cost
+    label: Actual Cost
+    system_locked: true
+    type: currency
+    ui_group: Financial
+    uuid: 33a76eed-3a7d-94a2-6512-e6cd0b74e6ab
+  shape: circle
+  uuid: 8efe0b14-3125-d3dd-2608-050a62d027f4
+- allowed_asset_types: []
+  allowed_children:
+  - tool_category
+  color: '#84cc16'
+  features:
+  - is_inventory_container
+  icon: wrench-screwdriver
+  id: tools_inventory
+  label: Tools Inventory
+  properties:
+  - id: name
+    label: Tools Inventory
+    required: false
+    type: text
+    uuid: 2d615a5f-b6e8-2c1c-c087-02068da0cf7b
+  shape: hexagon
+  uuid: a99e2151-96dd-6c39-5575-a6f9be58b8c5
+- allowed_asset_types: []
+  allowed_children:
+  - tool_asset
+  color: '#bfdbfe'
+  icon: wrench-screwdriver
+  id: tool_category
+  label: Tool Category
+  properties:
+  - description: e.g., Power Tools, Hand Tools, Diagnostic Equipment, Safety
+    id: name
+    label: Category Name
+    required: false
+    type: text
+    uuid: 128bf7fd-3530-e4a2-2a33-786c2857a2c6
+  shape: rounded
+  uuid: 81ab9613-5029-b8ac-5c42-8ff9f35a55d4
+- allowed_asset_types: []
+  allowed_children: []
+  color: '#86efac'
+  icon: wrench-screwdriver
+  id: tool_asset
+  label: Tool
+  properties:
+  - id: name
+    label: Tool Name
+    required: false
+    type: text
+    uuid: 4be74e6f-a6cb-1b9c-22b2-6796212ec895
+  - id: make_model
+    label: Make / Model
+    required: false
+    type: text
+    uuid: 34180bab-2e58-bbad-2c57-12b5edf04932
+  - id: serial_number
+    label: Serial Number
+    required: false
+    type: text
+    uuid: 7e827951-1342-06ee-bbe7-6daf75009609
+  - id: purchase_date
+    label: Purchase Date
+    required: false
+    type: date
+    uuid: 1c7aa83a-0ef9-d6a2-7103-d8a670a2d506
+  - id: acquisition_cost
+    label: Acquisition Cost
+    required: false
+    type: currency
+    uuid: c4246b0d-ad5c-298f-e9a5-999d200f9bc2
+  - id: status
+    indicator_set: status
+    label: Status
+    options:
+    - id: bf46e370-d97f-5e46-df4d-dad388280546
+      indicator_id: available
+      name: Available
+    - id: bf3ba355-2a3d-de7e-1b64-aeacb3bf82e3
+      indicator_id: partial
+      name: In Use
+    - id: 4e73d426-6333-fb3d-6f0b-ee891ad96c99
+      indicator_id: alert
+      name: Maintenance
+    - id: a43019fb-f10d-78c4-8ce6-b8716c1402a8
+      indicator_id: empty
+      name: Retired
+    required: false
+    type: select
+    uuid: cb0eb78d-3e4d-5b77-0fdd-7ea691a6d007
+    velocityConfig:
+      enabled: true
+      mode: status
+      statusScores:
+        Available: 0
+        In Use: 1
+        Maintenance: 2
+        Retired: 0
+  - id: last_service_date
+    label: Last Service Date
+    required: false
+    type: date
+    uuid: 9ec12b02-8c82-39b3-a507-3288e91b4524
+  - id: notes
+    label: Notes
+    required: false
+    type: text
+    uuid: 8b8456eb-3026-9e3f-9a4e-30133c072715
+  shape: circle
+  uuid: 47111e56-edbd-21ee-35f7-ab5c494da2a6
+  velocityConfig:
+    scoreMode: inherit
+- allowed_asset_types: []
+  allowed_children:
+  - episode
+  - task
+  color: '#8b5cf6'
+  icon: film
+  id: season
+  label: Season
+  properties:
+  - id: name
+    label: Season Name
+    required: false
+    type: text
+    uuid: bb24d5e0-d1b6-a9fd-23c1-ed5204bd0f57
+  - id: year
+    label: Release Year
+    required: false
+    type: number
+    uuid: 70c7ae7e-eb0e-01c2-9445-2ccf638fbf92
+  - id: status
+    indicator_set: status
+    label: Status
+    options:
+    - id: 7d8a9c3b-1234-5678-90ab-cdef12345678
+      indicator_id: empty
+      name: Planning
+    - id: 5fbab80b-88a5-f00c-5f7e-1f5716193531
+      indicator_id: partial
+      name: In Production
+    - id: 34423cc2-d2c5-c699-fa1c-605ca72ee331
+      indicator_id: filled
+      name: Released
+    required: false
+    type: select
+    uuid: b86f2f5b-2c01-6d43-f592-0ad0051dad9e
+    velocityConfig:
+      enabled: true
+      mode: status
+      penaltyMode: false
+      statusScores:
+        In Production: 1
+        Planning: -1
+        Released: -1
+  shape: circle
+  uuid: 6af49a72-a129-e754-a0af-ff1c8e509673
+  velocityConfig:
+    penaltyScore: false
+- allowed_asset_types: []
+  allowed_children:
+  - task
+  - footage
+  - location_scout
+  - uses_camera_gear
+  - uses_car_part
+  - uses_tool
+  color: '#06b6d4'
+  features:
+  - scheduling
+  icon: video-camera
+  id: episode
+  label: Episode
+  properties:
+  - id: name
+    label: Episode Title
+    required: false
+    type: text
+    uuid: cb142469-a5db-3ba7-ef0d-345bfebc84ef
+  - id: episode_number
+    label: 'Episode #'
+    required: false
+    type: number
+    uuid: 3fac8eeb-a982-515d-724b-717f5fc1f38b
+  - description: 'Click Edit to write a detailed description. Use SCENE:, SPEAKER:,
+      [ACTION], NOTE: prefixes to structure content.'
+    id: description
+    label: script
+    markup_profile: script_default
+    required: false
+    type: editor
+    uuid: ccafc508-72f6-4ca2-66dc-26319639d1a5
+  - id: status
+    indicator_set: status
+    label: Edit Status
+    options:
+    - id: 5acffa6e-c572-103b-853b-5e944af46cea
+      indicator_id: empty
+      name: Planning
+    - id: 3094f28b-3fc3-2667-5ae1-933b041d78ed
+      indicator_id: partial
+      name: Shooting
+    - id: 34ef9d4f-f911-93af-128d-e34588d33f6c
+      indicator_id: partial
+      name: Editing
+    - id: 4486f116-dbf2-4aa7-be80-293aa2d22cb1
+      indicator_id: filled
+      name: Uploaded
+    required: false
+    type: select
+    uuid: 29127f82-3f89-4b74-1e41-da626fba5e63
+    velocityConfig:
+      enabled: true
+      mode: status
+      statusScores:
+        Editing: 2
+        Planning: -1
+        Shooting: 1
+        Uploaded: -1
+  - id: start_date
+    label: Start Date
+    required: false
+    semantic_role: gantt_start
+    system_locked: true
+    type: date
+    ui_group: Schedule
+    uuid: 2a657481-c4de-443b-9100-bab8d36cfdb6
+  - id: end_date
+    label: End Date
+    required: false
+    semantic_role: gantt_end
+    system_locked: true
+    type: date
+    ui_group: Schedule
+    uuid: 6fbc3751-46f1-41d5-71da-6a00886e686c
+  - id: assigned_to
+    label: Assigned To
+    required: false
+    system_locked: true
+    target_type: person
+    type: node_reference
+    ui_group: Schedule
+    uuid: a84fb7a9-d19a-29ca-dba5-d0fabe2971bc
+  - id: estimated_hours
+    label: Estimated Hours
+    required: false
+    system_locked: true
+    type: number
+    ui_group: Schedule
+    uuid: 3f78e521-337d-90f3-cf74-a7caa32d44e6
+    value: 0
+  - id: actual_hours
+    label: Actual Hours
+    required: false
+    system_locked: true
+    type: number
+    ui_group: Schedule
+    uuid: 26ec34d3-4b5f-e946-cbd4-d74d19820ca5
+    value: 0
+  - _macro_injected: true
+    id: allocations
+    label: Allocations
+    required: false
+    system_locked: true
+    type: object
+    ui_group: Schedule
+    uuid: 0be32bfa-1a1f-b648-2fc9-a5ec1e6db36d
+    value: {}
+  - _macro_injected: true
+    id: _feat_scheduling_status
+    indicator_set: status
+    key: status
+    label: Status
+    options:
+    - id: 226e3070-bda2-86ca-2e46-401776a8983f
+      indicator_id: empty
+      name: To Do
+    - id: 32325919-25d0-4d3c-e75b-8a437f6f96ee
+      indicator_id: partial
+      name: In Progress
+    - id: 453611e8-44c7-a633-0264-dcb7fe690269
+      indicator_id: filled
+      name: Done
+    required: false
+    system_locked: true
+    type: select
+    ui_group: Schedule
+    uuid: 21a07b17-c7a0-aa65-85b7-814f94e04fb6
+    value: 226e3070-bda2-86ca-2e46-401776a8983f
+  shape: roundedSquare
+  uuid: 32f6b4b7-b425-73c3-3332-769bdb5af2f8
+- allowed_asset_types:
+  - camera_gear_asset
+  allowed_children:
+  - uses_camera_gear
+  - uses_car_part
+  - uses_tool
+  color: '#10b981'
+  icon: film
+  id: footage
+  label: Footage Clip
+  properties:
+  - id: name
+    label: Clip Name
+    required: false
+    type: text
+    uuid: 7c6007ae-01b6-b6ce-a3a5-90b51d6a2e89
+  - id: filename
+    label: File Name
+    required: false
+    type: text
+    uuid: 2e62ad05-af4e-bca9-34e3-a7b4acabdaa5
+  - description: Paste the 'Copy Link' URL from Dropbox here.
+    id: dropbox_link
+    label: Dropbox Share Link
+    required: false
+    type: text
+    uuid: 06b3dfe3-2ce7-23e3-65eb-f988680d95c3
+  - id: notes
+    label: Shoot Notes
+    required: false
+    type: editor
+    uuid: 6b1ecc54-6188-8abb-e434-c1b1162077b2
+  - id: status
+    indicator_set: status
+    label: Status
+    options:
+    - id: 9ac221c8-3175-1535-1288-cac79be7a1e5
+      indicator_id: empty
+      name: Planned
+    - id: 73af3b66-1e07-98eb-09a3-6403a771929a
+      indicator_id: partial
+      name: In Production
+    - id: 29666e58-9f31-a814-91df-cdc056dfbc76
+      indicator_id: filled
+      name: Complete
+    required: false
+    type: select
+    uuid: 65e69171-36f0-7cd6-33e0-45c206c7fd8b
+    velocityConfig:
+      enabled: true
+      mode: status
+      statusScores:
+        Complete: -2
+        In Production: 1
+        Planned: -1
+  shape: circle
+  uuid: 18cef54e-3f62-7f82-9c77-4b4579cf23b5
+- allowed_asset_types: []
+  allowed_children: []
+  color: '#8b7355'
+  icon: map-pin
+  id: location_scout
+  label: Location Scout
+  properties:
+  - id: name
+    label: Location Name
+    required: false
+    type: text
+    uuid: 2c5f8645-a967-b4a2-0a03-9a693876c03a
+  - id: address
+    label: Address
+    required: false
+    type: text
+    uuid: edd6e6cb-cf93-d16a-4717-3691c00319c4
+  - id: notes
+    label: Scout Notes
+    required: false
+    type: text
+    uuid: 380126b5-d7e5-ebc9-049d-46d26ea548b1
+  - id: permits_needed
+    label: Permits Required
+    required: false
+    type: checkbox
+    uuid: 1ab18666-7f82-2818-81f1-e187f8c222b2
+  - id: scouted_date
+    label: Scout Date
+    required: false
+    type: date
+    uuid: 3355c7cf-4fd5-ebec-d3ac-ed7fc7b7fefa
+  shape: rounded
+  uuid: a6ec5377-8b62-3ed0-851f-2d49cea38ac1
+- allowed_asset_types: []
+  allowed_children:
+  - asset_reference
+  - uses_camera_gear
+  - uses_car_part
+  - uses_tool
+  color: '#f59e0b'
+  has_time_log: true
+  icon: clipboard-document-check
+  id: task
+  label: Task
+  properties:
+  - id: name
+    label: Task Name
+    required: false
+    type: text
+    uuid: d7d0c0e3-0845-4dc3-8225-3d188cdcd6ec
+  - id: description
+    label: Description
+    required: false
+    type: text
+    uuid: fc0279ca-292c-c189-41be-15baedf32703
+  - id: status
+    indicator_set: status
+    label: Status
+    options:
+    - id: b131e3d8-1af5-5c04-e1dd-72e3187c06dc
+      indicator_id: empty
+      name: Not Started
+    - id: c96378bf-66e5-8e04-2cf3-d1f65cab2f9f
+      indicator_id: partial
+      name: In Progress
+    - id: 8fdcec3d-2118-902a-e8ea-310424fdd1c3
+      indicator_id: alert
+      name: Blocked
+    - id: 0a6557f7-5a28-de01-5b42-a3304518b1a3
+      indicator_id: filled
+      name: Done
+    required: false
+    type: select
+    uuid: d4de7dbf-40f0-30da-eed6-4f27e05732e9
+  - id: estimated_hours
+    label: Est. Hours
+    required: false
+    type: number
+    uuid: 8cb6d24b-34bf-d30e-3ec5-2df02aec825d
+  - id: approved
+    label: Approved for Production
+    required: false
+    type: checkbox
+    uuid: 9e1557cb-e397-fcff-d2fe-ecdf499eb4b5
+  - id: notes
+    label: Notes
+    required: false
+    type: editor
+    uuid: edff6099-8157-0b0c-d717-8720c50c63b3
+  shape: roundedSquare
+  uuid: df26a76a-47e9-229d-25cb-fb1b64e3d621
+- allowed_asset_types:
+  - camera_gear_asset
+  allowed_children: []
+  icon: camera
+  id: uses_camera_gear
+  label: Uses Camera Gear
+  properties:
+  - id: name
+    label: Asset Name
+    required: false
+    type: text
+    uuid: f90c323d-795b-2eed-086c-6ee0bb6df217
+  - id: asset_id
+    label: Linked Camera Gear
+    required: false
+    type: text
+    uuid: 43d413e8-cf88-bfa7-6815-18df69c5e8e8
+  - id: role
+    label: Role/Purpose
+    required: false
+    type: text
+    uuid: 85f78443-b81c-c104-d1ec-1eabb2d6524a
+  - id: quantity
+    label: Quantity Needed
+    required: false
+    type: number
+    uuid: f66c97fc-7d6d-9957-9382-28d89ab8406d
+  uuid: 37c98aa8-1ecf-f734-aae6-2147962200ef
+- allowed_asset_types:
+  - part_asset
+  allowed_children: []
+  icon: cog
+  id: uses_car_part
+  label: Uses Car Part
+  properties:
+  - id: name
+    label: Asset Name
+    required: false
+    type: text
+    uuid: ec1262c6-a3c7-7a87-61ca-2aad72aee4bd
+  - id: asset_id
+    label: Linked Car Part
+    required: false
+    type: text
+    uuid: ac94154f-24b9-1b88-d3ab-49bd6560b74b
+  - id: role
+    label: Role/Purpose
+    required: false
+    type: text
+    uuid: 6ba08615-823c-7e4b-3229-281b59653463
+  - id: quantity
+    label: Quantity Needed
+    required: false
+    type: number
+    uuid: 5030d42d-ca61-2b30-174d-0a4edd1e5acb
+  uuid: 64c246cc-0e2e-98b3-edb0-c0bb252e6a45
+- allowed_asset_types:
+  - tool_asset
+  allowed_children: []
+  icon: wrench-screwdriver
+  id: uses_tool
+  label: Uses Tool
+  properties:
+  - id: name
+    label: Asset Name
+    required: false
+    type: text
+    uuid: b18ee505-de45-5404-9d4f-72fb5cef9735
+  - id: asset_id
+    label: Linked Tool
+    required: false
+    type: text
+    uuid: 91c74863-6462-3583-969b-430d765f2868
+  - id: role
+    label: Role/Purpose
+    required: false
+    type: text
+    uuid: b8e73bf2-3830-fc31-28f3-8a6cbe094168
+  - id: quantity
+    label: Quantity Needed
+    required: false
+    type: number
+    uuid: 0ed7b89e-370f-5962-9006-d7c4f7f9a486
+  uuid: 85253198-5a24-cc0b-09b8-3104ed399bec
+  velocityConfig:
+    baseScore: -1
+    scoreMode: standalone
+- allowed_asset_types: []
+  allowed_children: []
+  icon: clipboard-document-list
+  id: asset_reference
+  label: Uses Asset
+  properties:
+  - id: name
+    label: Asset Reference
+    required: false
+    type: text
+    uuid: 5a14d165-3f31-4538-dc68-a49f04a651cf
+  - id: asset_id
+    label: Linked Asset
+    required: false
+    type: text
+    uuid: 0cd98f30-0dc6-bd3b-3988-278aa07a6742
+  - id: role
+    label: Role/Purpose in Task
+    required: false
+    type: text
+    uuid: 56cf25c1-b115-47b4-5982-41ea5c5dc8d9
+  - id: quantity
+    label: Quantity Needed
+    required: false
+    type: number
+    uuid: b37ee4e7-559f-ad5d-24f0-b480bee8e20e
+  uuid: e9db1d3f-7b14-13d9-e797-715b666783cd
+- allowed_asset_types: []
+  allowed_children: []
+  icon: document-text
+  id: node_type_1773847596886
+  label: New Node Type
+  properties:
+  - id: name
+    label: Name
+    required: false
+    type: text
+    uuid: 10432142-acee-b8aa-4f71-34fa6d4f1549
+  uuid: 29219903-da69-b179-cfd6-8707ad8b752b
+- allowed_asset_types: []
+  allowed_children:
+  - person
+  base_type: asset
+  color: '#60a5fa'
+  features:
+  - is_personnel_container
+  icon: users
+  id: personnel_assets
+  label: Personnel Assets
+  properties:
+  - id: name
+    label: Name
+    required: true
+    type: text
+    uuid: 1efe9935-9e1d-a32d-f769-1e2a0e60eee5
+  shape: rounded
+  uuid: 1b7cedf8-5697-2dac-6a63-e977869dc40f
+- allowed_asset_types: []
+  allowed_children: []
+  base_type: asset
+  color: '#3b82f6'
+  features:
+  - is_person
+  icon: user
+  id: person
+  label: Person
+  properties:
+  - id: name
+    label: Full Name
+    required: true
+    system_locked: true
+    type: text
+    uuid: 3c4347c9-42a4-844d-939d-679087cd2ea4
+  - id: email
+    label: Email
+    required: true
+    system_locked: true
+    type: text
+    uuid: 9407c701-9e69-a48c-b661-1be4ad2e3fef
+  - id: capacity_monday
+    label: Capacity Monday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    ui_group: Capacity
+    uuid: ee58a28b-20b9-1ff9-ec07-d61ab0f5270c
+    value: 8
+  - id: capacity_tuesday
+    label: Capacity Tuesday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    ui_group: Capacity
+    uuid: 4d6d5ca3-0915-2eb8-3129-e34cf09c1062
+    value: 8
+  - id: capacity_wednesday
+    label: Capacity Wednesday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    ui_group: Capacity
+    uuid: 58d94770-71a8-fe2e-9a36-d16ed8c53409
+    value: 8
+  - id: capacity_thursday
+    label: Capacity Thursday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    ui_group: Capacity
+    uuid: 787c6562-dc36-4fa8-3c5f-276f2664300c
+    value: 8
+  - id: capacity_friday
+    label: Capacity Friday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    ui_group: Capacity
+    uuid: 2fb88aae-c453-28fc-d636-d479c08e4545
+    value: 8
+  - id: capacity_saturday
+    label: Capacity Saturday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    ui_group: Capacity
+    uuid: 8171069b-cc55-6bb6-32c2-41ec502a80b4
+    value: 0
+  - id: capacity_sunday
+    label: Capacity Sunday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    ui_group: Capacity
+    uuid: d63eced9-7fe5-523d-1b65-de8629bf79f9
+    value: 0
+  - id: hourly_rate_monday
+    label: Hourly Rate Monday
+    required: false
+    system_locked: true
+    type: number
+    ui_group: Rates
+    uuid: 2a38b4af-a899-58c8-9c67-eb814f1eab48
+    value: 0
+  - id: hourly_rate_tuesday
+    label: Hourly Rate Tuesday
+    required: false
+    system_locked: true
+    type: number
+    ui_group: Rates
+    uuid: 648e3f83-8dc6-82a3-42f5-e33f2f96328d
+    value: 0
+  - id: hourly_rate_wednesday
+    label: Hourly Rate Wednesday
+    required: false
+    system_locked: true
+    type: number
+    ui_group: Rates
+    uuid: 3dd81849-5815-b6ff-b98c-06a9af3da19b
+    value: 0
+  - id: hourly_rate_thursday
+    label: Hourly Rate Thursday
+    required: false
+    system_locked: true
+    type: number
+    ui_group: Rates
+    uuid: aa2139dd-cdb6-3006-afea-0fc79344c974
+    value: 0
+  - id: hourly_rate_friday
+    label: Hourly Rate Friday
+    required: false
+    system_locked: true
+    type: number
+    ui_group: Rates
+    uuid: ab85d4cf-092f-416c-95cf-3418861fd7fc
+    value: 0
+  - id: hourly_rate_saturday
+    label: Hourly Rate Saturday
+    required: false
+    system_locked: true
+    type: number
+    ui_group: Rates
+    uuid: 1853bdea-6f72-720f-49ae-0b3857723c00
+    value: 0
+  - id: hourly_rate_sunday
+    label: Hourly Rate Sunday
+    required: false
+    system_locked: true
+    type: number
+    ui_group: Rates
+    uuid: a15d21d3-fe43-0a23-8fc7-485a508a009e
+    value: 0
+  - id: overtime_capacity
+    label: Overtime Capacity (Hours)
+    required: false
+    system_locked: true
+    type: number
+    ui_group: Overtime
+    uuid: c82cc034-284f-f206-a9ad-74be0153aac6
+    value: 0
+  - id: overtime_capacity_monday
+    label: Overtime Capacity Monday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    ui_group: Overtime
+    uuid: 6c6b73c7-dca2-310f-918a-d2325505eee2
+    value: 0
+  - id: overtime_capacity_tuesday
+    label: Overtime Capacity Tuesday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    ui_group: Overtime
+    uuid: 22001717-2eed-c5a9-1d12-cba4706a9826
+    value: 0
+  - id: overtime_capacity_wednesday
+    label: Overtime Capacity Wednesday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    ui_group: Overtime
+    uuid: 736d74f5-3782-cd8f-e884-8dddffaa6cbf
+    value: 0
+  - id: overtime_capacity_thursday
+    label: Overtime Capacity Thursday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    ui_group: Overtime
+    uuid: 683acc96-3455-5fde-3f29-5f26cb3ee46c
+    value: 0
+  - id: overtime_capacity_friday
+    label: Overtime Capacity Friday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    ui_group: Overtime
+    uuid: 5484142f-36ed-996a-7dce-d218c4423559
+    value: 0
+  - id: overtime_capacity_saturday
+    label: Overtime Capacity Saturday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    ui_group: Overtime
+    uuid: 718ace6a-c51a-6d4b-b0b8-9f3c0d528ce2
+    value: 0
+  - id: overtime_capacity_sunday
+    label: Overtime Capacity Sunday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    ui_group: Overtime
+    uuid: f6cda5d0-d158-14d6-bf25-dd8550ffbd6d
+    value: 0
+  - id: system_role
+    label: System Role
+    required: false
+    system_locked: true
+    type: text
+    uuid: 8171e2bf-f6d2-642b-020c-83e77a0d3815
+  shape: circle
+  uuid: 7230f246-66ef-dfb4-1010-c4ade5ac5418
+uuid: 574ecd39-bad3-4e44-b6e4-247d00cc5eca
+version: 0.2.1

@@ -1,0 +1,973 @@
+icons:
+- id: academic-cap
+  file: academic-cap.svg
+  description: Academic Cap
+- id: adjustments-horizontal
+  file: adjustments-horizontal.svg
+  description: Adjustments Horizontal
+- id: adjustments-vertical
+  file: adjustments-vertical.svg
+  description: Adjustments Vertical
+- id: archive-box-arrow-down
+  file: archive-box-arrow-down.svg
+  description: Archive Box Arrow Down
+- id: archive-box-x-mark
+  file: archive-box-x-mark.svg
+  description: Archive Box X Mark
+- id: archive-box
+  file: archive-box.svg
+  description: Archive Box
+- id: arrow-down-circle
+  file: arrow-down-circle.svg
+  description: Arrow Down Circle
+- id: arrow-down-left
+  file: arrow-down-left.svg
+  description: Arrow Down Left
+- id: arrow-down-on-square-stack
+  file: arrow-down-on-square-stack.svg
+  description: Arrow Down On Square Stack
+- id: arrow-down-on-square
+  file: arrow-down-on-square.svg
+  description: Arrow Down On Square
+- id: arrow-down-right
+  file: arrow-down-right.svg
+  description: Arrow Down Right
+- id: arrow-down-tray
+  file: arrow-down-tray.svg
+  description: Arrow Down Tray
+- id: arrow-down
+  file: arrow-down.svg
+  description: Arrow Down
+- id: arrow-left-circle
+  file: arrow-left-circle.svg
+  description: Arrow Left Circle
+- id: arrow-left-end-on-rectangle
+  file: arrow-left-end-on-rectangle.svg
+  description: Arrow Left End On Rectangle
+- id: arrow-left-on-rectangle
+  file: arrow-left-on-rectangle.svg
+  description: Arrow Left On Rectangle
+- id: arrow-left-start-on-rectangle
+  file: arrow-left-start-on-rectangle.svg
+  description: Arrow Left Start On Rectangle
+- id: arrow-left
+  file: arrow-left.svg
+  description: Arrow Left
+- id: arrow-long-down
+  file: arrow-long-down.svg
+  description: Arrow Long Down
+- id: arrow-long-left
+  file: arrow-long-left.svg
+  description: Arrow Long Left
+- id: arrow-long-right
+  file: arrow-long-right.svg
+  description: Arrow Long Right
+- id: arrow-long-up
+  file: arrow-long-up.svg
+  description: Arrow Long Up
+- id: arrow-path-rounded-square
+  file: arrow-path-rounded-square.svg
+  description: Arrow Path Rounded Square
+- id: arrow-path
+  file: arrow-path.svg
+  description: Arrow Path
+- id: arrow-right-circle
+  file: arrow-right-circle.svg
+  description: Arrow Right Circle
+- id: arrow-right-end-on-rectangle
+  file: arrow-right-end-on-rectangle.svg
+  description: Arrow Right End On Rectangle
+- id: arrow-right-on-rectangle
+  file: arrow-right-on-rectangle.svg
+  description: Arrow Right On Rectangle
+- id: arrow-right-start-on-rectangle
+  file: arrow-right-start-on-rectangle.svg
+  description: Arrow Right Start On Rectangle
+- id: arrow-right
+  file: arrow-right.svg
+  description: Arrow Right
+- id: arrow-small-down
+  file: arrow-small-down.svg
+  description: Arrow Small Down
+- id: arrow-small-left
+  file: arrow-small-left.svg
+  description: Arrow Small Left
+- id: arrow-small-right
+  file: arrow-small-right.svg
+  description: Arrow Small Right
+- id: arrow-small-up
+  file: arrow-small-up.svg
+  description: Arrow Small Up
+- id: arrow-top-right-on-square
+  file: arrow-top-right-on-square.svg
+  description: Arrow Top Right On Square
+- id: arrow-trending-down
+  file: arrow-trending-down.svg
+  description: Arrow Trending Down
+- id: arrow-trending-up
+  file: arrow-trending-up.svg
+  description: Arrow Trending Up
+- id: arrow-turn-down-left
+  file: arrow-turn-down-left.svg
+  description: Arrow Turn Down Left
+- id: arrow-turn-down-right
+  file: arrow-turn-down-right.svg
+  description: Arrow Turn Down Right
+- id: arrow-turn-left-down
+  file: arrow-turn-left-down.svg
+  description: Arrow Turn Left Down
+- id: arrow-turn-left-up
+  file: arrow-turn-left-up.svg
+  description: Arrow Turn Left Up
+- id: arrow-turn-right-down
+  file: arrow-turn-right-down.svg
+  description: Arrow Turn Right Down
+- id: arrow-turn-right-up
+  file: arrow-turn-right-up.svg
+  description: Arrow Turn Right Up
+- id: arrow-turn-up-left
+  file: arrow-turn-up-left.svg
+  description: Arrow Turn Up Left
+- id: arrow-turn-up-right
+  file: arrow-turn-up-right.svg
+  description: Arrow Turn Up Right
+- id: arrow-up-circle
+  file: arrow-up-circle.svg
+  description: Arrow Up Circle
+- id: arrow-up-left
+  file: arrow-up-left.svg
+  description: Arrow Up Left
+- id: arrow-up-on-square-stack
+  file: arrow-up-on-square-stack.svg
+  description: Arrow Up On Square Stack
+- id: arrow-up-on-square
+  file: arrow-up-on-square.svg
+  description: Arrow Up On Square
+- id: arrow-up-right
+  file: arrow-up-right.svg
+  description: Arrow Up Right
+- id: arrow-up-tray
+  file: arrow-up-tray.svg
+  description: Arrow Up Tray
+- id: arrow-up
+  file: arrow-up.svg
+  description: Arrow Up
+- id: arrow-uturn-down
+  file: arrow-uturn-down.svg
+  description: Arrow Uturn Down
+- id: arrow-uturn-left
+  file: arrow-uturn-left.svg
+  description: Arrow Uturn Left
+- id: arrow-uturn-right
+  file: arrow-uturn-right.svg
+  description: Arrow Uturn Right
+- id: arrow-uturn-up
+  file: arrow-uturn-up.svg
+  description: Arrow Uturn Up
+- id: arrows-pointing-in
+  file: arrows-pointing-in.svg
+  description: Arrows Pointing In
+- id: arrows-pointing-out
+  file: arrows-pointing-out.svg
+  description: Arrows Pointing Out
+- id: arrows-right-left
+  file: arrows-right-left.svg
+  description: Arrows Right Left
+- id: arrows-up-down
+  file: arrows-up-down.svg
+  description: Arrows Up Down
+- id: at-symbol
+  file: at-symbol.svg
+  description: At Symbol
+- id: backspace
+  file: backspace.svg
+  description: Backspace
+- id: backward
+  file: backward.svg
+  description: Backward
+- id: banknotes
+  file: banknotes.svg
+  description: Banknotes
+- id: bars-2
+  file: bars-2.svg
+  description: Bars 2
+- id: bars-3-bottom-left
+  file: bars-3-bottom-left.svg
+  description: Bars 3 Bottom Left
+- id: bars-3-bottom-right
+  file: bars-3-bottom-right.svg
+  description: Bars 3 Bottom Right
+- id: bars-3-center-left
+  file: bars-3-center-left.svg
+  description: Bars 3 Center Left
+- id: bars-3
+  file: bars-3.svg
+  description: Bars 3
+- id: bars-4
+  file: bars-4.svg
+  description: Bars 4
+- id: bars-arrow-down
+  file: bars-arrow-down.svg
+  description: Bars Arrow Down
+- id: bars-arrow-up
+  file: bars-arrow-up.svg
+  description: Bars Arrow Up
+- id: battery-0
+  file: battery-0.svg
+  description: Battery 0
+- id: battery-100
+  file: battery-100.svg
+  description: Battery 100
+- id: battery-50
+  file: battery-50.svg
+  description: Battery 50
+- id: beaker
+  file: beaker.svg
+  description: Beaker
+- id: bell-alert
+  file: bell-alert.svg
+  description: Bell Alert
+- id: bell-slash
+  file: bell-slash.svg
+  description: Bell Slash
+- id: bell-snooze
+  file: bell-snooze.svg
+  description: Bell Snooze
+- id: bell
+  file: bell.svg
+  description: Bell
+- id: bold
+  file: bold.svg
+  description: Bold
+- id: bolt-slash
+  file: bolt-slash.svg
+  description: Bolt Slash
+- id: bolt
+  file: bolt.svg
+  description: Bolt
+- id: book-open
+  file: book-open.svg
+  description: Book Open
+- id: bookmark-slash
+  file: bookmark-slash.svg
+  description: Bookmark Slash
+- id: bookmark-square
+  file: bookmark-square.svg
+  description: Bookmark Square
+- id: bookmark
+  file: bookmark.svg
+  description: Bookmark
+- id: briefcase
+  file: briefcase.svg
+  description: Briefcase
+- id: bug-ant
+  file: bug-ant.svg
+  description: Bug Ant
+- id: building-library
+  file: building-library.svg
+  description: Building Library
+- id: building-office-2
+  file: building-office-2.svg
+  description: Building Office 2
+- id: building-office
+  file: building-office.svg
+  description: Building Office
+- id: building-storefront
+  file: building-storefront.svg
+  description: Building Storefront
+- id: cake
+  file: cake.svg
+  description: Cake
+- id: calculator
+  file: calculator.svg
+  description: Calculator
+- id: calendar-date-range
+  file: calendar-date-range.svg
+  description: Calendar Date Range
+- id: calendar-days
+  file: calendar-days.svg
+  description: Calendar Days
+- id: calendar
+  file: calendar.svg
+  description: Calendar
+- id: camera
+  file: camera.svg
+  description: Camera
+- id: chart-bar-square
+  file: chart-bar-square.svg
+  description: Chart Bar Square
+- id: chart-bar
+  file: chart-bar.svg
+  description: Chart Bar
+- id: chart-pie
+  file: chart-pie.svg
+  description: Chart Pie
+- id: chat-bubble-bottom-center-text
+  file: chat-bubble-bottom-center-text.svg
+  description: Chat Bubble Bottom Center Text
+- id: chat-bubble-bottom-center
+  file: chat-bubble-bottom-center.svg
+  description: Chat Bubble Bottom Center
+- id: chat-bubble-left-ellipsis
+  file: chat-bubble-left-ellipsis.svg
+  description: Chat Bubble Left Ellipsis
+- id: chat-bubble-left-right
+  file: chat-bubble-left-right.svg
+  description: Chat Bubble Left Right
+- id: chat-bubble-left
+  file: chat-bubble-left.svg
+  description: Chat Bubble Left
+- id: chat-bubble-oval-left-ellipsis
+  file: chat-bubble-oval-left-ellipsis.svg
+  description: Chat Bubble Oval Left Ellipsis
+- id: chat-bubble-oval-left
+  file: chat-bubble-oval-left.svg
+  description: Chat Bubble Oval Left
+- id: check-badge
+  file: check-badge.svg
+  description: Check Badge
+- id: check-circle
+  file: check-circle.svg
+  description: Check Circle
+- id: check
+  file: check.svg
+  description: Check
+- id: chevron-double-down
+  file: chevron-double-down.svg
+  description: Chevron Double Down
+- id: chevron-double-left
+  file: chevron-double-left.svg
+  description: Chevron Double Left
+- id: chevron-double-right
+  file: chevron-double-right.svg
+  description: Chevron Double Right
+- id: chevron-double-up
+  file: chevron-double-up.svg
+  description: Chevron Double Up
+- id: chevron-down
+  file: chevron-down.svg
+  description: Chevron Down
+- id: chevron-left
+  file: chevron-left.svg
+  description: Chevron Left
+- id: chevron-right
+  file: chevron-right.svg
+  description: Chevron Right
+- id: chevron-up-down
+  file: chevron-up-down.svg
+  description: Chevron Up Down
+- id: chevron-up
+  file: chevron-up.svg
+  description: Chevron Up
+- id: circle-stack
+  file: circle-stack.svg
+  description: Circle Stack
+- id: clipboard-document-check
+  file: clipboard-document-check.svg
+  description: Clipboard Document Check
+- id: clipboard-document-list
+  file: clipboard-document-list.svg
+  description: Clipboard Document List
+- id: clipboard-document
+  file: clipboard-document.svg
+  description: Clipboard Document
+- id: clipboard
+  file: clipboard.svg
+  description: Clipboard
+- id: clock
+  file: clock.svg
+  description: Clock
+- id: cloud-arrow-down
+  file: cloud-arrow-down.svg
+  description: Cloud Arrow Down
+- id: cloud-arrow-up
+  file: cloud-arrow-up.svg
+  description: Cloud Arrow Up
+- id: cloud
+  file: cloud.svg
+  description: Cloud
+- id: code-bracket-square
+  file: code-bracket-square.svg
+  description: Code Bracket Square
+- id: code-bracket
+  file: code-bracket.svg
+  description: Code Bracket
+- id: cog-6-tooth
+  file: cog-6-tooth.svg
+  description: Cog 6 Tooth
+- id: cog-8-tooth
+  file: cog-8-tooth.svg
+  description: Cog 8 Tooth
+- id: cog
+  file: cog.svg
+  description: Cog
+- id: command-line
+  file: command-line.svg
+  description: Command Line
+- id: computer-desktop
+  file: computer-desktop.svg
+  description: Computer Desktop
+- id: cpu-chip
+  file: cpu-chip.svg
+  description: Cpu Chip
+- id: credit-card
+  file: credit-card.svg
+  description: Credit Card
+- id: cube-transparent
+  file: cube-transparent.svg
+  description: Cube Transparent
+- id: cube
+  file: cube.svg
+  description: Cube
+- id: currency-bangladeshi
+  file: currency-bangladeshi.svg
+  description: Currency Bangladeshi
+- id: currency-dollar
+  file: currency-dollar.svg
+  description: Currency Dollar
+- id: currency-euro
+  file: currency-euro.svg
+  description: Currency Euro
+- id: currency-pound
+  file: currency-pound.svg
+  description: Currency Pound
+- id: currency-rupee
+  file: currency-rupee.svg
+  description: Currency Rupee
+- id: currency-yen
+  file: currency-yen.svg
+  description: Currency Yen
+- id: cursor-arrow-rays
+  file: cursor-arrow-rays.svg
+  description: Cursor Arrow Rays
+- id: cursor-arrow-ripple
+  file: cursor-arrow-ripple.svg
+  description: Cursor Arrow Ripple
+- id: device-phone-mobile
+  file: device-phone-mobile.svg
+  description: Device Phone Mobile
+- id: device-tablet
+  file: device-tablet.svg
+  description: Device Tablet
+- id: divide
+  file: divide.svg
+  description: Divide
+- id: document-arrow-down
+  file: document-arrow-down.svg
+  description: Document Arrow Down
+- id: document-arrow-up
+  file: document-arrow-up.svg
+  description: Document Arrow Up
+- id: document-chart-bar
+  file: document-chart-bar.svg
+  description: Document Chart Bar
+- id: document-check
+  file: document-check.svg
+  description: Document Check
+- id: document-currency-bangladeshi
+  file: document-currency-bangladeshi.svg
+  description: Document Currency Bangladeshi
+- id: document-currency-dollar
+  file: document-currency-dollar.svg
+  description: Document Currency Dollar
+- id: document-currency-euro
+  file: document-currency-euro.svg
+  description: Document Currency Euro
+- id: document-currency-pound
+  file: document-currency-pound.svg
+  description: Document Currency Pound
+- id: document-currency-rupee
+  file: document-currency-rupee.svg
+  description: Document Currency Rupee
+- id: document-currency-yen
+  file: document-currency-yen.svg
+  description: Document Currency Yen
+- id: document-duplicate
+  file: document-duplicate.svg
+  description: Document Duplicate
+- id: document-magnifying-glass
+  file: document-magnifying-glass.svg
+  description: Document Magnifying Glass
+- id: document-minus
+  file: document-minus.svg
+  description: Document Minus
+- id: document-plus
+  file: document-plus.svg
+  description: Document Plus
+- id: document-text
+  file: document-text.svg
+  description: Document Text
+- id: document
+  file: document.svg
+  description: Document
+- id: ellipsis-horizontal-circle
+  file: ellipsis-horizontal-circle.svg
+  description: Ellipsis Horizontal Circle
+- id: ellipsis-horizontal
+  file: ellipsis-horizontal.svg
+  description: Ellipsis Horizontal
+- id: ellipsis-vertical
+  file: ellipsis-vertical.svg
+  description: Ellipsis Vertical
+- id: envelope-open
+  file: envelope-open.svg
+  description: Envelope Open
+- id: envelope
+  file: envelope.svg
+  description: Envelope
+- id: equals
+  file: equals.svg
+  description: Equals
+- id: exclamation-circle
+  file: exclamation-circle.svg
+  description: Exclamation Circle
+- id: exclamation-triangle
+  file: exclamation-triangle.svg
+  description: Exclamation Triangle
+- id: eye-dropper
+  file: eye-dropper.svg
+  description: Eye Dropper
+- id: eye-slash
+  file: eye-slash.svg
+  description: Eye Slash
+- id: eye
+  file: eye.svg
+  description: Eye
+- id: face-frown
+  file: face-frown.svg
+  description: Face Frown
+- id: face-smile
+  file: face-smile.svg
+  description: Face Smile
+- id: film
+  file: film.svg
+  description: Film
+- id: finger-print
+  file: finger-print.svg
+  description: Finger Print
+- id: fire
+  file: fire.svg
+  description: Fire
+- id: flag
+  file: flag.svg
+  description: Flag
+- id: folder-arrow-down
+  file: folder-arrow-down.svg
+  description: Folder Arrow Down
+- id: folder-minus
+  file: folder-minus.svg
+  description: Folder Minus
+- id: folder-open
+  file: folder-open.svg
+  description: Folder Open
+- id: folder-plus
+  file: folder-plus.svg
+  description: Folder Plus
+- id: folder
+  file: folder.svg
+  description: Folder
+- id: forward
+  file: forward.svg
+  description: Forward
+- id: funnel
+  file: funnel.svg
+  description: Funnel
+- id: gif
+  file: gif.svg
+  description: Gif
+- id: gift-top
+  file: gift-top.svg
+  description: Gift Top
+- id: gift
+  file: gift.svg
+  description: Gift
+- id: globe-alt
+  file: globe-alt.svg
+  description: Globe Alt
+- id: globe-americas
+  file: globe-americas.svg
+  description: Globe Americas
+- id: globe-asia-australia
+  file: globe-asia-australia.svg
+  description: Globe Asia Australia
+- id: globe-europe-africa
+  file: globe-europe-africa.svg
+  description: Globe Europe Africa
+- id: h1
+  file: h1.svg
+  description: H1
+- id: h2
+  file: h2.svg
+  description: H2
+- id: h3
+  file: h3.svg
+  description: H3
+- id: hand-raised
+  file: hand-raised.svg
+  description: Hand Raised
+- id: hand-thumb-down
+  file: hand-thumb-down.svg
+  description: Hand Thumb Down
+- id: hand-thumb-up
+  file: hand-thumb-up.svg
+  description: Hand Thumb Up
+- id: hashtag
+  file: hashtag.svg
+  description: Hashtag
+- id: heart
+  file: heart.svg
+  description: Heart
+- id: home-modern
+  file: home-modern.svg
+  description: Home Modern
+- id: home
+  file: home.svg
+  description: Home
+- id: identification
+  file: identification.svg
+  description: Identification
+- id: inbox-arrow-down
+  file: inbox-arrow-down.svg
+  description: Inbox Arrow Down
+- id: inbox-stack
+  file: inbox-stack.svg
+  description: Inbox Stack
+- id: inbox
+  file: inbox.svg
+  description: Inbox
+- id: information-circle
+  file: information-circle.svg
+  description: Information Circle
+- id: italic
+  file: italic.svg
+  description: Italic
+- id: key
+  file: key.svg
+  description: Key
+- id: language
+  file: language.svg
+  description: Language
+- id: lifebuoy
+  file: lifebuoy.svg
+  description: Lifebuoy
+- id: light-bulb
+  file: light-bulb.svg
+  description: Light Bulb
+- id: link-slash
+  file: link-slash.svg
+  description: Link Slash
+- id: link
+  file: link.svg
+  description: Link
+- id: list-bullet
+  file: list-bullet.svg
+  description: List Bullet
+- id: lock-closed
+  file: lock-closed.svg
+  description: Lock Closed
+- id: lock-open
+  file: lock-open.svg
+  description: Lock Open
+- id: magnifying-glass-circle
+  file: magnifying-glass-circle.svg
+  description: Magnifying Glass Circle
+- id: magnifying-glass-minus
+  file: magnifying-glass-minus.svg
+  description: Magnifying Glass Minus
+- id: magnifying-glass-plus
+  file: magnifying-glass-plus.svg
+  description: Magnifying Glass Plus
+- id: magnifying-glass
+  file: magnifying-glass.svg
+  description: Magnifying Glass
+- id: map-pin
+  file: map-pin.svg
+  description: Map Pin
+- id: map
+  file: map.svg
+  description: Map
+- id: megaphone
+  file: megaphone.svg
+  description: Megaphone
+- id: microphone
+  file: microphone.svg
+  description: Microphone
+- id: minus-circle
+  file: minus-circle.svg
+  description: Minus Circle
+- id: minus-small
+  file: minus-small.svg
+  description: Minus Small
+- id: minus
+  file: minus.svg
+  description: Minus
+- id: moon
+  file: moon.svg
+  description: Moon
+- id: musical-note
+  file: musical-note.svg
+  description: Musical Note
+- id: newspaper
+  file: newspaper.svg
+  description: Newspaper
+- id: no-symbol
+  file: no-symbol.svg
+  description: No Symbol
+- id: numbered-list
+  file: numbered-list.svg
+  description: Numbered List
+- id: paint-brush
+  file: paint-brush.svg
+  description: Paint Brush
+- id: paper-airplane
+  file: paper-airplane.svg
+  description: Paper Airplane
+- id: paper-clip
+  file: paper-clip.svg
+  description: Paper Clip
+- id: pause-circle
+  file: pause-circle.svg
+  description: Pause Circle
+- id: pause
+  file: pause.svg
+  description: Pause
+- id: pencil-square
+  file: pencil-square.svg
+  description: Pencil Square
+- id: pencil
+  file: pencil.svg
+  description: Pencil
+- id: percent-badge
+  file: percent-badge.svg
+  description: Percent Badge
+- id: phone-arrow-down-left
+  file: phone-arrow-down-left.svg
+  description: Phone Arrow Down Left
+- id: phone-arrow-up-right
+  file: phone-arrow-up-right.svg
+  description: Phone Arrow Up Right
+- id: phone-x-mark
+  file: phone-x-mark.svg
+  description: Phone X Mark
+- id: phone
+  file: phone.svg
+  description: Phone
+- id: photo
+  file: photo.svg
+  description: Photo
+- id: play-circle
+  file: play-circle.svg
+  description: Play Circle
+- id: play-pause
+  file: play-pause.svg
+  description: Play Pause
+- id: play
+  file: play.svg
+  description: Play
+- id: plus-circle
+  file: plus-circle.svg
+  description: Plus Circle
+- id: plus-small
+  file: plus-small.svg
+  description: Plus Small
+- id: plus
+  file: plus.svg
+  description: Plus
+- id: power
+  file: power.svg
+  description: Power
+- id: presentation-chart-bar
+  file: presentation-chart-bar.svg
+  description: Presentation Chart Bar
+- id: presentation-chart-line
+  file: presentation-chart-line.svg
+  description: Presentation Chart Line
+- id: printer
+  file: printer.svg
+  description: Printer
+- id: puzzle-piece
+  file: puzzle-piece.svg
+  description: Puzzle Piece
+- id: qr-code
+  file: qr-code.svg
+  description: Qr Code
+- id: question-mark-circle
+  file: question-mark-circle.svg
+  description: Question Mark Circle
+- id: queue-list
+  file: queue-list.svg
+  description: Queue List
+- id: radio
+  file: radio.svg
+  description: Radio
+- id: receipt-percent
+  file: receipt-percent.svg
+  description: Receipt Percent
+- id: receipt-refund
+  file: receipt-refund.svg
+  description: Receipt Refund
+- id: rectangle-group
+  file: rectangle-group.svg
+  description: Rectangle Group
+- id: rectangle-stack
+  file: rectangle-stack.svg
+  description: Rectangle Stack
+- id: rocket-launch
+  file: rocket-launch.svg
+  description: Rocket Launch
+- id: rss
+  file: rss.svg
+  description: Rss
+- id: scale
+  file: scale.svg
+  description: Scale
+- id: scissors
+  file: scissors.svg
+  description: Scissors
+- id: server-stack
+  file: server-stack.svg
+  description: Server Stack
+- id: server
+  file: server.svg
+  description: Server
+- id: share
+  file: share.svg
+  description: Share
+- id: shield-check
+  file: shield-check.svg
+  description: Shield Check
+- id: shield-exclamation
+  file: shield-exclamation.svg
+  description: Shield Exclamation
+- id: shopping-bag
+  file: shopping-bag.svg
+  description: Shopping Bag
+- id: shopping-cart
+  file: shopping-cart.svg
+  description: Shopping Cart
+- id: signal-slash
+  file: signal-slash.svg
+  description: Signal Slash
+- id: signal
+  file: signal.svg
+  description: Signal
+- id: slash
+  file: slash.svg
+  description: Slash
+- id: sparkles
+  file: sparkles.svg
+  description: Sparkles
+- id: speaker-wave
+  file: speaker-wave.svg
+  description: Speaker Wave
+- id: speaker-x-mark
+  file: speaker-x-mark.svg
+  description: Speaker X Mark
+- id: square-2-stack
+  file: square-2-stack.svg
+  description: Square 2 Stack
+- id: square-3-stack-3d
+  file: square-3-stack-3d.svg
+  description: Square 3 Stack 3d
+- id: squares-2x2
+  file: squares-2x2.svg
+  description: Squares 2x2
+- id: squares-plus
+  file: squares-plus.svg
+  description: Squares Plus
+- id: star
+  file: star.svg
+  description: Star
+- id: stop-circle
+  file: stop-circle.svg
+  description: Stop Circle
+- id: stop
+  file: stop.svg
+  description: Stop
+- id: strikethrough
+  file: strikethrough.svg
+  description: Strikethrough
+- id: sun
+  file: sun.svg
+  description: Sun
+- id: swatch
+  file: swatch.svg
+  description: Swatch
+- id: table-cells
+  file: table-cells.svg
+  description: Table Cells
+- id: tag
+  file: tag.svg
+  description: Tag
+- id: ticket
+  file: ticket.svg
+  description: Ticket
+- id: trash
+  file: trash.svg
+  description: Trash
+- id: trophy
+  file: trophy.svg
+  description: Trophy
+- id: truck
+  file: truck.svg
+  description: Truck
+- id: tv
+  file: tv.svg
+  description: Tv
+- id: underline
+  file: underline.svg
+  description: Underline
+- id: user-circle
+  file: user-circle.svg
+  description: User Circle
+- id: user-group
+  file: user-group.svg
+  description: User Group
+- id: user-minus
+  file: user-minus.svg
+  description: User Minus
+- id: user-plus
+  file: user-plus.svg
+  description: User Plus
+- id: user
+  file: user.svg
+  description: User
+- id: users
+  file: users.svg
+  description: Users
+- id: variable
+  file: variable.svg
+  description: Variable
+- id: video-camera-slash
+  file: video-camera-slash.svg
+  description: Video Camera Slash
+- id: video-camera
+  file: video-camera.svg
+  description: Video Camera
+- id: view-columns
+  file: view-columns.svg
+  description: View Columns
+- id: viewfinder-circle
+  file: viewfinder-circle.svg
+  description: Viewfinder Circle
+- id: wallet
+  file: wallet.svg
+  description: Wallet
+- id: wifi
+  file: wifi.svg
+  description: Wifi
+- id: window
+  file: window.svg
+  description: Window
+- id: wrench-screwdriver
+  file: wrench-screwdriver.svg
+  description: Wrench Screwdriver
+- id: wrench
+  file: wrench.svg
+  description: Wrench
+- id: x-circle
+  file: x-circle.svg
+  description: X Circle
+- id: x-mark
+  file: x-mark.svg
+  description: X Mark

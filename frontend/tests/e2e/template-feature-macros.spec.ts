@@ -1,18 +1,19 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { openTemplateEditor, E2E_TEMPLATE_NAME, resetE2ETemplateFixture } from './utils';
 
-async function waitForTemplateAutosave(page: any) {
-  try {
-    await page.waitForResponse(
-      (response: any) =>
-        response.url().includes('/api/v1/templates/editor/') &&
+async function saveTemplate(page: Page) {
+  await Promise.all([
+    page.waitForResponse(
+      (response) =>
+        response.url().includes('/api/v1/templates/editor/e2e_smoketest') &&
         response.request().method() === 'PUT' &&
         response.ok(),
-      { timeout: 10000 }
-    );
-  } catch {
-    // Some UI actions don't always issue a PUT (e.g., no-op state changes).
-  }
+      { timeout: 15000 },
+    ),
+    page.getByRole('button', { name: 'Save', exact: true }).click(),
+  ]);
+
+  await expect(page.getByText('Saved successfully', { exact: true })).toBeVisible({ timeout: 10000 });
 }
 
 /**
@@ -51,9 +52,8 @@ test.describe('Template Feature Macros', () => {
     const schedulingCheckbox = page.locator('label:has-text("Enable Scheduling") input[type="checkbox"]').first();
     await expect(schedulingCheckbox).toBeVisible({ timeout: 5000 });
     if (!(await schedulingCheckbox.isChecked())) {
-      const autosaveScheduling = waitForTemplateAutosave(page);
       await schedulingCheckbox.check();
-      await autosaveScheduling;
+      await saveTemplate(page);
     }
 
     // Wait for the save to complete (optimistic update + backend persist)
@@ -93,6 +93,7 @@ test.describe('Template Feature Macros', () => {
     const budgetingCheckbox = page.locator('label:has-text("Enable Budgeting") input[type="checkbox"]').first();
     await expect(budgetingCheckbox).toBeVisible({ timeout: 5000 });
     await budgetingCheckbox.check();
+    await saveTemplate(page);
 
     // Budget properties should appear
     await expect(page.getByRole('heading', { name: /Estimated Cost/i })).toBeVisible({ timeout: 10000 });
@@ -119,17 +120,15 @@ test.describe('Template Feature Macros', () => {
     const schedulingCheckbox = page.locator('label:has-text("Enable Scheduling") input[type="checkbox"]').first();
     await expect(schedulingCheckbox).toBeVisible({ timeout: 5000 });
     if (!(await schedulingCheckbox.isChecked())) {
-      const autosaveEnableScheduling = waitForTemplateAutosave(page);
       await schedulingCheckbox.check();
-      await autosaveEnableScheduling;
+      await saveTemplate(page);
     }
     await expect(page.getByRole('heading', { name: /Start Date/i })).toBeVisible({ timeout: 10000 });
 
     // Disable scheduling
     if (await schedulingCheckbox.isChecked()) {
-      const autosaveDisableScheduling = waitForTemplateAutosave(page);
       await schedulingCheckbox.uncheck();
-      await autosaveDisableScheduling;
+      await saveTemplate(page);
     }
 
     // Verify after reload
@@ -165,9 +164,8 @@ test.describe('Template Feature Macros', () => {
     const schedulingCheckbox = page.locator('label:has-text("Enable Scheduling") input[type="checkbox"]').first();
     await expect(schedulingCheckbox).toBeVisible({ timeout: 5000 });
     if (!(await schedulingCheckbox.isChecked())) {
-      const autosaveLockedProperties = waitForTemplateAutosave(page);
       await schedulingCheckbox.check();
-      await autosaveLockedProperties;
+      await saveTemplate(page);
     }
 
     const startDateHeading = page.locator('h5', { hasText: 'Start Date' }).first();
@@ -178,7 +176,6 @@ test.describe('Template Feature Macros', () => {
     await startDateProp.click();
 
     // System-locked properties should show lock state and not expose delete action.
-    const startDateCard = page.locator('div').filter({ has: page.locator('h5:has-text("Start Date")') }).first();
-    await expect(startDateCard.locator('svg.lucide-trash-2')).toHaveCount(0);
+    await expect(startDateProp.locator('button')).toHaveCount(0);
   });
 });

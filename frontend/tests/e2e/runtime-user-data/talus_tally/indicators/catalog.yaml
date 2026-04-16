@@ -1,0 +1,2018 @@
+indicator_sets:
+  status:
+    description: Task/item status progress indicators
+    indicators:
+    - id: empty
+      file: status_empty.svg
+      description: Empty/pending state
+    - id: partial
+      file: status_partial.svg
+      description: Partially complete/in progress state
+    - id: filled
+      file: status_filled.svg
+      description: Fully complete/done state
+    - id: alert
+      file: status_alert.svg
+      description: Alert/blocked/error state
+    - id: low
+      file: status_priority.svg
+      description: Low priority state
+    - id: medium
+      file: status_priority.svg
+      description: Medium priority state
+    - id: high
+      file: status_priority.svg
+      description: High priority state
+    - id: Started
+      file: status_partial.svg
+      description: Started
+    - id: available
+      file: status_filled.svg
+      description: Avaiable
+    - id: academic-cap
+      file: academic-cap.svg
+      description: 'Status icon: academic cap'
+    - id: adjustments-horizontal
+      file: adjustments-horizontal.svg
+      description: 'Status icon: adjustments horizontal'
+    - id: adjustments-vertical
+      file: adjustments-vertical.svg
+      description: 'Status icon: adjustments vertical'
+    - id: archive-box
+      file: archive-box.svg
+      description: 'Status icon: archive box'
+    - id: archive-box-arrow-down
+      file: archive-box-arrow-down.svg
+      description: 'Status icon: archive box arrow down'
+    - id: archive-box-x-mark
+      file: archive-box-x-mark.svg
+      description: 'Status icon: archive box x mark'
+    - id: arrow-down
+      file: arrow-down.svg
+      description: 'Status icon: arrow down'
+    - id: arrow-down-circle
+      file: arrow-down-circle.svg
+      description: 'Status icon: arrow down circle'
+    - id: arrow-down-left
+      file: arrow-down-left.svg
+      description: 'Status icon: arrow down left'
+    - id: arrow-down-on-square
+      file: arrow-down-on-square.svg
+      description: 'Status icon: arrow down on square'
+    - id: arrow-down-on-square-stack
+      file: arrow-down-on-square-stack.svg
+      description: 'Status icon: arrow down on square stack'
+    - id: arrow-down-right
+      file: arrow-down-right.svg
+      description: 'Status icon: arrow down right'
+    - id: arrow-down-tray
+      file: arrow-down-tray.svg
+      description: 'Status icon: arrow down tray'
+    - id: arrow-left
+      file: arrow-left.svg
+      description: 'Status icon: arrow left'
+    - id: arrow-left-circle
+      file: arrow-left-circle.svg
+      description: 'Status icon: arrow left circle'
+    - id: arrow-left-end-on-rectangle
+      file: arrow-left-end-on-rectangle.svg
+      description: 'Status icon: arrow left end on rectangle'
+    - id: arrow-left-on-rectangle
+      file: arrow-left-on-rectangle.svg
+      description: 'Status icon: arrow left on rectangle'
+    - id: arrow-left-start-on-rectangle
+      file: arrow-left-start-on-rectangle.svg
+      description: 'Status icon: arrow left start on rectangle'
+    - id: arrow-long-down
+      file: arrow-long-down.svg
+      description: 'Status icon: arrow long down'
+    - id: arrow-long-left
+      file: arrow-long-left.svg
+      description: 'Status icon: arrow long left'
+    - id: arrow-long-right
+      file: arrow-long-right.svg
+      description: 'Status icon: arrow long right'
+    - id: arrow-long-up
+      file: arrow-long-up.svg
+      description: 'Status icon: arrow long up'
+    - id: arrow-path
+      file: arrow-path.svg
+      description: 'Status icon: arrow path'
+    - id: arrow-path-rounded-square
+      file: arrow-path-rounded-square.svg
+      description: 'Status icon: arrow path rounded square'
+    - id: arrow-right
+      file: arrow-right.svg
+      description: 'Status icon: arrow right'
+    - id: arrow-right-circle
+      file: arrow-right-circle.svg
+      description: 'Status icon: arrow right circle'
+    - id: arrow-right-end-on-rectangle
+      file: arrow-right-end-on-rectangle.svg
+      description: 'Status icon: arrow right end on rectangle'
+    - id: arrow-right-on-rectangle
+      file: arrow-right-on-rectangle.svg
+      description: 'Status icon: arrow right on rectangle'
+    - id: arrow-right-start-on-rectangle
+      file: arrow-right-start-on-rectangle.svg
+      description: 'Status icon: arrow right start on rectangle'
+    - id: arrow-small-down
+      file: arrow-small-down.svg
+      description: 'Status icon: arrow small down'
+    - id: arrow-small-left
+      file: arrow-small-left.svg
+      description: 'Status icon: arrow small left'
+    - id: arrow-small-right
+      file: arrow-small-right.svg
+      description: 'Status icon: arrow small right'
+    - id: arrow-small-up
+      file: arrow-small-up.svg
+      description: 'Status icon: arrow small up'
+    - id: arrow-top-right-on-square
+      file: arrow-top-right-on-square.svg
+      description: 'Status icon: arrow top right on square'
+    - id: arrow-trending-down
+      file: arrow-trending-down.svg
+      description: 'Status icon: arrow trending down'
+    - id: arrow-trending-up
+      file: arrow-trending-up.svg
+      description: 'Status icon: arrow trending up'
+    - id: arrow-turn-down-left
+      file: arrow-turn-down-left.svg
+      description: 'Status icon: arrow turn down left'
+    - id: arrow-turn-down-right
+      file: arrow-turn-down-right.svg
+      description: 'Status icon: arrow turn down right'
+    - id: arrow-turn-left-down
+      file: arrow-turn-left-down.svg
+      description: 'Status icon: arrow turn left down'
+    - id: arrow-turn-left-up
+      file: arrow-turn-left-up.svg
+      description: 'Status icon: arrow turn left up'
+    - id: arrow-turn-right-down
+      file: arrow-turn-right-down.svg
+      description: 'Status icon: arrow turn right down'
+    - id: arrow-turn-right-up
+      file: arrow-turn-right-up.svg
+      description: 'Status icon: arrow turn right up'
+    - id: arrow-turn-up-left
+      file: arrow-turn-up-left.svg
+      description: 'Status icon: arrow turn up left'
+    - id: arrow-turn-up-right
+      file: arrow-turn-up-right.svg
+      description: 'Status icon: arrow turn up right'
+    - id: arrow-up
+      file: arrow-up.svg
+      description: 'Status icon: arrow up'
+    - id: arrow-up-circle
+      file: arrow-up-circle.svg
+      description: 'Status icon: arrow up circle'
+    - id: arrow-up-left
+      file: arrow-up-left.svg
+      description: 'Status icon: arrow up left'
+    - id: arrow-up-on-square
+      file: arrow-up-on-square.svg
+      description: 'Status icon: arrow up on square'
+    - id: arrow-up-on-square-stack
+      file: arrow-up-on-square-stack.svg
+      description: 'Status icon: arrow up on square stack'
+    - id: arrow-up-right
+      file: arrow-up-right.svg
+      description: 'Status icon: arrow up right'
+    - id: arrow-up-tray
+      file: arrow-up-tray.svg
+      description: 'Status icon: arrow up tray'
+    - id: arrow-uturn-down
+      file: arrow-uturn-down.svg
+      description: 'Status icon: arrow uturn down'
+    - id: arrow-uturn-left
+      file: arrow-uturn-left.svg
+      description: 'Status icon: arrow uturn left'
+    - id: arrow-uturn-right
+      file: arrow-uturn-right.svg
+      description: 'Status icon: arrow uturn right'
+    - id: arrow-uturn-up
+      file: arrow-uturn-up.svg
+      description: 'Status icon: arrow uturn up'
+    - id: arrows-pointing-in
+      file: arrows-pointing-in.svg
+      description: 'Status icon: arrows pointing in'
+    - id: arrows-pointing-out
+      file: arrows-pointing-out.svg
+      description: 'Status icon: arrows pointing out'
+    - id: arrows-right-left
+      file: arrows-right-left.svg
+      description: 'Status icon: arrows right left'
+    - id: arrows-up-down
+      file: arrows-up-down.svg
+      description: 'Status icon: arrows up down'
+    - id: at-symbol
+      file: at-symbol.svg
+      description: 'Status icon: at symbol'
+    - id: backspace
+      file: backspace.svg
+      description: 'Status icon: backspace'
+    - id: backward
+      file: backward.svg
+      description: 'Status icon: backward'
+    - id: banknotes
+      file: banknotes.svg
+      description: 'Status icon: banknotes'
+    - id: bars-2
+      file: bars-2.svg
+      description: 'Status icon: bars 2'
+    - id: bars-3
+      file: bars-3.svg
+      description: 'Status icon: bars 3'
+    - id: bars-3-bottom-left
+      file: bars-3-bottom-left.svg
+      description: 'Status icon: bars 3 bottom left'
+    - id: bars-3-bottom-right
+      file: bars-3-bottom-right.svg
+      description: 'Status icon: bars 3 bottom right'
+    - id: bars-3-center-left
+      file: bars-3-center-left.svg
+      description: 'Status icon: bars 3 center left'
+    - id: bars-4
+      file: bars-4.svg
+      description: 'Status icon: bars 4'
+    - id: bars-arrow-down
+      file: bars-arrow-down.svg
+      description: 'Status icon: bars arrow down'
+    - id: bars-arrow-up
+      file: bars-arrow-up.svg
+      description: 'Status icon: bars arrow up'
+    - id: battery-0
+      file: battery-0.svg
+      description: 'Status icon: battery 0'
+    - id: battery-100
+      file: battery-100.svg
+      description: 'Status icon: battery 100'
+    - id: battery-50
+      file: battery-50.svg
+      description: 'Status icon: battery 50'
+    - id: beaker
+      file: beaker.svg
+      description: 'Status icon: beaker'
+    - id: bell
+      file: bell.svg
+      description: 'Status icon: bell'
+    - id: bell-alert
+      file: bell-alert.svg
+      description: 'Status icon: bell alert'
+    - id: bell-slash
+      file: bell-slash.svg
+      description: 'Status icon: bell slash'
+    - id: bell-snooze
+      file: bell-snooze.svg
+      description: 'Status icon: bell snooze'
+    - id: bold
+      file: bold.svg
+      description: 'Status icon: bold'
+    - id: bolt
+      file: bolt.svg
+      description: 'Status icon: bolt'
+    - id: bolt-slash
+      file: bolt-slash.svg
+      description: 'Status icon: bolt slash'
+    - id: book-open
+      file: book-open.svg
+      description: 'Status icon: book open'
+    - id: bookmark
+      file: bookmark.svg
+      description: 'Status icon: bookmark'
+    - id: bookmark-slash
+      file: bookmark-slash.svg
+      description: 'Status icon: bookmark slash'
+    - id: bookmark-square
+      file: bookmark-square.svg
+      description: 'Status icon: bookmark square'
+    - id: briefcase
+      file: briefcase.svg
+      description: 'Status icon: briefcase'
+    - id: bug-ant
+      file: bug-ant.svg
+      description: 'Status icon: bug ant'
+    - id: building-library
+      file: building-library.svg
+      description: 'Status icon: building library'
+    - id: building-office
+      file: building-office.svg
+      description: 'Status icon: building office'
+    - id: building-office-2
+      file: building-office-2.svg
+      description: 'Status icon: building office 2'
+    - id: building-storefront
+      file: building-storefront.svg
+      description: 'Status icon: building storefront'
+    - id: cake
+      file: cake.svg
+      description: 'Status icon: cake'
+    - id: calculator
+      file: calculator.svg
+      description: 'Status icon: calculator'
+    - id: calendar
+      file: calendar.svg
+      description: 'Status icon: calendar'
+    - id: calendar-date-range
+      file: calendar-date-range.svg
+      description: 'Status icon: calendar date range'
+    - id: calendar-days
+      file: calendar-days.svg
+      description: 'Status icon: calendar days'
+    - id: camera
+      file: camera.svg
+      description: 'Status icon: camera'
+    - id: chart-bar
+      file: chart-bar.svg
+      description: 'Status icon: chart bar'
+    - id: chart-bar-square
+      file: chart-bar-square.svg
+      description: 'Status icon: chart bar square'
+    - id: chart-pie
+      file: chart-pie.svg
+      description: 'Status icon: chart pie'
+    - id: chat-bubble-bottom-center
+      file: chat-bubble-bottom-center.svg
+      description: 'Status icon: chat bubble bottom center'
+    - id: chat-bubble-bottom-center-text
+      file: chat-bubble-bottom-center-text.svg
+      description: 'Status icon: chat bubble bottom center text'
+    - id: chat-bubble-left
+      file: chat-bubble-left.svg
+      description: 'Status icon: chat bubble left'
+    - id: chat-bubble-left-ellipsis
+      file: chat-bubble-left-ellipsis.svg
+      description: 'Status icon: chat bubble left ellipsis'
+    - id: chat-bubble-left-right
+      file: chat-bubble-left-right.svg
+      description: 'Status icon: chat bubble left right'
+    - id: chat-bubble-oval-left
+      file: chat-bubble-oval-left.svg
+      description: 'Status icon: chat bubble oval left'
+    - id: chat-bubble-oval-left-ellipsis
+      file: chat-bubble-oval-left-ellipsis.svg
+      description: 'Status icon: chat bubble oval left ellipsis'
+    - id: check
+      file: check.svg
+      description: 'Status icon: check'
+    - id: check-badge
+      file: check-badge.svg
+      description: 'Status icon: check badge'
+    - id: check-circle
+      file: check-circle.svg
+      description: 'Status icon: check circle'
+    - id: chevron-double-down
+      file: chevron-double-down.svg
+      description: 'Status icon: chevron double down'
+    - id: chevron-double-left
+      file: chevron-double-left.svg
+      description: 'Status icon: chevron double left'
+    - id: chevron-double-right
+      file: chevron-double-right.svg
+      description: 'Status icon: chevron double right'
+    - id: chevron-double-up
+      file: chevron-double-up.svg
+      description: 'Status icon: chevron double up'
+    - id: chevron-down
+      file: chevron-down.svg
+      description: 'Status icon: chevron down'
+    - id: chevron-left
+      file: chevron-left.svg
+      description: 'Status icon: chevron left'
+    - id: chevron-right
+      file: chevron-right.svg
+      description: 'Status icon: chevron right'
+    - id: chevron-up
+      file: chevron-up.svg
+      description: 'Status icon: chevron up'
+    - id: chevron-up-down
+      file: chevron-up-down.svg
+      description: 'Status icon: chevron up down'
+    - id: circle-stack
+      file: circle-stack.svg
+      description: 'Status icon: circle stack'
+    - id: clipboard
+      file: clipboard.svg
+      description: 'Status icon: clipboard'
+    - id: clipboard-document
+      file: clipboard-document.svg
+      description: 'Status icon: clipboard document'
+    - id: clipboard-document-check
+      file: clipboard-document-check.svg
+      description: 'Status icon: clipboard document check'
+    - id: clipboard-document-list
+      file: clipboard-document-list.svg
+      description: 'Status icon: clipboard document list'
+    - id: clock
+      file: clock.svg
+      description: 'Status icon: clock'
+    - id: cloud
+      file: cloud.svg
+      description: 'Status icon: cloud'
+    - id: cloud-arrow-down
+      file: cloud-arrow-down.svg
+      description: 'Status icon: cloud arrow down'
+    - id: cloud-arrow-up
+      file: cloud-arrow-up.svg
+      description: 'Status icon: cloud arrow up'
+    - id: code-bracket
+      file: code-bracket.svg
+      description: 'Status icon: code bracket'
+    - id: code-bracket-square
+      file: code-bracket-square.svg
+      description: 'Status icon: code bracket square'
+    - id: cog
+      file: cog.svg
+      description: 'Status icon: cog'
+    - id: cog-6-tooth
+      file: cog-6-tooth.svg
+      description: 'Status icon: cog 6 tooth'
+    - id: cog-8-tooth
+      file: cog-8-tooth.svg
+      description: 'Status icon: cog 8 tooth'
+    - id: command-line
+      file: command-line.svg
+      description: 'Status icon: command line'
+    - id: computer-desktop
+      file: computer-desktop.svg
+      description: 'Status icon: computer desktop'
+    - id: cpu-chip
+      file: cpu-chip.svg
+      description: 'Status icon: cpu chip'
+    - id: credit-card
+      file: credit-card.svg
+      description: 'Status icon: credit card'
+    - id: cube
+      file: cube.svg
+      description: 'Status icon: cube'
+    - id: cube-transparent
+      file: cube-transparent.svg
+      description: 'Status icon: cube transparent'
+    - id: currency-bangladeshi
+      file: currency-bangladeshi.svg
+      description: 'Status icon: currency bangladeshi'
+    - id: currency-dollar
+      file: currency-dollar.svg
+      description: 'Status icon: currency dollar'
+    - id: currency-euro
+      file: currency-euro.svg
+      description: 'Status icon: currency euro'
+    - id: currency-pound
+      file: currency-pound.svg
+      description: 'Status icon: currency pound'
+    - id: currency-rupee
+      file: currency-rupee.svg
+      description: 'Status icon: currency rupee'
+    - id: currency-yen
+      file: currency-yen.svg
+      description: 'Status icon: currency yen'
+    - id: cursor-arrow-rays
+      file: cursor-arrow-rays.svg
+      description: 'Status icon: cursor arrow rays'
+    - id: cursor-arrow-ripple
+      file: cursor-arrow-ripple.svg
+      description: 'Status icon: cursor arrow ripple'
+    - id: device-phone-mobile
+      file: device-phone-mobile.svg
+      description: 'Status icon: device phone mobile'
+    - id: device-tablet
+      file: device-tablet.svg
+      description: 'Status icon: device tablet'
+    - id: divide
+      file: divide.svg
+      description: 'Status icon: divide'
+    - id: document
+      file: document.svg
+      description: 'Status icon: document'
+    - id: document-arrow-down
+      file: document-arrow-down.svg
+      description: 'Status icon: document arrow down'
+    - id: document-arrow-up
+      file: document-arrow-up.svg
+      description: 'Status icon: document arrow up'
+    - id: document-chart-bar
+      file: document-chart-bar.svg
+      description: 'Status icon: document chart bar'
+    - id: document-check
+      file: document-check.svg
+      description: 'Status icon: document check'
+    - id: document-currency-bangladeshi
+      file: document-currency-bangladeshi.svg
+      description: 'Status icon: document currency bangladeshi'
+    - id: document-currency-dollar
+      file: document-currency-dollar.svg
+      description: 'Status icon: document currency dollar'
+    - id: document-currency-euro
+      file: document-currency-euro.svg
+      description: 'Status icon: document currency euro'
+    - id: document-currency-pound
+      file: document-currency-pound.svg
+      description: 'Status icon: document currency pound'
+    - id: document-currency-rupee
+      file: document-currency-rupee.svg
+      description: 'Status icon: document currency rupee'
+    - id: document-currency-yen
+      file: document-currency-yen.svg
+      description: 'Status icon: document currency yen'
+    - id: document-duplicate
+      file: document-duplicate.svg
+      description: 'Status icon: document duplicate'
+    - id: document-magnifying-glass
+      file: document-magnifying-glass.svg
+      description: 'Status icon: document magnifying glass'
+    - id: document-minus
+      file: document-minus.svg
+      description: 'Status icon: document minus'
+    - id: document-plus
+      file: document-plus.svg
+      description: 'Status icon: document plus'
+    - id: document-text
+      file: document-text.svg
+      description: 'Status icon: document text'
+    - id: ellipsis-horizontal
+      file: ellipsis-horizontal.svg
+      description: 'Status icon: ellipsis horizontal'
+    - id: ellipsis-horizontal-circle
+      file: ellipsis-horizontal-circle.svg
+      description: 'Status icon: ellipsis horizontal circle'
+    - id: ellipsis-vertical
+      file: ellipsis-vertical.svg
+      description: 'Status icon: ellipsis vertical'
+    - id: envelope
+      file: envelope.svg
+      description: 'Status icon: envelope'
+    - id: envelope-open
+      file: envelope-open.svg
+      description: 'Status icon: envelope open'
+    - id: equals
+      file: equals.svg
+      description: 'Status icon: equals'
+    - id: exclamation-circle
+      file: exclamation-circle.svg
+      description: 'Status icon: exclamation circle'
+    - id: exclamation-triangle
+      file: exclamation-triangle.svg
+      description: 'Status icon: exclamation triangle'
+    - id: eye
+      file: eye.svg
+      description: 'Status icon: eye'
+    - id: eye-dropper
+      file: eye-dropper.svg
+      description: 'Status icon: eye dropper'
+    - id: eye-slash
+      file: eye-slash.svg
+      description: 'Status icon: eye slash'
+    - id: face-frown
+      file: face-frown.svg
+      description: 'Status icon: face frown'
+    - id: face-smile
+      file: face-smile.svg
+      description: 'Status icon: face smile'
+    - id: film
+      file: film.svg
+      description: 'Status icon: film'
+    - id: finger-print
+      file: finger-print.svg
+      description: 'Status icon: finger print'
+    - id: fire
+      file: fire.svg
+      description: 'Status icon: fire'
+    - id: flag
+      file: flag.svg
+      description: 'Status icon: flag'
+    - id: folder
+      file: folder.svg
+      description: 'Status icon: folder'
+    - id: folder-arrow-down
+      file: folder-arrow-down.svg
+      description: 'Status icon: folder arrow down'
+    - id: folder-minus
+      file: folder-minus.svg
+      description: 'Status icon: folder minus'
+    - id: folder-open
+      file: folder-open.svg
+      description: 'Status icon: folder open'
+    - id: folder-plus
+      file: folder-plus.svg
+      description: 'Status icon: folder plus'
+    - id: forward
+      file: forward.svg
+      description: 'Status icon: forward'
+    - id: funnel
+      file: funnel.svg
+      description: 'Status icon: funnel'
+    - id: gif
+      file: gif.svg
+      description: 'Status icon: gif'
+    - id: gift
+      file: gift.svg
+      description: 'Status icon: gift'
+    - id: gift-top
+      file: gift-top.svg
+      description: 'Status icon: gift top'
+    - id: globe-alt
+      file: globe-alt.svg
+      description: 'Status icon: globe alt'
+    - id: globe-americas
+      file: globe-americas.svg
+      description: 'Status icon: globe americas'
+    - id: globe-asia-australia
+      file: globe-asia-australia.svg
+      description: 'Status icon: globe asia australia'
+    - id: globe-europe-africa
+      file: globe-europe-africa.svg
+      description: 'Status icon: globe europe africa'
+    - id: h1
+      file: h1.svg
+      description: 'Status icon: h1'
+    - id: h2
+      file: h2.svg
+      description: 'Status icon: h2'
+    - id: h3
+      file: h3.svg
+      description: 'Status icon: h3'
+    - id: hand-raised
+      file: hand-raised.svg
+      description: 'Status icon: hand raised'
+    - id: hand-thumb-down
+      file: hand-thumb-down.svg
+      description: 'Status icon: hand thumb down'
+    - id: hand-thumb-up
+      file: hand-thumb-up.svg
+      description: 'Status icon: hand thumb up'
+    - id: hashtag
+      file: hashtag.svg
+      description: 'Status icon: hashtag'
+    - id: heart
+      file: heart.svg
+      description: 'Status icon: heart'
+    - id: home
+      file: home.svg
+      description: 'Status icon: home'
+    - id: home-modern
+      file: home-modern.svg
+      description: 'Status icon: home modern'
+    - id: identification
+      file: identification.svg
+      description: 'Status icon: identification'
+    - id: inbox
+      file: inbox.svg
+      description: 'Status icon: inbox'
+    - id: inbox-arrow-down
+      file: inbox-arrow-down.svg
+      description: 'Status icon: inbox arrow down'
+    - id: inbox-stack
+      file: inbox-stack.svg
+      description: 'Status icon: inbox stack'
+    - id: information-circle
+      file: information-circle.svg
+      description: 'Status icon: information circle'
+    - id: italic
+      file: italic.svg
+      description: 'Status icon: italic'
+    - id: key
+      file: key.svg
+      description: 'Status icon: key'
+    - id: language
+      file: language.svg
+      description: 'Status icon: language'
+    - id: lifebuoy
+      file: lifebuoy.svg
+      description: 'Status icon: lifebuoy'
+    - id: light-bulb
+      file: light-bulb.svg
+      description: 'Status icon: light bulb'
+    - id: link
+      file: link.svg
+      description: 'Status icon: link'
+    - id: link-slash
+      file: link-slash.svg
+      description: 'Status icon: link slash'
+    - id: list-bullet
+      file: list-bullet.svg
+      description: 'Status icon: list bullet'
+    - id: lock-closed
+      file: lock-closed.svg
+      description: 'Status icon: lock closed'
+    - id: lock-open
+      file: lock-open.svg
+      description: 'Status icon: lock open'
+    - id: magnifying-glass
+      file: magnifying-glass.svg
+      description: 'Status icon: magnifying glass'
+    - id: magnifying-glass-circle
+      file: magnifying-glass-circle.svg
+      description: 'Status icon: magnifying glass circle'
+    - id: magnifying-glass-minus
+      file: magnifying-glass-minus.svg
+      description: 'Status icon: magnifying glass minus'
+    - id: magnifying-glass-plus
+      file: magnifying-glass-plus.svg
+      description: 'Status icon: magnifying glass plus'
+    - id: map
+      file: map.svg
+      description: 'Status icon: map'
+    - id: map-pin
+      file: map-pin.svg
+      description: 'Status icon: map pin'
+    - id: megaphone
+      file: megaphone.svg
+      description: 'Status icon: megaphone'
+    - id: microphone
+      file: microphone.svg
+      description: 'Status icon: microphone'
+    - id: minus
+      file: minus.svg
+      description: 'Status icon: minus'
+    - id: minus-circle
+      file: minus-circle.svg
+      description: 'Status icon: minus circle'
+    - id: minus-small
+      file: minus-small.svg
+      description: 'Status icon: minus small'
+    - id: moon
+      file: moon.svg
+      description: 'Status icon: moon'
+    - id: musical-note
+      file: musical-note.svg
+      description: 'Status icon: musical note'
+    - id: newspaper
+      file: newspaper.svg
+      description: 'Status icon: newspaper'
+    - id: no-symbol
+      file: no-symbol.svg
+      description: 'Status icon: no symbol'
+    - id: numbered-list
+      file: numbered-list.svg
+      description: 'Status icon: numbered list'
+    - id: paint-brush
+      file: paint-brush.svg
+      description: 'Status icon: paint brush'
+    - id: paper-airplane
+      file: paper-airplane.svg
+      description: 'Status icon: paper airplane'
+    - id: paper-clip
+      file: paper-clip.svg
+      description: 'Status icon: paper clip'
+    - id: pause
+      file: pause.svg
+      description: 'Status icon: pause'
+    - id: pause-circle
+      file: pause-circle.svg
+      description: 'Status icon: pause circle'
+    - id: pencil
+      file: pencil.svg
+      description: 'Status icon: pencil'
+    - id: pencil-square
+      file: pencil-square.svg
+      description: 'Status icon: pencil square'
+    - id: percent-badge
+      file: percent-badge.svg
+      description: 'Status icon: percent badge'
+    - id: phone
+      file: phone.svg
+      description: 'Status icon: phone'
+    - id: phone-arrow-down-left
+      file: phone-arrow-down-left.svg
+      description: 'Status icon: phone arrow down left'
+    - id: phone-arrow-up-right
+      file: phone-arrow-up-right.svg
+      description: 'Status icon: phone arrow up right'
+    - id: phone-x-mark
+      file: phone-x-mark.svg
+      description: 'Status icon: phone x mark'
+    - id: photo
+      file: photo.svg
+      description: 'Status icon: photo'
+    - id: play
+      file: play.svg
+      description: 'Status icon: play'
+    - id: play-circle
+      file: play-circle.svg
+      description: 'Status icon: play circle'
+    - id: play-pause
+      file: play-pause.svg
+      description: 'Status icon: play pause'
+    - id: plus
+      file: plus.svg
+      description: 'Status icon: plus'
+    - id: plus-circle
+      file: plus-circle.svg
+      description: 'Status icon: plus circle'
+    - id: plus-small
+      file: plus-small.svg
+      description: 'Status icon: plus small'
+    - id: power
+      file: power.svg
+      description: 'Status icon: power'
+    - id: presentation-chart-bar
+      file: presentation-chart-bar.svg
+      description: 'Status icon: presentation chart bar'
+    - id: presentation-chart-line
+      file: presentation-chart-line.svg
+      description: 'Status icon: presentation chart line'
+    - id: printer
+      file: printer.svg
+      description: 'Status icon: printer'
+    - id: puzzle-piece
+      file: puzzle-piece.svg
+      description: 'Status icon: puzzle piece'
+    - id: qr-code
+      file: qr-code.svg
+      description: 'Status icon: qr code'
+    - id: question-mark-circle
+      file: question-mark-circle.svg
+      description: 'Status icon: question mark circle'
+    - id: queue-list
+      file: queue-list.svg
+      description: 'Status icon: queue list'
+    - id: radio
+      file: radio.svg
+      description: 'Status icon: radio'
+    - id: receipt-percent
+      file: receipt-percent.svg
+      description: 'Status icon: receipt percent'
+    - id: receipt-refund
+      file: receipt-refund.svg
+      description: 'Status icon: receipt refund'
+    - id: rectangle-group
+      file: rectangle-group.svg
+      description: 'Status icon: rectangle group'
+    - id: rectangle-stack
+      file: rectangle-stack.svg
+      description: 'Status icon: rectangle stack'
+    - id: rocket-launch
+      file: rocket-launch.svg
+      description: 'Status icon: rocket launch'
+    - id: rss
+      file: rss.svg
+      description: 'Status icon: rss'
+    - id: scale
+      file: scale.svg
+      description: 'Status icon: scale'
+    - id: scissors
+      file: scissors.svg
+      description: 'Status icon: scissors'
+    - id: server
+      file: server.svg
+      description: 'Status icon: server'
+    - id: server-stack
+      file: server-stack.svg
+      description: 'Status icon: server stack'
+    - id: share
+      file: share.svg
+      description: 'Status icon: share'
+    - id: shield-check
+      file: shield-check.svg
+      description: 'Status icon: shield check'
+    - id: shield-exclamation
+      file: shield-exclamation.svg
+      description: 'Status icon: shield exclamation'
+    - id: shopping-bag
+      file: shopping-bag.svg
+      description: 'Status icon: shopping bag'
+    - id: shopping-cart
+      file: shopping-cart.svg
+      description: 'Status icon: shopping cart'
+    - id: signal
+      file: signal.svg
+      description: 'Status icon: signal'
+    - id: signal-slash
+      file: signal-slash.svg
+      description: 'Status icon: signal slash'
+    - id: slash
+      file: slash.svg
+      description: 'Status icon: slash'
+    - id: sparkles
+      file: sparkles.svg
+      description: 'Status icon: sparkles'
+    - id: speaker-wave
+      file: speaker-wave.svg
+      description: 'Status icon: speaker wave'
+    - id: speaker-x-mark
+      file: speaker-x-mark.svg
+      description: 'Status icon: speaker x mark'
+    - id: square-2-stack
+      file: square-2-stack.svg
+      description: 'Status icon: square 2 stack'
+    - id: square-3-stack-3d
+      file: square-3-stack-3d.svg
+      description: 'Status icon: square 3 stack 3d'
+    - id: squares-2x2
+      file: squares-2x2.svg
+      description: 'Status icon: squares 2x2'
+    - id: squares-plus
+      file: squares-plus.svg
+      description: 'Status icon: squares plus'
+    - id: star
+      file: star.svg
+      description: 'Status icon: star'
+    - id: stop
+      file: stop.svg
+      description: 'Status icon: stop'
+    - id: stop-circle
+      file: stop-circle.svg
+      description: 'Status icon: stop circle'
+    - id: strikethrough
+      file: strikethrough.svg
+      description: 'Status icon: strikethrough'
+    - id: sun
+      file: sun.svg
+      description: 'Status icon: sun'
+    - id: swatch
+      file: swatch.svg
+      description: 'Status icon: swatch'
+    - id: table-cells
+      file: table-cells.svg
+      description: 'Status icon: table cells'
+    - id: tag
+      file: tag.svg
+      description: 'Status icon: tag'
+    - id: ticket
+      file: ticket.svg
+      description: 'Status icon: ticket'
+    - id: trash
+      file: trash.svg
+      description: 'Status icon: trash'
+    - id: trophy
+      file: trophy.svg
+      description: 'Status icon: trophy'
+    - id: truck
+      file: truck.svg
+      description: 'Status icon: truck'
+    - id: tv
+      file: tv.svg
+      description: 'Status icon: tv'
+    - id: underline
+      file: underline.svg
+      description: 'Status icon: underline'
+    - id: user
+      file: user.svg
+      description: 'Status icon: user'
+    - id: user-circle
+      file: user-circle.svg
+      description: 'Status icon: user circle'
+    - id: user-group
+      file: user-group.svg
+      description: 'Status icon: user group'
+    - id: user-minus
+      file: user-minus.svg
+      description: 'Status icon: user minus'
+    - id: user-plus
+      file: user-plus.svg
+      description: 'Status icon: user plus'
+    - id: users
+      file: users.svg
+      description: 'Status icon: users'
+    - id: variable
+      file: variable.svg
+      description: 'Status icon: variable'
+    - id: video-camera
+      file: video-camera.svg
+      description: 'Status icon: video camera'
+    - id: video-camera-slash
+      file: video-camera-slash.svg
+      description: 'Status icon: video camera slash'
+    - id: view-columns
+      file: view-columns.svg
+      description: 'Status icon: view columns'
+    - id: viewfinder-circle
+      file: viewfinder-circle.svg
+      description: 'Status icon: viewfinder circle'
+    - id: wallet
+      file: wallet.svg
+      description: 'Status icon: wallet'
+    - id: wifi
+      file: wifi.svg
+      description: 'Status icon: wifi'
+    - id: window
+      file: window.svg
+      description: 'Status icon: window'
+    - id: wrench
+      file: wrench.svg
+      description: 'Status icon: wrench'
+    - id: wrench-screwdriver
+      file: wrench-screwdriver.svg
+      description: 'Status icon: wrench screwdriver'
+    - id: x-circle
+      file: x-circle.svg
+      description: 'Status icon: x circle'
+    - id: x-mark
+      file: x-mark.svg
+      description: 'Status icon: x mark'
+    style_guide: 'SVG Format:
+
+      - 24x24 viewBox
+
+      - Stroke-based (no fills)
+
+      - 2px stroke width
+
+      - Single path for simplicity
+
+      - Colors applied programmatically via stroke attribute
+
+      '
+    default_theme:
+      empty:
+        indicator_color: '#888888'
+        text_color: '#888888'
+      partial:
+        indicator_color: '#4A90E2'
+        text_color: '#4A90E2'
+        text_style: bold
+      filled:
+        indicator_color: '#7ED321'
+        text_color: '#7ED321'
+        text_style: strikethrough
+      alert:
+        indicator_color: '#F5A623'
+        text_color: '#F5A623'
+      low:
+        indicator_color: '#7ED321'
+        text_color: '#7ED321'
+      medium:
+        indicator_color: '#F5A623'
+        text_color: '#F5A623'
+      high:
+        indicator_color: '#D0021B'
+        text_color: '#D0021B'
+      Started:
+        indicator_color: '#26a269'
+        text_color: '#33d17a'
+      available:
+        indicator_color: '#28a745'
+        text_color: '#28a745'
+      academic-cap:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      adjustments-horizontal:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      adjustments-vertical:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      archive-box-arrow-down:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      archive-box-x-mark:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      archive-box:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-down-circle:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-down-left:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-down-on-square-stack:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-down-on-square:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-down-right:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-down-tray:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-down:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-left-circle:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-left-end-on-rectangle:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-left-on-rectangle:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-left-start-on-rectangle:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-left:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-long-down:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-long-left:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-long-right:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-long-up:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-path-rounded-square:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-path:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-right-circle:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-right-end-on-rectangle:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-right-on-rectangle:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-right-start-on-rectangle:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-right:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-small-down:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-small-left:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-small-right:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-small-up:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-top-right-on-square:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-trending-down:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-trending-up:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-turn-down-left:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-turn-down-right:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-turn-left-down:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-turn-left-up:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-turn-right-down:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-turn-right-up:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-turn-up-left:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-turn-up-right:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-up-circle:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-up-left:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-up-on-square-stack:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-up-on-square:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-up-right:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-up-tray:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-up:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-uturn-down:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-uturn-left:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-uturn-right:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrow-uturn-up:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrows-pointing-in:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrows-pointing-out:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrows-right-left:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      arrows-up-down:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      at-symbol:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      backspace:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      backward:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      banknotes:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      bars-2:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      bars-3-bottom-left:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      bars-3-bottom-right:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      bars-3-center-left:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      bars-3:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      bars-4:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      bars-arrow-down:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      bars-arrow-up:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      battery-0:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      battery-100:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      battery-50:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      beaker:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      bell-alert:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      bell-slash:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      bell-snooze:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      bell:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      bold:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      bolt-slash:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      bolt:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      book-open:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      bookmark-slash:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      bookmark-square:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      bookmark:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      briefcase:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      bug-ant:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      building-library:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      building-office-2:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      building-office:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      building-storefront:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      cake:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      calculator:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      calendar-date-range:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      calendar-days:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      calendar:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      camera:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      chart-bar-square:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      chart-bar:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      chart-pie:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      chat-bubble-bottom-center-text:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      chat-bubble-bottom-center:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      chat-bubble-left-ellipsis:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      chat-bubble-left-right:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      chat-bubble-left:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      chat-bubble-oval-left-ellipsis:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      chat-bubble-oval-left:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      check-badge:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      check-circle:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      check:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      chevron-double-down:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      chevron-double-left:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      chevron-double-right:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      chevron-double-up:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      chevron-down:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      chevron-left:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      chevron-right:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      chevron-up-down:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      chevron-up:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      circle-stack:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      clipboard-document-check:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      clipboard-document-list:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      clipboard-document:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      clipboard:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      clock:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      cloud-arrow-down:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      cloud-arrow-up:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      cloud:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      code-bracket-square:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      code-bracket:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      cog-6-tooth:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      cog-8-tooth:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      cog:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      command-line:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      computer-desktop:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      cpu-chip:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      credit-card:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      cube-transparent:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      cube:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      currency-bangladeshi:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      currency-dollar:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      currency-euro:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      currency-pound:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      currency-rupee:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      currency-yen:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      cursor-arrow-rays:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      cursor-arrow-ripple:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      device-phone-mobile:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      device-tablet:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      divide:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      document-arrow-down:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      document-arrow-up:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      document-chart-bar:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      document-check:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      document-currency-bangladeshi:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      document-currency-dollar:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      document-currency-euro:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      document-currency-pound:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      document-currency-rupee:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      document-currency-yen:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      document-duplicate:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      document-magnifying-glass:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      document-minus:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      document-plus:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      document-text:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      document:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      ellipsis-horizontal-circle:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      ellipsis-horizontal:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      ellipsis-vertical:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      envelope-open:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      envelope:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      equals:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      exclamation-circle:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      exclamation-triangle:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      eye-dropper:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      eye-slash:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      eye:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      face-frown:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      face-smile:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      film:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      finger-print:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      fire:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      flag:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      folder-arrow-down:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      folder-minus:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      folder-open:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      folder-plus:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      folder:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      forward:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      funnel:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      gif:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      gift-top:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      gift:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      globe-alt:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      globe-americas:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      globe-asia-australia:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      globe-europe-africa:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      h1:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      h2:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      h3:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      hand-raised:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      hand-thumb-down:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      hand-thumb-up:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      hashtag:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      heart:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      home-modern:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      home:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      identification:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      inbox-arrow-down:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      inbox-stack:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      inbox:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      information-circle:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      italic:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      key:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      language:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      lifebuoy:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      light-bulb:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      link-slash:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      link:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      list-bullet:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      lock-closed:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      lock-open:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      magnifying-glass-circle:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      magnifying-glass-minus:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      magnifying-glass-plus:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      magnifying-glass:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      map-pin:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      map:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      megaphone:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      microphone:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      minus-circle:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      minus-small:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      minus:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      moon:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      musical-note:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      newspaper:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      no-symbol:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      numbered-list:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      paint-brush:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      paper-airplane:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      paper-clip:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      pause-circle:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      pause:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      pencil-square:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      pencil:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      percent-badge:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      phone-arrow-down-left:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      phone-arrow-up-right:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      phone-x-mark:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      phone:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      photo:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      play-circle:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      play-pause:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      play:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      plus-circle:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      plus-small:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      plus:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      power:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      presentation-chart-bar:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      presentation-chart-line:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      printer:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      puzzle-piece:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      qr-code:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      question-mark-circle:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      queue-list:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      radio:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      receipt-percent:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      receipt-refund:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      rectangle-group:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      rectangle-stack:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      rocket-launch:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      rss:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      scale:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      scissors:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      server-stack:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      server:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      share:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      shield-check:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      shield-exclamation:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      shopping-bag:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      shopping-cart:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      signal-slash:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      signal:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      slash:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      sparkles:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      speaker-wave:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      speaker-x-mark:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      square-2-stack:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      square-3-stack-3d:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      squares-2x2:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      squares-plus:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      star:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      stop-circle:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      stop:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      strikethrough:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      sun:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      swatch:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      table-cells:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      tag:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      ticket:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      trash:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      trophy:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      truck:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      tv:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      underline:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      user-circle:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      user-group:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      user-minus:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      user-plus:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      user:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      users:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      variable:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      video-camera-slash:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      video-camera:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      view-columns:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      viewfinder-circle:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      wallet:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      wifi:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      window:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      wrench-screwdriver:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      wrench:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      x-circle:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'
+      x-mark:
+        indicator_color: '#6B7280'
+        text_color: '#6B7280'

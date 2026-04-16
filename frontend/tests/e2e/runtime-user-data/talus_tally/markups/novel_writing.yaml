@@ -1,0 +1,115 @@
+id: novel_writing
+label: Novel/Creative Writing
+description: "Formatting tokens for novel, short story, and creative writing projects"
+
+tokens:
+  # Chapter heading
+  - id: chapter
+    label: Chapter
+    prefix: "CHAPTER"
+    format_scope: "line"
+    format:
+      text_transform: "uppercase"
+      bold: true
+      font_size: "1.5em"
+      align: "center"
+
+  # Section break/part
+  - id: section
+    label: Section
+    prefix: "---"
+    format_scope: "line"
+    format:
+      align: "center"
+
+  # Dialogue - standard novel format
+  - id: dialogue
+    label: Dialogue
+    prefix: ""
+    format_scope: "line"
+
+  # Interior monologue - italic
+  - id: thought
+    label: Internal Thought
+    prefix: "*"
+    format_scope: "line"
+    format:
+      italic: true
+
+  # Emphasis in narrative
+  - id: emphasis
+    label: Emphasis
+    prefix: "~"
+    format_scope: "prefix"
+    format:
+      bold: true
+      italic: true
+
+  # Scene break
+  - id: scene_break
+    label: Scene Break
+    prefix: "# # #"
+    format_scope: "line"
+    format:
+      align: "center"
+
+  # Time transition
+  - id: time_skip
+    label: Time Transition"
+    prefix: "[TIME SKIP]"
+    format_scope: "line"
+    format:
+      italic: true
+      align: "center"
+
+  # Dream/Flashback
+  - id: dream
+    label: Dream/Memory
+    prefix: "[DREAM]"
+    format_scope: "line"
+    format:
+      italic: true
+      bold: false
+
+  # Character introduction/description
+  - id: character_intro
+    label: Char. Introduction
+    prefix: "[CHARACTER]"
+    format_scope: "line"
+    format:
+      bold: true
+
+  # Important plot point
+  - id: plot_point
+    label: Plot Point
+    prefix: "***"
+    format_scope: "line"
+    format:
+      bold: true
+      color: "#E63946"
+
+  # Comment/author note
+  - id: author_note
+    label: Author Note"
+    prefix: "[NOTE]"
+    format_scope: "line"
+    format:
+      italic: true
+      color: "#999999"
+
+  # Foreshadowing marker
+  - id: foreshadow
+    label: Foreshadowing
+    prefix: "[FORESHADOW]"
+    format_scope: "line"
+    format:
+      italic: true
+      bold: true
+
+  # Callback/Reference to earlier event
+  - id: callback
+    label: Callback
+    prefix: "[CALLBACK]"
+    format_scope: "line"
+    format:
+      bold: true

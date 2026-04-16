@@ -1,0 +1,23 @@
+uuid: 1cd7aecc-839c-473c-93dd-d362d997cae3
+name: Created In Browser
+version: 0.1.0
+description: A new template
+blocking_view:
+  node_size:
+    base_width: 160
+    base_height: 100
+    max_depth: 6
+    min_scale: 0.7
+    max_scale: 1.3
+    direction: down
+node_types:
+- id: root
+  label: Root
+  allowed_children: []
+  properties:
+  - id: name
+    label: Name
+    type: text
+    uuid: fa022033-b113-6c72-9d43-23ffbb36331a
+  allowed_asset_types: []
+  uuid: dda577b6-9f7c-8feb-e893-5e6f32522a56

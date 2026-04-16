@@ -37,6 +37,7 @@
         "type": "6af49a72-a129-e754-a0af-ff1c8e509673",
         "properties": {
           "name": "Shop Work Sprint",
+          "b86f2f5b-2c01-6d43-f592-0ad0051dad9e": "7d8a9c3b-1234-5678-90ab-cdef12345678",
           "bb24d5e0-d1b6-a9fd-23c1-ed5204bd0f57": "Shop Work Sprint"
         },
         "children": [
@@ -48,8 +49,8 @@
           "33d16572-0999-561b-b978-fe55b61fa500"
         ],
         "metadata": {},
-        "indicator_id": null,
-        "indicator_set": null,
+        "indicator_id": "empty",
+        "indicator_set": "status",
         "icon_id": "film",
         "schema_shape": "circle",
         "schema_color": "#8b5cf6",
@@ -65,10 +66,11 @@
         "properties": {
           "name": "Engine Teardown",
           "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "32325919-25d0-4d3c-e75b-8a437f6f96ee",
-          "26ec34d3-4b5f-e946-cbd4-d74d19820ca5": 0,
+          "26ec34d3-4b5f-e946-cbd4-d74d19820ca5": "0",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "Planning",
-          "2a657481-c4de-443b-9100-bab8d36cfdb6": "2026-04-09",
+          "2a657481-c4de-443b-9100-bab8d36cfdb6": "2026-04-10",
           "3f78e521-337d-90f3-cf74-a7caa32d44e6": 20,
+          "3fac8eeb-a982-515d-724b-717f5fc1f38b": "",
           "6fbc3751-46f1-41d5-71da-6a00886e686c": "2026-04-13",
           "a84fb7a9-d19a-29ca-dba5-d0fabe2971bc": "bd09c5f2-6a90-5e98-8bd6-93512f177f57",
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Engine Teardown"
@@ -95,6 +97,7 @@
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Brake Fitment",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "26ec34d3-4b5f-e946-cbd4-d74d19820ca5": 0,
           "29127f82-3f89-4b74-1e41-da626fba5e63": "Planning",
           "2a657481-c4de-443b-9100-bab8d36cfdb6": "2026-03-31",
@@ -128,6 +131,7 @@
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Wiring Diagnosis",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "453611e8-44c7-a633-0264-dcb7fe690269",
           "26ec34d3-4b5f-e946-cbd4-d74d19820ca5": 0,
           "29127f82-3f89-4b74-1e41-da626fba5e63": "Planning",
           "2a657481-c4de-443b-9100-bab8d36cfdb6": "2026-04-13",
@@ -158,7 +162,7 @@
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Paint Prep",
-          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "32325919-25d0-4d3c-e75b-8a437f6f96ee",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "26ec34d3-4b5f-e946-cbd4-d74d19820ca5": 0,
           "29127f82-3f89-4b74-1e41-da626fba5e63": "Shooting",
           "2a657481-c4de-443b-9100-bab8d36cfdb6": "2026-04-13",
@@ -189,6 +193,7 @@
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Weekend Rollover Check",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "26ec34d3-4b5f-e946-cbd4-d74d19820ca5": 0,
           "29127f82-3f89-4b74-1e41-da626fba5e63": "Planning",
           "2a657481-c4de-443b-9100-bab8d36cfdb6": "2026-04-17",
@@ -219,6 +224,7 @@
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Calibration Pass",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "26ec34d3-4b5f-e946-cbd4-d74d19820ca5": 0,
           "29127f82-3f89-4b74-1e41-da626fba5e63": "Planning",
           "2a657481-c4de-443b-9100-bab8d36cfdb6": "2026-04-15",

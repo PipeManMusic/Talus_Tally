@@ -4,6 +4,7 @@
     "nodes": [
       {
         "id": "8f0b11a8-aea2-415b-938c-3633e816eff7",
+        "name": "Project Talus",
         "type": "292b9e11-45c7-94f4-20db-7f6085266a4f",
         "properties": {
           "name": "Project Talus",
@@ -47,6 +48,7 @@
       },
       {
         "id": "063e0759-c0d2-4caf-b411-ed87e2f16637",
+        "name": "Daily Driver",
         "type": "6af49a72-a129-e754-a0af-ff1c8e509673",
         "properties": {
           "name": "Daily Driver",
@@ -77,9 +79,11 @@
       },
       {
         "id": "58e9689c-0b7f-4325-8ebe-ca53944cf667",
+        "name": "Intro",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Intro",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "26ec34d3-4b5f-e946-cbd4-d74d19820ca5": "",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "3094f28b-3fc3-2667-5ae1-933b041d78ed",
           "2a657481-c4de-443b-9100-bab8d36cfdb6": "",
@@ -119,6 +123,7 @@
       },
       {
         "id": "820342f7-a2d4-4ba8-a069-71464831e660",
+        "name": "Emisions",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Emisions",
@@ -142,6 +147,7 @@
       },
       {
         "id": "ca1eaebb-9420-4282-9d5a-e5b24305f6fd",
+        "name": "Pixel 8 Pro",
         "type": "37c98aa8-1ecf-f734-aae6-2147962200ef",
         "properties": {
           "name": "Pixel 8 Pro",
@@ -157,6 +163,7 @@
       },
       {
         "id": "1fd92134-4784-464c-9962-da6806ec1c76",
+        "name": "Walk  Around",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Walk  Around",
@@ -180,6 +187,7 @@
       },
       {
         "id": "ddceaea8-34fd-4b9c-8bbb-e2aa687eb029",
+        "name": "Canon M50",
         "type": "e9db1d3f-7b14-13d9-e797-715b666783cd",
         "properties": {
           "name": "Canon M50",
@@ -197,9 +205,11 @@
       },
       {
         "id": "89941716-6549-4335-9b87-7a9a5b544233",
+        "name": "Diagnostics",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Diagnostics",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "26ec34d3-4b5f-e946-cbd4-d74d19820ca5": "",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "3094f28b-3fc3-2667-5ae1-933b041d78ed",
           "3f78e521-337d-90f3-cf74-a7caa32d44e6": "",
@@ -273,6 +283,7 @@
       },
       {
         "id": "9b6d26d8-9ac0-4846-b10c-c667d221d941",
+        "name": "Emission Test",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Emission Test",
@@ -299,6 +310,7 @@
       },
       {
         "id": "3a294d0a-1e83-4fb2-8a3a-602548b43aea",
+        "name": "Pixel 8 Pro",
         "type": "37c98aa8-1ecf-f734-aae6-2147962200ef",
         "properties": {
           "name": "Pixel 8 Pro",
@@ -313,6 +325,7 @@
       },
       {
         "id": "2e79852a-2689-4c55-86fc-3551e38b6f11",
+        "name": "Check Oil Level",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Check Oil Level",
@@ -337,6 +350,7 @@
       },
       {
         "id": "b6bbe747-2f96-4774-8a3c-bdb3b65288cb",
+        "name": "Check Coolant Level",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Check Coolant Level",
@@ -359,6 +373,7 @@
       },
       {
         "id": "701f5718-88dd-400b-a3fb-c7413b14f359",
+        "name": "Check Transmission Fluid Level",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Check Transmission Fluid Level",
@@ -380,6 +395,7 @@
       },
       {
         "id": "8955a0d9-12be-44e9-8229-c942a43fa4e2",
+        "name": "Check Transfer Case Fluid Level",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Check Transfer Case Fluid Level",
@@ -401,6 +417,7 @@
       },
       {
         "id": "88f29f14-cda7-4921-867a-930c0ac4e14f",
+        "name": "Check Rear Axel Fluid Level",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Check Rear Axel Fluid Level",
@@ -422,6 +439,7 @@
       },
       {
         "id": "79d70133-7369-4936-ae37-3caea28dfad1",
+        "name": "Check Front Differencial Fluid Level",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Check Front Differencial Fluid Level",
@@ -444,6 +462,7 @@
       },
       {
         "id": "96baf06a-829d-45a3-85dc-7e0b7355cd12",
+        "name": "Check Brake Fluid Level",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Check Brake Fluid Level",
@@ -466,6 +485,7 @@
       },
       {
         "id": "ce98ccbb-20e8-4342-83aa-2a3beee0baca",
+        "name": "Check Power Steering Fluid Level",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Check Power Steering Fluid Level",
@@ -488,6 +508,7 @@
       },
       {
         "id": "198744f3-58fc-40e1-9c5a-120ade6c96bc",
+        "name": "Check Tire Pressure",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Check Tire Pressure",
@@ -510,6 +531,7 @@
       },
       {
         "id": "72700a15-614d-4990-954f-3f5880d78e4b",
+        "name": "Check Tire Tread Depth",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Check Tire Tread Depth",
@@ -532,6 +554,7 @@
       },
       {
         "id": "cb666fe0-8e9b-4096-9cf0-fba1169dbc76",
+        "name": "Check Tire Age",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Check Tire Age",
@@ -554,6 +577,7 @@
       },
       {
         "id": "1fc8206f-4ec6-4df0-a477-01f8a10fbe06",
+        "name": "Check Brake Pad Thickness",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Check Brake Pad Thickness",
@@ -576,6 +600,7 @@
       },
       {
         "id": "46e0ec93-c139-4e5c-bcf2-37b213b8731e",
+        "name": "Check Brake Fluid Corroson",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Check Brake Fluid Corroson",
@@ -598,6 +623,7 @@
       },
       {
         "id": "1917a858-0294-4561-95de-109d8828d1e4",
+        "name": "Check Brake Fluid Moisture",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Check Brake Fluid Moisture",
@@ -620,6 +646,7 @@
       },
       {
         "id": "e09f39d3-4ed6-4c54-8ce0-0dd198618941",
+        "name": "Cabin Loudness Off",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Cabin Loudness Off",
@@ -643,6 +670,7 @@
       },
       {
         "id": "6424bb32-c891-412a-9200-cac327a900bc",
+        "name": "Decibel Meter",
         "type": "85253198-5a24-cc0b-09b8-3104ed399bec",
         "properties": {
           "name": "Decibel Meter",
@@ -658,6 +686,7 @@
       },
       {
         "id": "6c53b542-1a3e-43cf-a0de-6d1c74f0bd04",
+        "name": "Cabin Loudness Idle",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Cabin Loudness Idle",
@@ -681,6 +710,7 @@
       },
       {
         "id": "7ff846cb-6df0-4b4d-adcb-e8cb2bf3eff3",
+        "name": "Decibel Meter",
         "type": "85253198-5a24-cc0b-09b8-3104ed399bec",
         "properties": {
           "name": "Decibel Meter",
@@ -695,6 +725,7 @@
       },
       {
         "id": "c2504f1a-e609-4da9-b1ac-95c6540126ef",
+        "name": "Cabin Loudness Street",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Cabin Loudness Street",
@@ -718,6 +749,7 @@
       },
       {
         "id": "8234e852-64ec-49de-bd35-f14454b2afb0",
+        "name": "Decibel Meter",
         "type": "85253198-5a24-cc0b-09b8-3104ed399bec",
         "properties": {
           "name": "Decibel Meter",
@@ -732,6 +764,7 @@
       },
       {
         "id": "269dbcbb-db3e-476c-bc14-9fd164af2b6c",
+        "name": "Cabin Loudness Highway",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Cabin Loudness Highway",
@@ -755,6 +788,7 @@
       },
       {
         "id": "1a12d878-9c11-4cb9-a2a5-b41702dffbf5",
+        "name": "Decibel Meter",
         "type": "85253198-5a24-cc0b-09b8-3104ed399bec",
         "properties": {
           "name": "Decibel Meter",
@@ -769,6 +803,7 @@
       },
       {
         "id": "106df4c1-205a-464f-871b-fab1be402549",
+        "name": "Check Coolant Acidity",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Check Coolant Acidity",
@@ -791,6 +826,7 @@
       },
       {
         "id": "dc5836c8-8853-445b-b476-70ae8a4e0d79",
+        "name": "Check Coolant Specific Gravity",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Check Coolant Specific Gravity",
@@ -813,6 +849,7 @@
       },
       {
         "id": "37bd34ac-e3e7-41d3-9de7-0510e48e157e",
+        "name": "Check Fuel Pressure",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Check Fuel Pressure",
@@ -835,6 +872,7 @@
       },
       {
         "id": "7cd43fa0-fe3c-4c1d-a6e1-6824fb6daed8",
+        "name": "Fuel Leak Down Test",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Fuel Leak Down Test",
@@ -857,6 +895,7 @@
       },
       {
         "id": "f08168c0-d944-4239-8d30-7bec18a18fe2",
+        "name": "Check Computer Codes",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Check Computer Codes",
@@ -879,6 +918,7 @@
       },
       {
         "id": "af3e4d07-4505-494b-afb8-14957809617b",
+        "name": "Check Fuses",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Check Fuses",
@@ -901,6 +941,7 @@
       },
       {
         "id": "46c41a8b-c646-40f5-beff-313a9ac758de",
+        "name": "Check Engine Belts",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Check Engine Belts",
@@ -922,6 +963,7 @@
       },
       {
         "id": "30d94305-67ec-4e29-8e59-60d9beea5fed",
+        "name": "Front Drive Shaft Check",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Front Drive Shaft Check",
@@ -943,6 +985,7 @@
       },
       {
         "id": "4facc8ea-0e6c-474a-a682-e1648b641bda",
+        "name": "Rear Drive Shaft Check",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Rear Drive Shaft Check",
@@ -964,6 +1007,7 @@
       },
       {
         "id": "e4750de5-a8eb-4525-8cf6-eb092af1a6b3",
+        "name": "0 - 60",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "0 - 60",
@@ -991,6 +1035,7 @@
       },
       {
         "id": "607c0e3c-88bb-4699-ac96-17be8ab0b34d",
+        "name": "Canon M50",
         "type": "37c98aa8-1ecf-f734-aae6-2147962200ef",
         "properties": {
           "name": "Canon M50",
@@ -1006,6 +1051,7 @@
       },
       {
         "id": "12fa74ff-cb73-456a-b3e3-c197b62f1820",
+        "name": "Pixel 8 Pro",
         "type": "37c98aa8-1ecf-f734-aae6-2147962200ef",
         "properties": {
           "name": "Pixel 8 Pro",
@@ -1020,6 +1066,7 @@
       },
       {
         "id": "5435fce3-9225-46b7-acbc-d77fd8a8c46f",
+        "name": "Ride height",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Ride height",
@@ -1041,6 +1088,7 @@
       },
       {
         "id": "0cf92dc8-23d4-406e-970a-b4b0918af03f",
+        "name": "Alignment measurements",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Alignment measurements",
@@ -1062,6 +1110,7 @@
       },
       {
         "id": "04577fcc-a1e6-45c5-834b-403321828887",
+        "name": "Check Spark Plugs",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Check Spark Plugs",
@@ -1083,6 +1132,7 @@
       },
       {
         "id": "d463a2d2-3051-44a0-9450-e2e052d395fa",
+        "name": "Check Plug Wires",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Check Plug Wires",
@@ -1104,6 +1154,7 @@
       },
       {
         "id": "3dd5add5-9a42-4f24-b0b6-bc0176e7d24f",
+        "name": "Find Vacuum Leak",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Find Vacuum Leak",
@@ -1125,6 +1176,7 @@
       },
       {
         "id": "aa2be0f9-9346-46ee-9761-68688522d219",
+        "name": "AC System Diagnosis",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "AC System Diagnosis",
@@ -1146,6 +1198,7 @@
       },
       {
         "id": "71945aab-7b63-43ce-8acd-5bf331688fc9",
+        "name": "Check Base Timing",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Check Base Timing",
@@ -1167,6 +1220,7 @@
       },
       {
         "id": "f527e3cb-0fc6-418d-891a-7f59d0049543",
+        "name": "Test Battery",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Test Battery",
@@ -1188,6 +1242,7 @@
       },
       {
         "id": "a7b6e320-f290-47bf-9be9-ae455233e893",
+        "name": "Test Alternator",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Test Alternator",
@@ -1210,6 +1265,7 @@
       },
       {
         "id": "a60a9ab4-f613-4461-9874-8bd674c25bde",
+        "name": "Coolant System Pressure Test",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Coolant System Pressure Test",
@@ -1232,9 +1288,11 @@
       },
       {
         "id": "1c00929d-a96f-42e3-9759-a66e91ae24bc",
+        "name": "Tune Up",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Tune Up",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "3fac8eeb-a982-515d-724b-717f5fc1f38b": 3,
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Tune Up",
@@ -1264,6 +1322,7 @@
       },
       {
         "id": "3bcc3a04-e889-4d16-be33-56860e87d2ff",
+        "name": "Spark Plugs",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Spark Plugs",
@@ -1288,6 +1347,7 @@
       },
       {
         "id": "d38a6631-e2b6-4982-9f39-d2d7717aa005",
+        "name": "Canon M50",
         "type": "37c98aa8-1ecf-f734-aae6-2147962200ef",
         "properties": {
           "name": "Canon M50",
@@ -1302,6 +1362,7 @@
       },
       {
         "id": "e93a0a48-e084-4390-8f74-5fbf6cd72b57",
+        "name": "Motorcraft Copper Spark Plug",
         "type": "64c246cc-0e2e-98b3-edb0-c0bb252e6a45",
         "properties": {
           "name": "Motorcraft Copper Spark Plug",
@@ -1318,6 +1379,7 @@
       },
       {
         "id": "5bb378c0-63ec-4830-a6a2-f79b364dba4e",
+        "name": "Spark Plug Wires",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Spark Plug Wires",
@@ -1341,6 +1403,7 @@
       },
       {
         "id": "d9819413-c4c7-4d56-9a1b-36ada933620c",
+        "name": "Motorcraft Ignition Wire Set",
         "type": "64c246cc-0e2e-98b3-edb0-c0bb252e6a45",
         "properties": {
           "name": "Motorcraft Ignition Wire Set",
@@ -1358,6 +1421,7 @@
       },
       {
         "id": "d06e54ef-624b-4dc2-b55a-4bd1fc86edd7",
+        "name": "Cap and Rotor",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Cap and Rotor",
@@ -1382,6 +1446,7 @@
       },
       {
         "id": "f24493f3-2207-4a50-bd86-f73fd97e8cd4",
+        "name": "Standard Motor Distributor Rotor",
         "type": "64c246cc-0e2e-98b3-edb0-c0bb252e6a45",
         "properties": {
           "name": "Standard Motor Distributor Rotor",
@@ -1397,6 +1462,7 @@
       },
       {
         "id": "b7914eb6-ca71-4125-b790-6e658dd9efdb",
+        "name": "Standard Motor Distributor Cap",
         "type": "64c246cc-0e2e-98b3-edb0-c0bb252e6a45",
         "properties": {
           "name": "Standard Motor Distributor Cap",
@@ -1412,6 +1478,7 @@
       },
       {
         "id": "0b36282f-9b5b-4eea-b79b-35d730e0135f",
+        "name": "PCV Valve",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "PCV Valve",
@@ -1436,6 +1503,7 @@
       },
       {
         "id": "56d5b421-8c0b-4e7f-919a-ff0b143135a3",
+        "name": "Standard Motor PCV Grommet",
         "type": "64c246cc-0e2e-98b3-edb0-c0bb252e6a45",
         "properties": {
           "name": "Standard Motor PCV Grommet",
@@ -1451,6 +1519,7 @@
       },
       {
         "id": "78289ec0-cc14-44e3-b904-cb647c4d00b2",
+        "name": "Standard Motor PCV Valve",
         "type": "64c246cc-0e2e-98b3-edb0-c0bb252e6a45",
         "properties": {
           "name": "Standard Motor PCV Valve",
@@ -1466,6 +1535,7 @@
       },
       {
         "id": "596e295d-6fb1-46c2-b93c-b3f4383d007a",
+        "name": "Fix Vacuum Leak",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Fix Vacuum Leak",
@@ -1487,9 +1557,11 @@
       },
       {
         "id": "c80dab8c-ab7d-4685-b260-fcbdcef5536b",
+        "name": "Rear Axel",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Rear Axel",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "3fac8eeb-a982-515d-724b-717f5fc1f38b": 4,
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Rear Axel"
@@ -1512,9 +1584,11 @@
       },
       {
         "id": "154d79df-57be-4bc1-85b6-86d773974066",
+        "name": "Front Axel",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Front Axel",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "3fac8eeb-a982-515d-724b-717f5fc1f38b": 5,
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Front Axel"
@@ -1537,9 +1611,11 @@
       },
       {
         "id": "6291ddc4-a5cc-42ed-8008-4c7c0a0d6b4c",
+        "name": "Steering & Alignment",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Steering & Alignment",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "3fac8eeb-a982-515d-724b-717f5fc1f38b": 6,
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Steering & Alignment"
@@ -1562,9 +1638,11 @@
       },
       {
         "id": "99ad04e7-9c4d-4168-8cc8-a001eab7783e",
+        "name": "Engine Reseal",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Engine Reseal",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "3fac8eeb-a982-515d-724b-717f5fc1f38b": 7,
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Engine Reseal"
@@ -1587,9 +1665,11 @@
       },
       {
         "id": "5295e53d-c829-4469-8abf-3def09bd19f8",
+        "name": "Interior",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Interior",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "26ec34d3-4b5f-e946-cbd4-d74d19820ca5": "",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "3094f28b-3fc3-2667-5ae1-933b041d78ed",
           "2a657481-c4de-443b-9100-bab8d36cfdb6": null,
@@ -1602,9 +1682,7 @@
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Interior"
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {}
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "video-camera",
@@ -1621,9 +1699,11 @@
       },
       {
         "id": "12c924fd-d375-49a4-ae43-7828f9cb73bd",
+        "name": "Adventure",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Adventure",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "3fac8eeb-a982-515d-724b-717f5fc1f38b": 9,
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Adventure"
@@ -1646,6 +1726,7 @@
       },
       {
         "id": "80d65e64-ef89-4b52-b87a-fcfa65e6206d",
+        "name": "Bronco II History",
         "type": "6af49a72-a129-e754-a0af-ff1c8e509673",
         "properties": {
           "name": "Bronco II History",
@@ -1675,9 +1756,11 @@
       },
       {
         "id": "4467317c-b664-45b4-afcc-41e1cc9404df",
+        "name": "Project Yuma",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Project Yuma",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Project Yuma"
         },
@@ -1699,9 +1782,11 @@
       },
       {
         "id": "8b7f14a7-69c8-4ad4-b4b8-072ed20b4ec6",
+        "name": "Cologne V6",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Cologne V6",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Cologne V6"
         },
@@ -1723,9 +1808,11 @@
       },
       {
         "id": "50077053-5b8e-42fa-9c14-b1659e86d746",
+        "name": "Transmissions",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Transmissions",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Transmissions"
         },
@@ -1747,9 +1834,11 @@
       },
       {
         "id": "53634d62-57e9-467b-99ff-e536e680165f",
+        "name": "Transfer Cases",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Transfer Cases",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Transfer Cases"
         },
@@ -1771,9 +1860,11 @@
       },
       {
         "id": "b1abe5e0-a57a-469b-81af-4e1de842420f",
+        "name": "Controversy and Discontinuation",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Controversy and Discontinuation",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Controversy and Discontinuation"
         },
@@ -1795,9 +1886,11 @@
       },
       {
         "id": "b4b7941e-1e36-4b35-b6f2-3f5def75d7f7",
+        "name": "Interior",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Interior",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Interior"
         },
@@ -1819,9 +1912,11 @@
       },
       {
         "id": "b74c027e-53d0-45fa-ac9c-52906da8baa6",
+        "name": "Trim Levels and Colors",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Trim Levels and Colors",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Trim Levels and Colors"
         },
@@ -1843,9 +1938,11 @@
       },
       {
         "id": "eabde8c2-206c-401d-be76-3f00b764ad1a",
+        "name": "Modifications and Enthusiest Community",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Modifications and Enthusiest Community",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Modifications and Enthusiest Community"
         },
@@ -1867,6 +1964,7 @@
       },
       {
         "id": "fb04ceae-e213-462b-805e-a94fead8b824",
+        "name": "Inventory",
         "type": "02dd5d8c-9134-ad55-fe18-88e7117745c5",
         "properties": {
           "name": "Inventory",
@@ -1893,6 +1991,7 @@
       },
       {
         "id": "0f71cdf1-f7b1-4ce9-bf97-dc55b20eb208",
+        "name": "Camera Gear Inventory",
         "type": "1fffcccd-cbb7-7146-8745-ef0979f5c20f",
         "properties": {
           "name": "Camera Gear Inventory",
@@ -1915,6 +2014,7 @@
       },
       {
         "id": "be07bc50-f298-4e9b-a7b0-9c5b5e7db4c8",
+        "name": "Cameras",
         "type": "5f871fa1-5f20-f7f1-4d3d-3dc0f8a8a13d",
         "properties": {
           "name": "Cameras",
@@ -1940,6 +2040,7 @@
       },
       {
         "id": "73915ba5-984d-409a-8405-fb30c07c8260",
+        "name": "Canon M50",
         "type": "6ee44fd2-c931-5cba-bbf2-990c509f95cc",
         "properties": {
           "name": "Canon M50",
@@ -1959,6 +2060,7 @@
       },
       {
         "id": "9a789eb9-bd48-49f0-a8a9-95a47472dc39",
+        "name": "Black Magic Production 4K",
         "type": "6ee44fd2-c931-5cba-bbf2-990c509f95cc",
         "properties": {
           "name": "Black Magic Production 4K",
@@ -1978,6 +2080,7 @@
       },
       {
         "id": "6ec434e2-ce7f-4ade-9d9e-7cbc8d5af636",
+        "name": "Canon 5D Mk II",
         "type": "6ee44fd2-c931-5cba-bbf2-990c509f95cc",
         "properties": {
           "name": "Canon 5D Mk II",
@@ -1997,6 +2100,7 @@
       },
       {
         "id": "b1adc95d-e032-4b50-92be-a2491c7378e2",
+        "name": "Akaso V50 Elite 1",
         "type": "6ee44fd2-c931-5cba-bbf2-990c509f95cc",
         "properties": {
           "name": "Akaso V50 Elite 1",
@@ -2015,6 +2119,7 @@
       },
       {
         "id": "f0041e5f-6d84-419b-a831-8f878353250d",
+        "name": "Akaso V50 Elite 2",
         "type": "6ee44fd2-c931-5cba-bbf2-990c509f95cc",
         "properties": {
           "name": "Akaso V50 Elite 2",
@@ -2033,6 +2138,7 @@
       },
       {
         "id": "49b3f657-b698-4e67-9fec-931979b34a7a",
+        "name": "Pixel 8 Pro",
         "type": "6ee44fd2-c931-5cba-bbf2-990c509f95cc",
         "properties": {
           "name": "Pixel 8 Pro",
@@ -2051,6 +2157,7 @@
       },
       {
         "id": "eec8276a-0913-44e9-af8b-d2862066c331",
+        "name": "Lights",
         "type": "5f871fa1-5f20-f7f1-4d3d-3dc0f8a8a13d",
         "properties": {
           "name": "Lights",
@@ -2069,6 +2176,7 @@
       },
       {
         "id": "cf708f0f-91c4-40ff-822f-034cf5c2b2c8",
+        "name": "Audio Equipment",
         "type": "5f871fa1-5f20-f7f1-4d3d-3dc0f8a8a13d",
         "properties": {
           "name": "Audio Equipment",
@@ -2087,6 +2195,7 @@
       },
       {
         "id": "82584abf-2b5c-45f1-80c7-34e9d508f69c",
+        "name": "Car Parts Inventory",
         "type": "a528b149-5cc9-cb6f-8772-922d688235a7",
         "properties": {
           "name": "Car Parts Inventory",
@@ -2122,6 +2231,7 @@
       },
       {
         "id": "05943ed2-50fa-4169-aade-ba55965950fb",
+        "name": "Junk Yard",
         "type": "459f58ca-bce4-59ea-bca9-82e83ec03013",
         "properties": {
           "name": "Junk Yard",
@@ -2150,20 +2260,21 @@
       },
       {
         "id": "c639f7c5-a900-42d8-92c1-b052c4af2807",
+        "name": "Dana 35",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Dana 35",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Dana 35",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "500",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "49ea8160-2c4d-4d91-4800-1c3176029d26",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": ""
         },
         "children": [],
         "metadata": {
           "orphaned_properties": {
-            "actual_cost": "",
-            "estimated_cost": "500",
             "prop_1771951944461": "Ford",
             "prop_1771951966105": "Explorer/Mountaineer/Ranger"
           }
@@ -2177,11 +2288,13 @@
       },
       {
         "id": "4c345ba6-172c-482e-82bb-51401568ed9e",
+        "name": "Bosch iBooster",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Bosch iBooster",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Bosch iBooster",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "46000-TLA-A051-M1",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "200",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "0",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "49ea8160-2c4d-4d91-4800-1c3176029d26",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Honda"
@@ -2189,7 +2302,6 @@
         "children": [],
         "metadata": {
           "orphaned_properties": {
-            "estimated_cost": "200",
             "prop_1771951944461": "Honda",
             "prop_1771951966105": "CRV"
           }
@@ -2203,19 +2315,17 @@
       },
       {
         "id": "edb06427-f627-4317-8158-43c35e909447",
+        "name": "DSC Mk60E5 ABS System",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "DSC Mk60E5 ABS System",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "DSC Mk60E5 ABS System",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "150",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "49ea8160-2c4d-4d91-4800-1c3176029d26"
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "estimated_cost": "150"
-          }
-        },
+        "metadata": {},
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -2225,18 +2335,16 @@
       },
       {
         "id": "b06e34da-54fa-49f9-afb3-459adffe08dd",
+        "name": "5.0l Windsor V8",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "5.0l Windsor V8",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "5.0l Windsor V8",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "1200",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "49ea8160-2c4d-4d91-4800-1c3176029d26"
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "estimated_cost": "1200"
-          }
-        },
+        "metadata": {},
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -2246,19 +2354,17 @@
       },
       {
         "id": "9b8afaf1-ef18-49b2-97ed-81f4ed4e2517",
+        "name": "4R70W Transmission",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "4R70W Transmission",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "4R70W Transmission",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "800",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "49ea8160-2c4d-4d91-4800-1c3176029d26"
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "estimated_cost": "800"
-          }
-        },
+        "metadata": {},
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -2268,18 +2374,16 @@
       },
       {
         "id": "a76b4529-4ec3-4237-82c9-ed20e314c0de",
+        "name": "Ranger Steering Column",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Ranger Steering Column",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Ranger Steering Column",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "150",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "49ea8160-2c4d-4d91-4800-1c3176029d26"
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "estimated_cost": "150"
-          }
-        },
+        "metadata": {},
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -2289,18 +2393,16 @@
       },
       {
         "id": "b4702aad-39d8-48e0-8889-b4647a855aa7",
+        "name": "8.8 Rear Axel",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "8.8 Rear Axel",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "8.8 Rear Axel",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "700",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "49ea8160-2c4d-4d91-4800-1c3176029d26"
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "estimated_cost": "700"
-          }
-        },
+        "metadata": {},
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -2310,18 +2412,16 @@
       },
       {
         "id": "e48e77fd-16bd-4981-b00b-444971bffec5",
+        "name": "Mustang Backing Plates",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Mustang Backing Plates",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Mustang Backing Plates",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "120",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "49ea8160-2c4d-4d91-4800-1c3176029d26"
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "estimated_cost": "120"
-          }
-        },
+        "metadata": {},
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -2331,18 +2431,16 @@
       },
       {
         "id": "e6bd014c-ca74-49b4-adef-ae5d99b84e8d",
+        "name": "Lincoln Navigator Steering Wheel",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Lincoln Navigator Steering Wheel",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Lincoln Navigator Steering Wheel",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "100",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "49ea8160-2c4d-4d91-4800-1c3176029d26"
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "estimated_cost": "100"
-          }
-        },
+        "metadata": {},
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -2352,6 +2450,7 @@
       },
       {
         "id": "318d9929-d908-4319-b908-fbeba4a8e7ff",
+        "name": "New",
         "type": "459f58ca-bce4-59ea-bca9-82e83ec03013",
         "properties": {
           "name": "New",
@@ -2374,24 +2473,22 @@
       },
       {
         "id": "7c42e3a9-b772-4581-a144-36184f8257d5",
+        "name": "Lisle Ignition Module Wrench",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Lisle Ignition Module Wrench",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Lisle Ignition Module Wrench",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": 8.49,
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-4787138-6269046",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "64650",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "8.49",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": 8.49,
-            "estimated_cost": "8.49"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -2401,24 +2498,22 @@
       },
       {
         "id": "ec6521e1-979d-493c-aa8f-0c304b70811a",
+        "name": "Brake Fluid Tester",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Brake Fluid Tester",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Brake Fluid Tester",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "21.37",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-6163034-9629866",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "BF200",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "21.37",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "21.37",
-            "estimated_cost": "21.37"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -2428,23 +2523,21 @@
       },
       {
         "id": "56435d32-aca9-4190-864e-39fbd3dea4ec",
+        "name": "RX WELD Plastic Welder Kit",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "RX WELD Plastic Welder Kit",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "RX WELD Plastic Welder Kit",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "39.99",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-4787138-6269046",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "39.99",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "39.99",
-            "estimated_cost": "39.99"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -2454,6 +2547,7 @@
       },
       {
         "id": "71eb1939-e0f0-4966-a7ba-edaee2d897bd",
+        "name": "Stock Exterior",
         "type": "459f58ca-bce4-59ea-bca9-82e83ec03013",
         "properties": {
           "name": "Stock Exterior",
@@ -2475,24 +2569,22 @@
       },
       {
         "id": "06ec7615-80d2-47c6-b1c2-536c0db8dc5d",
+        "name": "Bosch Clear Advantage Wiper 13in",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Bosch Clear Advantage Wiper 13in",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Bosch Clear Advantage Wiper 13in",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "12.69",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-4257500-9827458",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "40513",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "12.69",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "12.69",
-            "estimated_cost": "12.69"
-          }
-        },
+        "metadata": {},
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -2502,24 +2594,22 @@
       },
       {
         "id": "a11c211d-633f-4790-8750-16b9342e9335",
+        "name": "Bosch Clear Advantage Wiper Blade 18in",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Bosch Clear Advantage Wiper Blade 18in",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Bosch Clear Advantage Wiper Blade 18in",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "10.00",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-3193159-3144240",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "18CA",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "10.00",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": 2,
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "10.00",
-            "estimated_cost": "10.00"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -2529,6 +2619,7 @@
       },
       {
         "id": "d8e270bb-73ef-404c-8468-19684b043d45",
+        "name": "Stock Interior",
         "type": "459f58ca-bce4-59ea-bca9-82e83ec03013",
         "properties": {
           "name": "Stock Interior",
@@ -2556,23 +2647,21 @@
       },
       {
         "id": "9afb9909-a086-4135-bcb0-f637a90cdc32",
+        "name": "A-Premium Rear Tailgate Lift Supports",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "A-Premium Rear Tailgate Lift Supports",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "A-Premium Rear Tailgate Lift Supports",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "25.09",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-3598232-5019468",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "25.09",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "25.09",
-            "estimated_cost": "25.09"
-          }
-        },
+        "metadata": {},
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -2582,24 +2671,22 @@
       },
       {
         "id": "b7422c4a-d3a1-4960-8d31-b64455e38749",
+        "name": "Dorman Dome Light Lens",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Dorman Dome Light Lens",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Dorman Dome Light Lens",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "7.99",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 209266272083",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "74973",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "7.99",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "AutoZone",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "7.99",
-            "estimated_cost": "7.99"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -2609,23 +2696,21 @@
       },
       {
         "id": "167c41ed-fb16-42cd-8c7f-23457b009eb9",
+        "name": "Mustang Automatic T-Handle Shifter",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Mustang Automatic T-Handle Shifter",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Mustang Automatic T-Handle Shifter",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "24.99",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order VH19521",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "24.99",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "LMR",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "24.99",
-            "estimated_cost": "24.99"
-          }
-        },
+        "metadata": {},
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -2635,23 +2720,21 @@
       },
       {
         "id": "3ad9c900-dd50-4874-87e6-7fdd1c9de657",
+        "name": "Headlight Switch Knob (Black Billet)",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Headlight Switch Knob (Black Billet)",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Headlight Switch Knob (Black Billet)",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "25.00",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 13280",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "25.00",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "JC Customs CNC",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "25.00",
-            "estimated_cost": "25.00"
-          }
-        },
+        "metadata": {},
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -2661,23 +2744,21 @@
       },
       {
         "id": "940626a4-742b-4f90-b13a-c1f4d17864f7",
+        "name": "Vent Window Handle (Driver Side)",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Vent Window Handle (Driver Side)",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Vent Window Handle (Driver Side)",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "9.10",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 121936",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "9.10",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "eClassics.com",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "9.10",
-            "estimated_cost": "9.10"
-          }
-        },
+        "metadata": {},
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -2687,24 +2768,22 @@
       },
       {
         "id": "1962d6d9-cbcb-41c6-b9a7-4e83519fa6a8",
+        "name": "Brake Pedal Pad (Automatic)",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Brake Pedal Pad (Automatic)",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Brake Pedal Pad (Automatic)",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "5.00",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 81365682",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "96050",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "5.00",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Bronco Graveyard",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "5.00",
-            "estimated_cost": "5.00"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -2714,24 +2793,22 @@
       },
       {
         "id": "d584bbeb-1061-49a6-81f1-1157d7537f9b",
+        "name": "Window Weatherstrip Kit (Both Doors)",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Window Weatherstrip Kit (Both Doors)",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Window Weatherstrip Kit (Both Doors)",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "85.00",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 81365682",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "96020",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "85.00",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Bronco Graveyard",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "85.00",
-            "estimated_cost": "85.00"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -2741,23 +2818,21 @@
       },
       {
         "id": "5978040d-0b88-4f06-a026-93d7d79e99b0",
+        "name": "Ignition Door & Tailgate Lock Cylinder Set",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Ignition Door & Tailgate Lock Cylinder Set",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Ignition Door & Tailgate Lock Cylinder Set",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "146.21",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 51810",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "146.21",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Pro Steering Columns",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "146.21",
-            "estimated_cost": "146.21"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -2767,6 +2842,7 @@
       },
       {
         "id": "ad566f5f-67f3-49b9-8f04-550a709c2460",
+        "name": "Supplies",
         "type": "459f58ca-bce4-59ea-bca9-82e83ec03013",
         "properties": {
           "name": "Supplies",
@@ -2804,23 +2880,21 @@
       },
       {
         "id": "592dd22d-761d-4ac8-b956-70c9fa1464b3",
+        "name": "StonyLab Filter Paper (100 Pack)",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "StonyLab Filter Paper (100 Pack)",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "StonyLab Filter Paper (100 Pack)",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "15.99",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-5089179-4637061",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "15.99",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "15.99",
-            "estimated_cost": "15.99"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -2830,23 +2904,21 @@
       },
       {
         "id": "e6f349cb-6b4e-4103-b5fe-fe7e52872d17",
+        "name": "NY Threads Coverall (Grey XX-Large)",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "NY Threads Coverall (Grey XX-Large)",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "NY Threads Coverall (Grey XX-Large)",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "28.49",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-8921857-3726624",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "28.49",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "28.49",
-            "estimated_cost": "28.49"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -2856,23 +2928,21 @@
       },
       {
         "id": "0dea750a-e836-42a6-89b8-bd40ff9e3801",
+        "name": "TCP Global Paint Strainers (50 Pack)",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "TCP Global Paint Strainers (50 Pack)",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "TCP Global Paint Strainers (50 Pack)",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "8.99",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-2773185-0817049",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "8.99",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "8.99",
-            "estimated_cost": "8.99"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -2882,23 +2952,21 @@
       },
       {
         "id": "46ac75b4-057d-4bdc-a94a-c8f1c5154ec8",
+        "name": "Valvoline Gear Oil 80W-90 (1 Qt)",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Valvoline Gear Oil 80W-90 (1 Qt)",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Valvoline Gear Oil 80W-90 (1 Qt)",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "12.49",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-4340895-1946666",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "12.49",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "12.49",
-            "estimated_cost": "12.49"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -2908,23 +2976,21 @@
       },
       {
         "id": "7d289fe2-6503-47b1-a7c7-5497397ee4ff",
+        "name": "Zerex Original Green Coolant (1 Gal)",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Zerex Original Green Coolant (1 Gal)",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Zerex Original Green Coolant (1 Gal)",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "20.49",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-9364954-5874637",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "20.49",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "20.49",
-            "estimated_cost": "20.49"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -2934,21 +3000,19 @@
       },
       {
         "id": "4b53dd31-92fd-482e-b097-e067f591f7ee",
+        "name": "Corroseal",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Corroseal",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Corroseal",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "62.94",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "62.94",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "49ea8160-2c4d-4d91-4800-1c3176029d26",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "62.94",
-            "estimated_cost": "62.94"
-          }
-        },
+        "metadata": {},
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -2958,21 +3022,19 @@
       },
       {
         "id": "7de51d54-23bd-4bf7-9dc7-d1e08238d68f",
+        "name": "Epoxy Primer",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Epoxy Primer",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Epoxy Primer",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "#6620-1",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "147.37",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "49ea8160-2c4d-4d91-4800-1c3176029d26",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Southern Polyurethane, Inc.",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "estimated_cost": "147.37"
-          }
-        },
+        "metadata": {},
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -2982,21 +3044,20 @@
       },
       {
         "id": "6c5a8367-3b93-4691-a65d-77c9371fb74d",
+        "name": "Epoxy Activator",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Epoxy Activator",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Epoxy Activator",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "#6700-1",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "147.37",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "49ea8160-2c4d-4d91-4800-1c3176029d26",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Southern Polyurethane, Inc.",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "estimated_cost": "147.37"
-          }
-        },
+        "metadata": {},
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -3006,23 +3067,21 @@
       },
       {
         "id": "1929617c-1720-4b9e-8041-fcde48f1cf04",
+        "name": "Valvoline DOT 3 & 4 Brake Fluid",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Valvoline DOT 3 & 4 Brake Fluid",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Valvoline DOT 3 & 4 Brake Fluid",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "9.88",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-4340895-1946666",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "9.88",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "9.88",
-            "estimated_cost": "9.88"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -3032,23 +3091,21 @@
       },
       {
         "id": "5969b939-8380-4550-9269-99b7b540dc8b",
+        "name": "HDPE Plastic Welding Rods",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "HDPE Plastic Welding Rods",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "HDPE Plastic Welding Rods",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "14.35",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-8518811-4433833",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "14.35",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "14.35",
-            "estimated_cost": "14.35"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -3058,23 +3115,21 @@
       },
       {
         "id": "2ded71ea-3e89-4cea-b541-5693e8cfb543",
+        "name": "Zerex Original Green Coolant (1 Gal)",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Zerex Original Green Coolant (1 Gal)",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Zerex Original Green Coolant (1 Gal)",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "20.49",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-8321077-1869806",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "20.49",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "20.49",
-            "estimated_cost": "20.49"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -3084,24 +3139,22 @@
       },
       {
         "id": "ef4ed987-b0ed-4679-8bf4-fb46d7f8b129",
+        "name": "Motorcraft MERCON V Fluid (5qt)",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Motorcraft MERCON V Fluid (5qt)",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Motorcraft MERCON V Fluid (5qt)",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "40.31",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-8321077-1869806",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "XT-5-5QM",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "40.31",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "40.31",
-            "estimated_cost": "40.31"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -3111,24 +3164,22 @@
       },
       {
         "id": "91c66873-6260-4f38-ad86-44ac2ba8b0de",
+        "name": "ATP AT-205 Re-Seal",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "ATP AT-205 Re-Seal",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "ATP AT-205 Re-Seal",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "18.00",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-3193159-3144240",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "AT-205",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "18.00",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "18.00",
-            "estimated_cost": "18.00"
-          }
-        },
+        "metadata": {},
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -3138,24 +3189,22 @@
       },
       {
         "id": "fd034f30-1fac-4577-93ac-0875376150e7",
+        "name": "Permatex The Right Stuff Gasket Maker",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Permatex The Right Stuff Gasket Maker",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Permatex The Right Stuff Gasket Maker",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "14.38",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-8321077-1869806",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "34328",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "14.38",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "14.38",
-            "estimated_cost": "14.38"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -3165,23 +3214,21 @@
       },
       {
         "id": "3a8eeaa6-615e-46ec-b9cf-5149377c8bca",
+        "name": "Mobil 1 High Mileage 10W-30 Oil (5 Qt)",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Mobil 1 High Mileage 10W-30 Oil (5 Qt)",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Mobil 1 High Mileage 10W-30 Oil (5 Qt)",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "27.97",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-9978039-2329857",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "27.97",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "27.97",
-            "estimated_cost": "27.97"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -3191,23 +3238,21 @@
       },
       {
         "id": "b12bbe00-ce28-45a8-9b82-5a1fce27b54e",
+        "name": "IDIK Heat Shrink Label Tape",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "IDIK Heat Shrink Label Tape",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "IDIK Heat Shrink Label Tape",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "9.69",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-7549109-5968215",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "9.69",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "9.69",
-            "estimated_cost": "9.69"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -3217,24 +3262,22 @@
       },
       {
         "id": "4e113aa6-5b7c-4fb5-ad3a-344249cf0542",
+        "name": "Prestone Cooling System Cleaner",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Prestone Cooling System Cleaner",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Prestone Cooling System Cleaner",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "14.49",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-3591847-7097832",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "AS105",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "14.49",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "14.49",
-            "estimated_cost": "14.49"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -3244,24 +3287,22 @@
       },
       {
         "id": "91c22f42-2c06-4cbb-b325-02ec77d174c3",
+        "name": "Phoenix Systems Brake/Coolant Test Strips",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Phoenix Systems Brake/Coolant Test Strips",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Phoenix Systems Brake/Coolant Test Strips",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "14.97",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-2773185-0817049",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "8006-B",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "14.97",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "14.97",
-            "estimated_cost": "14.97"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -3271,6 +3312,7 @@
       },
       {
         "id": "45efb876-0980-4c3d-8e0d-468566297868",
+        "name": "Stock Suspension",
         "type": "459f58ca-bce4-59ea-bca9-82e83ec03013",
         "properties": {
           "name": "Stock Suspension",
@@ -3292,24 +3334,22 @@
       },
       {
         "id": "9492c724-7906-4e40-9457-44a786cc7087",
+        "name": "KYB Excel-G Gas Shock (Front)",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "KYB Excel-G Gas Shock (Front)",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "KYB Excel-G Gas Shock (Front)",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "30.69",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-8321077-1869806",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "344049",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "30.69",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "2",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "30.69",
-            "estimated_cost": "30.69"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -3319,24 +3359,22 @@
       },
       {
         "id": "60473e42-8873-42d6-a769-a115766074e0",
+        "name": "KYB Excel-G Gas Shock (Rear)",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "KYB Excel-G Gas Shock (Rear)",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "KYB Excel-G Gas Shock (Rear)",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "31.52",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-0565454-4792220",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "344050",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "31.52",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "2",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "31.52",
-            "estimated_cost": "31.52"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -3346,6 +3384,7 @@
       },
       {
         "id": "faca8529-d909-4632-a805-1d1d9b6db60d",
+        "name": "Stock Brakes/Axles",
         "type": "459f58ca-bce4-59ea-bca9-82e83ec03013",
         "properties": {
           "name": "Stock Brakes/Axles",
@@ -3380,24 +3419,22 @@
       },
       {
         "id": "ddf7a11a-1c67-4b2d-9d50-c8f58d54c973",
+        "name": "National Wheel Seal",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "National Wheel Seal",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "National Wheel Seal",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "6.99",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-7006402-8249017",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "8312",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "6.99",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "6.99",
-            "estimated_cost": "6.99"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -3407,24 +3444,22 @@
       },
       {
         "id": "55fba9e4-9e82-4b11-8a61-a606775169f2",
+        "name": "Raybestos Drum Adjuster Kit (Right)",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Raybestos Drum Adjuster Kit (Right)",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Raybestos Drum Adjuster Kit (Right)",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "14.46",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-9966641-7922652",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "H2593",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "14.46",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "14.46",
-            "estimated_cost": "14.46"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -3434,24 +3469,22 @@
       },
       {
         "id": "7592fc53-54ce-45e3-87e3-23322a98b330",
+        "name": "Timken Axle Shaft Bearing",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Timken Axle Shaft Bearing",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Timken Axle Shaft Bearing",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "36.78",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-4787138-6269046",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "TRP1563TAV",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "36.78",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "2",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "36.78",
-            "estimated_cost": "36.78"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -3461,24 +3494,22 @@
       },
       {
         "id": "33c71c1b-2588-4152-8d68-1f99e1ad5ac8",
+        "name": "MOOG Radius Arm Bushing Kit",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "MOOG Radius Arm Bushing Kit",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "MOOG Radius Arm Bushing Kit",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "30.49",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-4787138-6269046",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "K8361",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "30.49",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "30.49",
-            "estimated_cost": "30.49"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -3488,24 +3519,22 @@
       },
       {
         "id": "981a6cb8-3d8e-4c6c-be25-b572ae2a5fac",
+        "name": "Power Stop Front Caliper (Right)",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Power Stop Front Caliper (Right)",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Power Stop Front Caliper (Right)",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "44.85",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-8321077-1869806",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "L4196",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "44.85",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "44.85",
-            "estimated_cost": "44.85"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -3515,24 +3544,22 @@
       },
       {
         "id": "424a6ed0-240a-4315-bfff-d97dabc5474c",
+        "name": "Carlson Drum Brake Hardware Kit",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Carlson Drum Brake Hardware Kit",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Carlson Drum Brake Hardware Kit",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "15.89",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-8321077-1869806",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "H2312",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "15.89",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "15.89",
-            "estimated_cost": "15.89"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -3542,24 +3569,22 @@
       },
       {
         "id": "4598ddb0-24b9-4016-a076-93c357944595",
+        "name": "Power Stop Front Caliper (Left)",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Power Stop Front Caliper (Left)",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Power Stop Front Caliper (Left)",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "62.65",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-8321077-1869806",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "L4197",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "62.65",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "62.65",
-            "estimated_cost": "62.65"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -3569,24 +3594,22 @@
       },
       {
         "id": "f27f025c-edee-4e13-804e-f4b4532a369a",
+        "name": "Raybestos Ceramic Brake Pads",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Raybestos Ceramic Brake Pads",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Raybestos Ceramic Brake Pads",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "22.53",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-8321077-1869806",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "PGD249M",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "22.53",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "22.53",
-            "estimated_cost": "22.53"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -3596,24 +3619,22 @@
       },
       {
         "id": "313501c9-ad34-4466-a16d-d4eb0e71cda8",
+        "name": "Raybestos Brake Shoes",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Raybestos Brake Shoes",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Raybestos Brake Shoes",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "15.68",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-8321077-1869806",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "559PG",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "15.68",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "15.68",
-            "estimated_cost": "15.68"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -3623,24 +3644,22 @@
       },
       {
         "id": "bbd44c56-f037-40e4-a458-ae5bd617c4fb",
+        "name": "Timken Wheel Bearing Set",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Timken Wheel Bearing Set",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Timken Wheel Bearing Set",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "17.85",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-8321077-1869806",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "SET45",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "17.85",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "4",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "17.85",
-            "estimated_cost": "17.85"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -3650,24 +3669,22 @@
       },
       {
         "id": "f1c66f12-ae9e-4fb7-a883-3d964da257c1",
+        "name": "Dorman Wheel Cylinder (Rear)",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Dorman Wheel Cylinder (Rear)",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Dorman Wheel Cylinder (Rear)",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "7.25",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-8321077-1869806",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "W37862",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "7.25",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": 2,
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "7.25",
-            "estimated_cost": "7.25"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -3677,24 +3694,22 @@
       },
       {
         "id": "7c94ca42-332f-4783-8ac3-f6ee9f3e5755",
+        "name": "Raybestos Drum Adjuster Kit (Left)",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Raybestos Drum Adjuster Kit (Left)",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Raybestos Drum Adjuster Kit (Left)",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "10.26",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-8321077-1869806",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "H2592",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "10.26",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "10.26",
-            "estimated_cost": "10.26"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -3704,24 +3719,22 @@
       },
       {
         "id": "8f27ae66-fc84-44bf-a62f-adfe09c4d6b3",
+        "name": "Raybestos Disc Brake Rotor",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Raybestos Disc Brake Rotor",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Raybestos Disc Brake Rotor",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "58.04",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-1210497-9601038",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "6005R",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "58.04",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "2",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "58.04",
-            "estimated_cost": "58.04"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -3731,24 +3744,22 @@
       },
       {
         "id": "e1727d65-3dd9-4335-8a5f-5b07eb87a98d",
+        "name": "National Wheel Seal (Front)",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "National Wheel Seal (Front)",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "National Wheel Seal (Front)",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "6.99",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-0185488-1976276",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "8312",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "6.99",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "6.99",
-            "estimated_cost": "6.99"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -3758,24 +3769,22 @@
       },
       {
         "id": "c2519ca1-e795-4351-9608-4eda3c11bc8e",
+        "name": "FEL-PRO Differential Gasket",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "FEL-PRO Differential Gasket",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "FEL-PRO Differential Gasket",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "7.49",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-2820310-8076257",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "RDS 55393",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "7.49",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "2",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "7.49",
-            "estimated_cost": "7.49"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -3785,6 +3794,7 @@
       },
       {
         "id": "1ab4d600-e346-4d04-8980-4612fd36496d",
+        "name": "Stock Steering",
         "type": "459f58ca-bce4-59ea-bca9-82e83ec03013",
         "properties": {
           "name": "Stock Steering",
@@ -3814,24 +3824,22 @@
       },
       {
         "id": "b26cdc31-e759-4553-b85f-b5712e1c6d1a",
+        "name": "MOOG Adjusting Sleeve",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "MOOG Adjusting Sleeve",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "MOOG Adjusting Sleeve",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": 16.99,
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-4787138-6269046",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "ES2080S",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "16.99",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": 16.99,
-            "estimated_cost": "16.99"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -3841,22 +3849,20 @@
       },
       {
         "id": "f23e02a2-f764-472a-8617-fb85ae33053f",
+        "name": "Ball Joints",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Ball Joints",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Ball Joints",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "25.84",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "25.84",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "25.84",
-            "estimated_cost": "25.84"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -3866,12 +3872,15 @@
       },
       {
         "id": "72647d06-bdc5-4159-ac65-cdb68d6ac652",
+        "name": "Mevotech Inner Tie Rod",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Mevotech Inner Tie Rod",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Mevotech Inner Tie Rod",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "32.05",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-9966641-7922652",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "MDS1042",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "32.05",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
@@ -3880,8 +3889,6 @@
         "children": [],
         "metadata": {
           "orphaned_properties": {
-            "actual_cost": "32.05",
-            "estimated_cost": "32.05",
             "prop_1771951944461": "",
             "prop_1771951966105": ""
           }
@@ -3895,24 +3902,22 @@
       },
       {
         "id": "deafa784-be69-47bc-9b2a-f73cf842bb53",
+        "name": "MOOG Tie Rod End (Right)",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "MOOG Tie Rod End (Right)",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "MOOG Tie Rod End (Right)",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "23.97",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-4787138-6269046",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "ES2214R",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "23.97",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "23.97",
-            "estimated_cost": "23.97"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -3922,24 +3927,22 @@
       },
       {
         "id": "3c7d325d-1c5c-453a-80a1-e82c3c5a4bd1",
+        "name": "MOOG Adjusting Sleeve",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "MOOG Adjusting Sleeve",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "MOOG Adjusting Sleeve",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "16.87",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-4787138-6269046",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "ES2079S",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "16.87",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "16.87",
-            "estimated_cost": "16.87"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -3949,24 +3952,22 @@
       },
       {
         "id": "66e4c108-796a-4021-8611-d3a05b3477e0",
+        "name": "MOOG Steering Drag Link",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "MOOG Steering Drag Link",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "MOOG Steering Drag Link",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "52.78",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-8321077-1869806",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "DS1041",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "52.78",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "52.78",
-            "estimated_cost": "52.78"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -3976,12 +3977,15 @@
       },
       {
         "id": "fd6f9284-67a9-4788-a6f2-32ddcc37daeb",
+        "name": "MOOG Tie Rod End (Left)",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "MOOG Tie Rod End (Left)",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "MOOG Tie Rod End (Left)",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": 27.34,
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-8321077-1869806",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "ES2215L",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "27.34",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
@@ -3990,8 +3994,6 @@
         "children": [],
         "metadata": {
           "orphaned_properties": {
-            "actual_cost": 27.34,
-            "estimated_cost": "27.34",
             "prop_1771951966105": ""
           }
         },
@@ -4004,12 +4006,15 @@
       },
       {
         "id": "6ff13947-eb04-4de0-b11a-26c32a53ae18",
+        "name": "MOOG Camber Bushing",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "MOOG Camber Bushing",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "MOOG Camber Bushing",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "35.49",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-3193159-3144240",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "K8736",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "35.49",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "2",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
@@ -4018,8 +4023,6 @@
         "children": [],
         "metadata": {
           "orphaned_properties": {
-            "actual_cost": "35.49",
-            "estimated_cost": "35.49",
             "prop_1771951944461": ""
           }
         },
@@ -4032,11 +4035,14 @@
       },
       {
         "id": "9fe1583f-d09b-43cf-81e8-b8813c3717a0",
+        "name": "Axel Pivot Bushings",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Axel Pivot Bushings",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Axel Pivot Bushings",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "29.54",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "29.54",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": 2,
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
@@ -4045,8 +4051,6 @@
         "children": [],
         "metadata": {
           "orphaned_properties": {
-            "actual_cost": "29.54",
-            "estimated_cost": "29.54",
             "prop_1771951944461": ""
           }
         },
@@ -4059,21 +4063,19 @@
       },
       {
         "id": "31b7a96d-4afa-4f3e-b5a1-9dfdb7fb4f41",
+        "name": "Axel Pivot Bushings",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Axel Pivot Bushings",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Axel Pivot Bushings",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "26.97",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "26.97",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "49ea8160-2c4d-4d91-4800-1c3176029d26",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "26.97",
-            "estimated_cost": "26.97"
-          }
-        },
+        "metadata": {},
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -4083,6 +4085,7 @@
       },
       {
         "id": "59d1eb52-1551-4e2a-a8db-7ea8a11d012a",
+        "name": "Stock Drive Train",
         "type": "459f58ca-bce4-59ea-bca9-82e83ec03013",
         "properties": {
           "name": "Stock Drive Train",
@@ -4121,12 +4124,15 @@
       },
       {
         "id": "778fa48b-30cc-44d6-a99a-be92d05dcb3e",
+        "name": "Purolator Fuel Filter",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Purolator Fuel Filter",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Purolator Fuel Filter",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "18.25",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-8618213-6130662",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "F50126",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "18.25",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
@@ -4135,8 +4141,6 @@
         "children": [],
         "metadata": {
           "orphaned_properties": {
-            "actual_cost": "18.25",
-            "estimated_cost": "18.25",
             "prop_1771951944461": ""
           }
         },
@@ -4149,24 +4153,22 @@
       },
       {
         "id": "768cd6d0-05d2-4184-8f90-9270d4a7e61c",
+        "name": "Standard Motor Distributor Cap",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Standard Motor Distributor Cap",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Standard Motor Distributor Cap",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "19.95",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-3562115-2735432",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "FD169X",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "19.95",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "19.95",
-            "estimated_cost": "19.95"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -4176,24 +4178,22 @@
       },
       {
         "id": "dc2d6516-8fea-4262-b577-a544c8454a28",
+        "name": "Standard Motor PCV Valve",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Standard Motor PCV Valve",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Standard Motor PCV Valve",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "10.17",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-9966641-7922652",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "V288",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "10.17",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "10.17",
-            "estimated_cost": "10.17"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -4203,24 +4203,22 @@
       },
       {
         "id": "5da7a3b3-d4bd-4edf-aee9-a3e1777e4774",
+        "name": "Standard Motor PCV Grommet",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Standard Motor PCV Grommet",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Standard Motor PCV Grommet",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "7.14",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-9966641-7922652",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "GV22",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "7.14",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "7.14",
-            "estimated_cost": "7.14"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -4230,24 +4228,22 @@
       },
       {
         "id": "e24511bb-a348-4b2c-89ac-6df4795727c6",
+        "name": "Motorcraft Thermostat",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Motorcraft Thermostat",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Motorcraft Thermostat",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "41.00",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-9966641-7922652",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "RT1161",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "41.00",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "41.00",
-            "estimated_cost": "41.00"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -4257,24 +4253,22 @@
       },
       {
         "id": "0e61ebbc-175d-42fd-9cb7-ec6969979329",
+        "name": "Cloyes Timing Chain Kit",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Cloyes Timing Chain Kit",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Cloyes Timing Chain Kit",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "96.81",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-1413231-0669819",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "9-4151S",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "96.81",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "96.81",
-            "estimated_cost": "96.81"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -4284,24 +4278,22 @@
       },
       {
         "id": "81ee4340-bb4a-47a5-a9b2-70e11908d8cf",
+        "name": "Gates Radiator Cap",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Gates Radiator Cap",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Gates Radiator Cap",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "9.09",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-4787138-6269046",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "31527",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "9.09",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "9.09",
-            "estimated_cost": "9.09"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -4311,12 +4303,15 @@
       },
       {
         "id": "99d7d090-4fb9-4500-b3ac-f4fecb4aa770",
+        "name": "Standard Motor Distributor Rotor",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Standard Motor Distributor Rotor",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Standard Motor Distributor Rotor",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "11.97",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-7989869-5202600",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "FD-308",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "11.97",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
@@ -4325,8 +4320,6 @@
         "children": [],
         "metadata": {
           "orphaned_properties": {
-            "actual_cost": "11.97",
-            "estimated_cost": "11.97",
             "prop_1771951966105": ""
           }
         },
@@ -4339,24 +4332,22 @@
       },
       {
         "id": "acbcab2e-8055-4f71-a18a-7c9e08890522",
+        "name": "Motorcraft Ignition Module",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Motorcraft Ignition Module",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Motorcraft Ignition Module",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "65.28",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-8518811-4433833",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "DY1284",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "65.28",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "65.28",
-            "estimated_cost": "65.28"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -4366,24 +4357,22 @@
       },
       {
         "id": "246693fa-7e86-4d2b-804a-a3dcbc3146f2",
+        "name": "Motorcraft Copper Spark Plug",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Motorcraft Copper Spark Plug",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Motorcraft Copper Spark Plug",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "4.89",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-8321077-1869806",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "SP409AX",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "4.89",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "6",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "4.89",
-            "estimated_cost": "4.89"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -4393,24 +4382,22 @@
       },
       {
         "id": "96b966ab-b38c-419c-aae9-49a4e9dc743b",
+        "name": "FEL-PRO Timing Cover Gasket Set",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "FEL-PRO Timing Cover Gasket Set",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "FEL-PRO Timing Cover Gasket Set",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "22.71",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-8321077-1869806",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "TCS 45791",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "22.71",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "22.71",
-            "estimated_cost": "22.71"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -4420,24 +4407,22 @@
       },
       {
         "id": "8e4b4cac-2bff-478c-a469-6a693bfd2095",
+        "name": "Gates Water Pump",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Gates Water Pump",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Gates Water Pump",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "53.78",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-8321077-1869806",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "43054",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "53.78",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "53.78",
-            "estimated_cost": "53.78"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -4447,24 +4432,22 @@
       },
       {
         "id": "a5070c01-ba93-4292-8159-bb7ff1c16bc8",
+        "name": "Motorcraft Ignition Wire Set",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Motorcraft Ignition Wire Set",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Motorcraft Ignition Wire Set",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "43.78",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-8321077-1869806",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "WR4010C",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "43.78",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "43.78",
-            "estimated_cost": "43.78"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -4474,24 +4457,22 @@
       },
       {
         "id": "7023e037-8d4f-4156-94d9-3b071cd5aba9",
+        "name": "FEL-PRO O-Ring",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "FEL-PRO O-Ring",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "FEL-PRO O-Ring",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "4.41",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-8321077-1869806",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "35404",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "4.41",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "4.41",
-            "estimated_cost": "4.41"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -4501,24 +4482,22 @@
       },
       {
         "id": "24a5babb-e205-4147-8572-c3ec5b6b959d",
+        "name": "National Redi-sleeve",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "National Redi-sleeve",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "National Redi-sleeve",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "31.24",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-8321077-1869806",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "99166",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "31.24",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "31.24",
-            "estimated_cost": "31.24"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -4528,24 +4507,22 @@
       },
       {
         "id": "89022244-7312-4e7e-b50f-61a76356d15e",
+        "name": "Hayden Premium Fan Clutch",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Hayden Premium Fan Clutch",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Hayden Premium Fan Clutch",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "46.05",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-9595477-0381812",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "2614",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "46.05",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "46.05",
-            "estimated_cost": "46.05"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -4555,24 +4532,22 @@
       },
       {
         "id": "32155103-0125-4a06-b227-9fdfe05e1be6",
+        "name": "Rostra Transmission Vacuum Modulator",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Rostra Transmission Vacuum Modulator",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Rostra Transmission Vacuum Modulator",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "49.99",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-4842826-4464226",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "51-0056-02-00",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "49.99",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "49.99",
-            "estimated_cost": "49.99"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -4582,24 +4557,22 @@
       },
       {
         "id": "58014237-9e9c-4fb4-b545-e1f80118577f",
+        "name": "Dorman Cooling Fan Blade",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Dorman Cooling Fan Blade",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Dorman Cooling Fan Blade",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "38.78",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-8170202-8044248",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "620-112",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "38.78",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "38.78",
-            "estimated_cost": "38.78"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -4609,24 +4582,22 @@
       },
       {
         "id": "fcf26c6e-7815-4e4a-a566-65edd18ad7d0",
+        "name": "PurolatorBOSS Oil Filter",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "PurolatorBOSS Oil Filter",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "PurolatorBOSS Oil Filter",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "15.99",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-9797078-2910603",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "PBL30001",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "15.99",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "15.99",
-            "estimated_cost": "15.99"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -4636,6 +4607,7 @@
       },
       {
         "id": "ae724518-ae43-4bef-805d-0ea9e8bce488",
+        "name": "Body",
         "type": "459f58ca-bce4-59ea-bca9-82e83ec03013",
         "properties": {
           "name": "Body",
@@ -4656,22 +4628,20 @@
       },
       {
         "id": "baa65202-ba3b-411b-9e2e-f15b02bfccae",
+        "name": "Patch Panel",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Patch Panel",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Patch Panel",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "50-9675",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "50.31",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "49ea8160-2c4d-4d91-4800-1c3176029d26",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "LMC Truck",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "estimated_cost": "50.31"
-          }
-        },
+        "metadata": {},
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -4681,6 +4651,7 @@
       },
       {
         "id": "bdc8c629-0808-4f3d-b378-cb82d5e28fc4",
+        "name": "Modified Suspension",
         "type": "459f58ca-bce4-59ea-bca9-82e83ec03013",
         "properties": {
           "name": "Modified Suspension",
@@ -4701,21 +4672,19 @@
       },
       {
         "id": "cbf55983-c7b9-422e-9248-9d28a4a68efc",
+        "name": "SDI E-Clik",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "SDI E-Clik",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "SDI E-Clik",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "SDI-SS-2154001",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "2499",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "49ea8160-2c4d-4d91-4800-1c3176029d26",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "suspensiondirect.com",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "estimated_cost": "2499"
-          }
-        },
+        "metadata": {},
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -4725,6 +4694,7 @@
       },
       {
         "id": "78cbaba6-697c-4dec-b72d-04c633b73686",
+        "name": "Modified Axles",
         "type": "459f58ca-bce4-59ea-bca9-82e83ec03013",
         "properties": {
           "name": "Modified Axles",
@@ -4745,21 +4715,19 @@
       },
       {
         "id": "a60f735e-082c-4020-b019-5e7bd001df06",
+        "name": "Locking Hubs",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Locking Hubs",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Locking Hubs",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "AVM 465 XP",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "289.00",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "49ea8160-2c4d-4d91-4800-1c3176029d26",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "https://ccsurplusparts.com/products/avm-465-xp-ford-ranger-explorer-1990-1997-mazda-b4000-lock-outs-hubs-extreme",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "estimated_cost": "289.00"
-          }
-        },
+        "metadata": {},
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -4769,6 +4737,7 @@
       },
       {
         "id": "63494286-90e9-44c0-8d93-8d1f436feb06",
+        "name": "Stock Electrical",
         "type": "459f58ca-bce4-59ea-bca9-82e83ec03013",
         "properties": {
           "name": "Stock Electrical",
@@ -4795,24 +4764,22 @@
       },
       {
         "id": "503b3ba9-a725-4e25-b265-9c6d37cc936c",
+        "name": "CEC Industries 12V Flasher Relay",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "CEC Industries 12V Flasher Relay",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "CEC Industries 12V Flasher Relay",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "11.19",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-9978039-2329857",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "EF32",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "11.19",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "11.19",
-            "estimated_cost": "11.19"
-          }
-        },
+        "metadata": {},
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -4822,23 +4789,21 @@
       },
       {
         "id": "faa8b534-b326-4c32-a366-f691902894c1",
+        "name": "TOMALL T10 Bulb Sockets (Pack of 4)",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "TOMALL T10 Bulb Sockets (Pack of 4)",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "TOMALL T10 Bulb Sockets (Pack of 4)",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "5.99",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-9978039-2329857",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "5.99",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "5.99",
-            "estimated_cost": "5.99"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -4848,23 +4813,21 @@
       },
       {
         "id": "e2575adb-dff0-4e68-adbd-e9d9529abbec",
+        "name": "YOGEIER 24-Piece LED Interior Bulb Set",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "YOGEIER 24-Piece LED Interior Bulb Set",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "YOGEIER 24-Piece LED Interior Bulb Set",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "7.99",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-6837171-9368256",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "7.99",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "7.99",
-            "estimated_cost": "7.99"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -4874,12 +4837,15 @@
       },
       {
         "id": "db12e5c2-429e-42c0-a2b9-7e3f27b701f5",
+        "name": "AUXITO 3157 LED Bulb (Pack of 2)",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "AUXITO 3157 LED Bulb (Pack of 2)",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "AUXITO 3157 LED Bulb (Pack of 2)",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "13.99",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-6837171-9368256",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "3157",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "13.99",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
@@ -4888,8 +4854,6 @@
         "children": [],
         "metadata": {
           "orphaned_properties": {
-            "actual_cost": "13.99",
-            "estimated_cost": "13.99",
             "prop_1771951966105": ""
           }
         },
@@ -4902,24 +4866,22 @@
       },
       {
         "id": "180299eb-ef94-40ee-9f74-5faca75362e7",
+        "name": "AUXITO 1157 LED Bulb (Pack of 2)",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "AUXITO 1157 LED Bulb (Pack of 2)",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "AUXITO 1157 LED Bulb (Pack of 2)",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "16.14",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-7405377-0513052",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "1157",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "16.14",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "16.14",
-            "estimated_cost": "16.14"
-          }
-        },
+        "metadata": {},
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -4929,24 +4891,22 @@
       },
       {
         "id": "fa5291dc-75e7-4d61-ae7a-b8427fd99eab",
+        "name": "AUXITO 1156 LED Bulb (Pack of 2)",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "AUXITO 1156 LED Bulb (Pack of 2)",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "AUXITO 1156 LED Bulb (Pack of 2)",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "13.99",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-7405377-0513052",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "1156",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "13.99",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "13.99",
-            "estimated_cost": "13.99"
-          }
-        },
+        "metadata": {},
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -4956,24 +4916,22 @@
       },
       {
         "id": "3c7410e4-4024-4cd2-a9ae-8562a0429a71",
+        "name": "PurolatorONE Engine Air Filter",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "PurolatorONE Engine Air Filter",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "PurolatorONE Engine Air Filter",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "9.92",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-5772056-1777033",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "A23592",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "9.92",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "9.92",
-            "estimated_cost": "9.92"
-          }
-        },
+        "metadata": {},
         "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -4983,6 +4941,7 @@
       },
       {
         "id": "3bd95921-3c79-45ae-9a3f-f68b37ba99f9",
+        "name": "Modified Electrical",
         "type": "459f58ca-bce4-59ea-bca9-82e83ec03013",
         "properties": {
           "name": "Modified Electrical",
@@ -5009,24 +4968,22 @@
       },
       {
         "id": "07d0375e-9b1c-41bd-bdbb-49275b363985",
+        "name": "RTL-SDR Blog V4 Radio Dongle",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "RTL-SDR Blog V4 Radio Dongle",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "RTL-SDR Blog V4 Radio Dongle",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "39.95",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-0896419-0819443",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "V4 R828D",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "39.95",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "39.95",
-            "estimated_cost": "39.95"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -5036,23 +4993,21 @@
       },
       {
         "id": "f8e94e9a-c53d-47c0-ba69-c418dfdf7dc2",
+        "name": "Coolwell HDMI to USB Capture Card",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Coolwell HDMI to USB Capture Card",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Coolwell HDMI to USB Capture Card",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "20.90",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-4459009-2675434",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "20.90",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "20.90",
-            "estimated_cost": "20.90"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -5062,24 +5017,22 @@
       },
       {
         "id": "fff14e1b-0f97-4013-adb6-3fb9977f27a7",
+        "name": "CarlinKit Wireless CarPlay Adapter",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "CarlinKit Wireless CarPlay Adapter",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "CarlinKit Wireless CarPlay Adapter",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "55.99",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-9492001-6861849",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "CPC200-CCPA",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "55.99",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "55.99",
-            "estimated_cost": "55.99"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -5089,23 +5042,21 @@
       },
       {
         "id": "ca6f4e06-43a4-4b75-863c-9d53c45e9ac1",
+        "name": "ACEIRMC 8CH Optocoupler",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "ACEIRMC 8CH Optocoupler",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "ACEIRMC 8CH Optocoupler",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "15.69",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-9492001-6861849",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "15.69",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "15.69",
-            "estimated_cost": "15.69"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -5115,23 +5066,21 @@
       },
       {
         "id": "e0ce1b66-502e-4cfb-bc69-54bbbc18e4b7",
+        "name": "RS485 CAN HAT for Raspberry Pi",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "RS485 CAN HAT for Raspberry Pi",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "RS485 CAN HAT for Raspberry Pi",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "16.31",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-7549109-5968215",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "16.31",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "16.31",
-            "estimated_cost": "16.31"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -5141,23 +5090,21 @@
       },
       {
         "id": "5e66a573-7e72-4a46-86cd-88c85aec8fe6",
+        "name": "hiBCTR CAN Transceiver Module (3 Pcs)",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "hiBCTR CAN Transceiver Module (3 Pcs)",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "hiBCTR CAN Transceiver Module (3 Pcs)",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "7.97",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-7549109-5968215",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "7.97",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "7.97",
-            "estimated_cost": "7.97"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -5167,23 +5114,21 @@
       },
       {
         "id": "04b539a7-808d-40af-9d0b-9fefde93682d",
+        "name": "AITRIP ESP32 Development Board (3 Pcs)",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "AITRIP ESP32 Development Board (3 Pcs)",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "AITRIP ESP32 Development Board (3 Pcs)",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "15.99",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-7549109-5968215",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "15.99",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "15.99",
-            "estimated_cost": "15.99"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -5193,6 +5138,7 @@
       },
       {
         "id": "219ee95c-5307-49a6-8fd4-7e834061db5b",
+        "name": "Modified Interior",
         "type": "459f58ca-bce4-59ea-bca9-82e83ec03013",
         "properties": {
           "name": "Modified Interior",
@@ -5216,23 +5162,21 @@
       },
       {
         "id": "5e1a6113-1d08-415b-a91f-9cba13843956",
+        "name": "Acerkyt Single Din Touchscreen Stereo",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Acerkyt Single Din Touchscreen Stereo",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Acerkyt Single Din Touchscreen Stereo",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "55.99",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-5755298-4531422",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "55.99",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "55.99",
-            "estimated_cost": "55.99"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -5242,24 +5186,22 @@
       },
       {
         "id": "9353f5d4-c3fe-46c3-b6fd-21192ac1e293",
+        "name": "Metra Reverse Wiring Harness",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Metra Reverse Wiring Harness",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Metra Reverse Wiring Harness",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "21.95",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-7989869-5202600",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "71-1770",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "21.95",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "21.95",
-            "estimated_cost": "21.95"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -5269,24 +5211,22 @@
       },
       {
         "id": "a570811e-fb99-4ab9-b749-6cd178107bd4",
+        "name": "Metra Radio Installation Kit",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Metra Radio Installation Kit",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Metra Radio Installation Kit",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "14.99",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-7989869-5202600",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "99-5700",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "14.99",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "14.99",
-            "estimated_cost": "14.99"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -5296,24 +5236,22 @@
       },
       {
         "id": "a6a6c972-0c4b-444d-9013-f33f729a701e",
+        "name": "Metra Wiring Harness",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Metra Wiring Harness",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Metra Wiring Harness",
+          "33a76eed-3a7d-94a2-6512-e6cd0b74e6ab": "8.60",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-7989869-5202600",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "70-1770",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "8.60",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "actual_cost": "8.60",
-            "estimated_cost": "8.60"
-          }
-        },
+        "metadata": {},
         "indicator_id": "partial",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -5323,6 +5261,7 @@
       },
       {
         "id": "2be1250e-7c5c-47f3-a93e-9258718dbe90",
+        "name": "Modified Drive Train",
         "type": "459f58ca-bce4-59ea-bca9-82e83ec03013",
         "properties": {
           "name": "Modified Drive Train",
@@ -5330,7 +5269,8 @@
         },
         "children": [
           "0c2aeed7-bf17-4a96-922a-68bd41be7cbf",
-          "eb106e58-f223-4e49-a47e-4c663a4f3e0c"
+          "eb106e58-f223-4e49-a47e-4c663a4f3e0c",
+          "2178484a-6a6a-4e5b-9dbc-45d3dc72af25"
         ],
         "metadata": {},
         "indicator_id": null,
@@ -5344,22 +5284,20 @@
       },
       {
         "id": "0c2aeed7-bf17-4a96-922a-68bd41be7cbf",
+        "name": "Micro Squirt Controller",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Micro Squirt Controller",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Micro Squirt Controller",
           "45cbca7f-0214-bad0-6035-01ae376584cc": "For controlling the swapped electronically controlled transmission",
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": " MicroSqrt8",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "379.99",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "49ea8160-2c4d-4d91-4800-1c3176029d26",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "DIYAutoTune",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
-        "metadata": {
-          "orphaned_properties": {
-            "estimated_cost": "379.99"
-          }
-        },
+        "metadata": {},
         "indicator_id": "empty",
         "indicator_set": "status",
         "icon_id": "cog",
@@ -5369,10 +5307,12 @@
       },
       {
         "id": "eb106e58-f223-4e49-a47e-4c663a4f3e0c",
+        "name": "VR ABS Converter",
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "VR ABS Converter",
           "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "VR ABS Converter",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "349.00",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "0",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "49ea8160-2c4d-4d91-4800-1c3176029d26",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Happy Cactus Garage"
@@ -5380,7 +5320,6 @@
         "children": [],
         "metadata": {
           "orphaned_properties": {
-            "estimated_cost": "349.00",
             "prop_1771951944461": ""
           }
         },
@@ -5392,7 +5331,26 @@
         "allowed_children": []
       },
       {
+        "id": "2178484a-6a6a-4e5b-9dbc-45d3dc72af25",
+        "name": "Mega Squirt",
+        "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
+        "properties": {
+          "name": "Mega Squirt",
+          "7e5304d1-7583-8e9a-3117-03eb04177987": "1749.00",
+          "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "49ea8160-2c4d-4d91-4800-1c3176029d26"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "cog",
+        "schema_shape": "circle",
+        "schema_color": "#fb7185",
+        "allowed_children": []
+      },
+      {
         "id": "141251af-850d-4868-a75a-16bd0afc90a6",
+        "name": "Tools Inventory",
         "type": "a99e2151-96dd-6c39-5575-a6f9be58b8c5",
         "properties": {
           "name": "Tools Inventory",
@@ -5414,6 +5372,7 @@
       },
       {
         "id": "b1fe1049-5d9e-44c4-8d25-31965d40995d",
+        "name": "New",
         "type": "81ab9613-5029-b8ac-5c42-8ff9f35a55d4",
         "properties": {
           "name": "New",
@@ -5443,6 +5402,7 @@
       },
       {
         "id": "1b7ac27b-401d-4645-a4d2-8670e8c07cce",
+        "name": "Ultimate No Spill Coolant Funnel Kit",
         "type": "47111e56-edbd-21ee-35f7-ab5c494da2a6",
         "properties": {
           "name": "Ultimate No Spill Coolant Funnel Kit",
@@ -5467,6 +5427,7 @@
       },
       {
         "id": "98fc1da2-b9fb-4ad9-a0c0-477937617e32",
+        "name": "Toolwiz Magnetic Camber Gauge",
         "type": "47111e56-edbd-21ee-35f7-ab5c494da2a6",
         "properties": {
           "name": "Toolwiz Magnetic Camber Gauge",
@@ -5491,6 +5452,7 @@
       },
       {
         "id": "299e943a-4526-4324-8e41-a50887eb9a1f",
+        "name": "Performance Tool Lock Nut Socket",
         "type": "47111e56-edbd-21ee-35f7-ab5c494da2a6",
         "properties": {
           "name": "Performance Tool Lock Nut Socket",
@@ -5516,6 +5478,7 @@
       },
       {
         "id": "e15fdad8-0778-4ae6-abf6-0bfb6f097f3d",
+        "name": "Decibel Meter",
         "type": "47111e56-edbd-21ee-35f7-ab5c494da2a6",
         "properties": {
           "name": "Decibel Meter",
@@ -5540,6 +5503,7 @@
       },
       {
         "id": "71ef8247-ce6f-43c7-a773-a366a775315e",
+        "name": "Espusta Brake Pad Gauge",
         "type": "47111e56-edbd-21ee-35f7-ab5c494da2a6",
         "properties": {
           "name": "Espusta Brake Pad Gauge",
@@ -5564,6 +5528,7 @@
       },
       {
         "id": "cb1e7bdb-075b-4dd0-baf4-e44aefc84f64",
+        "name": "AUTOOL Smoke Machine",
         "type": "47111e56-edbd-21ee-35f7-ab5c494da2a6",
         "properties": {
           "name": "AUTOOL Smoke Machine",
@@ -5589,6 +5554,7 @@
       },
       {
         "id": "a53d1f70-0f8c-4820-8234-f98862ccbcd4",
+        "name": "Hose Pinch Off Pliers Set",
         "type": "47111e56-edbd-21ee-35f7-ab5c494da2a6",
         "properties": {
           "name": "Hose Pinch Off Pliers Set",
@@ -5613,6 +5579,7 @@
       },
       {
         "id": "585e0e4d-7ca6-4c17-b763-955be77e4a08",
+        "name": "INNOVA Ford OBD1 Code Reader",
         "type": "47111e56-edbd-21ee-35f7-ab5c494da2a6",
         "properties": {
           "name": "INNOVA Ford OBD1 Code Reader",
@@ -5638,6 +5605,7 @@
       },
       {
         "id": "ebc8971f-98c3-4974-8066-e80cd4ee3d2c",
+        "name": "VEVOR Toe Alignment Plates",
         "type": "47111e56-edbd-21ee-35f7-ab5c494da2a6",
         "properties": {
           "name": "VEVOR Toe Alignment Plates",
@@ -5662,6 +5630,7 @@
       },
       {
         "id": "66d7e8a8-8f0b-40b7-90c8-969aed42905f",
+        "name": "CTA Tools One-Man Brake Bleeder",
         "type": "47111e56-edbd-21ee-35f7-ab5c494da2a6",
         "properties": {
           "name": "CTA Tools One-Man Brake Bleeder",
@@ -5687,6 +5656,7 @@
       },
       {
         "id": "8af04d53-d82f-4a6c-970b-3701c4b1d90f",
+        "name": "Shop Tools",
         "type": "81ab9613-5029-b8ac-5c42-8ff9f35a55d4",
         "properties": {
           "name": "Shop Tools",
@@ -5713,6 +5683,7 @@
       },
       {
         "id": "a91eb167-ae77-4bd5-86d9-d22033d6dc0e",
+        "name": "Air Compressor",
         "type": "47111e56-edbd-21ee-35f7-ab5c494da2a6",
         "properties": {
           "name": "Air Compressor",
@@ -5739,6 +5710,7 @@
       },
       {
         "id": "9f571674-bf0e-4247-a012-b1a373eacc07",
+        "name": "Fuel Injection Service Kit",
         "type": "47111e56-edbd-21ee-35f7-ab5c494da2a6",
         "properties": {
           "name": "Fuel Injection Service Kit",
@@ -5765,6 +5737,7 @@
       },
       {
         "id": "828eacd8-9333-46ef-9016-5b645271f46a",
+        "name": "Fuel Line Disconnect Kit",
         "type": "47111e56-edbd-21ee-35f7-ab5c494da2a6",
         "properties": {
           "name": "Fuel Line Disconnect Kit",
@@ -5791,6 +5764,7 @@
       },
       {
         "id": "d068167c-1349-43a5-a4d2-3f0355b3b88d",
+        "name": "Brake Bleeder Kit",
         "type": "47111e56-edbd-21ee-35f7-ab5c494da2a6",
         "properties": {
           "name": "Brake Bleeder Kit",
@@ -5816,6 +5790,7 @@
       },
       {
         "id": "81419774-5375-4113-b0c0-c40d81b3ec12",
+        "name": "Long Throw DA",
         "type": "47111e56-edbd-21ee-35f7-ab5c494da2a6",
         "properties": {
           "name": "Long Throw DA",
@@ -5843,6 +5818,7 @@
       },
       {
         "id": "9f000dc0-6bb6-4afb-ab1d-09c7ba9854b5",
+        "name": "Short Throw DA",
         "type": "47111e56-edbd-21ee-35f7-ab5c494da2a6",
         "properties": {
           "name": "Short Throw DA",
@@ -5869,6 +5845,7 @@
       },
       {
         "id": "57dcde39-3e80-46b4-9ecc-00a477baa234",
+        "name": "Welder",
         "type": "47111e56-edbd-21ee-35f7-ab5c494da2a6",
         "properties": {
           "name": "Welder",
@@ -5894,6 +5871,7 @@
       },
       {
         "id": "d593c50d-31dd-43bd-bc8a-788e2416bfc3",
+        "name": "Human Resources",
         "type": "1b7cedf8-5697-2dac-6a63-e977869dc40f",
         "properties": {
           "name": "Human Resources",
@@ -5914,6 +5892,7 @@
       },
       {
         "id": "8d655fac-ca83-4374-bf94-732984f3a853",
+        "name": "Daniel Worth",
         "type": "7230f246-66ef-dfb4-1010-c4ade5ac5418",
         "properties": {
           "name": "Daniel Worth",
@@ -5946,6 +5925,7 @@
       },
       {
         "id": "80050417-1151-4cae-8431-ac5e047f58e9",
+        "name": "Talus Software",
         "type": "6af49a72-a129-e754-a0af-ff1c8e509673",
         "properties": {
           "name": "Talus Software",
@@ -5974,9 +5954,11 @@
       },
       {
         "id": "12054bd3-0528-42c7-b0da-282ebc1665e0",
+        "name": "Talus Tally",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Talus Tally",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Talus Tally",
           "ccafc508-72f6-4ca2-66dc-26319639d1a5": ""
@@ -5999,9 +5981,11 @@
       },
       {
         "id": "79b90636-06fa-4d2c-a450-020d6ee6e3d1",
+        "name": "Talus Trace",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Talus Trace",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Talus Trace"
         },
@@ -6023,9 +6007,11 @@
       },
       {
         "id": "98892dce-57c4-4799-b3f7-81009b2b8ddf",
+        "name": "Digital Dash",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Digital Dash",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Digital Dash"
         },
@@ -6047,9 +6033,11 @@
       },
       {
         "id": "78b25908-5925-44a4-8312-d07314e6c0d9",
+        "name": "Infotainment",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Infotainment",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Infotainment"
         },
@@ -6071,9 +6059,11 @@
       },
       {
         "id": "25b3658e-e54a-433a-aaa4-ab3d734227b0",
+        "name": "Can Bus Design",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Can Bus Design",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Can Bus Design"
         },
@@ -6095,9 +6085,11 @@
       },
       {
         "id": "c3b68e0f-aaaf-4d37-9a8c-469eef9e4149",
+        "name": "ABS Design",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "ABS Design",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "ABS Design"
         },
@@ -6119,9 +6111,11 @@
       },
       {
         "id": "947eaf8e-2b46-4fa3-90b0-4d3b929de5c4",
+        "name": "Electronic Transmission Control",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Electronic Transmission Control",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Electronic Transmission Control"
         },
@@ -6143,6 +6137,7 @@
       },
       {
         "id": "a5dc3b1e-7511-465f-ac9a-be44698bd43f",
+        "name": "Body Work",
         "type": "6af49a72-a129-e754-a0af-ff1c8e509673",
         "properties": {
           "name": "Body Work",
@@ -6166,9 +6161,11 @@
       },
       {
         "id": "d83d81ec-5a38-4a2c-a27e-90256b02daa8",
+        "name": "Passenger Rear Quarter Panel Patch",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Passenger Rear Quarter Panel Patch",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Passenger Rear Quarter Panel Patch"
         },
@@ -6192,6 +6189,7 @@
       },
       {
         "id": "19ac3489-a9fd-4121-bd0e-6b51d2e0a4ed",
+        "name": "Patch Panel",
         "type": "64c246cc-0e2e-98b3-edb0-c0bb252e6a45",
         "properties": {
           "name": "Patch Panel",
@@ -6207,9 +6205,11 @@
       },
       {
         "id": "f1700f82-f825-4fa3-b39a-a0243e7671ae",
+        "name": "Door Repair",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Door Repair",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Door Repair"
         },
@@ -6235,6 +6235,7 @@
       },
       {
         "id": "be3a81d5-a4de-42cc-a610-ff2f0408a192",
+        "name": "Rough Sanding",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Rough Sanding",
@@ -6256,6 +6257,7 @@
       },
       {
         "id": "437b6993-f27e-453b-8fb6-7cda0e4343df",
+        "name": "Rust Treatment",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Rust Treatment",
@@ -6277,6 +6279,7 @@
       },
       {
         "id": "1fcee437-7ade-4251-855b-c64a09fea4bb",
+        "name": "Epoxy Primer",
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Epoxy Primer",
@@ -6298,6 +6301,7 @@
       },
       {
         "id": "96b21b54-a2ca-4657-bbf6-86b5db20c3ab",
+        "name": "Exterior Cusomization",
         "type": "6af49a72-a129-e754-a0af-ff1c8e509673",
         "properties": {
           "name": "Exterior Cusomization",
@@ -6323,9 +6327,11 @@
       },
       {
         "id": "43ed49db-e0e8-443e-b8d9-e1e5b9f863c4",
+        "name": "Hood Scoops",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Hood Scoops",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Hood Scoops"
         },
@@ -6347,9 +6353,11 @@
       },
       {
         "id": "256d04e9-d7c8-46eb-874a-33ae15350332",
+        "name": "Front Bumper",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Front Bumper",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Front Bumper"
         },
@@ -6371,9 +6379,11 @@
       },
       {
         "id": "fbde829f-51a7-40b6-b5fd-2e0d9949d522",
+        "name": "Rear Bumper",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Rear Bumper",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Rear Bumper"
         },
@@ -6395,9 +6405,11 @@
       },
       {
         "id": "d9a36323-51d7-42f9-bd45-fd2413a04c68",
+        "name": "Mirrors",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Mirrors",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Mirrors"
         },
@@ -6419,6 +6431,7 @@
       },
       {
         "id": "cfe70a3a-5e60-4ec2-8921-5f369386ac87",
+        "name": "Interior Customization",
         "type": "6af49a72-a129-e754-a0af-ff1c8e509673",
         "properties": {
           "name": "Interior Customization",
@@ -6441,9 +6454,11 @@
       },
       {
         "id": "b6d309c7-23ca-4580-9dd9-05e8375272f8",
+        "name": "Retro Air",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Retro Air",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Retro Air"
         },
@@ -6465,6 +6480,7 @@
       },
       {
         "id": "adf08ecd-117a-48ff-a0b1-2646369c6c66",
+        "name": "Axle Swap",
         "type": "6af49a72-a129-e754-a0af-ff1c8e509673",
         "properties": {
           "name": "Axle Swap",
@@ -6485,6 +6501,7 @@
       },
       {
         "id": "10662246-98d6-4f4a-b2da-914525e41c51",
+        "name": "Drive Train Swap",
         "type": "6af49a72-a129-e754-a0af-ff1c8e509673",
         "properties": {
           "name": "Drive Train Swap",
@@ -6507,9 +6524,11 @@
       },
       {
         "id": "d93b8930-899a-4955-b897-263ddf0c4b14",
+        "name": "Transmision",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Transmision",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Transmision"
         },
@@ -6533,6 +6552,7 @@
       },
       {
         "id": "c07c498c-79c4-4c66-8e6b-f4b82423599d",
+        "name": "Micro Squirt Controller",
         "type": "64c246cc-0e2e-98b3-edb0-c0bb252e6a45",
         "properties": {
           "name": "Micro Squirt Controller",
@@ -6548,6 +6568,7 @@
       },
       {
         "id": "bc043205-a612-46cd-a016-64f3167b6481",
+        "name": "MSPRO",
         "type": "6af49a72-a129-e754-a0af-ff1c8e509673",
         "properties": {
           "name": "MSPRO",
@@ -6568,6 +6589,7 @@
       },
       {
         "id": "f3589ed8-5310-4eed-bac4-cb8829426db0",
+        "name": "ABS System",
         "type": "6af49a72-a129-e754-a0af-ff1c8e509673",
         "properties": {
           "name": "ABS System",
@@ -6588,6 +6610,7 @@
       },
       {
         "id": "4f164917-dbd0-40b7-b293-5ac7347e9ff0",
+        "name": "Paint",
         "type": "6af49a72-a129-e754-a0af-ff1c8e509673",
         "properties": {
           "name": "Paint",
@@ -6608,6 +6631,7 @@
       },
       {
         "id": "3472fd21-b7dc-4476-a727-df51f70c46b1",
+        "name": "Active Suspension",
         "type": "6af49a72-a129-e754-a0af-ff1c8e509673",
         "properties": {
           "name": "Active Suspension",
@@ -6630,9 +6654,11 @@
       },
       {
         "id": "c3cad0c4-fc19-4bd3-9995-a3978886fc9c",
+        "name": "Instalation",
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Instalation",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Instalation"
         },
@@ -6750,7 +6776,7 @@
     "49b3f657-b698-4e67-9fec-931979b34a7a": true,
     "eec8276a-0913-44e9-af8b-d2862066c331": true,
     "cf708f0f-91c4-40ff-822f-034cf5c2b2c8": true,
-    "82584abf-2b5c-45f1-80c7-34e9d508f69c": false,
+    "82584abf-2b5c-45f1-80c7-34e9d508f69c": true,
     "05943ed2-50fa-4169-aade-ba55965950fb": true,
     "c639f7c5-a900-42d8-92c1-b052c4af2807": true,
     "318d9929-d908-4319-b908-fbeba4a8e7ff": true,

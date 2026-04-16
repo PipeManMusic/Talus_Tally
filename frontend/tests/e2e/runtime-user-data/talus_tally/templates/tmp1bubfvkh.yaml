@@ -1,0 +1,847 @@
+blocking_view:
+  node_size:
+    base_height: 100
+    base_width: 200
+    direction: down
+    max_depth: 6
+    max_scale: 1.7
+    min_scale: 0.7
+description: Production workflow for YouTube channel and Restomod build with footage
+  tracking and asset management.
+name: Project Talus
+node_types:
+- allowed_asset_types: []
+  allowed_children:
+  - inventory_root
+  - season
+  - task
+  - personnel_assets
+  color: '#6366f1'
+  features:
+  - is_root
+  icon: film
+  id: project_root
+  label: Project
+  properties:
+  - id: name
+    label: Project Name
+    required: false
+    type: text
+  - id: vehicle
+    label: Vehicle Name
+    required: false
+    type: text
+  - id: vin
+    label: VIN
+    required: false
+    type: text
+  - id: purchase_date
+    label: Purchase Date
+    required: false
+    type: date
+  - id: budget
+    label: Estimated Budget
+    required: false
+    type: currency
+  - id: actual_cost
+    label: Actual Cost
+    required: false
+    type: currency
+  - id: project_lead
+    label: Project Lead
+    required: false
+    type: text
+  shape: hexagon
+  velocityConfig:
+    baseScore: 0
+- allowed_asset_types: []
+  allowed_children:
+  - camera_gear_inventory
+  - car_parts_inventory
+  - personnel_assets
+  - tools_inventory
+  color: '#a78bfa'
+  features:
+  - is_inventory_container
+  id: inventory_root
+  label: Assets
+  properties:
+  - id: name
+    label: Assets
+    required: false
+    type: text
+  shape: hexagon
+  icon: archive-box
+- allowed_asset_types: []
+  allowed_children:
+  - camera_gear_category
+  color: '#60a5fa'
+  features:
+  - is_inventory_container
+  id: camera_gear_inventory
+  label: Camera Gear Inventory
+  properties:
+  - id: name
+    label: Camera Gear Inventory
+    required: false
+    type: text
+  shape: rounded
+  icon: camera
+- allowed_asset_types: []
+  allowed_children:
+  - camera_gear_asset
+  color: '#3b82f6'
+  id: camera_gear_category
+  label: Camera Gear Category
+  properties:
+  - description: e.g., Cameras, Lenses, Accessories, Audio
+    id: name
+    label: Category Name
+    required: false
+    type: text
+  shape: roundedSquare
+  icon: camera
+- allowed_asset_types: []
+  allowed_children: []
+  color: '#0ea5e9'
+  id: camera_gear_asset
+  label: Camera Gear
+  properties:
+  - id: name
+    label: Equipment Name
+    required: false
+    type: text
+  - id: model
+    label: Model Name
+    required: false
+    type: text
+  - id: serial
+    label: Serial Number
+    required: false
+    type: text
+  - id: purchase_date
+    label: Purchase Date
+    required: false
+    type: date
+  - id: acquisition_cost
+    label: Acquisition Cost
+    required: false
+    type: currency
+  - id: status
+    indicator_set: status
+    label: Status
+    options:
+    - indicator_id: available
+      name: Available
+    - indicator_id: partial
+      name: In Use
+    - indicator_id: alert
+      name: Maintenance
+    - indicator_id: empty
+      name: Retired
+    required: false
+    type: select
+  - id: notes
+    label: Notes
+    required: false
+    type: text
+  shape: circle
+  icon: camera
+- allowed_asset_types: []
+  allowed_children:
+  - part_category
+  color: '#ef4444'
+  features:
+  - is_inventory_container
+  icon: cog
+  id: car_parts_inventory
+  label: Car Parts Inventory
+  properties:
+  - id: name
+    label: Car Parts Inventory
+    required: false
+    type: text
+  shape: hexagon
+- allowed_asset_types: []
+  allowed_children:
+  - part_asset
+  color: '#f87171'
+  icon: cog
+  id: part_category
+  label: Part Category
+  properties:
+  - description: e.g., Engine, Suspension, Body, Interior, Electrical
+    id: name
+    label: Category Name
+    required: false
+    type: text
+  shape: rounded
+- allowed_asset_types: []
+  allowed_children: []
+  color: '#fb7185'
+  icon: cog
+  id: part_asset
+  label: Car Part
+  properties:
+  - id: name
+    label: Part Name
+    required: false
+    type: text
+  - id: part_number
+    label: OEM Part Number
+    required: false
+    type: text
+  - id: supplier
+    label: Vendor/Source
+    required: false
+    type: text
+  - id: unit_cost
+    label: Unit Cost
+    required: false
+    type: currency
+    velocityConfig:
+      enabled: true
+      mode: multiplier
+      multiplierFactor: -0.01
+  - id: quantity_on_hand
+    label: Quantity On Hand
+    required: false
+    type: number
+  - id: status
+    indicator_set: status
+    label: Status
+    options:
+    - indicator_id: empty
+      name: Wishlist
+    - indicator_id: alert
+      name: Ordered
+    - indicator_id: partial
+      name: Arrived
+    - indicator_id: filled
+      name: Installed
+    required: false
+    type: select
+    velocityConfig:
+      enabled: true
+      mode: status
+      statusScores:
+        Arrived: 2
+        Installed: -1
+        Ordered: 1
+        Wishlist: -1
+  - id: notes
+    label: Notes
+    required: false
+    type: text
+  shape: circle
+- allowed_asset_types: []
+  allowed_children:
+  - tool_category
+  color: '#84cc16'
+  features:
+  - is_inventory_container
+  id: tools_inventory
+  label: Tools Inventory
+  properties:
+  - id: name
+    label: Tools Inventory
+    required: false
+    type: text
+  shape: hexagon
+  icon: wrench-screwdriver
+- allowed_asset_types: []
+  allowed_children:
+  - tool_asset
+  color: '#bfdbfe'
+  id: tool_category
+  label: Tool Category
+  properties:
+  - description: e.g., Power Tools, Hand Tools, Diagnostic Equipment, Safety
+    id: name
+    label: Category Name
+    required: false
+    type: text
+  shape: rounded
+  icon: wrench-screwdriver
+- allowed_asset_types: []
+  allowed_children: []
+  color: '#86efac'
+  id: tool_asset
+  label: Tool
+  properties:
+  - id: name
+    label: Tool Name
+    required: false
+    type: text
+  - id: make_model
+    label: Make / Model
+    required: false
+    type: text
+  - id: serial_number
+    label: Serial Number
+    required: false
+    type: text
+  - id: purchase_date
+    label: Purchase Date
+    required: false
+    type: date
+  - id: acquisition_cost
+    label: Acquisition Cost
+    required: false
+    type: currency
+  - id: status
+    indicator_set: status
+    label: Status
+    options:
+    - indicator_id: available
+      name: Available
+    - indicator_id: partial
+      name: In Use
+    - indicator_id: alert
+      name: Maintenance
+    - indicator_id: empty
+      name: Retired
+    required: false
+    type: select
+    velocityConfig:
+      enabled: true
+      mode: status
+      statusScores:
+        Available: 0
+        In Use: 1
+        Maintenance: 2
+        Retired: 0
+  - id: last_service_date
+    label: Last Service Date
+    required: false
+    type: date
+  - id: notes
+    label: Notes
+    required: false
+    type: text
+  shape: circle
+  velocityConfig:
+    scoreMode: inherit
+  icon: wrench-screwdriver
+- allowed_asset_types: []
+  allowed_children:
+  - episode
+  - task
+  color: '#8b5cf6'
+  icon: film
+  id: season
+  label: Season
+  properties:
+  - id: name
+    label: Season Name
+    required: false
+    type: text
+  - id: year
+    label: Release Year
+    required: false
+    type: number
+  - id: status
+    indicator_set: status
+    label: Status
+    options:
+    - id: 7d8a9c3b-1234-5678-90ab-cdef12345678
+      indicator_id: empty
+      name: Planning
+    - id: 5fbab80b-88a5-f00c-5f7e-1f5716193531
+      indicator_id: partial
+      name: In Production
+    - id: 34423cc2-d2c5-c699-fa1c-605ca72ee331
+      indicator_id: filled
+      name: Released
+    required: false
+    type: select
+    velocityConfig:
+      enabled: true
+      mode: status
+      penaltyMode: false
+      statusScores:
+        In Production: 1
+        Planning: -1
+        Released: -1
+  shape: circle
+  velocityConfig:
+    penaltyScore: false
+- allowed_asset_types: []
+  allowed_children:
+  - task
+  - footage
+  - location_scout
+  - uses_camera_gear
+  - uses_car_part
+  - uses_tool
+  color: '#06b6d4'
+  features:
+  - scheduling
+  id: episode
+  label: Episode
+  properties:
+  - id: name
+    label: Episode Title
+    required: false
+    type: text
+  - id: episode_number
+    label: 'Episode #'
+    required: false
+    type: number
+  - description: 'Click Edit to write a detailed description. Use SCENE:, SPEAKER:,
+      [ACTION], NOTE: prefixes to structure content.'
+    id: description
+    label: script
+    markup_profile: script_default
+    required: false
+    type: editor
+  - id: status
+    indicator_set: status
+    label: Edit Status
+    options:
+    - indicator_id: empty
+      name: Planning
+    - indicator_id: partial
+      name: Shooting
+    - indicator_id: partial
+      name: Editing
+    - indicator_id: filled
+      name: Uploaded
+    required: false
+    type: select
+    velocityConfig:
+      enabled: true
+      mode: status
+      statusScores:
+        Editing: 2
+        Planning: -1
+        Shooting: 1
+        Uploaded: -1
+  - id: start_date
+    label: Start Date
+    type: date
+    system_locked: true
+    ui_group: Schedule
+    semantic_role: gantt_start
+  - id: end_date
+    label: End Date
+    type: date
+    system_locked: true
+    ui_group: Schedule
+    semantic_role: gantt_end
+  - id: assigned_to
+    label: Assigned To
+    type: node_reference
+    target_type: person
+    system_locked: true
+    ui_group: Schedule
+  - id: estimated_hours
+    label: Estimated Hours
+    type: number
+    value: 0
+    system_locked: true
+    ui_group: Schedule
+  - id: actual_hours
+    label: Actual Hours
+    type: number
+    value: 0
+    system_locked: true
+    ui_group: Schedule
+  shape: roundedSquare
+  icon: video-camera
+- allowed_asset_types:
+  - camera_gear_asset
+  allowed_children:
+  - uses_camera_gear
+  - uses_car_part
+  - uses_tool
+  color: '#10b981'
+  icon: film
+  id: footage
+  label: Footage Clip
+  properties:
+  - id: name
+    label: Clip Name
+    required: false
+    type: text
+  - id: filename
+    label: File Name
+    required: false
+    type: text
+  - description: Paste the 'Copy Link' URL from Dropbox here.
+    id: dropbox_link
+    label: Dropbox Share Link
+    required: false
+    type: text
+  - id: notes
+    label: Shoot Notes
+    required: false
+    type: editor
+  - id: status
+    indicator_set: status
+    label: Status
+    options:
+    - indicator_id: empty
+      name: Planned
+    - indicator_id: partial
+      name: In Production
+    - indicator_id: filled
+      name: Complete
+    required: false
+    type: select
+    velocityConfig:
+      enabled: true
+      mode: status
+      statusScores:
+        Complete: -2
+        In Production: 1
+        Planned: -1
+  shape: circle
+- allowed_asset_types: []
+  allowed_children: []
+  color: '#8b7355'
+  id: location_scout
+  label: Location Scout
+  properties:
+  - id: name
+    label: Location Name
+    required: false
+    type: text
+  - id: address
+    label: Address
+    required: false
+    type: text
+  - id: notes
+    label: Scout Notes
+    required: false
+    type: text
+  - id: permits_needed
+    label: Permits Required
+    required: false
+    type: checkbox
+  - id: scouted_date
+    label: Scout Date
+    required: false
+    type: date
+  shape: rounded
+  icon: map-pin
+- allowed_asset_types: []
+  allowed_children:
+  - asset_reference
+  - uses_camera_gear
+  - uses_car_part
+  - uses_tool
+  color: '#f59e0b'
+  has_time_log: true
+  id: task
+  label: Task
+  properties:
+  - id: name
+    label: Task Name
+    required: false
+    type: text
+  - id: description
+    label: Description
+    required: false
+    type: text
+  - id: status
+    indicator_set: status
+    label: Status
+    options:
+    - indicator_id: empty
+      name: Not Started
+    - indicator_id: partial
+      name: In Progress
+    - indicator_id: alert
+      name: Blocked
+    - indicator_id: filled
+      name: Done
+    required: false
+    type: select
+  - id: estimated_hours
+    label: Est. Hours
+    required: false
+    type: number
+  - id: approved
+    label: Approved for Production
+    required: false
+    type: checkbox
+  - id: notes
+    label: Notes
+    required: false
+    type: editor
+  shape: roundedSquare
+  icon: clipboard-document-check
+- allowed_asset_types:
+  - camera_gear_asset
+  allowed_children: []
+  id: uses_camera_gear
+  label: Uses Camera Gear
+  properties:
+  - id: name
+    label: Asset Name
+    required: false
+    type: text
+  - id: asset_id
+    label: Linked Camera Gear
+    required: false
+    type: text
+  - id: role
+    label: Role/Purpose
+    required: false
+    type: text
+  - id: quantity
+    label: Quantity Needed
+    required: false
+    type: number
+  icon: camera
+- allowed_asset_types:
+  - part_asset
+  allowed_children: []
+  id: uses_car_part
+  label: Uses Car Part
+  properties:
+  - id: name
+    label: Asset Name
+    required: false
+    type: text
+  - id: asset_id
+    label: Linked Car Part
+    required: false
+    type: text
+  - id: role
+    label: Role/Purpose
+    required: false
+    type: text
+  - id: quantity
+    label: Quantity Needed
+    required: false
+    type: number
+  icon: cog
+- allowed_asset_types:
+  - tool_asset
+  allowed_children: []
+  id: uses_tool
+  label: Uses Tool
+  properties:
+  - id: name
+    label: Asset Name
+    required: false
+    type: text
+  - id: asset_id
+    label: Linked Tool
+    required: false
+    type: text
+  - id: role
+    label: Role/Purpose
+    required: false
+    type: text
+  - id: quantity
+    label: Quantity Needed
+    required: false
+    type: number
+  velocityConfig:
+    baseScore: -1
+    scoreMode: standalone
+  icon: wrench-screwdriver
+- allowed_asset_types: []
+  allowed_children: []
+  id: asset_reference
+  label: Uses Asset
+  properties:
+  - id: name
+    label: Asset Reference
+    required: false
+    type: text
+  - id: asset_id
+    label: Linked Asset
+    required: false
+    type: text
+  - id: role
+    label: Role/Purpose in Task
+    required: false
+    type: text
+  - id: quantity
+    label: Quantity Needed
+    required: false
+    type: number
+  icon: clipboard-document-list
+- allowed_asset_types: []
+  allowed_children: []
+  id: node_type_1773847596886
+  label: New Node Type
+  properties:
+  - id: name
+    label: Name
+    required: false
+    type: text
+  icon: document-text
+- allowed_asset_types: []
+  allowed_children:
+  - person
+  base_type: asset
+  color: '#60a5fa'
+  features:
+  - is_personnel_container
+  icon: users
+  id: personnel_assets
+  label: Personnel Assets
+  properties:
+  - id: name
+    label: Name
+    required: true
+    type: text
+  shape: rounded
+- allowed_asset_types: []
+  allowed_children: []
+  base_type: asset
+  color: '#3b82f6'
+  features:
+  - is_person
+  icon: user
+  id: person
+  label: Person
+  properties:
+  - id: name
+    label: Full Name
+    required: true
+    system_locked: true
+    type: text
+  - id: email
+    label: Email
+    required: true
+    system_locked: true
+    type: text
+  - id: capacity_monday
+    label: Capacity Monday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 8
+  - id: capacity_tuesday
+    label: Capacity Tuesday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 8
+  - id: capacity_wednesday
+    label: Capacity Wednesday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 8
+  - id: capacity_thursday
+    label: Capacity Thursday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 8
+  - id: capacity_friday
+    label: Capacity Friday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 8
+  - id: capacity_saturday
+    label: Capacity Saturday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 0
+  - id: capacity_sunday
+    label: Capacity Sunday (Hours)
+    required: true
+    system_locked: true
+    type: number
+    value: 0
+  - id: hourly_rate_monday
+    label: Hourly Rate Monday
+    required: false
+    system_locked: true
+    type: number
+  - id: hourly_rate_tuesday
+    label: Hourly Rate Tuesday
+    required: false
+    system_locked: true
+    type: number
+  - id: hourly_rate_wednesday
+    label: Hourly Rate Wednesday
+    required: false
+    system_locked: true
+    type: number
+  - id: hourly_rate_thursday
+    label: Hourly Rate Thursday
+    required: false
+    system_locked: true
+    type: number
+  - id: hourly_rate_friday
+    label: Hourly Rate Friday
+    required: false
+    system_locked: true
+    type: number
+  - id: hourly_rate_saturday
+    label: Hourly Rate Saturday
+    required: false
+    system_locked: true
+    type: number
+  - id: hourly_rate_sunday
+    label: Hourly Rate Sunday
+    required: false
+    system_locked: true
+    type: number
+  - id: overtime_capacity
+    label: Overtime Capacity (Hours)
+    required: false
+    system_locked: true
+    type: number
+    value: 0
+  - id: overtime_capacity_monday
+    label: Overtime Capacity Monday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    value: 0
+  - id: overtime_capacity_tuesday
+    label: Overtime Capacity Tuesday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    value: 0
+  - id: overtime_capacity_wednesday
+    label: Overtime Capacity Wednesday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    value: 0
+  - id: overtime_capacity_thursday
+    label: Overtime Capacity Thursday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    value: 0
+  - id: overtime_capacity_friday
+    label: Overtime Capacity Friday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    value: 0
+  - id: overtime_capacity_saturday
+    label: Overtime Capacity Saturday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    value: 0
+  - id: overtime_capacity_sunday
+    label: Overtime Capacity Sunday (Hours)
+    required: false
+    system_locked: true
+    type: number
+    value: 0
+  - id: system_role
+    label: System Role
+    required: false
+    system_locked: true
+    type: text
+  shape: circle
+uuid: 574ecd39-bad3-4e44-b6e4-247d00cc5eca
+version: 0.2.1

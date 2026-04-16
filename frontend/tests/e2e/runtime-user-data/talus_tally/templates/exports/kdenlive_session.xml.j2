@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+{# Kdenlive Session Export Template
+   Generates a Kdenlive-compatible XML project file from footage nodes
+   
+   Context variables:
+   - nodes: List of all nodes in the project
+   - project_id: Project identifier
+   - template_version: Template version
+#}
+<mlt LC_NUMERIC="C" version="7.0.0" title="{{ project_id or 'Talus Tally Export' }}" producer="main_bin">
+  <profile description="HD 1080p 30 fps" width="1920" height="1080" progressive="1" sample_aspect_num="1" sample_aspect_den="1" display_aspect_num="16" display_aspect_den="9" frame_rate_num="30" frame_rate_den="1" colorspace="709"/>
+  
+  {# Main Bin - contains all footage clips #}
+  <playlist id="main_bin">
+    <property name="kdenlive:docproperties.decimalPoint">.</property>
+    <property name="kdenlive:docproperties.version">{{ template_version or '1.0' }}</property>
+    <property name="xml_retain">1</property>
+    
+    {# Iterate through footage nodes #}
+    {% for node in nodes %}
+    {% if node.type == 'footage' %}
+    <entry producer="producer_{{ loop.index }}" in="00:00:00.000" out="00:00:10.000"/>
+    {% endif %}
+    {% endfor %}
+  </playlist>
+  
+  {# Producers - one for each footage file #}
+  {% for node in nodes %}
+  {% if node.type == 'footage' %}
+  <producer id="producer_{{ loop.index }}" in="00:00:00.000" out="00:00:10.000">
+    <property name="length">00:00:10.000</property>
+    <property name="eof">pause</property>
+    <property name="resource">{{ node.properties.local_path or node.properties.filename or node.name }}</property>
+    <property name="mlt_service">avformat</property>
+    <property name="meta.media.width">1920</property>
+    <property name="meta.media.height">1080</property>
+    <property name="seekable">1</property>
+    <property name="kdenlive:clipname">{{ node.name }}</property>
+    <property name="kdenlive:id">{{ loop.index }}</property>
+    <property name="kdenlive:folderid">-1</property>
+    {% if node.properties.notes %}
+    <property name="kdenlive:description">{{ node.properties.notes }}</property>
+    {% endif %}
+  </producer>
+  {% endif %}
+  {% endfor %}
+  
+  {# Tractor - main timeline #}
+  <tractor id="maintractor" in="00:00:00.000">
+    <property name="kdenlive:projectTractor">1</property>
+    
+    {# Video track #}
+    <track producer="playlist_video" hide="video"/>
+    {# Audio track #}
+    <track producer="playlist_audio" hide="audio"/>
+  </tractor>
+  
+  {# Video Playlist #}
+  <playlist id="playlist_video">
+    <property name="kdenlive:audio_track">0</property>
+    {% for node in nodes %}
+    {% if node.type == 'footage' %}
+    <entry producer="producer_{{ loop.index }}" in="00:00:00.000" out="00:00:05.000"/>
+    {% endif %}
+    {% endfor %}
+  </playlist>
+  
+  {# Audio Playlist #}
+  <playlist id="playlist_audio">
+    <property name="kdenlive:audio_track">1</property>
+    {% for node in nodes %}
+    {% if node.type == 'footage' %}
+    <entry producer="producer_{{ loop.index }}" in="00:00:00.000" out="00:00:05.000"/>
+    {% endif %}
+    {% endfor %}
+  </playlist>
+
+</mlt>

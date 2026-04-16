@@ -1,0 +1,114 @@
+description: Minimal template with predictable node types for automated E2E coverage.
+name: E2E Test Template
+node_types:
+- allowed_asset_types: []
+  allowed_children: []
+  features:
+  - budgeting
+  - is_root
+  - scheduling
+  icon: layers
+  id: e2e_root
+  label: Test Project
+  properties:
+  - id: name
+    label: Project Name
+    required: false
+    type: text
+    uuid: f1927967-4dc6-cc0d-e8ad-9f79009c51b2
+  - id: objective
+    label: Objective
+    required: false
+    type: text
+    uuid: ea6fd22e-17e0-dd9b-e08a-e8c7b7f95a0d
+  - id: estimated_cost
+    label: Estimated Cost
+    required: false
+    system_locked: true
+    type: currency
+    ui_group: Financial
+    uuid: 1f2be75b-8aa9-3cab-9402-6797e9a7df3c
+  - id: actual_cost
+    label: Actual Cost
+    required: false
+    system_locked: true
+    type: currency
+    ui_group: Financial
+    uuid: 1995af96-4af9-f0eb-b3eb-2ba8e75ae6da
+  - id: start_date
+    label: Start Date
+    type: date
+    system_locked: true
+    ui_group: Schedule
+    semantic_role: gantt_start
+    _macro_injected: true
+    uuid: e7c62529-3f31-678e-0a95-552d920e19bc
+    required: false
+  - id: end_date
+    label: End Date
+    type: date
+    system_locked: true
+    ui_group: Schedule
+    semantic_role: gantt_end
+    _macro_injected: true
+    uuid: 3aad8f3b-35d8-c8b8-f568-a5422fe5cb0e
+    required: false
+  - id: assigned_to
+    label: Assigned To
+    type: node_reference
+    target_type: person
+    system_locked: true
+    ui_group: Schedule
+    _macro_injected: true
+    uuid: 96f54a78-a327-0b3c-234d-3ec89d5b8272
+    required: false
+  - id: estimated_hours
+    label: Estimated Hours
+    type: number
+    value: 0
+    system_locked: true
+    ui_group: Schedule
+    _macro_injected: true
+    uuid: 9193f67e-1045-dfd2-f249-429a11210521
+    required: false
+  - id: actual_hours
+    label: Actual Hours
+    type: number
+    value: 0
+    system_locked: true
+    ui_group: Schedule
+    _macro_injected: true
+    uuid: 2ac39dd4-7d0e-9781-5d78-dea80cc2e651
+    required: false
+  - id: allocations
+    label: Allocations
+    type: object
+    value: {}
+    system_locked: true
+    ui_group: Schedule
+    _macro_injected: true
+    uuid: af51b519-461a-d92c-de00-8aeb83383c3f
+    required: false
+  - id: status
+    label: Status
+    type: select
+    indicator_set: status
+    options:
+    - name: To Do
+      indicator_id: empty
+      id: 5772280e-c991-6268-4b06-8bfc8ee973bb
+    - name: In Progress
+      indicator_id: partial
+      id: 4ba483e4-e0d3-e310-2aa3-97379beac76f
+    - name: Done
+      indicator_id: filled
+      id: ecfd0212-8898-9c8e-eb9a-4939f7b31f27
+    value: 5772280e-c991-6268-4b06-8bfc8ee973bb
+    system_locked: true
+    ui_group: Schedule
+    _macro_injected: true
+    uuid: c97e1ecf-ca4a-7c17-ab7a-589f42678c2f
+    required: false
+  uuid: c772d629-7d55-ad53-b487-4a755b02317c
+uuid: 314d7e8b-173a-40ea-9b06-d055510feb83
+version: '1.0'

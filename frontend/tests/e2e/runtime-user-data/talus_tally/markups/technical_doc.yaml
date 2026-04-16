@@ -1,0 +1,94 @@
+id: technical_doc
+label: Technical Documentation
+description: "Formatting tokens for technical documentation and API reference writing"
+
+tokens:
+  # Code blocks - monospace
+  - id: code_block
+    label: Code Block
+    prefix: "```"
+    format_scope: "line"
+
+  # Inline code
+  - id: inline_code
+    label: Inline Code
+    prefix: "`"
+    format_scope: "prefix"
+
+  # Warning/Alert
+  - id: warning
+    label: Warning
+    prefix: "⚠ WARNING:"
+    format_scope: "line"
+    format:
+      text_transform: "uppercase"
+      bold: true
+      color: "#FF6B6B"
+
+  # Info/Note
+  - id: info
+    label: Info
+    prefix: "ℹ NOTE:"
+    format_scope: "line"
+    format:
+      bold: true
+      color: "#4ECDC4"
+
+  # Success/Tip
+  - id: success
+    label: Tip
+    prefix: "✓ TIP:"
+    format_scope: "line"
+    format:
+      bold: true
+      color: "#95E77D"
+
+  # Code reference/function
+  - id: function
+    label: Function Ref
+    prefix: "fn::"
+    format_scope: "line"
+    format:
+      bold: true
+
+  # Parameter documentation
+  - id: param
+    label: Parameter
+    prefix: "@param"
+    format_scope: "prefix"
+    format:
+      bold: true
+      color: "#A8E6CF"
+
+  # Return value documentation
+  - id: returns
+    label: Returns
+    prefix: "@returns"
+    format_scope: "prefix"
+    format:
+      bold: true
+      color: "#FFD3B6"
+
+  # Example section
+  - id: example
+    label: Example
+    prefix: "EXAMPLE:"
+    format_scope: "line"
+    format:
+      bold: true
+      italic: true
+
+  # Step-by-step instructions
+  - id: step
+    label: Step
+    prefix: "→"
+    format_scope: "line"
+
+  # Definition/glossary term
+  - id: definition
+    label: Definition
+    prefix: "DEF:"
+    format_scope: "line"
+    format:
+      underline: true
+      bold: true

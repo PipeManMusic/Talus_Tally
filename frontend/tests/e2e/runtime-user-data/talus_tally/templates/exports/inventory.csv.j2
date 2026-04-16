@@ -1,0 +1,13 @@
+{# Inventory CSV Export Template
+   Exports camera gear and car parts inventory items as CSV
+   
+   Context variables:
+   - nodes: List of all nodes in the project
+   - project_id: Project identifier
+#}
+Type,Name,Status,Serial/Part Number,Cost,Description
+{% for node in nodes -%}
+{% if node.type == 'camera_gear' or node.type == 'camera_gear_asset' or node.type == 'car_part' or node.type == 'part_asset' -%}
+{{ node.type }},{{ node.name | replace(',', ';') }},{{ node.status | replace(',', ';') }},{{ node.properties.serial_number or node.properties.part_number or '' | replace(',', ';') }},{{ node.properties.cost or '' }},{{ node.properties.description or '' | replace(',', ';') }}
+{% endif -%}
+{% endfor -%}

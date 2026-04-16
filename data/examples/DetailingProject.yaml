@@ -7,14 +7,12 @@ blocking_view:
     max_scale: 1.3
     min_scale: 0.7
 description: This is a template for tracking construction project detailing work.
-id: DetailingProject
 name: Southland Ind Detailing Project Template
 node_types:
 - allowed_asset_types: []
-  allowed_children: []
+  allowed_children:
+  - building
   color: '#D94E1F'
-  features:
-  - is_root
   id: root
   label: Project
   properties:
@@ -23,11 +21,13 @@ node_types:
     label: Job Number
     required: false
     type: number
+    uuid: 0e17f56b-ba02-3a02-4ca0-7315cbbe5c9a
   uuid: dda577b6-9f7c-8feb-e893-5e6f32522a56
   velocityConfig:
     baseScore: 0
 - allowed_asset_types: []
-  allowed_children: []
+  allowed_children:
+  - level
   color: '#FF6B3B'
   id: building
   label: Building
@@ -36,11 +36,16 @@ node_types:
     label: Building Name
     required: false
     type: text
+    uuid: d51711b1-85da-519f-d273-d72c1d46bf37
   uuid: 3a638e56-8c4e-5b20-d608-75081b77a567
   velocityConfig:
     baseScore: 0
 - allowed_asset_types: []
-  allowed_children: []
+  allowed_children:
+  - eq_category
+  - deliverable
+  - modelpopulation
+  - coordination
   color: '#28a745'
   icon: cog
   id: trade
@@ -57,12 +62,17 @@ node_types:
       name: Mechanical Pipe
     required: false
     type: select
+    uuid: 0ecaab00-87a5-ceee-cac6-055b952d69cb
   uuid: ea771325-f14c-3a0e-8b7b-6756efc0280e
   velocityConfig:
     baseScore: 0
 - allowed_asset_types: []
-  allowed_children: []
+  allowed_children:
+  - trade
   color: '#ffc107'
+  features:
+  - scheduling
+  icon: list-bullet
   id: level
   label: Level
   properties:
@@ -70,6 +80,74 @@ node_types:
     label: Name
     required: false
     type: text
+    uuid: 6c904c63-0fd8-add9-f474-2453e6b7a4b3
+  - _macro_injected: true
+    id: start_date
+    label: Start Date
+    semantic_role: gantt_start
+    system_locked: true
+    type: date
+    ui_group: Schedule
+    uuid: 6914a2bd-e8d6-d4a2-b034-99f7384e5c40
+  - _macro_injected: true
+    id: end_date
+    label: End Date
+    semantic_role: gantt_end
+    system_locked: true
+    type: date
+    ui_group: Schedule
+    uuid: fd7413c9-14ea-8019-d671-3559e9710747
+  - _macro_injected: true
+    id: assigned_to
+    label: Assigned To
+    system_locked: true
+    target_type: person
+    type: node_reference
+    ui_group: Schedule
+    uuid: 5197f5eb-542c-3b66-2198-f9100a28c6f5
+  - _macro_injected: true
+    id: estimated_hours
+    label: Estimated Hours
+    system_locked: true
+    type: number
+    ui_group: Schedule
+    uuid: 848ebce3-3b75-c696-516d-3e34d0c0f6f3
+    value: 0
+  - _macro_injected: true
+    id: actual_hours
+    label: Actual Hours
+    system_locked: true
+    type: number
+    ui_group: Schedule
+    uuid: fe013c5f-8715-6b87-5554-0819b2e09ec9
+    value: 0
+  - _macro_injected: true
+    id: allocations
+    label: Allocations
+    system_locked: true
+    type: object
+    ui_group: Schedule
+    uuid: 0ee1f6b8-c287-d1e9-2fe1-5c35765852ad
+    value: {}
+  - _macro_injected: true
+    id: status
+    indicator_set: status
+    label: Status
+    options:
+    - id: 810c99fc-c572-04a9-37b2-c274a8a1ee00
+      indicator_id: empty
+      name: To Do
+    - id: 85f22836-0a90-a299-e361-95f3854bafdb
+      indicator_id: partial
+      name: In Progress
+    - id: d94e2dda-2e00-e0e0-05bd-90743cccf2ea
+      indicator_id: filled
+      name: Done
+    system_locked: true
+    type: select
+    ui_group: Schedule
+    uuid: 7d4df07f-095e-c8fb-6509-14e96e51f582
+    value: 810c99fc-c572-04a9-37b2-c274a8a1ee00
   uuid: a0e34eb7-e581-ce67-0291-af71d5cddc2b
   velocityConfig:
     baseScore: 0
@@ -78,6 +156,7 @@ node_types:
   base_type: standard
   color: '#dc3545'
   features: []
+  icon: wrench-screwdriver
   id: equipment
   label: Equipment
   primary_status_property_id: prop_1772728700309
@@ -87,11 +166,13 @@ node_types:
     label: Unit ID
     required: false
     type: text
+    uuid: a5822742-d9bc-7376-02d6-670c5e35ba00
   - id: prop_1772728496581
     indicator_set: status
     label: Unit Number
     required: false
     type: text
+    uuid: 294bf4e5-ced9-3202-ff10-92f1fb9d1355
   - id: prop_1772728518927
     indicator_set: status
     label: Submittal Status
@@ -102,18 +183,25 @@ node_types:
     - id: f04ff91e-e4d4-72f6-7a17-8151ab13260b
       indicator_id: partial
       name: Preliminary Submittals
-    - id: e9d66261-d124-041a-3a5a-2707a109e044
+    - id: b1086c7c-7688-6cbd-8823-ea693c33fc70
+      indicator_id: alert
+      name: Revise And Resubmit
+    - id: 303c729e-3d77-b0be-9e07-036b62940763
       indicator_id: filled
-      name: Approved Submittals
+      name: Approved As Noted
+    - id: 51a38ee4-232f-ad75-ffdf-294bc5eb4ea1
+      indicator_id: filled
+      name: Approved
     required: false
     type: select
+    uuid: 954b11b2-929a-426b-0f54-0f745db97a06
     velocityConfig:
       enabled: true
       mode: status
       statusScores:
-        Approved Submittals: 2
-        Pending Submitals: 0
+        Pending Submitals: 2
         Preliminary Submittals: 1
+        Revise And Resubmit: 0
   - id: prop_1772728604451
     indicator_set: status
     label: Modeling Status
@@ -129,11 +217,12 @@ node_types:
       name: Connections Modeled
     required: false
     type: select
+    uuid: 93a416cd-f98e-1d90-e9ba-ec0e102f5dd9
     velocityConfig:
       enabled: true
       mode: status
       statusScores:
-        Connections Modeled: -1
+        Connections Modeled: 0
         Unit Modeled: 1
         Unmodeled: 2
   - id: prop_1772728700309
@@ -154,28 +243,32 @@ node_types:
       name: Deleted
     required: false
     type: select
+    uuid: 09fb8d87-b20b-0ab3-4e6f-7ec7b4cd0677
     velocityConfig:
       enabled: true
       mode: status
       statusScores:
-        Needs Rechecked: -1
-        Unverified: 2
-        Verified: 1
+        Needs Rechecked: 2
+        Unverified: 1
+        Verified: 0
   - id: prop_1772741530967
     indicator_set: status
     label: GPM Heating
     required: false
     type: number
+    uuid: 30eca62b-5ec3-9728-e788-cfa8722e394e
   - id: prop_1772741588288
     indicator_set: status
     label: GPM Cooling
     required: false
     type: number
+    uuid: 05c29257-3944-ca8d-2e1f-4f69afa3d246
   - id: prop_1773331655961
     indicator_set: status
     label: Notes
     required: false
     type: editor
+    uuid: 4f8bcbfd-6891-f456-271b-13cc3272d1f2
   uuid: 94b6e869-c0d3-8c61-3ab7-7b3e53fe07b6
   velocityConfig:
     baseScore: 0
@@ -186,6 +279,7 @@ node_types:
   icon: clipboard-document-check
   id: deliverable
   label: Deliverable
+  primary_status_property_id: status
   properties:
   - id: Type
     label: Type
@@ -214,6 +308,7 @@ node_types:
       name: PL11-MODULAR AND FIXTURE
     required: false
     type: select
+    uuid: bb5e4d94-9f38-73bd-fae5-7c8b86b98aa9
   - id: prop_1772729338195
     indicator_set: status
     label: Issued
@@ -243,6 +338,7 @@ node_types:
       name: As Built
     required: false
     type: select
+    uuid: c4816bc0-a305-e943-73dd-ff4aa3b51c77
     velocityConfig:
       enabled: true
       mode: status
@@ -257,67 +353,79 @@ node_types:
         Progress: 1
   - id: start_date
     label: Start Date
-    type: date
-    system_locked: true
-    ui_group: Schedule
+    required: false
     semantic_role: gantt_start
+    system_locked: true
+    type: date
+    ui_group: Schedule
+    uuid: f88dfa57-2db6-14fa-9d23-882f83030b0e
   - id: end_date
     label: End Date
-    type: date
-    system_locked: true
-    ui_group: Schedule
+    required: false
     semantic_role: gantt_end
+    system_locked: true
+    type: date
+    ui_group: Schedule
+    uuid: eb9fe928-d7ec-8a29-f4cc-83bbe0cc6f0b
   - id: assigned_to
     label: Assigned To
-    type: node_reference
-    target_type: person
+    required: false
     system_locked: true
+    target_type: person
+    type: node_reference
     ui_group: Schedule
+    uuid: 5d3402a6-5a01-e474-7b7f-658ad8e6fba2
   - id: estimated_hours
     label: Estimated Hours
-    type: number
-    value: 0
+    required: false
     system_locked: true
+    type: number
     ui_group: Schedule
+    uuid: b1ba2037-7c83-0f2b-21e6-cb42b42b08e7
+    value: 0
   - id: actual_hours
     label: Actual Hours
-    type: number
-    value: 0
+    required: false
     system_locked: true
+    type: number
     ui_group: Schedule
+    uuid: fadd9ba5-8b0e-c84b-ff84-39d5e58ea0b8
+    value: 0
   - id: allocations
     label: Allocations
+    required: false
+    system_locked: true
     type: object
-    value: &id001 {}
-    system_locked: true
     ui_group: Schedule
+    uuid: ffdd4813-aa9b-4338-8eb7-bdafc5b701c4
+    value: {}
   - id: status
-    label: Status
-    type: select
     indicator_set: status
+    label: Status
     options:
-    - &id002
-      name: To Do
+    - id: 69f5389a-a464-dc22-7a09-f4036d1b82ce
       indicator_id: empty
-      id: 69f5389a-a464-dc22-7a09-f4036d1b82ce
-    - &id003
-      name: In Progress
+      name: To Do
+    - id: 4155c964-b1c3-53b7-ae52-50e14ea9683d
       indicator_id: partial
-      id: 4155c964-b1c3-53b7-ae52-50e14ea9683d
-    - &id004
-      name: Done
+      name: In Progress
+    - id: 39c8d24d-5335-76f0-9c50-14fa510ec8ad
       indicator_id: filled
-      id: 39c8d24d-5335-76f0-9c50-14fa510ec8ad
-    value: To Do
+      name: Done
+    required: false
     system_locked: true
+    type: select
     ui_group: Schedule
+    uuid: 47946984-76b9-8970-d8c7-5645303342b6
+    value: 69f5389a-a464-dc22-7a09-f4036d1b82ce
   uuid: d7779356-7b62-364b-1612-03ffc0143bdc
   velocityConfig:
     baseScore: 0
 - allowed_asset_types: []
-  allowed_children: []
-  features:
-  - scheduling
+  allowed_children:
+  - equipment
+  features: []
+  icon: wrench
   id: eq_category
   label: Equipment Category
   properties:
@@ -325,101 +433,40 @@ node_types:
     label: Name
     required: false
     type: text
-  - id: start_date
-    label: Start Date
-    type: date
-    system_locked: true
-    ui_group: Schedule
-    semantic_role: gantt_start
-  - id: end_date
-    label: End Date
-    type: date
-    system_locked: true
-    ui_group: Schedule
-    semantic_role: gantt_end
-  - id: assigned_to
-    label: Assigned To
-    type: node_reference
-    target_type: person
-    system_locked: true
-    ui_group: Schedule
-  - id: estimated_hours
-    label: Estimated Hours
-    type: number
-    value: 0
-    system_locked: true
-    ui_group: Schedule
-  - id: actual_hours
-    label: Actual Hours
-    type: number
-    value: 0
-    system_locked: true
-    ui_group: Schedule
-  - id: allocations
-    label: Allocations
-    type: object
-    value: *id001
-    system_locked: true
-    ui_group: Schedule
-  - id: status
-    label: Status
-    type: select
-    indicator_set: status
-    options:
-    - *id002
-    - *id003
-    - *id004
-    value: To Do
-    system_locked: true
-    ui_group: Schedule
+    uuid: e5bc14ca-d276-a7a0-15f4-f0997e97cfce
   uuid: 9e2af5ed-7355-1b3f-3c1c-784b3121c27d
 - allowed_asset_types: []
   allowed_children: []
   features:
   - scheduling
-  id: coordion
+  icon: users
+  id: coordination
   label: Coordination
   properties:
   - id: name
     label: Name
     required: false
     type: text
-  - id: start_date
-    label: Start Date
-    type: date
-    system_locked: true
-    ui_group: Schedule
-    semantic_role: gantt_start
-  - id: end_date
-    label: End Date
-    type: date
-    system_locked: true
-    ui_group: Schedule
-    semantic_role: gantt_end
-  - id: assigned_to
-    label: Assigned To
-    type: node_reference
-    target_type: person
-    system_locked: true
-    ui_group: Schedule
+    uuid: ad425f54-f6ea-23f5-3704-657908b5503b
   - id: prop_1773065386946
     indicator_set: status
     label: Status
     options:
-    - id: c61cbe53-19ed-c8bb-5f71-697cbc954be2
+    - id: e03c69fa-f6bd-ff55-d7a5-42c71a45cb53
       indicator_id: empty
       name: Not started
-    - id: 0cecb9af-9363-9e57-a6af-df3353325726
+    - id: 0e8fa994-e149-0053-1e05-a96b65799450
       indicator_id: partial
       name: In Progress
-    - id: a7e4a353-44e7-f00d-3f6d-ce34d30aa928
+    - id: f24b88f8-6b18-2750-8a78-af9a2ae0add4
       indicator_id: filled
       name: Complete
-    - id: d8480cb0-d92e-e34f-320f-2d25c88145e9
+    - id: c0b029a0-a69f-e38d-aca0-d4b4c92124a2
       indicator_id: alert
       name: Needs Revisited
     required: false
     type: select
+    uuid: 00da3307-5d8d-11be-6b5e-d20b7fd2e7ea
     velocityConfig:
       enabled: true
       mode: status
@@ -428,38 +475,77 @@ node_types:
         In Progress: 1
         Needs Revisited: 2
         Not started: -1
+  - id: start_date
+    label: Start Date
+    required: false
+    semantic_role: gantt_start
+    system_locked: true
+    type: date
+    ui_group: Schedule
+    uuid: 72b3d072-49d1-9e3b-f5c3-332bd1ce5b33
+  - id: end_date
+    label: End Date
+    required: false
+    semantic_role: gantt_end
+    system_locked: true
+    type: date
+    ui_group: Schedule
+    uuid: a3350d3d-9b69-d7c2-1514-d5fbe7d38896
+  - id: assigned_to
+    label: Assigned To
+    required: false
+    system_locked: true
+    target_type: person
+    type: node_reference
+    ui_group: Schedule
+    uuid: b1d12c2a-4619-7e25-85e2-95083933a2d7
   - id: estimated_hours
     label: Estimated Hours
-    type: number
-    value: 0
+    required: false
     system_locked: true
+    type: number
     ui_group: Schedule
+    uuid: 1d4fc8a1-cac2-7627-8e84-0775523a93c9
+    value: 0
   - id: actual_hours
     label: Actual Hours
-    type: number
-    value: 0
+    required: false
     system_locked: true
+    type: number
     ui_group: Schedule
+    uuid: 7a9cea0f-10e2-5bbc-dede-6910631cbc43
+    value: 0
   - id: allocations
     label: Allocations
+    required: false
+    system_locked: true
     type: object
-    value: *id001
-    system_locked: true
     ui_group: Schedule
+    uuid: cab72848-eb30-3e0b-d67a-a98c21d631a6
+    value: {}
   - id: status
-    label: Status
-    type: select
     indicator_set: status
+    label: Status
     options:
-    - *id002
-    - *id003
-    - *id004
-    value: To Do
+    - id: 69f5389a-a464-dc22-7a09-f4036d1b82ce
+      indicator_id: empty
+      name: To Do
+    - id: 4155c964-b1c3-53b7-ae52-50e14ea9683d
+      indicator_id: partial
+      name: In Progress
+    - id: 39c8d24d-5335-76f0-9c50-14fa510ec8ad
+      indicator_id: filled
+      name: Done
+    required: false
     system_locked: true
+    type: select
     ui_group: Schedule
-  uuid: 9a389f68-6739-d77d-df83-64c4071c09e1
+    uuid: ca95b1fd-af9c-94f9-d4ae-8bbf8d3dd5b8
+    value: 69f5389a-a464-dc22-7a09-f4036d1b82ce
+  uuid: bc7242f0-dd7b-7b67-78d1-153748e6f218
 - allowed_asset_types: []
-  allowed_children: []
+  allowed_children:
+  - person
   base_type: asset
   color: '#60a5fa'
   features:
@@ -472,14 +558,14 @@ node_types:
     label: Name
     required: true
     type: text
+    uuid: 1efe9935-9e1d-a32d-f769-1e2a0e60eee5
   shape: rounded
   uuid: 1b7cedf8-5697-2dac-6a63-e977869dc40f
 - allowed_asset_types: []
   allowed_children: []
   base_type: asset
   color: '#3b82f6'
-  features:
-  - is_person
+  features: []
   icon: user
   id: person
   label: Person
@@ -489,142 +575,277 @@ node_types:
     required: true
     system_locked: true
     type: text
+    uuid: 3c4347c9-42a4-844d-939d-679087cd2ea4
   - id: email
     label: Email
     required: true
     system_locked: true
     type: text
+    uuid: 9407c701-9e69-a48c-b661-1be4ad2e3fef
   - id: capacity_monday
     label: Capacity Monday (Hours)
     required: true
     system_locked: true
     type: number
+    ui_group: Capacity
+    uuid: ee58a28b-20b9-1ff9-ec07-d61ab0f5270c
     value: 8
   - id: capacity_tuesday
     label: Capacity Tuesday (Hours)
     required: true
     system_locked: true
     type: number
+    ui_group: Capacity
+    uuid: 4d6d5ca3-0915-2eb8-3129-e34cf09c1062
     value: 8
   - id: capacity_wednesday
     label: Capacity Wednesday (Hours)
     required: true
     system_locked: true
     type: number
+    ui_group: Capacity
+    uuid: 58d94770-71a8-fe2e-9a36-d16ed8c53409
     value: 8
   - id: capacity_thursday
     label: Capacity Thursday (Hours)
     required: true
     system_locked: true
     type: number
+    ui_group: Capacity
+    uuid: 787c6562-dc36-4fa8-3c5f-276f2664300c
     value: 8
   - id: capacity_friday
     label: Capacity Friday (Hours)
     required: true
     system_locked: true
     type: number
+    ui_group: Capacity
+    uuid: 2fb88aae-c453-28fc-d636-d479c08e4545
     value: 8
   - id: capacity_saturday
     label: Capacity Saturday (Hours)
     required: true
     system_locked: true
     type: number
+    ui_group: Capacity
+    uuid: 8171069b-cc55-6bb6-32c2-41ec502a80b4
     value: 0
   - id: capacity_sunday
     label: Capacity Sunday (Hours)
     required: true
     system_locked: true
     type: number
+    ui_group: Capacity
+    uuid: d63eced9-7fe5-523d-1b65-de8629bf79f9
     value: 0
   - id: hourly_rate_monday
     label: Hourly Rate Monday
     required: false
     system_locked: true
     type: number
+    ui_group: Rates
+    uuid: 2a38b4af-a899-58c8-9c67-eb814f1eab48
+    value: 0
   - id: hourly_rate_tuesday
     label: Hourly Rate Tuesday
     required: false
     system_locked: true
     type: number
+    ui_group: Rates
+    uuid: 648e3f83-8dc6-82a3-42f5-e33f2f96328d
+    value: 0
   - id: hourly_rate_wednesday
     label: Hourly Rate Wednesday
     required: false
     system_locked: true
     type: number
+    ui_group: Rates
+    uuid: 3dd81849-5815-b6ff-b98c-06a9af3da19b
+    value: 0
   - id: hourly_rate_thursday
     label: Hourly Rate Thursday
     required: false
     system_locked: true
     type: number
+    ui_group: Rates
+    uuid: aa2139dd-cdb6-3006-afea-0fc79344c974
+    value: 0
   - id: hourly_rate_friday
     label: Hourly Rate Friday
     required: false
     system_locked: true
     type: number
+    ui_group: Rates
+    uuid: ab85d4cf-092f-416c-95cf-3418861fd7fc
+    value: 0
   - id: hourly_rate_saturday
     label: Hourly Rate Saturday
     required: false
     system_locked: true
     type: number
+    ui_group: Rates
+    uuid: 1853bdea-6f72-720f-49ae-0b3857723c00
+    value: 0
   - id: hourly_rate_sunday
     label: Hourly Rate Sunday
     required: false
     system_locked: true
     type: number
+    ui_group: Rates
+    uuid: a15d21d3-fe43-0a23-8fc7-485a508a009e
+    value: 0
   - id: overtime_capacity
     label: Overtime Capacity (Hours)
     required: false
     system_locked: true
     type: number
+    ui_group: Overtime
+    uuid: c82cc034-284f-f206-a9ad-74be0153aac6
     value: 0
   - id: overtime_capacity_monday
     label: Overtime Capacity Monday (Hours)
     required: false
     system_locked: true
     type: number
+    ui_group: Overtime
+    uuid: 6c6b73c7-dca2-310f-918a-d2325505eee2
     value: 0
   - id: overtime_capacity_tuesday
     label: Overtime Capacity Tuesday (Hours)
     required: false
     system_locked: true
     type: number
+    ui_group: Overtime
+    uuid: 22001717-2eed-c5a9-1d12-cba4706a9826
     value: 0
   - id: overtime_capacity_wednesday
     label: Overtime Capacity Wednesday (Hours)
     required: false
     system_locked: true
     type: number
+    ui_group: Overtime
+    uuid: 736d74f5-3782-cd8f-e884-8dddffaa6cbf
     value: 0
   - id: overtime_capacity_thursday
     label: Overtime Capacity Thursday (Hours)
     required: false
     system_locked: true
     type: number
+    ui_group: Overtime
+    uuid: 683acc96-3455-5fde-3f29-5f26cb3ee46c
     value: 0
   - id: overtime_capacity_friday
     label: Overtime Capacity Friday (Hours)
     required: false
     system_locked: true
     type: number
+    ui_group: Overtime
+    uuid: 5484142f-36ed-996a-7dce-d218c4423559
     value: 0
   - id: overtime_capacity_saturday
     label: Overtime Capacity Saturday (Hours)
     required: false
     system_locked: true
     type: number
+    ui_group: Overtime
+    uuid: 718ace6a-c51a-6d4b-b0b8-9f3c0d528ce2
     value: 0
   - id: overtime_capacity_sunday
     label: Overtime Capacity Sunday (Hours)
     required: false
     system_locked: true
     type: number
+    ui_group: Overtime
+    uuid: f6cda5d0-d158-14d6-bf25-dd8550ffbd6d
     value: 0
   - id: system_role
     label: System Role
     required: false
     system_locked: true
     type: text
+    uuid: 8171e2bf-f6d2-642b-020c-83e77a0d3815
   shape: circle
   uuid: 7230f246-66ef-dfb4-1010-c4ade5ac5418
+- allowed_asset_types: []
+  allowed_children: []
+  features:
+  - scheduling
+  icon: globe-alt
+  id: modelpopulation
+  label: Model Population
+  properties:
+  - id: name
+    label: Name
+    required: false
+    type: text
+    uuid: 3c35f4e6-a571-3498-4579-59e2258f17b7
+  - id: start_date
+    label: Start Date
+    required: false
+    semantic_role: gantt_start
+    system_locked: true
+    type: date
+    ui_group: Schedule
+    uuid: 5880d4db-ea23-eed0-1230-72ae35b7d5d7
+  - id: end_date
+    label: End Date
+    required: false
+    semantic_role: gantt_end
+    system_locked: true
+    type: date
+    ui_group: Schedule
+    uuid: 0bae843a-f09f-0e43-4723-561a1848d0ae
+  - id: assigned_to
+    label: Assigned To
+    required: false
+    system_locked: true
+    target_type: person
+    type: node_reference
+    ui_group: Schedule
+    uuid: ff2c8fb7-f625-6706-3511-c1a80df501bc
+  - id: estimated_hours
+    label: Estimated Hours
+    required: false
+    system_locked: true
+    type: number
+    ui_group: Schedule
+    uuid: 632bb998-b360-551f-2d83-b791e6d47be5
+    value: 0
+  - id: actual_hours
+    label: Actual Hours
+    required: false
+    system_locked: true
+    type: number
+    ui_group: Schedule
+    uuid: 703c1b08-dd5c-fc48-9777-c1cb0f3f91ae
+    value: 0
+  - id: allocations
+    label: Allocations
+    required: false
+    system_locked: true
+    type: object
+    ui_group: Schedule
+    uuid: 2c215dcf-1065-7226-da41-b46fc6770d07
+    value: {}
+  - id: status
+    indicator_set: status
+    label: Status
+    options:
+    - id: 69f5389a-a464-dc22-7a09-f4036d1b82ce
+      indicator_id: empty
+      name: To Do
+    - id: 4155c964-b1c3-53b7-ae52-50e14ea9683d
+      indicator_id: partial
+      name: In Progress
+    - id: 39c8d24d-5335-76f0-9c50-14fa510ec8ad
+      indicator_id: filled
+      name: Done
+    required: false
+    system_locked: true
+    type: select
+    ui_group: Schedule
+    uuid: 6b231a9a-6658-df36-74bf-d0074741c19c
+    value: 69f5389a-a464-dc22-7a09-f4036d1b82ce
+  uuid: 3ab828bc-180d-a9ee-f831-5cac6631e2cd
 uuid: e23d1f11-77f4-4964-95e0-269d7525d654
 version: 0.1.1

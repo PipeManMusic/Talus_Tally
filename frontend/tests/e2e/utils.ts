@@ -2,7 +2,6 @@ import { expect, type Page } from '@playwright/test';
 import { promises as fs } from 'node:fs';
 import { existsSync } from 'node:fs';
 import * as path from 'node:path';
-import os from 'node:os';
 
 export const E2E_TEMPLATE_ID = 'e2e_smoketest';
 export const E2E_TEMPLATE_NAME = 'E2E Test Template';
@@ -27,15 +26,17 @@ function resolveRepoRoot(): string {
 }
 
 const REPO_ROOT = resolveRepoRoot();
-const TEMPLATE_SRC = path.join(REPO_ROOT, 'data', 'templates', `${E2E_TEMPLATE_ID}.yaml`);
-const TEMPLATE_DEST = path.join(os.homedir(), '.local', 'share', 'talus_tally', 'templates', `${E2E_TEMPLATE_ID}.yaml`);
+const TEMPLATE_FIXTURE = path.join(REPO_ROOT, 'frontend', 'tests', 'e2e', 'fixtures', `${E2E_TEMPLATE_ID}.yaml`);
+const RUNTIME_TEMPLATES_DIR = path.join(REPO_ROOT, 'frontend', 'tests', 'e2e', 'runtime-templates');
+const RUNTIME_TEMPLATE_DEST = path.join(RUNTIME_TEMPLATES_DIR, `${E2E_TEMPLATE_ID}.yaml`);
 
 export async function resetE2ETemplateFixture() {
-  if (!existsSync(TEMPLATE_SRC)) {
-    throw new Error(`E2E template fixture not found at ${TEMPLATE_SRC}`);
+  if (!existsSync(TEMPLATE_FIXTURE)) {
+    throw new Error(`E2E template fixture not found at ${TEMPLATE_FIXTURE}`);
   }
-  await fs.mkdir(path.dirname(TEMPLATE_DEST), { recursive: true });
-  await fs.copyFile(TEMPLATE_SRC, TEMPLATE_DEST);
+  await fs.rm(RUNTIME_TEMPLATES_DIR, { recursive: true, force: true });
+  await fs.mkdir(RUNTIME_TEMPLATES_DIR, { recursive: true });
+  await fs.copyFile(TEMPLATE_FIXTURE, RUNTIME_TEMPLATE_DEST);
 }
 
 export async function openNewProjectDialog(page: Page) {
