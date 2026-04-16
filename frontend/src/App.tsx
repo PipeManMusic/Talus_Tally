@@ -2653,6 +2653,7 @@ function App() {
               velocityScore={currentVelocityScore || undefined}
               onOrphanedPropertyDelete={handleOrphanedPropertyDelete}
               onDeleteAllOrphanedProperties={handleDeleteAllOrphanedProperties}
+              onNodeSelect={handleNodeSelect}
               />
             )}
 

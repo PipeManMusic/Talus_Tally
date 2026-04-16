@@ -3,6 +3,7 @@ import { Input } from '../ui/Input';
 import { Select } from '../ui/Select';
 import { CurrencyInput } from '../ui/CurrencyInput';
 import { TemplateAwareEditor } from '../ui/TemplateAwareEditor';
+import { Breadcrumbs } from '../ui/Breadcrumbs';
 import type { MarkupToken } from '../../services/markupRenderService';
 import type { NodeTypeSchema } from '../../api/client';
 
@@ -101,6 +102,7 @@ interface InspectorProps {
   /** Clear a single blocking relationship. blockedNodeId is the node being unblocked. */
   onClearSingleBlock?: (blockedNodeId: string) => void;
   velocityScore?: VelocityScore;
+  onNodeSelect?: (nodeId: string) => void;
 }
 
 export const Inspector = memo(function Inspector({
@@ -123,6 +125,7 @@ export const Inspector = memo(function Inspector({
   onClearBlocks,
   onClearSingleBlock,
   velocityScore,
+  onNodeSelect,
 }: InspectorProps) {
   const [draftValues, setDraftValues] = useState<Record<string, string>>({});
   const pendingCommits = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
@@ -750,6 +753,60 @@ export const Inspector = memo(function Inspector({
     closeEditor();
   };
 
+  // Build parent lookup map from children arrays (parent_id is not set on store nodes)
+  const parentMap = useMemo(() => {
+    if (!nodes) return new Map<string, string>();
+    const map = new Map<string, string>();
+    for (const node of Object.values(nodes)) {
+      if (node?.children) {
+        for (const childId of node.children) {
+          map.set(childId, node.id);
+        }
+      }
+    }
+    return map;
+  }, [nodes]);
+
+  // Build breadcrumb path from current node up through parent chain
+  const breadcrumbItems = useMemo(() => {
+    if (!nodeId || !nodes) return [];
+
+    const path: { id: string; name: string }[] = [];
+    let currentId: string | undefined = nodeId;
+
+    while (currentId && nodes[currentId]) {
+      const node = nodes[currentId];
+      path.unshift({
+        id: currentId,
+        name: node.properties?.name || node.name || currentId,
+      });
+      currentId = parentMap.get(currentId);
+    }
+
+    // Truncate long paths: show first 2 + "…" + last 2
+    if (path.length > 5) {
+      const truncated = [
+        ...path.slice(0, 2),
+        { id: '__ellipsis__', name: '…' },
+        ...path.slice(-2),
+      ];
+      return truncated;
+    }
+
+    return path;
+  }, [nodeId, nodes, parentMap]);
+
+  const breadcrumbNavItems = useMemo(() => {
+    return breadcrumbItems.map((item, index) => ({
+      label: item.name,
+      active: index === breadcrumbItems.length - 1,
+      onClick:
+        item.id !== '__ellipsis__' && index < breadcrumbItems.length - 1 && onNodeSelect
+          ? () => onNodeSelect(item.id)
+          : undefined,
+    }));
+  }, [breadcrumbItems, onNodeSelect]);
+
   if (!nodeId) {
     return (
       <aside data-testid="inspector-empty" className="bg-bg-light border-l border-border p-3 flex items-center justify-center">
@@ -765,6 +822,13 @@ export const Inspector = memo(function Inspector({
       <div className="text-sm font-semibold border-b border-accent-primary pb-2 mb-3 px-3 pt-3 flex-shrink-0">
         Properties
       </div>
+
+      {/* Parent hierarchy breadcrumb */}
+      {breadcrumbNavItems.length > 1 && (
+        <div className="px-3 pb-2 flex-shrink-0 overflow-x-auto">
+          <Breadcrumbs items={breadcrumbNavItems} />
+        </div>
+      )}
 
       {/* Scrollable Content Area */}
       <div
