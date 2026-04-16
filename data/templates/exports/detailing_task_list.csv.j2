@@ -1,0 +1,4 @@
+Priority,Path,Task,Type,Node Type,Status,Assigned To,Start Date,End Date,Estimated Hours,Submittal Status,Modeling Status,QA/QC Status,Issued,Notes
+{% for node in nodes if node.is_task_like -%}
+,{{ node.path|csv }},{{ node.name|csv }},{{ node.properties.Type|csv }},{{ node.type_label|csv }},{{ node.status_label|csv }},{{ node.properties.assigned_to|csv }},{{ node.properties.start_date|csv }},{{ node.properties.end_date|csv }},{{ node.properties.estimated_hours|csv }},{{ node.properties.prop_1772728518927|csv }},{{ node.properties.prop_1772728604451|csv }},{{ node.properties.prop_1772728700309|csv }},{{ node.properties.prop_1772729338195|csv }},{{ node.properties.prop_1773331655961|csv }}
+{% endfor -%}

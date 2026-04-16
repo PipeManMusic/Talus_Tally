@@ -1,0 +1,4 @@
+Project ID,Path,Parent,Task,Status,Assigned To,Start Date,End Date,Estimated Hours,Description,Notes,Node Type,Node ID
+{% for node in nodes if node.is_task_like -%}
+{{ project_id|csv }},{{ node.path|csv }},{{ node.parent_name|csv }},{{ node.name|csv }},{{ node.status_label|csv }},{{ node.properties.assigned_to|csv }},{{ node.properties.start_date|csv }},{{ node.properties.end_date|csv }},{{ node.properties.estimated_hours|csv }},{{ node.properties.description|csv }},{{ node.properties.notes|csv }},{{ node.type_label|csv }},{{ node.id|csv }}
+{% endfor -%}

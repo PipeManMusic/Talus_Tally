@@ -5,6 +5,8 @@ Provides template discovery and rendering capabilities for exporting
 project graphs in various formats (XML, CSV, HTML, etc.).
 """
 
+import csv
+from io import StringIO
 from pathlib import Path
 from typing import Dict, Any, List, Optional, Set
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound
@@ -48,6 +50,22 @@ class ExportEngine:
             trim_blocks=True,
             lstrip_blocks=True
         )
+        self.env.filters['csv'] = self._csv_filter
+
+    @staticmethod
+    def _csv_filter(value: Any) -> str:
+        """Render a single scalar or list value as a valid CSV field."""
+        if value is None:
+            scalar = ''
+        elif isinstance(value, (list, tuple, set)):
+            scalar = ', '.join(str(item) for item in value)
+        else:
+            scalar = str(value)
+
+        buffer = StringIO()
+        writer = csv.writer(buffer, lineterminator='')
+        writer.writerow([scalar])
+        return buffer.getvalue()
     
     def get_templates(self) -> List[Dict[str, str]]:
         """

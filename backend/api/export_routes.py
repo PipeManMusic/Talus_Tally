@@ -22,6 +22,92 @@ export_bp = Blueprint('export', __name__, url_prefix='/api/export')
 _export_engine = None
 
 
+def _coerce_reference_value(value: Any, node_name_by_id: Dict[str, str]) -> Any:
+    if isinstance(value, list):
+        return [_coerce_reference_value(item, node_name_by_id) for item in value]
+    if isinstance(value, tuple):
+        return [_coerce_reference_value(item, node_name_by_id) for item in value]
+    if isinstance(value, set):
+        return [_coerce_reference_value(item, node_name_by_id) for item in value]
+    if isinstance(value, str):
+        return node_name_by_id.get(value, value)
+    return value
+
+
+def _resolve_properties(
+    raw_properties: Dict[str, Any],
+    node_type_id: str,
+    property_uuid_maps: Dict[str, Dict[str, str]],
+    property_defs_by_type: Dict[str, Dict[str, Dict[str, Any]]],
+    option_label_maps: Dict[str, Dict[str, Dict[str, str]]],
+    node_name_by_id: Dict[str, str],
+) -> Dict[str, Any]:
+    if not isinstance(raw_properties, dict):
+        return {}
+
+    reverse_map = {
+        uuid_key: property_key
+        for property_key, uuid_key in property_uuid_maps.get(node_type_id, {}).items()
+    }
+    normalized: Dict[str, Any] = {}
+
+    for raw_key, raw_value in raw_properties.items():
+        property_key = str(reverse_map.get(raw_key, raw_key))
+        property_def = property_defs_by_type.get(node_type_id, {}).get(property_key, {})
+        option_labels = option_label_maps.get(node_type_id, {}).get(property_key, {})
+
+        value = raw_value
+        if option_labels:
+            if isinstance(raw_value, list):
+                value = [option_labels.get(str(item), item) for item in raw_value]
+            else:
+                value = option_labels.get(str(raw_value), raw_value)
+        elif property_def.get('type') in {'node_ref', 'node_refs', 'relationship', 'person_ref'}:
+            value = _coerce_reference_value(raw_value, node_name_by_id)
+        elif property_key == 'assigned_to':
+            value = _coerce_reference_value(raw_value, node_name_by_id)
+
+        normalized[property_key] = value
+
+    return normalized
+
+
+def _build_node_path(node_dict: Dict[str, Any], node_by_id: Dict[str, Dict[str, Any]]) -> str:
+    names: List[str] = []
+    current = node_dict
+    visited: Set[str] = set()
+
+    while current:
+        current_id = str(current.get('id') or '')
+        if current_id in visited:
+            break
+        visited.add(current_id)
+
+        current_name = str(current.get('name') or '').strip()
+        if current_name:
+            names.append(current_name)
+
+        parent_id = current.get('parent_id')
+        if not parent_id:
+            break
+        current = node_by_id.get(str(parent_id))
+
+    names.reverse()
+    return ' / '.join(names)
+
+
+def _is_task_like(node_dict: Dict[str, Any]) -> bool:
+    type_key = str(node_dict.get('type_key') or '').lower()
+    type_label = str(node_dict.get('type_label') or '').lower()
+    props = node_dict.get('properties') or {}
+
+    if type_key == 'task' or type_label == 'task':
+        return True
+
+    taskish_fields = {'status', 'assigned_to', 'estimated_hours', 'start_date', 'end_date', 'notes', 'description'}
+    return len(taskish_fields & set(props.keys())) >= 3
+
+
 def get_export_engine() -> ExportEngine:
     """Get or create the global export engine instance."""
     global _export_engine
@@ -150,11 +236,16 @@ def download_export(session_id):
                 }), 400
             included_node_ids = included_node_ids_raw
         
-        # Build status label map from blueprint if available
+        # Build schema lookup maps from blueprint if available
         status_label_map: Dict[str, str] = {}
-        # Map node_type_uuid → status property UUID for resolving status from node.properties
         status_prop_uuid_map: Dict[str, str] = {}
+        property_uuid_maps: Dict[str, Dict[str, str]] = {}
+        property_defs_by_type: Dict[str, Dict[str, Dict[str, Any]]] = {}
+        option_label_maps: Dict[str, Dict[str, Dict[str, str]]] = {}
+        type_label_map: Dict[str, str] = {}
         blueprint = session_data.get('blueprint')
+        if blueprint and hasattr(blueprint, 'build_all_property_uuid_maps'):
+            property_uuid_maps = blueprint.build_all_property_uuid_maps()
         if blueprint and hasattr(blueprint, 'node_types'):
             for node_type in blueprint.node_types:
                 properties = []
@@ -162,6 +253,24 @@ def download_export(session_id):
                     properties = node_type._extra_props.get('properties', [])
                 elif hasattr(node_type, 'properties'):
                     properties = node_type.properties or []
+                type_label_map[node_type.uuid] = getattr(node_type, 'label', None) or getattr(node_type, 'id', None) or node_type.uuid
+                type_property_defs: Dict[str, Dict[str, Any]] = {}
+                type_option_labels: Dict[str, Dict[str, str]] = {}
+                for prop in properties:
+                    prop_key = str(prop.get('key') or prop.get('id') or prop.get('uuid') or '')
+                    if not prop_key:
+                        continue
+                    type_property_defs[prop_key] = prop
+                    option_labels: Dict[str, str] = {}
+                    for option in prop.get('options', []) or []:
+                        option_id = option.get('id')
+                        option_name = option.get('name')
+                        if option_id and option_name:
+                            option_labels[str(option_id)] = option_name
+                    if option_labels:
+                        type_option_labels[prop_key] = option_labels
+                property_defs_by_type[node_type.uuid] = type_property_defs
+                option_label_maps[node_type.uuid] = type_option_labels
                 status_prop = next((p for p in properties if p.get('id') == 'status'), None)
                 if not status_prop:
                     continue
@@ -180,6 +289,12 @@ def download_export(session_id):
                 if nt.uuid and nt.id:
                     uuid_to_key[nt.uuid] = nt.id
 
+        node_name_by_id = {
+            str(node.id): node.name
+            for node in graph.nodes.values()
+            if hasattr(node, 'id') and hasattr(node, 'name')
+        }
+
         # Flatten graph nodes into list of dicts
         nodes = []
         for node_id, node in graph.nodes.items():
@@ -187,12 +302,22 @@ def download_export(session_id):
             status_value = node.properties.get(status_key, 'unknown')
             status_label = status_label_map.get(str(status_value), status_value)
             type_key = uuid_to_key.get(node.blueprint_type_id, node.blueprint_type_id)
+            resolved_properties = _resolve_properties(
+                node.properties,
+                node.blueprint_type_id,
+                property_uuid_maps,
+                property_defs_by_type,
+                option_label_maps,
+                node_name_by_id,
+            )
             node_dict = {
                 'id': str(node.id),
                 'name': node.name,
                 'type': node.blueprint_type_id,
                 'type_key': type_key,
-                'properties': node.properties,
+                'type_label': type_label_map.get(node.blueprint_type_id, type_key),
+                'properties': resolved_properties,
+                'raw_properties': node.properties,
                 'status': status_value,
                 'status_label': status_label,
                 'created_at': node.created_at.isoformat() if hasattr(node, 'created_at') else None,
@@ -200,10 +325,17 @@ def download_export(session_id):
                 'children': [str(child_id) for child_id in node.children] if hasattr(node, 'children') else []
             }
             nodes.append(node_dict)
+
+        node_by_id: Dict[str, Dict[str, Any]] = {str(node['id']): node for node in nodes}
+        for node_dict in nodes:
+            parent = node_by_id.get(str(node_dict.get('parent_id'))) if node_dict.get('parent_id') else None
+            node_dict['parent_name'] = parent.get('name') if parent else ''
+            node_dict['path'] = _build_node_path(node_dict, node_by_id)
+            node_dict['is_task_like'] = _is_task_like(node_dict)
         
         # Apply export filters (branch root and/or explicit included node ids)
-        engine = get_export_engine()
-        nodes = engine.filter_nodes(
+        export_engine = get_export_engine()
+        nodes = export_engine.filter_nodes(
             nodes,
             root_node_id=root_node_id,
             included_node_ids=included_node_ids,
@@ -230,8 +362,8 @@ def download_export(session_id):
 
             graph_nodes, schema, blocking_graph = _get_velocity_context(session_id)
             if graph_nodes and schema:
-                engine = VelocityEngine(graph_nodes, schema, blocking_graph)
-                ranking = engine.get_ranking()
+                velocity_engine = VelocityEngine(graph_nodes, schema, blocking_graph)
+                ranking = velocity_engine.get_ranking()
                 for node_id, calc in ranking:
                     node = graph_nodes.get(node_id, {})
                     if not node or node == {}:
@@ -289,7 +421,7 @@ def download_export(session_id):
         
         # Render template
         try:
-            rendered_content = engine.render(template_id, context)
+            rendered_content = export_engine.render(template_id, context)
         except Exception as render_error:
             logger.error(f"[EXPORT] Template rendering failed: {render_error}", exc_info=True)
             return jsonify({
@@ -300,7 +432,7 @@ def download_export(session_id):
             }), 500
         
         # Generate output filename
-        output_filename = engine.get_output_filename(template_id, project_id)
+        output_filename = export_engine.get_output_filename(template_id, project_id)
         
         # Determine MIME type based on file extension
         extension = output_filename.split('.')[-1].lower()
