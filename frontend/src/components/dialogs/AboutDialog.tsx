@@ -63,12 +63,25 @@ export function AboutDialog({ isOpen, onClose }: AboutDialogProps) {
               Documentation
             </button>
           </div>
+
+          {/* License */}
+          <div className="pt-2">
+            <p className="text-xs text-[var(--color-fg-secondary)]">
+              Released under the{' '}
+              <button
+                onClick={() => openExternalUrl(`${GITHUB_URL}/blob/main/LICENSE`)}
+                className="text-[var(--color-accent-primary)] hover:underline"
+              >
+                MIT License
+              </button>
+            </p>
+          </div>
         </div>
 
         {/* Footer */}
         <div className="flex items-center justify-center px-6 py-4 border-t border-[var(--color-border-default)]">
           <span className="text-xs text-[var(--color-fg-secondary)]">
-            &copy; {new Date().getFullYear()} PipeManMusic
+            &copy; {new Date().getFullYear()} Talus Tally Dev Team
           </span>
         </div>
       </div>
