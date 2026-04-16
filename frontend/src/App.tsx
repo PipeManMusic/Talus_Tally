@@ -2344,25 +2344,31 @@ function App() {
   return (
     <ErrorBoundary>
       {!isAppInitialized || isInitialConnection ? (
-        <div className="flex items-center justify-center h-screen bg-bg-dark text-fg-primary">
-          <div className="text-center">
-            <div className="text-2xl mb-4">Loading Talus Tally...</div>
-            <div className="text-sm text-fg-secondary">
-              {isInitialConnection ? 'Connecting to backend server...' : 'Initializing session...'}
+        <div className="flex flex-col h-screen bg-bg-dark text-fg-primary">
+          <TitleBar title="TALUS TALLY" />
+          <div className="flex items-center justify-center flex-1">
+            <div className="text-center">
+              <div className="text-2xl mb-4">Loading Talus Tally...</div>
+              <div className="text-sm text-fg-secondary">
+                {isInitialConnection ? 'Connecting to backend server...' : 'Initializing session...'}
+              </div>
             </div>
           </div>
         </div>
       ) : backendError ? (
-        <div className="flex items-center justify-center h-screen bg-bg-dark text-fg-primary">
-          <div className="text-center max-w-md">
-            <div className="text-2xl mb-4 text-red-500">Connection Error</div>
-            <div className="text-sm text-fg-secondary mb-6">{backendError}</div>
-            <button
-              onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
-            >
-              Retry Connection
-            </button>
+        <div className="flex flex-col h-screen bg-bg-dark text-fg-primary">
+          <TitleBar title="TALUS TALLY" />
+          <div className="flex items-center justify-center flex-1">
+            <div className="text-center max-w-md">
+              <div className="text-2xl mb-4 text-red-500">Connection Error</div>
+              <div className="text-sm text-fg-secondary mb-6">{backendError}</div>
+              <button
+                onClick={() => window.location.reload()}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+              >
+                Retry Connection
+              </button>
+            </div>
           </div>
         </div>
       ) : (
