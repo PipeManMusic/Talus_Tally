@@ -384,6 +384,32 @@ class TestEdgeCases:
         for a, b in zip(first_props, second_props):
             assert a == b
 
+    def test_existing_generated_status_property_is_updated_not_duplicated(self, base_template):
+        template = copy.deepcopy(base_template)
+        template["node_types"][0]["features"] = ["scheduling"]
+        template["node_types"][0]["properties"].append({
+            "id": "_feat_scheduling_status",
+            "key": "status",
+            "label": "Status",
+            "type": "select",
+            "system_locked": True,
+            "_macro_injected": True,
+            "uuid": "21a07b17-c7a0-aa65-85b7-814f94e04fb6",
+            "options": [{"name": "Broken"}],
+        })
+
+        result = apply_feature_macros(template)
+        properties = result["node_types"][0]["properties"]
+        status_properties = [
+            prop for prop in properties
+            if prop.get("id") == "status" or (prop.get("id") == "_feat_scheduling_status" and prop.get("key") == "status")
+        ]
+
+        assert len(status_properties) == 1
+        assert status_properties[0]["id"] == "_feat_scheduling_status"
+        assert status_properties[0]["uuid"] == "21a07b17-c7a0-aa65-85b7-814f94e04fb6"
+        assert [option["name"] for option in status_properties[0]["options"]] == ["To Do", "In Progress", "Done"]
+
     def test_returns_same_object(self, base_template):
         """apply_feature_macros mutates and returns the same dict."""
         result = apply_feature_macros(base_template)

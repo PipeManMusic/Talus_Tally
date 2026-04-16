@@ -82,12 +82,33 @@ def inject_scheduling_task_properties(node_type: dict) -> dict:
     if not isinstance(properties, list):
         properties = []
 
-    prop_index = {prop.get("id"): idx for idx, prop in enumerate(properties) if isinstance(prop, dict)}
+    def find_existing_property_index(property_id: str) -> int | None:
+        generated_id = f"_feat_scheduling_{property_id}"
+        for index, prop in enumerate(properties):
+            if not isinstance(prop, dict):
+                continue
+            prop_id = prop.get("id")
+            if prop_id == property_id or prop_id == generated_id:
+                return index
+            if prop.get("_macro_injected") and prop.get("key") == property_id:
+                return index
+        return None
 
     for macro_prop in SCHEDULING_TASK_PROPERTY_MACRO:
         pid = macro_prop["id"]
-        if pid in prop_index:
-            properties[prop_index[pid]] = dict(macro_prop)
+        existing_index = find_existing_property_index(pid)
+        if existing_index is not None:
+            existing = properties[existing_index]
+            preserved_id = existing.get("id", pid)
+            preserved_uuid = existing.get("uuid")
+            preserved_key = existing.get("key")
+            properties[existing_index] = {
+                **dict(macro_prop),
+                "id": preserved_id,
+                **({"key": preserved_key} if preserved_key else {}),
+                **({"uuid": preserved_uuid} if preserved_uuid else {}),
+                **({"_macro_injected": True} if preserved_id != pid or existing.get("_macro_injected") else {}),
+            }
         else:
             properties.append(dict(macro_prop))
 

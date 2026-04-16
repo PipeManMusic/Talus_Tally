@@ -169,7 +169,7 @@ node_types:
   - id: notes
     label: Notes
     required: false
-    type: text
+    type: editor
     uuid: 1d879858-04ce-0679-1f14-669eda381f77
   shape: circle
   uuid: 6ee44fd2-c931-5cba-bbf2-990c509f95cc
@@ -292,7 +292,7 @@ node_types:
   - id: notes
     label: Notes
     required: false
-    type: text
+    type: editor
     uuid: 45cbca7f-0214-bad0-6035-01ae376584cc
   - _macro_injected: true
     id: estimated_cost
@@ -410,7 +410,7 @@ node_types:
   - id: notes
     label: Notes
     required: false
-    type: text
+    type: editor
     uuid: 8b8456eb-3026-9e3f-9a4e-30133c072715
   shape: circle
   uuid: 47111e56-edbd-21ee-35f7-ab5c494da2a6
@@ -593,109 +593,6 @@ node_types:
     ui_group: Schedule
     uuid: 21a07b17-c7a0-aa65-85b7-814f94e04fb6
     value: 226e3070-bda2-86ca-2e46-401776a8983f
-  - _macro_injected: true
-    id: _feat_scheduling_status
-    indicator_set: status
-    key: status
-    label: Status
-    options:
-    - id: 226e3070-bda2-86ca-2e46-401776a8983f
-      indicator_id: empty
-      name: To Do
-    - id: 32325919-25d0-4d3c-e75b-8a437f6f96ee
-      indicator_id: partial
-      name: In Progress
-    - id: 453611e8-44c7-a633-0264-dcb7fe690269
-      indicator_id: filled
-      name: Done
-    required: false
-    system_locked: true
-    type: select
-    ui_group: Schedule
-    uuid: 21a07b17-c7a0-aa65-85b7-814f94e04fb6
-    value: 226e3070-bda2-86ca-2e46-401776a8983f
-  - _macro_injected: true
-    id: _feat_scheduling_status
-    indicator_set: status
-    key: status
-    label: Status
-    options:
-    - id: 226e3070-bda2-86ca-2e46-401776a8983f
-      indicator_id: empty
-      name: To Do
-    - id: 32325919-25d0-4d3c-e75b-8a437f6f96ee
-      indicator_id: partial
-      name: In Progress
-    - id: 453611e8-44c7-a633-0264-dcb7fe690269
-      indicator_id: filled
-      name: Done
-    required: false
-    system_locked: true
-    type: select
-    ui_group: Schedule
-    uuid: 21a07b17-c7a0-aa65-85b7-814f94e04fb6
-    value: 226e3070-bda2-86ca-2e46-401776a8983f
-  - _macro_injected: true
-    id: _feat_scheduling_status
-    indicator_set: status
-    key: status
-    label: Status
-    options:
-    - id: 226e3070-bda2-86ca-2e46-401776a8983f
-      indicator_id: empty
-      name: To Do
-    - id: 32325919-25d0-4d3c-e75b-8a437f6f96ee
-      indicator_id: partial
-      name: In Progress
-    - id: 453611e8-44c7-a633-0264-dcb7fe690269
-      indicator_id: filled
-      name: Done
-    required: false
-    system_locked: true
-    type: select
-    ui_group: Schedule
-    uuid: 21a07b17-c7a0-aa65-85b7-814f94e04fb6
-    value: 226e3070-bda2-86ca-2e46-401776a8983f
-  - _macro_injected: true
-    id: _feat_scheduling_status
-    indicator_set: status
-    key: status
-    label: Status
-    options:
-    - id: 226e3070-bda2-86ca-2e46-401776a8983f
-      indicator_id: empty
-      name: To Do
-    - id: 32325919-25d0-4d3c-e75b-8a437f6f96ee
-      indicator_id: partial
-      name: In Progress
-    - id: 453611e8-44c7-a633-0264-dcb7fe690269
-      indicator_id: filled
-      name: Done
-    system_locked: true
-    type: select
-    ui_group: Schedule
-    uuid: 21a07b17-c7a0-aa65-85b7-814f94e04fb6
-    value: 226e3070-bda2-86ca-2e46-401776a8983f
-  - id: _feat_scheduling_status
-    label: Status
-    type: select
-    indicator_set: status
-    options:
-    - name: To Do
-      indicator_id: empty
-      id: 226e3070-bda2-86ca-2e46-401776a8983f
-    - name: In Progress
-      indicator_id: partial
-      id: 32325919-25d0-4d3c-e75b-8a437f6f96ee
-    - name: Done
-      indicator_id: filled
-      id: 453611e8-44c7-a633-0264-dcb7fe690269
-    value: 226e3070-bda2-86ca-2e46-401776a8983f
-    system_locked: true
-    ui_group: Schedule
-    key: status
-    _macro_injected: true
-    uuid: 21a07b17-c7a0-aa65-85b7-814f94e04fb6
   shape: roundedSquare
   uuid: 32f6b4b7-b425-73c3-3332-769bdb5af2f8
 - allowed_asset_types:
@@ -775,7 +672,7 @@ node_types:
   - id: notes
     label: Scout Notes
     required: false
-    type: text
+    type: editor
     uuid: 380126b5-d7e5-ebc9-049d-46d26ea548b1
   - id: permits_needed
     label: Permits Required

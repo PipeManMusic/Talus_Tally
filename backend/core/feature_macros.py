@@ -132,6 +132,78 @@ def _macro_prop_ids(feature: str) -> set:
     return {p["id"] for p in FEATURE_MACROS.get(feature, [])}
 
 
+def _find_existing_macro_property_index(properties: List[Dict[str, Any]], feature: str, property_id: str) -> int | None:
+    """Find an existing property that already represents this macro field.
+
+    Macro properties can appear under their raw ID (for example ``status``)
+    or under a generated ID like ``_feat_scheduling_status`` with
+    ``key=status``. Match both forms so reapplying macros updates the existing
+    property instead of appending another copy.
+    """
+    generated_id = f"_feat_{feature}_{property_id}"
+    for index, prop in enumerate(properties):
+        if not isinstance(prop, dict):
+            continue
+        prop_id = prop.get("id")
+        if prop_id == property_id or prop_id == generated_id:
+            return index
+        if prop.get("_macro_injected") and prop.get("key") == property_id:
+            return index
+    return None
+
+
+def _dedupe_properties(properties: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Collapse duplicate property IDs while preserving the first entry.
+
+    If duplicates are present, merge any missing fields from later copies into
+    the first occurrence so malformed templates can still recover safely.
+    """
+    deduped: List[Dict[str, Any]] = []
+    by_id: Dict[str, Dict[str, Any]] = {}
+
+    def should_replace(current: Any, incoming: Any) -> bool:
+        if current in (None, ""):
+            return True
+
+        if isinstance(current, list) and isinstance(incoming, list):
+            if not current and incoming:
+                return True
+
+            current_has_placeholder_only = (
+                len(current) == 1
+                and isinstance(current[0], dict)
+                and current[0].get("name") == "Option 1"
+            )
+            if current_has_placeholder_only and len(incoming) > 1:
+                return True
+
+        if isinstance(current, dict) and isinstance(incoming, dict) and not current and incoming:
+            return True
+
+        return False
+
+    for prop in properties:
+        if not isinstance(prop, dict):
+            continue
+
+        prop_id = prop.get("id")
+        if not isinstance(prop_id, str) or not prop_id:
+            deduped.append(prop)
+            continue
+
+        existing = by_id.get(prop_id)
+        if existing is None:
+            by_id[prop_id] = prop
+            deduped.append(prop)
+            continue
+
+        for key, value in prop.items():
+            if key not in existing or should_replace(existing[key], value):
+                existing[key] = value
+
+    return deduped
+
+
 def apply_feature_macros(template_data: Dict[str, Any]) -> Dict[str, Any]:
     """
     Walk every node type in *template_data*.
@@ -155,6 +227,7 @@ def apply_feature_macros(template_data: Dict[str, Any]) -> Dict[str, Any]:
             nt["features"] = enabled_features
 
         properties: List[Dict[str, Any]] = nt.get("properties") or []
+        properties = _dedupe_properties(properties)
 
         # Build a quick lookup of existing property IDs → index
         prop_index: Dict[str, int] = {p["id"]: i for i, p in enumerate(properties)}
@@ -164,10 +237,29 @@ def apply_feature_macros(template_data: Dict[str, Any]) -> Dict[str, Any]:
             macro_props = FEATURE_MACROS.get(feature, [])
             for macro_prop in macro_props:
                 pid = macro_prop["id"]
-                if pid in prop_index:
-                    existing = properties[prop_index[pid]]
-                    if existing.get("system_locked"):
-                        # Previously injected macro property — update it
+                existing_index = _find_existing_macro_property_index(properties, feature, pid)
+                if existing_index is not None:
+                    existing = properties[existing_index]
+                    is_generated_macro = (
+                        existing.get("_macro_injected")
+                        or existing.get("id") == f"_feat_{feature}_{pid}"
+                        or existing.get("key") == pid
+                    )
+                    if existing.get("system_locked") and is_generated_macro:
+                        preserved_id = existing.get("id", pid)
+                        preserved_uuid = existing.get("uuid")
+                        preserved_key = existing.get("key")
+                        properties[existing_index] = {
+                            **dict(macro_prop),
+                            "id": preserved_id,
+                            **({"key": preserved_key} if preserved_key else {}),
+                            **({"uuid": preserved_uuid} if preserved_uuid else {}),
+                            **({"_macro_injected": True} if preserved_id != pid or existing.get("_macro_injected") else {}),
+                        }
+                    elif existing.get("system_locked"):
+                        # system_locked property written directly in the
+                        # template YAML (no _macro_injected flag) — fill any
+                        # missing fields from the macro definition.
                         for key, value in macro_prop.items():
                             if key not in existing:
                                 existing[key] = value
@@ -206,6 +298,6 @@ def apply_feature_macros(template_data: Dict[str, Any]) -> Dict[str, Any]:
                 )
             ]
 
-        nt["properties"] = properties
+        nt["properties"] = _dedupe_properties(properties)
 
     return template_data
