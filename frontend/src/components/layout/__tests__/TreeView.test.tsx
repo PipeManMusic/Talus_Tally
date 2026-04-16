@@ -451,6 +451,79 @@ describe('TreeView multiple status indicators', () => {
     const label = screen.getByText('Episode A');
     expect(label).toHaveStyle({ color: '#22aa22', fontWeight: 'bold' });
   });
+
+  it('avoids duplicate React keys when duplicate status-property ids resolve to the same indicator', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const nodes: TreeNode[] = [
+      {
+        id: 'episode-dup',
+        name: 'Episode Duplicate',
+        type: 'episode',
+        properties: { duplicate_status: 'Planned' },
+        allowed_children: [],
+        parent_id: undefined,
+        indicator_id: undefined,
+        indicator_set: undefined,
+        icon_id: undefined,
+        statusIndicatorSvg: undefined,
+        statusText: undefined,
+        children: [],
+      },
+    ];
+
+    const nodeTypeSchemas = {
+      episode: {
+        id: 'episode',
+        name: 'Episode',
+        primary_status_property_id: 'duplicate_status',
+        allowed_children: [],
+        properties: [
+          {
+            id: 'duplicate_status',
+            name: 'Duplicate Status A',
+            type: 'select',
+            required: false,
+            indicator_set: 'status',
+            options: [
+              { id: 'planned', name: 'Planned', indicator_id: 'empty' },
+            ],
+          },
+          {
+            id: 'duplicate_status',
+            name: 'Duplicate Status B',
+            type: 'select',
+            required: false,
+            indicator_set: 'status',
+            options: [
+              { id: 'planned', name: 'Planned', indicator_id: 'empty' },
+            ],
+          },
+        ],
+      },
+    };
+
+    render(
+      <TreeView
+        nodes={nodes}
+        nodeTypeSchemas={nodeTypeSchemas as any}
+        expandedMap={{}}
+        setExpandedMap={vi.fn()}
+      />
+    );
+
+    await waitFor(() => {
+      const row = screen.getByText('Episode Duplicate').closest('[data-testid="tree-item-row"]');
+      expect(row?.querySelectorAll('.status-indicator-svg svg').length).toBe(2);
+    });
+
+    const duplicateKeyWarnings = consoleErrorSpy.mock.calls.filter(([message]) =>
+      String(message).includes('Encountered two children with the same key')
+    );
+
+    expect(duplicateKeyWarnings).toHaveLength(0);
+    consoleErrorSpy.mockRestore();
+  });
 });
 
 function rowHasTwoStatusSvgs(): boolean {

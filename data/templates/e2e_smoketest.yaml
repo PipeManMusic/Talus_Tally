@@ -9,6 +9,7 @@ node_types:
   icon: layers
   id: e2e_root
   label: Test Project
+  primary_status_property_id: prop_1776272220281
   properties:
   - id: name
     label: Project Name
@@ -34,6 +35,28 @@ node_types:
     type: currency
     ui_group: Financial
     uuid: 1995af96-4af9-f0eb-b3eb-2ba8e75ae6da
+  - id: prop_1776271901390
+    indicator_set: status
+    label: Workflow Status
+    options:
+    - id: 8539062d-1d35-a5a8-7fa4-dbc418ee251c
+      name: Queued
+    - id: b3a34995-8a1a-d52f-06a1-b4468dbb612c
+      name: Done
+    required: false
+    type: select
+    uuid: 734dab53-6b33-45f3-10e7-3b838d914442
+  - id: prop_1776272220281
+    indicator_set: status
+    label: Workflow Status
+    options:
+    - id: 21f695b8-a292-1153-6dcc-cdd483112e62
+      name: Queued
+    - id: b2e983ed-8467-8b86-60d4-73d21589870d
+      name: Done
+    required: false
+    type: select
+    uuid: 4b226e3c-2ddf-2d55-fc6c-4f0a23df19d2
   uuid: c772d629-7d55-ad53-b487-4a755b02317c
 uuid: 314d7e8b-173a-40ea-9b06-d055510feb83
 version: '1.0'

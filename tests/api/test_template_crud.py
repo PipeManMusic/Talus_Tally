@@ -317,3 +317,69 @@ class TestTemplateValidation:
         errors = persistence.validate_template(template)
         assert len(errors) > 0
         assert any('options' in e.lower() for e in errors)
+
+    def test_validate_select_property_rejects_duplicate_option_names(self):
+        """Select properties should reject duplicate option names."""
+        persistence = TemplatePersistence()
+
+        template = {
+            'id': 'test',
+            'name': 'Test',
+            'version': '0.1.0',
+            'description': 'Test',
+            'node_types': [
+                {
+                    'id': 'test_node',
+                    'label': 'Test',
+                    'allowed_children': [],
+                    'properties': [
+                        {
+                            'id': 'status',
+                            'label': 'Status',
+                            'type': 'select',
+                            'options': [
+                                {'name': 'Done'},
+                                {'name': 'Done'},
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+
+        errors = persistence.validate_template(template)
+        assert any('duplicate option name' in error.lower() for error in errors)
+
+    def test_normalize_template_data_repairs_select_options(self):
+        """Malformed select options should be normalized into a safe editor shape."""
+        persistence = TemplatePersistence()
+
+        template = {
+            'id': 'test',
+            'name': 'Test',
+            'version': '0.1.0',
+            'description': 'Test',
+            'node_types': [
+                {
+                    'id': 'test_node',
+                    'label': 'Test',
+                    'allowed_children': [],
+                    'properties': [
+                        {
+                            'id': 'status',
+                            'label': 'Status',
+                            'type': 'select',
+                            'options': [
+                                {'name': ''},
+                                {'name': 'Done'},
+                                {'name': 'Done'},
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+
+        normalized = persistence.normalize_template_data(template)
+        options = normalized['node_types'][0]['properties'][0]['options']
+        assert [option['name'] for option in options] == ['Option 1', 'Done', 'Done (2)']

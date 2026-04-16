@@ -6,6 +6,8 @@ Provides CRUD operations for template YAML files in data/templates/ directory.
 
 import os
 import sys
+from copy import deepcopy
+import re
 import yaml
 from pathlib import Path
 from typing import List, Dict, Any, Optional
@@ -74,6 +76,123 @@ def get_templates_directory() -> str:
 
 class TemplatePersistence:
     """Manages loading, saving, and validating template YAML files."""
+
+    @staticmethod
+    def _format_label_from_identifier(value: str, fallback: str) -> str:
+        raw = str(value or '').strip()
+        if not raw:
+            return fallback
+        return ' '.join(part.capitalize() for part in re.split(r'[_\-\s]+', raw) if part)
+
+    def _normalize_select_options(self, options: Any) -> List[Dict[str, Any]]:
+        raw_options = options if isinstance(options, list) else []
+        normalized: List[Dict[str, Any]] = []
+        used_names = set()
+
+        def unique_name(candidate: str, ordinal: int) -> str:
+            base = str(candidate or '').strip() or f'Option {ordinal}'
+            if base not in used_names:
+                used_names.add(base)
+                return base
+            suffix = 2
+            while f'{base} ({suffix})' in used_names:
+                suffix += 1
+            next_name = f'{base} ({suffix})'
+            used_names.add(next_name)
+            return next_name
+
+        for idx, option in enumerate(raw_options):
+            option_dict = dict(option) if isinstance(option, dict) else {}
+            raw_name = option if isinstance(option, str) else option_dict.get('name', '')
+            option_dict['name'] = unique_name(str(raw_name or ''), idx + 1)
+
+            indicator_id = option_dict.get('indicator_id')
+            if indicator_id is None or not str(indicator_id).strip():
+                option_dict.pop('indicator_id', None)
+            else:
+                option_dict['indicator_id'] = str(indicator_id)
+
+            normalized.append(option_dict)
+
+        if not normalized:
+            normalized.append({'name': 'Option 1'})
+
+        return normalized
+
+    def normalize_template_data(self, template_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Normalize editor-managed template data into a persistable shape."""
+        if not isinstance(template_data, dict):
+            return template_data
+
+        normalized = deepcopy(template_data)
+        node_types = normalized.get('node_types')
+        if not isinstance(node_types, list):
+            return normalized
+
+        valid_type_ids = {
+            str(node_type.get('id')).strip()
+            for node_type in node_types
+            if isinstance(node_type, dict) and str(node_type.get('id', '')).strip()
+        }
+
+        for node_type in node_types:
+            if not isinstance(node_type, dict):
+                continue
+
+            if 'label' not in node_type or not str(node_type.get('label', '')).strip():
+                node_type['label'] = self._format_label_from_identifier(node_type.get('id', ''), 'New Node Type')
+
+            allowed_children = node_type.get('allowed_children', [])
+            if not isinstance(allowed_children, list):
+                allowed_children = []
+            node_type['allowed_children'] = list(dict.fromkeys(
+                child_id
+                for child_id in allowed_children
+                if isinstance(child_id, str)
+                and child_id.strip()
+                and child_id != node_type.get('id')
+                and child_id in valid_type_ids
+            ))
+
+            allowed_asset_types = node_type.get('allowed_asset_types', [])
+            if not isinstance(allowed_asset_types, list):
+                allowed_asset_types = []
+            node_type['allowed_asset_types'] = list(dict.fromkeys(
+                asset_type
+                for asset_type in allowed_asset_types
+                if isinstance(asset_type, str) and asset_type.strip()
+            ))
+
+            properties = node_type.get('properties', [])
+            if not isinstance(properties, list):
+                properties = []
+
+            for prop in properties:
+                if not isinstance(prop, dict):
+                    continue
+                if 'required' not in prop:
+                    prop['required'] = False
+                if 'label' not in prop or not str(prop.get('label', '')).strip():
+                    prop['label'] = self._format_label_from_identifier(prop.get('id', ''), 'New Property')
+                if 'type' not in prop or not str(prop.get('type', '')).strip():
+                    prop['type'] = 'text'
+                if prop.get('type') == 'select':
+                    prop['indicator_set'] = str(prop.get('indicator_set') or 'status')
+                    prop['options'] = self._normalize_select_options(prop.get('options'))
+
+            node_type['properties'] = properties
+
+            status_property_ids = [
+                prop.get('id')
+                for prop in properties
+                if isinstance(prop, dict)
+                and prop.get('type') == 'select'
+                and str(prop.get('indicator_set') or 'status') == 'status'
+            ]
+            if node_type.get('primary_status_property_id') not in status_property_ids:
+                node_type.pop('primary_status_property_id', None)
+
+        return normalized
     
     def __init__(self, templates_dir: Optional[str] = None):
         """
@@ -185,6 +304,7 @@ class TemplatePersistence:
         Raises:
             ValueError: If template is invalid or no ID can be determined
         """
+        template_data = self.normalize_template_data(template_data)
         template_data = self._ensure_template_uuid(template_data)
         errors = self.validate_template(template_data)
         if errors:
@@ -285,9 +405,27 @@ class TemplatePersistence:
         if properties and not isinstance(properties, list):
             errors.append(f'{prefix}: properties must be a list')
         else:
+            seen_property_ids = set()
+            seen_property_uuids = set()
             for j, prop in enumerate(properties):
                 prop_errors = self._validate_property(prop, j, prefix)
                 errors.extend(prop_errors)
+                if not isinstance(prop, dict):
+                    continue
+
+                property_id = prop.get('id')
+                if isinstance(property_id, str) and property_id:
+                    if property_id in seen_property_ids:
+                        errors.append(f'{prefix}: duplicate property id "{property_id}"')
+                    else:
+                        seen_property_ids.add(property_id)
+
+                property_uuid = prop.get('uuid')
+                if isinstance(property_uuid, str) and property_uuid:
+                    if property_uuid in seen_property_uuids:
+                        errors.append(f'{prefix}: duplicate property uuid "{property_uuid}"')
+                    else:
+                        seen_property_uuids.add(property_uuid)
         
         return errors
     
@@ -320,5 +458,29 @@ class TemplatePersistence:
                 errors.append(f'{prefix}: select type requires options array')
             elif not isinstance(options, list):
                 errors.append(f'{prefix}: options must be a list')
+            else:
+                seen_option_names = set()
+                for option_index, option in enumerate(options):
+                    option_prefix = f'{prefix}.options[{option_index}]'
+                    if isinstance(option, str):
+                        option_name = option.strip()
+                        if not option_name:
+                            errors.append(f'{option_prefix}: option name cannot be empty')
+                            continue
+                    elif isinstance(option, dict):
+                        option_name = str(option.get('name', '')).strip()
+                        if not option_name:
+                            errors.append(f'{option_prefix}: option name cannot be empty')
+                            continue
+                        indicator_id = option.get('indicator_id')
+                        if indicator_id is not None and not isinstance(indicator_id, str):
+                            errors.append(f'{option_prefix}: indicator_id must be a string when provided')
+                    else:
+                        errors.append(f'{option_prefix}: option must be a string or object')
+                        continue
+
+                    if option_name in seen_option_names:
+                        errors.append(f'{option_prefix}: duplicate option name "{option_name}"')
+                    seen_option_names.add(option_name)
         
         return errors

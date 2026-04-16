@@ -5,6 +5,7 @@ import { ColorPicker } from '../components/ui/ColorPicker';
 import { Modal } from '../components/ui/Modal';
 import type { IconCatalog, IndicatorsConfig, IndicatorTheme } from '../api/client';
 import type { MetaSchema } from '../api/client';
+import { normalizeTemplateNodeTypes } from '../utils/templateEditorNormalization';
 
 export interface VelocityNodeConfig {
   baseScore?: number;
@@ -256,6 +257,29 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
   const normalizeAllowedChildren = (children: string[]) =>
     Array.from(new Set(children.filter(Boolean)));
 
+  const prepareNodeTypesForChange = (nextNodeTypes: NodeType[]): NodeType[] =>
+    normalizeTemplateNodeTypes(nextNodeTypes) as NodeType[];
+
+  const clearPendingUpdate = (nodeTypeId: string) => {
+    setPendingUpdates(prev => {
+      const next = { ...prev };
+      delete next[nodeTypeId];
+      return next;
+    });
+  };
+
+  const clearNodeTypeError = (nodeTypeId: string) => {
+    setErrors(prev => {
+      if (!prev[nodeTypeId]) {
+        return prev;
+      }
+
+      const next = { ...prev };
+      delete next[nodeTypeId];
+      return next;
+    });
+  };
+
   const getNodeTypeEditorKey = (nodeTypeIndex: number) => `node-type-${nodeTypeIndex}`;
 
   const getPropertyEditorKey = (nodeTypeIndex: number, propertyIndex: number) =>
@@ -283,8 +307,10 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
       color: undefined,
     };
 
+    const normalizedNodeTypes = prepareNodeTypesForChange([...nodeTypes, newNodeType]);
+
     setLoading(true);
-    onChange([...nodeTypes, newNodeType])
+    onChange(normalizedNodeTypes)
       .then(() => {
         console.log('✓ Node type added successfully');
         setExpandedNodeType(getNodeTypeEditorKey(nodeTypes.length));
@@ -557,7 +583,7 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
         return nodeType;
       });
 
-    const nextNodeTypes = [...withPersonAndParent, personnelAssetsNodeType, personNodeType];
+    const nextNodeTypes = prepareNodeTypesForChange([...withPersonAndParent, personnelAssetsNodeType, personNodeType]);
 
     setLoading(true);
     onChange(nextNodeTypes)
@@ -607,7 +633,7 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
 
     let filtered: NodeType[];
     try {
-      filtered = nodeTypes
+      filtered = prepareNodeTypesForChange(nodeTypes
         .filter(nt => !idsToDelete.has(nt.id))
         .map(nt => {
           const currentChildren = Array.isArray(nt.allowed_children) ? nt.allowed_children : [];
@@ -624,7 +650,7 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
             ...nt,
             allowed_children: nextChildren,
           };
-        });
+        }));
       console.log('[TemplateEditor::DELETE] Prepared filtered node type payload', {
         originalCount: nodeTypes.length,
         filteredCount: filtered.length,
@@ -730,9 +756,9 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
   };
 
   const updateNodeType = (id: string, updates: Partial<NodeType>) => {
-    const newNodeTypes = displayNodeTypes.map(nt =>
+    const newNodeTypes = prepareNodeTypesForChange(displayNodeTypes.map(nt =>
       nt.id === id ? { ...nt, ...updates } : nt
-    );
+    ));
     
     // Optimistically update UI immediately
     setPendingUpdates(prev => ({
@@ -744,23 +770,13 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
     onChange(newNodeTypes)
       .then(() => {
         // Clear pending update on success (prop will have updated)
-        setPendingUpdates(prev => {
-          const next = { ...prev };
-          delete next[id];
-          return next;
-        });
-        const newErrors = { ...errors };
-        delete newErrors[id];
-        setErrors(newErrors);
+        clearPendingUpdate(id);
+        clearNodeTypeError(id);
       })
       .catch((err) => {
         console.error(`✗ Failed to update node type: ${err instanceof Error ? err.message : String(err)}`);
         // Clear pending update on error so we don't show stale data
-        setPendingUpdates(prev => {
-          const next = { ...prev };
-          delete next[id];
-          return next;
-        });
+        clearPendingUpdate(id);
         setErrors(prev => ({
           ...prev,
           [id]: `Failed to update: ${err instanceof Error ? err.message : 'Unknown error'}`,
@@ -776,11 +792,11 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
       indicator_set: 'status',
     };
     
-    const newNodeTypes = displayNodeTypes.map(nt =>
+    const newNodeTypes = prepareNodeTypesForChange(displayNodeTypes.map(nt =>
       nt.id === nodeTypeId
         ? { ...nt, properties: [...nt.properties, newProperty] }
         : nt
-    );
+    ));
     
     // Optimistic update
     setPendingUpdates(prev => ({
@@ -791,18 +807,19 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
       },
     }));
     
-    onChange(newNodeTypes).catch((err) => {
-      console.error(`✗ Failed to add property: ${err instanceof Error ? err.message : String(err)}`);
-      setPendingUpdates(prev => {
-        const next = { ...prev };
-        delete next[nodeTypeId];
-        return next;
+    onChange(newNodeTypes)
+      .then(() => {
+        clearPendingUpdate(nodeTypeId);
+        clearNodeTypeError(nodeTypeId);
+      })
+      .catch((err) => {
+        console.error(`✗ Failed to add property: ${err instanceof Error ? err.message : String(err)}`);
+        clearPendingUpdate(nodeTypeId);
+        setErrors(prev => ({
+          ...prev,
+          [nodeTypeId]: `Failed to add property: ${err instanceof Error ? err.message : 'Unknown error'}`,
+        }));
       });
-      setErrors(prev => ({
-        ...prev,
-        [nodeTypeId]: `Failed to add property: ${err instanceof Error ? err.message : 'Unknown error'}`,
-      }));
-    });
   };
 
   const removeProperty = (nodeTypeId: string, propertyId: string) => {
@@ -827,7 +844,7 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
       return;
     }
     
-    const newNodeTypes = displayNodeTypes.map(nt => {
+    const newNodeTypes = prepareNodeTypesForChange(displayNodeTypes.map(nt => {
       if (nt.id !== nodeTypeId) {
         return nt;
       }
@@ -840,7 +857,7 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
         properties: nextProperties,
         primary_status_property_id: shouldClearPrimary ? undefined : nt.primary_status_property_id,
       };
-    });
+    }));
     
     // Optimistic update
     setPendingUpdates(prev => ({
@@ -851,22 +868,23 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
       },
     }));
     
-    onChange(newNodeTypes).catch((err) => {
-      console.error(`✗ Failed to remove property: ${err instanceof Error ? err.message : String(err)}`);
-      setPendingUpdates(prev => {
-        const next = { ...prev };
-        delete next[nodeTypeId];
-        return next;
+    onChange(newNodeTypes)
+      .then(() => {
+        clearPendingUpdate(nodeTypeId);
+        clearNodeTypeError(nodeTypeId);
+      })
+      .catch((err) => {
+        console.error(`✗ Failed to remove property: ${err instanceof Error ? err.message : String(err)}`);
+        clearPendingUpdate(nodeTypeId);
+        setErrors(prev => ({
+          ...prev,
+          [nodeTypeId]: `Failed to remove property: ${err instanceof Error ? err.message : 'Unknown error'}`,
+        }));
       });
-      setErrors(prev => ({
-        ...prev,
-        [nodeTypeId]: `Failed to remove property: ${err instanceof Error ? err.message : 'Unknown error'}`,
-      }));
-    });
   };
 
   const updateProperty = (nodeTypeId: string, propertyId: string, updates: Partial<Property>) => {
-    const newNodeTypes = displayNodeTypes.map(nt =>
+    const newNodeTypes = prepareNodeTypesForChange(displayNodeTypes.map(nt =>
       nt.id === nodeTypeId
         ? {
             ...nt,
@@ -875,7 +893,7 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
             ),
           }
         : nt
-    );
+    ));
     
     // Optimistic update
     setPendingUpdates(prev => ({
@@ -886,18 +904,19 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
       },
     }));
     
-    onChange(newNodeTypes).catch((err) => {
-      console.error(`✗ Failed to update property: ${err instanceof Error ? err.message : String(err)}`);
-      setPendingUpdates(prev => {
-        const next = { ...prev };
-        delete next[nodeTypeId];
-        return next;
+    onChange(newNodeTypes)
+      .then(() => {
+        clearPendingUpdate(nodeTypeId);
+        clearNodeTypeError(nodeTypeId);
+      })
+      .catch((err) => {
+        console.error(`✗ Failed to update property: ${err instanceof Error ? err.message : String(err)}`);
+        clearPendingUpdate(nodeTypeId);
+        setErrors(prev => ({
+          ...prev,
+          [nodeTypeId]: `Failed to update property: ${err instanceof Error ? err.message : 'Unknown error'}`,
+        }));
       });
-      setErrors(prev => ({
-        ...prev,
-        [nodeTypeId]: `Failed to update property: ${err instanceof Error ? err.message : 'Unknown error'}`,
-      }));
-    });
   };
 
   const [metaSchema, setMetaSchema] = useState<MetaSchema | null>(null);
@@ -1580,7 +1599,21 @@ const PropertyEditor = memo(function PropertyEditor({
             <label className="text-xs text-fg-secondary mb-1 block">Type</label>
             <select
               value={property.type === 'markup' ? 'editor' : property.type}
-              onChange={(e) => onUpdate({ type: e.target.value })}
+              onChange={(e) => {
+                const nextType = e.target.value;
+                if (nextType === 'select') {
+                  onUpdate({
+                    type: nextType,
+                    indicator_set: property.indicator_set || 'status',
+                    options: Array.isArray(property.options) && property.options.length > 0
+                      ? property.options
+                      : [{ name: 'Option 1' }],
+                  });
+                  return;
+                }
+
+                onUpdate({ type: nextType });
+              }}
               className="w-full px-2 py-1 bg-bg-light border border-border rounded text-fg-primary text-sm"
             >
               {metaSchema?.property_types?.map((pt: { id: string; description?: string }) => (
@@ -1798,6 +1831,7 @@ const PropertyEditor = memo(function PropertyEditor({
                           const newOptions = (property.options || []).filter((_, i) => i !== idx);
                           onUpdate({ options: newOptions.length > 0 ? newOptions : undefined });
                         }}
+                        aria-label={`Remove option ${option.name || idx + 1}`}
                         className="px-2 py-1 text-status-danger hover:bg-status-danger/20 rounded transition-colors"
                       >
                         <Trash2 size={14} />
@@ -1880,7 +1914,7 @@ const PropertyEditor = memo(function PropertyEditor({
                 <button
                   onClick={() => {
                     const newOptions = [...(property.options || [])];
-                    newOptions.push({ name: '' });
+                    newOptions.push({ name: `Option ${newOptions.length + 1}` });
                     onUpdate({ options: newOptions });
                   }}
                   className="text-xs px-2 py-1 bg-accent-primary/20 text-accent-primary rounded hover:bg-accent-primary/30 transition-colors"

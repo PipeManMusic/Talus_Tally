@@ -160,6 +160,7 @@ function App() {
   const [isInitialConnection, setIsInitialConnection] = useState(true);
   const initialLoadStartRef = useRef<number>(Date.now());
   const INITIAL_LOADING_MS = 30000;
+  const schemaRecoveryAttemptsRef = useRef<Set<string>>(new Set());
   const { nodes: storeNodes, currentGraph, setCurrentGraph } = useGraphStore();
 
   // Keep ref in sync with state for use in event handlers
@@ -608,6 +609,61 @@ function App() {
   const currentSelectedNodeData = useMemo(() => {
     return currentSelectedNodeId ? storeNodes[currentSelectedNodeId] : null;
   }, [currentSelectedNodeId, storeNodes]);
+
+  const recoverTemplateSchema = useCallback(async (reason: string) => {
+    if (!currentTemplateId) {
+      return false;
+    }
+
+    console.warn(`[App] Attempting template schema recovery (${reason}) for:`, currentTemplateId);
+    const schema = await apiClient.getTemplateSchema(currentTemplateId);
+    const validation = validateTemplateSchema(schema);
+    if (!validation.isValid) {
+      throw new Error(`Template validation failed:\n${validation.errors.join('\n')}`);
+    }
+
+    setTemplateSchema(schema);
+    clearIconCache();
+    return true;
+  }, [currentTemplateId]);
+
+  useEffect(() => {
+    if (!currentTemplateId) {
+      schemaRecoveryAttemptsRef.current.clear();
+      return;
+    }
+
+    const currentNodeType = currentSelectedNodeData?.type ?? null;
+    const hasSchema = !!templateSchema?.node_types?.length;
+    const hasMatchingNodeType = currentNodeType
+      ? !!templateSchema?.node_types?.some((nodeType) => nodeType.id === currentNodeType)
+      : true;
+
+    if (hasSchema && hasMatchingNodeType) {
+      return;
+    }
+
+    const attemptKey = `${currentTemplateId}:${currentNodeType ?? '*'}`;
+    if (schemaRecoveryAttemptsRef.current.has(attemptKey)) {
+      return;
+    }
+    schemaRecoveryAttemptsRef.current.add(attemptKey);
+
+    let cancelled = false;
+    const reason = hasSchema && currentNodeType
+      ? `missing node type ${currentNodeType}`
+      : 'schema unavailable';
+
+    recoverTemplateSchema(reason).catch((error) => {
+      if (!cancelled) {
+        console.warn('[App] Template schema recovery failed:', error);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentSelectedNodeData, currentTemplateId, recoverTemplateSchema, templateSchema]);
 
   const blockedByNodes = useMemo(() => {
     if (!currentSelectedNodeId) {

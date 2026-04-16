@@ -58,6 +58,7 @@ export function validateTemplateSchema(schema: any): ValidationResult {
         if (!Array.isArray(nodeType.properties)) {
           errors.push(`${path}.properties: must be an array`);
         } else {
+          const propertyIds = new Set<string>();
           nodeType.properties.forEach((prop: any, propIdx: number) => {
             const propPath = `${path}.properties[${propIdx}]`;
             
@@ -68,6 +69,10 @@ export function validateTemplateSchema(schema: any): ValidationResult {
             
             if (!prop.id) {
               errors.push(`${propPath}: missing required field 'id'`);
+            } else if (propertyIds.has(prop.id)) {
+              errors.push(`${path}.properties: duplicate property id '${prop.id}'`);
+            } else {
+              propertyIds.add(prop.id);
             }
             
             if (!prop.name) {

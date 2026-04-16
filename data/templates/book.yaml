@@ -1,0 +1,79 @@
+blocking_view:
+  node_size:
+    base_height: 100
+    base_width: 160
+    direction: down
+    max_depth: 6
+    max_scale: 1.3
+    min_scale: 0.7
+description: A template to help you write a book
+name: Book
+node_types:
+- allowed_asset_types: []
+  allowed_children:
+  - node_type_1775916012216
+  icon: book-open
+  id: root
+  label: Book
+  properties:
+  - id: name
+    label: Tile
+    required: false
+    type: text
+    uuid: fa022033-b113-6c72-9d43-23ffbb36331a
+  uuid: dda577b6-9f7c-8feb-e893-5e6f32522a56
+- allowed_asset_types: []
+  allowed_children:
+  - node_type_1776361888128
+  icon: document-duplicate
+  id: node_type_1775916012216
+  label: Chapter
+  properties:
+  - id: name
+    label: Title
+    required: false
+    type: text
+    uuid: 774fa523-d4ec-b60b-05a7-d041c6aaad51
+  - id: prop_1775916275686
+    indicator_set: status
+    label: Topic
+    required: false
+    type: text
+    uuid: 5290b509-1204-e444-a4ac-b84dcb2a480d
+  uuid: a5a68b68-95f5-f84a-2626-d46603662310
+- allowed_asset_types: []
+  allowed_children: []
+  icon: flag
+  id: node_type_1776361888128
+  label: Source
+  properties:
+  - id: name
+    label: Name
+    required: false
+    type: text
+    uuid: 98a87ef7-35cb-85a8-7ec7-618f9bbb1581
+  - id: prop_1776363403248
+    label: Notes
+    type: editor
+    indicator_set: status
+    required: false
+    uuid: 489cf726-1a65-d8c6-c85b-f71fcbebe0ca
+  - id: prop_1776363438244
+    label: Status
+    type: select
+    indicator_set: status
+    options:
+    - name: Unverified
+      indicator_id: x-mark
+      id: fab31900-f7d8-07f3-9dc1-f215469b75d3
+    - name: InProgress
+      indicator_id: clock
+      id: 0929fc91-986e-2726-7def-3209f11df7c2
+    - name: verified
+      indicator_id: check
+      id: 4a803397-1951-f7a1-08d3-037a99301d16
+    required: false
+    uuid: 7c217cbc-45ce-84fa-a34d-102b7e72f99f
+  uuid: 8e677411-e9ad-76ef-d713-4b91da711270
+uuid: 69ff5bb9-c64b-4f66-a241-9573e2d5b173
+version: 0.1.0

@@ -2694,6 +2694,7 @@ def editor_get_template(template_id):
         # Ensure macro properties are present even if template was saved
         # before macro system existed
         apply_feature_macros(template)
+        template = persistence.normalize_template_data(template)
         # Re-generate option UUIDs after macros so injected options get stable IDs
         _uuid_gen = SchemaLoader()
         for nt_data in template.get('node_types', []):
@@ -2810,6 +2811,7 @@ def editor_create_template():
             }), 400
         
         try:
+            data = persistence.normalize_template_data(data)
             from backend.core.feature_macros import apply_feature_macros
             apply_feature_macros(data)
             # Re-generate option UUIDs after macros so injected options get stable IDs
@@ -2876,6 +2878,7 @@ def editor_update_template(template_id):
         data['id'] = template_id
         
         try:
+            data = persistence.normalize_template_data(data)
             # Load old template to detect removed node types
             old_template = None
             try:
@@ -3092,6 +3095,7 @@ def editor_validate_template(template_id):
                 }
             }), 400
         
+        data = persistence.normalize_template_data(data)
         errors = persistence.validate_template(data)
         
         return jsonify({

@@ -372,4 +372,76 @@ describe('NodeTypeEditor', () => {
     });
   });
 
+  it('creates a valid default option when a property is switched to select', async () => {
+    const user = userEvent.setup();
+
+    function Harness() {
+      const [nodeTypes, setNodeTypes] = useState<NodeType[]>([
+        {
+          id: 'task',
+          label: 'Task',
+          allowed_children: [],
+          properties: [
+            {
+              id: 'status',
+              label: 'Status',
+              type: 'text',
+            },
+          ],
+        },
+      ]);
+
+      return <NodeTypeEditor nodeTypes={nodeTypes} onChange={async (next) => setNodeTypes(next)} />;
+    }
+
+    render(<Harness />);
+
+    await waitFor(() => expect(apiClientMock.getMetaSchema).toHaveBeenCalled());
+
+    await user.click(screen.getByRole('heading', { name: 'Task' }));
+    await user.click(screen.getByRole('heading', { name: 'Status' }));
+
+    const typeSelect = screen.getByDisplayValue('text - Text');
+    await user.selectOptions(typeSelect, 'select');
+
+    expect(await screen.findByDisplayValue('Option 1')).toBeInTheDocument();
+  });
+
+  it('keeps a select property valid when the last option is removed', async () => {
+    const user = userEvent.setup();
+
+    function Harness() {
+      const [nodeTypes, setNodeTypes] = useState<NodeType[]>([
+        {
+          id: 'task',
+          label: 'Task',
+          allowed_children: [],
+          properties: [
+            {
+              id: 'status',
+              label: 'Status',
+              type: 'select',
+              indicator_set: 'status',
+              options: [{ name: 'Done' }],
+            },
+          ],
+        },
+      ]);
+
+      return <NodeTypeEditor nodeTypes={nodeTypes} onChange={async (next) => setNodeTypes(next)} />;
+    }
+
+    render(<Harness />);
+
+    await waitFor(() => expect(apiClientMock.getMetaSchema).toHaveBeenCalled());
+
+    await user.click(screen.getByRole('heading', { name: 'Task' }));
+    await user.click(screen.getByRole('heading', { name: 'Status' }));
+
+    const removeButton = await screen.findByRole('button', { name: 'Remove option Done' });
+    await user.click(removeButton);
+
+    expect(await screen.findByDisplayValue('Option 1')).toBeInTheDocument();
+  });
+
 });

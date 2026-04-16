@@ -80,9 +80,26 @@ class TemplateValidator:
             if not isinstance(node_type['properties'], list):
                 errors.append(f"{path}.properties: must be a list, got {type(node_type['properties']).__name__}")
             else:
+                property_ids = set()
+                property_uuids = set()
                 for prop_idx, prop in enumerate(node_type['properties']):
                     prop_path = f"{path}.properties[{prop_idx}]"
                     errors.extend(cls._validate_property(prop, prop_path))
+
+                    if not isinstance(prop, dict):
+                        continue
+
+                    property_id = prop.get('id')
+                    if isinstance(property_id, str) and property_id:
+                        if property_id in property_ids:
+                            errors.append(f"{path}.properties: duplicate property id '{property_id}'")
+                        property_ids.add(property_id)
+
+                    property_uuid = prop.get('uuid')
+                    if isinstance(property_uuid, str) and property_uuid:
+                        if property_uuid in property_uuids:
+                            errors.append(f"{path}.properties: duplicate property uuid '{property_uuid}'")
+                        property_uuids.add(property_uuid)
         
         # Validate allowed_children if present
         if 'allowed_children' in node_type:

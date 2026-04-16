@@ -311,6 +311,7 @@ function TreeItem({
     let isMounted = true;
 
     const indicatorRequests: Array<Promise<any>> = [];
+    let indicatorRequestIndex = 0;
 
     statusProperties.forEach((property: any) => {
       const rawValue = (node.properties as Record<string, any> | undefined)?.[property.id];
@@ -327,9 +328,10 @@ function TreeItem({
       }
 
       const indicatorSet = property?.indicator_set || 'status';
+      const requestIndex = indicatorRequestIndex++;
       indicatorRequests.push(
         mapNodeIndicator({ ...node, indicator_id: indicatorId, indicator_set: indicatorSet }).then((indicator) => ({
-          key: `${property.id}:${indicatorId}`,
+          key: `${String(property.id || 'status')}:${indicatorId}:${requestIndex}`,
           propertyId: property.id,
           indicator,
         }))
@@ -339,7 +341,7 @@ function TreeItem({
     if (indicatorRequests.length === 0 && fallbackIndicatorId) {
       indicatorRequests.push(
         mapNodeIndicator({ ...node, indicator_id: fallbackIndicatorId, indicator_set: 'status' }).then((indicator) => ({
-          key: `fallback:${fallbackIndicatorId}`,
+          key: `fallback:${fallbackIndicatorId}:0`,
           propertyId: undefined,
           indicator,
         }))
@@ -376,13 +378,20 @@ function TreeItem({
             textStyle: entry.indicator.textStyle,
           }));
 
+        const seenKeys = new Map<string, number>();
         setStatusIndicators(
-          renderedIndicators.map((entry) => ({
-            key: entry.key,
-            svg: entry.svg,
-            text: entry.text,
-            color: entry.color,
-          }))
+          renderedIndicators.map((entry, index) => {
+            const baseKey = entry.key || `indicator:${index}`;
+            const seenCount = seenKeys.get(baseKey) ?? 0;
+            seenKeys.set(baseKey, seenCount + 1);
+
+            return {
+              key: seenCount === 0 ? baseKey : `${baseKey}:${seenCount}`,
+              svg: entry.svg,
+              text: entry.text,
+              color: entry.color,
+            };
+          })
         );
 
         const primaryEntry = renderedIndicators.find((entry) => entry.propertyId === primaryStatusPropertyId) || renderedIndicators[0];
