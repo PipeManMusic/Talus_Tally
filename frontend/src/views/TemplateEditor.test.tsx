@@ -7,6 +7,7 @@ const apiClientMock = vi.hoisted(() => ({
   listTemplatesForEditor: vi.fn(),
   getTemplateForEditor: vi.fn(),
   updateTemplate: vi.fn(),
+  validateTemplate: vi.fn(),
 }));
 
 vi.mock('../api/client', () => ({
@@ -84,6 +85,7 @@ describe('TemplateEditor', () => {
       ],
     });
     apiClientMock.getTemplateForEditor.mockResolvedValue(template);
+    apiClientMock.validateTemplate.mockResolvedValue({ is_valid: true, errors: [] });
   });
 
   it('ignores stale update responses so deleted node types do not reappear', async () => {
@@ -162,6 +164,10 @@ describe('TemplateEditor', () => {
     });
 
     fireEvent.click(screen.getByText('Trigger Stale Allowed Children'));
+
+    // With the deferred-save refactor, node type changes only update local
+    // draft state. Trigger an explicit Save to persist.
+    fireEvent.click(screen.getByText('Save'));
 
     await waitFor(() => {
       expect(apiClientMock.updateTemplate).toHaveBeenCalled();

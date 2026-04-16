@@ -3,6 +3,7 @@ import { ChevronLeft, Plus, Save, Trash2, AlertCircle, CheckCircle } from 'lucid
 import { apiClient } from '../api/client';
 import { TitleBar } from '../components/layout/TitleBar';
 import { NodeTypeEditor, type NodeType, type Property } from './NodeTypeEditor';
+import { normalizeTemplateNodeTypes } from '../utils/templateEditorNormalization';
 
 interface Template {
   id: string;
@@ -54,6 +55,7 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [savedSuccessfully, setSavedSuccessfully] = useState(false);
   const [orphanInfo, setOrphanInfo] = useState<any>(null);
+  const currentTemplateRef = useRef<Template | null>(null);
 
   const defaultNodeSizeConfig = {
     base_width: 160,
@@ -67,6 +69,11 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
   // Load templates list
   useEffect(() => {
     loadTemplates();
+  }, []);
+
+  const setCurrentTemplateState = useCallback((nextTemplate: Template | null) => {
+    currentTemplateRef.current = nextTemplate;
+    setCurrentTemplate(nextTemplate);
   }, []);
 
   const loadTemplates = useCallback(async () => {
@@ -97,7 +104,7 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
     setValidationErrors([]);
     try {
       const template = await apiClient.getTemplateForEditor(templateId);
-      setCurrentTemplate(template);
+      setCurrentTemplateState(template);
       setOriginalTemplate(JSON.parse(JSON.stringify(template))); // Deep clone
       setSavedSuccessfully(false);
       setOrphanInfo(null);
@@ -135,7 +142,7 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
         },
       ],
     };
-    setCurrentTemplate(newTemplate);
+    setCurrentTemplateState(newTemplate);
     setOriginalTemplate(null); // New template has no original
     setValidationErrors([]);
     setError(null);
@@ -148,7 +155,7 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
   const handleCancel = useCallback(() => {
     console.log('[TemplateEditor] Cancelling and returning to list...');
     // Reset all state to go back to list
-    setCurrentTemplate(null);
+    setCurrentTemplateState(null);
     setOriginalTemplate(null);
     setValidationErrors([]);
     setError(null);
@@ -159,7 +166,8 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
   }, []);
 
   const handleSaveTemplate = useCallback(async () => {
-    if (!currentTemplate) return;
+    const templateToSave = currentTemplateRef.current;
+    if (!templateToSave) return;
 
     setLoading(true);
     setError(null);
@@ -167,7 +175,8 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
     setOrphanInfo(null);
 
     try {
-      const normalizedTemplate: Template = JSON.parse(JSON.stringify(currentTemplate));
+      const normalizedTemplate: Template = JSON.parse(JSON.stringify(templateToSave));
+      normalizedTemplate.node_types = normalizeTemplateNodeTypes(normalizedTemplate.node_types) as NodeType[];
       const personNode = normalizedTemplate.node_types.find((nodeType) => nodeType.id === 'person');
       if (personNode) {
         personNode.base_type = 'asset';
@@ -270,12 +279,12 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
       }
       setValidationErrors([]);
 
-      const isNew = !templates.some(t => t.id === currentTemplate.id);
+      const isNew = !templates.some(t => t.id === templateToSave.id);
       let result;
       if (isNew) {
         result = await apiClient.createTemplate(normalizedTemplate);
       } else {
-        result = await apiClient.updateTemplate(currentTemplate.id, normalizedTemplate);
+        result = await apiClient.updateTemplate(templateToSave.id, normalizedTemplate);
       }
 
       if (result?.orphan_info && result.orphan_info.total_orphaned_nodes > 0) {
@@ -283,7 +292,7 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
       }
 
       const updatedTemplate: Template = result?.template ?? { ...currentTemplate };
-      setCurrentTemplate(updatedTemplate);
+      setCurrentTemplateState(updatedTemplate);
       setOriginalTemplate(JSON.parse(JSON.stringify(updatedTemplate)));
 
       setSavedSuccessfully(true);
@@ -298,7 +307,7 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
     } finally {
       setLoading(false);
     }
-  }, [currentTemplate, templates, loadTemplates]);
+  }, [templates, loadTemplates, setCurrentTemplateState]);
 
   const handleDeleteTemplate = useCallback(async () => {
     if (!currentTemplate) return;
@@ -313,20 +322,22 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
     try {
       await apiClient.deleteTemplate(currentTemplate.id);
       setView('list');
-      setCurrentTemplate(null);
+      setCurrentTemplateState(null);
       await loadTemplates();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete template');
     } finally {
       setLoading(false);
     }
-  }, [currentTemplate, loadTemplates]);
+  }, [currentTemplate, loadTemplates, setCurrentTemplateState]);
 
   const updateCurrentTemplate = useCallback((updates: Partial<Template>) => {
     setSavedSuccessfully(false);
     setCurrentTemplate(prev => {
       if (!prev) return prev;
-      return { ...prev, ...updates };
+      const nextTemplate = { ...prev, ...updates };
+      currentTemplateRef.current = nextTemplate;
+      return nextTemplate;
     });
   }, []);
 
@@ -335,79 +346,34 @@ export function TemplateEditor({ onClose }: { onClose: () => void }) {
     setCurrentTemplate(prev => {
       if (!prev) return prev;
       const node_size = { ...(prev.blocking_view?.node_size || {}), ...updates };
-      return {
+      const nextTemplate = {
         ...prev,
         blocking_view: {
           ...(prev.blocking_view || {}),
           node_size,
         },
       };
+      currentTemplateRef.current = nextTemplate;
+      return nextTemplate;
     });
   }, []);
 
-  // Keep a ref to currentTemplate so handleNodeTypesChange can access the
-  // latest value without depending on it (which would recreate the callback
-  // on every save and break memo on NodeTypeEditor, resetting child state).
-  const currentTemplateRef = useRef(currentTemplate);
-  const latestNodeTypesRequestRef = useRef(0);
+  // Keep a ref to currentTemplate so manual save can access the latest draft
+  // even when a click lands before React has rerendered.
   useEffect(() => {
     currentTemplateRef.current = currentTemplate;
   }, [currentTemplate]);
 
   const handleNodeTypesChange = useCallback(async (nodeTypes: NodeType[]) => {
-    const requestId = latestNodeTypesRequestRef.current + 1;
-    latestNodeTypesRequestRef.current = requestId;
-    const previousTemplate = currentTemplateRef.current;
-
     // Normalize node types so stale/malformed allowed_children references
     // don't cause backend validation failures after deletes/renames.
-    const validTypeIds = new Set(nodeTypes.map((nodeType) => nodeType.id));
-    const normalizedNodeTypes = nodeTypes.map((nodeType) => {
-      const rawChildren = Array.isArray(nodeType.allowed_children)
-        ? nodeType.allowed_children
-        : [];
-      const cleanedChildren = Array.from(new Set(
-        rawChildren.filter((childId) => !!childId && childId !== nodeType.id && validTypeIds.has(childId))
-      ));
-      return {
-        ...nodeType,
-        allowed_children: cleanedChildren,
-      };
-    });
+    const normalizedNodeTypes = normalizeTemplateNodeTypes(nodeTypes) as NodeType[];
 
-    // Update local state (optimistic)
+    // Update local draft state only. Persist on explicit Save so typing and
+    // property editing do not trigger full-template API writes on every change.
     updateCurrentTemplate({ node_types: normalizedNodeTypes });
-
-    // Persist change to backend
-    const template = previousTemplate;
-    if (template) {
-      setLoading(true);
-      setError(null);
-      try {
-        const updated = { ...template, node_types: normalizedNodeTypes };
-        const result = await apiClient.updateTemplate(updated.id, updated);
-        if (requestId !== latestNodeTypesRequestRef.current) {
-          return;
-        }
-        setCurrentTemplate(result?.template ?? updated);
-        setOriginalTemplate(JSON.parse(JSON.stringify(result?.template ?? updated)));
-        setSavedSuccessfully(true);
-        setTimeout(() => setSavedSuccessfully(false), 3000);
-      } catch (err) {
-        if (requestId !== latestNodeTypesRequestRef.current) {
-          return;
-        }
-        if (previousTemplate) {
-          setCurrentTemplate(previousTemplate);
-        }
-        setError(err instanceof Error ? err.message : 'Failed to update template');
-        throw err;
-      } finally {
-        if (requestId === latestNodeTypesRequestRef.current) {
-          setLoading(false);
-        }
-      }
-    }
+    setError(null);
+    return Promise.resolve();
   }, [updateCurrentTemplate]);
 
   // List View
