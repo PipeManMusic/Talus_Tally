@@ -727,9 +727,9 @@ export function GanttView({
                           />
                         )}
 
-                        {/* Bar text */}
-                        {bar.widthPercent > 6 && (
-                          <span className="relative z-[1] flex items-center h-full px-1.5 text-[10px] text-white font-medium truncate">
+                        {/* Bar text – show when estimated pixel width > 30px */}
+                        {adjWidth * 6 * scale > 30 && (
+                          <span className="relative z-[1] flex items-center justify-center h-full px-1.5 text-[10px] text-white font-medium truncate text-center">
                             {bar.nodeName}
                             {bar.progress > 0 && (
                               <span className="ml-1 opacity-75">
