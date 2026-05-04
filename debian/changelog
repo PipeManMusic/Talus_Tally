@@ -1,3 +1,20 @@
+talus-tally (0.1.11~alpha-1) jammy; urgency=medium
+
+  * Alpha 0.1.11 release
+  * Node Templates: full backend (dataclasses, commands, routes, persistence)
+    and full-window editor with TreeView "Insert Template" context menu
+  * Multi-select and copy/paste support in TreeView
+  * Agile and Manpower views with tab visibility preferences
+  * CSV upsert via ImportCsvDialog with unblocked-status prompt
+  * Filter store with FilterBar and breadcrumb-driven Inspector navigation
+  * Spreadsheet editor modal for batch property editing
+  * Settings dialog refresh and template editor normalization helpers
+  * Bug fix: missing id when creating node templates
+  * Bug fix: project root types can now be node-template roots
+  * Bug fix: TDZ ReferenceError on project open
+
+ -- Talus Tally Dev <dev@talusstally.local>  Mon, 04 May 2026 00:00:00 +0000
+
 talus-tally (0.1.10~alpha-1) jammy; urgency=medium
 
   * Alpha 0.1.10 release
