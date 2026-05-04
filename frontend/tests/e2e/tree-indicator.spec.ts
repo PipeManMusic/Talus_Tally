@@ -60,8 +60,14 @@ test('tree view displays node labels and status indicators', async ({ page }) =>
   if (await addPhaseOption.count() === 0) {
     throw new Error('"Add Phase" option not found in flyout. Options: ' + JSON.stringify(flyoutLabels));
   }
-  await addPhaseOption.click();
-  await page.screenshot({ path: 'after-add-phase-flyout.png', fullPage: true });
+
+  // Create a Task so the Inspector contains a Status select property.
+  const addTaskOption = flyoutOptions.filter({ hasText: /Add\s+Task/i }).first();
+  if (await addTaskOption.count() === 0) {
+    throw new Error('"Add Task" option not found in flyout. Options: ' + JSON.stringify(flyoutLabels));
+  }
+  await addTaskOption.click();
+  await page.screenshot({ path: 'after-add-task-flyout.png', fullPage: true });
 
   // Wait up to 10s for Add Child dialog to appear, robust to placeholder variations
   // Try to match any input whose placeholder contains 'name' (case-insensitive)
@@ -89,7 +95,7 @@ test('tree view displays node labels and status indicators', async ({ page }) =>
 
   // Fill in the child node name if dialog appears
   if (dialogVisible) {
-    await childNameInput.fill('Phase 1');
+    await childNameInput.fill('Task 1');
     await page.screenshot({ path: 'before-add-child-click.png', fullPage: true });
     // Log all visible buttons in the dialog
     const dialogButtons = page.locator('div[role="dialog"] button, .fixed button');
@@ -133,12 +139,12 @@ test('tree view displays node labels and status indicators', async ({ page }) =>
       console.log('VISIBLE ERROR MESSAGES (Add Child):', errorMsg);
     }
   } else {
-    console.log('Add Child dialog did not appear after selecting "Add Phase".');
+    console.log('Add Child dialog did not appear after selecting "Add Task".');
     await page.screenshot({ path: 'add-child-dialog-missing.png', fullPage: true });
   }
 
   // Wait up to 5s for the new child node to appear in the tree (using testid)
-  let childTreeItem = page.locator('[data-testid="tree-item-row"]', { hasText: 'Phase 1' });
+  let childTreeItem = page.locator('[data-testid="tree-item-row"]', { hasText: 'Task 1' });
   let found = false;
   for (let i = 0; i < 10; i++) { // 10 x 500ms = 5s
     if (await childTreeItem.count().catch(() => 0) > 0 && await childTreeItem.isVisible().catch(() => false)) {
@@ -172,9 +178,8 @@ test('tree view displays node labels and status indicators', async ({ page }) =>
     await logTreeIndicators();
     throw new Error('Child Node found but not clickable. See TREE HTML and indicator log above.');
   }
-  // Find the status property dropdown (label + select pairing)
-  const statusFieldContainer = page.locator('label', { hasText: /Status/i }).first().locator('..');
-  const statusDropdown = statusFieldContainer.locator('select').first();
+  // Find the status dropdown by stable Inspector property test id.
+  const statusDropdown = page.locator('[data-testid="inspector-property-status"] select').first();
   await expect(statusDropdown).toBeVisible({ timeout: 5000 });
   // Select a non-default status option
   const options = await statusDropdown.locator('option').all();

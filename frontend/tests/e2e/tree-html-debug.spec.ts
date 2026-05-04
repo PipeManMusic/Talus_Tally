@@ -1,25 +1,29 @@
 import { test, expect } from '@playwright/test';
-import { createNewProject } from './utils';
+import { createNewProject, resetE2ETemplateFixture } from './utils';
 
-test('debug: print tree HTML if "+" button not found', async ({ page }) => {
+test('tree shows add-child controls for root nodes that allow children', async ({ page }) => {
+  await resetE2ETemplateFixture();
   await page.goto('/');
 
   await createNewProject(page, 'Debug Project');
 
-  // Wait for the tree to appear
   const tree = page.locator('[data-testid="tree-item-row"]');
   await expect(tree.first()).toBeVisible({ timeout: 10000 });
 
-  // Try to find the "+" button
-  const addChildBtn = page.locator('button[title="Add child node"]');
-  if (await addChildBtn.count() === 0) {
-    // Print the tree HTML for debugging
-    const treeHtml = await tree.first().evaluate(node => node.parentElement?.innerHTML || node.innerHTML);
-    console.log('TREE HTML:', treeHtml);
-    throw new Error('No "+" button found in tree. See console for tree HTML.');
-  }
+  const addChildBtn = page.locator('[data-testid="add-child-btn"]').first();
+  await expect(addChildBtn).toBeVisible({ timeout: 5000 });
 
-  // If found, click it
-  await addChildBtn.first().click();
-  // ...rest of test omitted for debug
+  await addChildBtn.click();
+
+  const flyout = page.locator('[data-testid="add-child-flyout"]');
+  await expect(flyout).toBeVisible({ timeout: 5000 });
+
+  // e2e_smoketest fixture allows phase/task/person under root.
+  await expect(flyout.locator('[data-testid="add-child-flyout-option"]', { hasText: /Add\s+Phase/i }).first()).toBeVisible({ timeout: 5000 });
+  await expect(flyout.locator('[data-testid="add-child-flyout-option"]', { hasText: /Add\s+Task/i }).first()).toBeVisible({ timeout: 5000 });
+  await expect(flyout.locator('[data-testid="add-child-flyout-option"]', { hasText: /Add\s+Person/i }).first()).toBeVisible({ timeout: 5000 });
+
+  // Dismiss flyout and verify tree remains interactive.
+  await page.keyboard.press('Escape');
+  await expect(tree.first()).toBeVisible({ timeout: 5000 });
 });

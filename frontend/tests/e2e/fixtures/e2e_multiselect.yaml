@@ -1,0 +1,38 @@
+description: Template with sibling child nodes for multi-select E2E coverage.
+name: E2E Multi-Select Template
+node_types:
+- allowed_asset_types: []
+  allowed_children:
+  - ms_task
+  features:
+  - is_root
+  icon: layers
+  id: ms_project
+  label: Multi-Select Project
+  properties:
+  - id: name
+    label: Project Name
+    required: false
+    type: text
+    uuid: aa000001-0000-0000-0000-000000000001
+  uuid: aa000002-0000-0000-0000-000000000002
+- allowed_asset_types: []
+  allowed_children: []
+  features: []
+  icon: check-square
+  id: ms_task
+  label: Task
+  properties:
+  - id: name
+    label: Task Name
+    required: false
+    type: text
+    uuid: aa000003-0000-0000-0000-000000000003
+  - id: priority
+    label: Priority
+    required: false
+    type: text
+    uuid: aa000004-0000-0000-0000-000000000004
+  uuid: aa000005-0000-0000-0000-000000000005
+uuid: aa000006-0000-0000-0000-000000000006
+version: '1.0'

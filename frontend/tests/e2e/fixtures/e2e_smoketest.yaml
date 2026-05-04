@@ -1,8 +1,11 @@
-description: Minimal template with predictable node types for automated E2E coverage.
+description: E2E template with root, phase, task, and person nodes for stable interaction tests.
 name: E2E Test Template
 node_types:
 - allowed_asset_types: []
-  allowed_children: []
+  allowed_children:
+  - phase
+  - task
+  - person
   features:
   - budgeting
   - is_root
@@ -35,5 +38,62 @@ node_types:
     ui_group: Financial
     uuid: 1995af96-4af9-f0eb-b3eb-2ba8e75ae6da
   uuid: c772d629-7d55-ad53-b487-4a755b02317c
+- allowed_asset_types: []
+  allowed_children:
+  - task
+  features:
+  - budgeting
+  icon: folder
+  id: phase
+  label: Phase
+  properties:
+  - id: name
+    label: Phase Name
+    required: false
+    type: text
+    uuid: 01000000-0000-0000-0000-000000000001
+  - id: description
+    label: Description
+    required: false
+    type: text
+    uuid: 01000000-0000-0000-0000-000000000002
+  uuid: 01000000-0000-0000-0000-000000000003
+- allowed_asset_types: []
+  allowed_children: []
+  features:
+  - scheduling
+  icon: check-square
+  id: task
+  label: Task
+  properties:
+  - id: name
+    label: Task Name
+    required: false
+    type: text
+    uuid: 02000000-0000-0000-0000-000000000001
+  - id: description
+    label: Description
+    required: false
+    type: text
+    uuid: 02000000-0000-0000-0000-000000000002
+  uuid: 02000000-0000-0000-0000-000000000003
+- allowed_asset_types: []
+  allowed_children: []
+  features: []
+  icon: user
+  id: person
+  label: Person
+  properties:
+  - id: name
+    label: Full Name
+    required: false
+    type: text
+    uuid: 03000000-0000-0000-0000-000000000001
+  - id: email
+    label: Email
+    required: true
+    type: text
+    uuid: 03000000-0000-0000-0000-000000000003
+  uuid: 03000000-0000-0000-0000-000000000002
 uuid: 314d7e8b-173a-40ea-9b06-d055510feb83
 version: '1.0'
