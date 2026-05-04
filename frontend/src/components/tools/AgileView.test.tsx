@@ -397,4 +397,115 @@ describe('AgileView', () => {
       });
     });
   });
+
+  it('places nodes with Blocked status in the Blocked column', () => {
+    const nodes = {
+      'task-1': {
+        id: 'task-1',
+        type: 'task',
+        properties: {
+          name: 'Held task',
+          estimated_hours: 3,
+          status: 'Blocked',
+        },
+      },
+    } as any;
+
+    render(
+      <AgileView
+        sessionId="session-1"
+        nodes={nodes}
+        velocityScores={{}}
+        templateSchema={defaultSchema}
+      />,
+    );
+
+    const blockedColumn = screen.getByTestId('agile-column-blocked');
+    expect(blockedColumn).toHaveTextContent('Held task');
+    expect(screen.getByTestId('agile-column-to-do')).not.toHaveTextContent('Held task');
+  });
+
+  it('does not auto-route velocity-blocked nodes; they stay in their status column', () => {
+    const nodes = {
+      'blocker': {
+        id: 'blocker',
+        type: 'task',
+        properties: { name: 'Blocker', estimated_hours: 2, status: 'In Progress' },
+      },
+      'task-1': {
+        id: 'task-1',
+        type: 'task',
+        properties: { name: 'Downstream', estimated_hours: 3, status: 'In Progress' },
+      },
+    } as any;
+    const velocityScores = {
+      'task-1': {
+        nodeId: 'task-1',
+        baseScore: 0, inheritedScore: 0, statusScore: 0, numericalScore: 0,
+        blockingPenalty: 0, blockingBonus: 0, totalVelocity: 0,
+        isBlocked: true,
+        blockedByNodes: ['blocker'],
+        blocksNodeIds: [],
+      },
+    } as any;
+
+    render(
+      <AgileView
+        sessionId="session-1"
+        nodes={nodes}
+        velocityScores={velocityScores}
+        templateSchema={defaultSchema}
+      />,
+    );
+
+    // Column placement is driven exclusively by the status property.
+    expect(screen.getByTestId('agile-column-in-progress')).toHaveTextContent('Downstream');
+    expect(screen.getByTestId('agile-column-blocked')).not.toHaveTextContent('Downstream');
+  });
+
+  it('drag-to-Blocked sends "Blocked" as the status value', async () => {
+    const nodes = {
+      'task-1': {
+        id: 'task-1',
+        type: 'task',
+        properties: {
+          name: 'Task A',
+          estimated_hours: 4,
+          status: 'In Progress',
+        },
+      },
+    } as any;
+
+    render(
+      <AgileView
+        sessionId="session-1"
+        nodes={nodes}
+        velocityScores={{}}
+        templateSchema={defaultSchema}
+      />,
+    );
+
+    const card = screen.getByTestId('agile-card-task-1');
+    const blockedColumn = screen.getByTestId('agile-column-blocked');
+    const dataTransfer = {
+      data: {} as Record<string, string>,
+      setData(type: string, value: string) { this.data[type] = value; },
+      getData(type: string) { return this.data[type] || ''; },
+      effectAllowed: 'move',
+      dropEffect: 'move',
+    };
+
+    fireEvent.dragStart(card, { dataTransfer });
+    fireEvent.dragOver(blockedColumn, { dataTransfer });
+    fireEvent.drop(blockedColumn, { dataTransfer });
+
+    await waitFor(() => {
+      expect(apiClientMock.executeCommand).toHaveBeenCalledWith('session-1', 'UpdateProperty', {
+        node_id: 'task-1',
+        property_id: 'status',
+        old_value: 'In Progress',
+        new_value: 'Blocked',
+      });
+    });
+  });
 });

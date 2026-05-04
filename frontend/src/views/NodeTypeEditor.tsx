@@ -14,9 +14,21 @@ export interface VelocityNodeConfig {
 
 export interface VelocityPropertyConfig {
   enabled?: boolean;
-  mode?: 'multiplier' | 'status';
+  mode?: 'multiplier' | 'status' | 'checkbox' | 'date';
   multiplierFactor?: number;
   statusScores?: Record<string, number>;
+  // Checkbox-mode scores: contributed to the node's velocity total when the
+  // boolean property is checked / unchecked respectively. Either may be
+  // negative to act as a penalty (e.g. -5 while unreviewed).
+  checkedScore?: number;
+  uncheckedScore?: number;
+  // Date-mode scores: the contribution ramps as a date approaches today
+  // and continues to accrue once the date has passed. See backend
+  // ``_calculate_date_velocity`` for the exact ramp.
+  approachingWindow?: number;
+  approachingPerDay?: number;
+  overduePerDay?: number;
+  maxScore?: number;
 }
 
 export interface NodeType {
@@ -45,6 +57,10 @@ export interface Property {
   markup_profile?: string;
   description?: string;
   indicator_set?: string;
+  // Property-level indicator id. Only used by checkbox-typed properties at
+  // the moment — shown when the box is checked, hidden when unchecked. For
+  // select properties indicators live on each option instead.
+  indicator_id?: string;
   velocityConfig?: VelocityPropertyConfig;
   system_locked?: boolean;
   ui_group?: string;
@@ -248,6 +264,14 @@ function NodeTypeEditorComponent({ nodeTypes, onChange }: NodeTypeEditorProps) {
               }
             }
           });
+        }
+        // Checkbox properties carry a single property-level indicator_id
+        // (shown when the box is checked).
+        if (property.type === 'checkbox' && property.indicator_id) {
+          const indicatorMeta = setIndicators.find(ind => ind.id === property.indicator_id);
+          if (indicatorMeta?.url && !indicatorSvgCache[property.indicator_id]) {
+            fetchIndicatorSvg(property.indicator_id, indicatorMeta.url);
+          }
         }
       });
     });
@@ -1673,10 +1697,21 @@ const PropertyEditor = memo(function PropertyEditor({
                 checked={!!property.velocityConfig?.enabled}
                 onChange={(e) => {
                   if (e.target.checked) {
+                    // Pick a sensible default mode based on the property's
+                    // data type so the user doesn't have to switch modes
+                    // manually after enabling velocity.
+                    const defaultMode: VelocityPropertyConfig['mode'] =
+                      property.type === 'checkbox'
+                        ? 'checkbox'
+                        : property.type === 'select'
+                          ? 'status'
+                          : property.type === 'date'
+                            ? 'date'
+                            : 'multiplier';
                     onUpdate({
                       velocityConfig: {
                         enabled: true,
-                        mode: 'multiplier',
+                        mode: defaultMode,
                       },
                     });
                   } else {
@@ -1701,7 +1736,7 @@ const PropertyEditor = memo(function PropertyEditor({
                       onUpdate({
                         velocityConfig: {
                           ...property.velocityConfig,
-                          mode: e.target.value as 'multiplier' | 'status',
+                          mode: e.target.value as VelocityPropertyConfig['mode'],
                         },
                       });
                     }}
@@ -1709,6 +1744,8 @@ const PropertyEditor = memo(function PropertyEditor({
                   >
                     <option value="multiplier">Multiplier (numeric property)</option>
                     <option value="status">Status (select property with scores)</option>
+                    <option value="checkbox">Checkbox (boolean toggle)</option>
+                    <option value="date">Date (approaching / overdue)</option>
                   </select>
                 </div>
 
@@ -1767,6 +1804,153 @@ const PropertyEditor = memo(function PropertyEditor({
                         <p className="text-[10px] text-fg-muted italic">Add options to this property first</p>
                       )}
                     </div>
+                  </div>
+                )}
+
+                {property.velocityConfig?.mode === 'checkbox' && (
+                  <div>
+                    <label className="text-xs text-fg-secondary mb-1 block">Checkbox Scores</label>
+                    <p className="text-[10px] text-fg-muted mb-2">
+                      Velocity contributed when the toggle is checked vs. unchecked. Negative values act as a penalty.
+                    </p>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs flex-1 text-fg-secondary">Checked</span>
+                        <input
+                          type="number"
+                          value={property.velocityConfig?.checkedScore ?? 0}
+                          onChange={(e) => {
+                            onUpdate({
+                              velocityConfig: {
+                                ...property.velocityConfig,
+                                checkedScore: parseInt(e.target.value, 10) || 0,
+                              },
+                            });
+                          }}
+                          className="w-16 px-1 py-1 bg-bg-light border border-border rounded text-fg-primary text-xs"
+                          placeholder="0"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs flex-1 text-fg-secondary">Unchecked</span>
+                        <input
+                          type="number"
+                          value={property.velocityConfig?.uncheckedScore ?? 0}
+                          onChange={(e) => {
+                            onUpdate({
+                              velocityConfig: {
+                                ...property.velocityConfig,
+                                uncheckedScore: parseInt(e.target.value, 10) || 0,
+                              },
+                            });
+                          }}
+                          className="w-16 px-1 py-1 bg-bg-light border border-border rounded text-fg-primary text-xs"
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+                    {property.type !== 'checkbox' && (
+                      <p className="text-[10px] text-status-warning mt-2 italic">
+                        Tip: Checkbox mode is intended for properties of type "checkbox". The current property type is "{property.type}".
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {property.velocityConfig?.mode === 'date' && (
+                  <div>
+                    <label className="text-xs text-fg-secondary mb-1 block">Date Velocity Ramp</label>
+                    <p className="text-[10px] text-fg-muted mb-2">
+                      Score grows as the date approaches today, then keeps accruing once it has passed. Use 0 to disable a side of the ramp. Negative per-day values act as bonuses for distant dates.
+                    </p>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs flex-1 text-fg-secondary" title="Days before the date when scoring starts">
+                          Approaching window (days)
+                        </span>
+                        <input
+                          type="number"
+                          min="0"
+                          value={property.velocityConfig?.approachingWindow ?? 0}
+                          onChange={(e) => {
+                            onUpdate({
+                              velocityConfig: {
+                                ...property.velocityConfig,
+                                approachingWindow: parseInt(e.target.value, 10) || 0,
+                              },
+                            });
+                          }}
+                          className="w-16 px-1 py-1 bg-bg-light border border-border rounded text-fg-primary text-xs"
+                          placeholder="0"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs flex-1 text-fg-secondary" title="Points added per day inside the approaching window">
+                          Approaching per day
+                        </span>
+                        <input
+                          type="number"
+                          step="0.5"
+                          value={property.velocityConfig?.approachingPerDay ?? 0}
+                          onChange={(e) => {
+                            onUpdate({
+                              velocityConfig: {
+                                ...property.velocityConfig,
+                                approachingPerDay: parseFloat(e.target.value) || 0,
+                              },
+                            });
+                          }}
+                          className="w-16 px-1 py-1 bg-bg-light border border-border rounded text-fg-primary text-xs"
+                          placeholder="0"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs flex-1 text-fg-secondary" title="Points added per day after the date has passed">
+                          Overdue per day
+                        </span>
+                        <input
+                          type="number"
+                          step="0.5"
+                          value={property.velocityConfig?.overduePerDay ?? 0}
+                          onChange={(e) => {
+                            onUpdate({
+                              velocityConfig: {
+                                ...property.velocityConfig,
+                                overduePerDay: parseFloat(e.target.value) || 0,
+                              },
+                            });
+                          }}
+                          className="w-16 px-1 py-1 bg-bg-light border border-border rounded text-fg-primary text-xs"
+                          placeholder="0"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs flex-1 text-fg-secondary" title="Optional cap on the total date contribution">
+                          Max contribution (0 = unlimited)
+                        </span>
+                        <input
+                          type="number"
+                          min="0"
+                          value={property.velocityConfig?.maxScore ?? 0}
+                          onChange={(e) => {
+                            const parsed = parseFloat(e.target.value);
+                            onUpdate({
+                              velocityConfig: {
+                                ...property.velocityConfig,
+                                maxScore: Number.isFinite(parsed) && parsed > 0 ? parsed : undefined,
+                              },
+                            });
+                          }}
+                          className="w-16 px-1 py-1 bg-bg-light border border-border rounded text-fg-primary text-xs"
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+                    {property.type !== 'date' && (
+                      <p className="text-[10px] text-status-warning mt-2 italic">
+                        Tip: Date mode is intended for properties of type "date". The current property type is "{property.type}".
+                      </p>
+                    )}
                   </div>
                 )}
 
@@ -1922,6 +2106,80 @@ const PropertyEditor = memo(function PropertyEditor({
                   + Add Option
                 </button>
               </div>
+            </div>
+          )}
+
+          {/* Checkbox indicator (for checkbox type) — shown on the node when
+              the box is checked, hidden when unchecked. Lets users flag
+              critical items visually (e.g. a red flag for "blocker"). */}
+          {property.type === 'checkbox' && indicatorsConfig && (
+            <div>
+              <label className="text-xs text-fg-secondary mb-2 block">Indicator (when checked)</label>
+              <div className="mb-2">
+                <label className="text-xs text-fg-secondary mb-1 block">Indicator Set</label>
+                <select
+                  value={resolveIndicatorSetId(property, indicatorsConfig)}
+                  onChange={(e) => {
+                    onUpdate({ indicator_set: e.target.value });
+                  }}
+                  className="w-full px-2 py-1 bg-bg-light border border-border rounded text-fg-primary text-sm"
+                >
+                  {Object.entries(indicatorsConfig.indicator_sets || {}).map(([setId, setData]) => (
+                    <option key={setId} value={setId}>
+                      {setId} - {setData.description || 'Indicator set'}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex items-center gap-2">
+                <select
+                  value={property.indicator_id || ''}
+                  onChange={(e) => {
+                    const newIndicatorId = e.target.value || undefined;
+                    onUpdate({ indicator_id: newIndicatorId });
+                    if (newIndicatorId) {
+                      const setId = resolveIndicatorSetId(property, indicatorsConfig);
+                      const indicatorMeta = indicatorsConfig.indicator_sets[setId]?.indicators?.find(
+                        (ind) => ind.id === newIndicatorId,
+                      );
+                      if (indicatorMeta?.url) {
+                        fetchIndicatorSvg(newIndicatorId, indicatorMeta.url);
+                      }
+                    }
+                  }}
+                  className="flex-1 px-2 py-1 bg-bg-light border border-border rounded text-fg-primary text-sm"
+                >
+                  <option value="">None - no indicator</option>
+                  {(() => {
+                    const setId = resolveIndicatorSetId(property, indicatorsConfig);
+                    const indicators = indicatorsConfig.indicator_sets[setId]?.indicators || [];
+                    return indicators.map((ind) => (
+                      <option key={ind.id} value={ind.id}>
+                        {ind.id} - {ind.description}
+                      </option>
+                    ));
+                  })()}
+                </select>
+                {property.indicator_id && indicatorSvgCache[property.indicator_id] && (() => {
+                  const setId = resolveIndicatorSetId(property, indicatorsConfig);
+                  const theme = indicatorsConfig.indicator_sets[setId]?.default_theme?.[property.indicator_id];
+                  const indicatorColor = theme?.indicator_color || '#e0e0e0';
+                  return (
+                    <div className="flex-shrink-0 flex items-center gap-2 bg-bg-light border border-border rounded p-2">
+                      <div
+                        className="w-8 h-8 flex items-center justify-center overflow-hidden"
+                        dangerouslySetInnerHTML={{
+                          __html: recolorSvg(indicatorSvgCache[property.indicator_id], indicatorColor),
+                        }}
+                      />
+                      <div className="text-[10px] text-fg-secondary font-mono">{indicatorColor}</div>
+                    </div>
+                  );
+                })()}
+              </div>
+              <p className="text-[10px] text-fg-muted mt-1">
+                Optional. The indicator only appears on the node while this checkbox is checked.
+              </p>
             </div>
           )}
         </div>

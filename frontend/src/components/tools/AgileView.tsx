@@ -20,7 +20,7 @@ interface AgileViewProps {
   }) => Promise<void>;
 }
 
-const STATUS_COLUMNS = ['To Do', 'In Progress', 'Done'] as const;
+const STATUS_COLUMNS = ['To Do', 'In Progress', 'Done', 'Blocked'] as const;
 type KanbanStatus = (typeof STATUS_COLUMNS)[number];
 const STATUS_PROPERTY_KEY = 'status';
 
@@ -28,6 +28,13 @@ function normalizeStatus(raw: string): KanbanStatus {
   const lower = raw.trim().toLowerCase();
   if (lower === 'in progress' || lower === 'in-progress' || lower === 'inprogress') return 'In Progress';
   if (lower === 'done' || lower === 'complete' || lower === 'completed') return 'Done';
+  if (
+    lower === 'blocked'
+    || lower === 'hold'
+    || lower === 'on hold'
+    || lower === 'on-hold'
+    || lower === 'paused'
+  ) return 'Blocked';
   return 'To Do';
 }
 
@@ -155,22 +162,29 @@ export function AgileView({
     });
   }, [effectiveNodes, rules, velocityScores]);
 
+  // Status comes exclusively from the node's status property (or its pending
+  // override). Drag-and-drop is the only way a node moves between columns.
+  // Velocity-driven blocking still gets a visual hint on the card itself
+  // (see isActivelyBlocked below), but does NOT change the column.
   const getNodeStatus = (node: Node): KanbanStatus => {
     const override = statusOverrides[node.id];
     if (override) return override;
 
     const statusRaw = node.properties?.[resolveStatusUuid(node.type)];
     if (typeof statusRaw === 'string' && statusRaw.trim()) {
-      // Resolve option UUID to name if the value is a UUID
       const resolved = statusOptionNames.get(statusRaw) ?? statusRaw;
       return normalizeStatus(resolved);
     }
-
     return 'To Do';
   };
 
   const columns = useMemo(() => {
-    const groups: Record<KanbanStatus, Node[]> = { 'To Do': [], 'In Progress': [], 'Done': [] };
+    const groups: Record<KanbanStatus, Node[]> = {
+      'To Do': [],
+      'In Progress': [],
+      'Done': [],
+      'Blocked': [],
+    };
 
     for (const node of filteredNodes) {
       const status = getNodeStatus(node);
@@ -216,6 +230,17 @@ export function AgileView({
           new_value: newValue,
         });
       }
+      // The store now has the new value (App.onNodePropertyChange calls
+      // setCurrentGraph). Drop the optimistic override so the column is
+      // driven by the actual property going forward — otherwise a stale
+      // override can pin a card to the wrong column even after the value
+      // round-trips (e.g. when the backend rejected the value).
+      setStatusOverrides((prev) => {
+        if (!(nodeId in prev)) return prev;
+        const next = { ...prev };
+        delete next[nodeId];
+        return next;
+      });
     } catch (error) {
       console.error('Failed to update agile status:', error);
       setStatusOverrides((prev) => {
@@ -257,15 +282,15 @@ export function AgileView({
     return Math.ceil(totalBacklogHours / avgCapacity);
   }, [totalBacklogHours, avgCapacity]);
 
-  // Check if a node in "To Do" is actively blocked by an incomplete task
+  // Visual-only hint for cards in "To Do": dim them when velocity says they're
+  // blocked by an upstream task that isn't Done yet. Does not affect column.
   const isActivelyBlocked = (node: Node): boolean => {
     const score = velocityScores[node.id];
     if (!score?.isBlocked || !score.blockedByNodes?.length) return false;
-    return score.blockedByNodes.some(blockerId => {
+    return score.blockedByNodes.some((blockerId) => {
       const blocker = effectiveNodes[blockerId];
-      if (!blocker) return true; // unknown blocker = treat as still blocking
-      const blockerStatus = getNodeStatus(blocker);
-      return blockerStatus !== 'Done';
+      if (!blocker) return true;
+      return getNodeStatus(blocker) !== 'Done';
     });
   };
 
@@ -307,6 +332,10 @@ export function AgileView({
       header: 'bg-accent-warning/20 text-accent-warning border-accent-warning/30',
       bg: 'bg-bg-light',
     },
+    Blocked: {
+      header: 'bg-status-danger/20 text-status-danger border-status-danger/30',
+      bg: 'bg-bg-light',
+    },
     Done: {
       header: 'bg-status-success/20 text-status-success border-status-success/30',
       bg: 'bg-bg-light',
@@ -326,8 +355,8 @@ export function AgileView({
 
   return (
     <div className="h-full flex flex-col bg-bg-dark text-fg-primary overflow-hidden">
-      {/* Three-column Kanban grid */}
-      <div className="flex-1 grid grid-cols-3 gap-3 p-4 overflow-hidden">
+      {/* Four-column Kanban grid (To Do / In Progress / Blocked / Done) */}
+      <div className="flex-1 grid grid-cols-4 gap-3 p-4 overflow-hidden">
         {STATUS_COLUMNS.map(status => {
           const colNodes = columns[status];
           const styles = COLUMN_STYLES[status];

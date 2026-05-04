@@ -1,7 +1,9 @@
 type LooseRecord = Record<string, any>;
 
 const getUniqueOptionName = (candidate: string, used: Set<string>, ordinal: number): string => {
-  const base = candidate.trim() || `Option ${ordinal}`;
+  // Preserve user-entered spaces while typing (e.g. "In Progress") by
+  // avoiding eager trim during live normalization.
+  const base = candidate.trim().length > 0 ? candidate : `Option ${ordinal}`;
   if (!used.has(base)) {
     used.add(base);
     return base;
@@ -73,6 +75,17 @@ const normalizeProperty = (property: unknown): LooseRecord | null => {
         ...nextProperty.velocityConfig,
         statusScores: normalizedScores,
       };
+    }
+  }
+
+  if (nextProperty.type === 'checkbox') {
+    // Property-level indicator (shown only when the box is checked). Drop
+    // empty / non-string values so they don't bloat the saved template.
+    if (typeof nextProperty.indicator_id !== 'string' || !nextProperty.indicator_id.trim()) {
+      delete nextProperty.indicator_id;
+    }
+    if (typeof nextProperty.indicator_set !== 'string' || !nextProperty.indicator_set.trim()) {
+      delete nextProperty.indicator_set;
     }
   }
 

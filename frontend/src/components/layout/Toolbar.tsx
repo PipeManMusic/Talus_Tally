@@ -1,5 +1,6 @@
 import React from 'react';
-import { TrendingUp, Zap, DollarSign, Calendar, Users, ChartColumn, Kanban } from 'lucide-react';
+import { TOOLS_TAB_DEFS, type ToolsTab } from '../../types/toolsTabs';
+import { useUiPrefsStore } from '../../store/uiPrefsStore';
 
 export interface ToolbarButton {
   id: string;
@@ -10,7 +11,7 @@ export interface ToolbarButton {
 }
 
 export type ViewType = 'graph' | 'tools';
-export type ToolsTab = 'velocity' | 'blocking' | 'budget' | 'gantt' | 'manpower' | 'charts' | 'agile';
+export type { ToolsTab };
 
 interface ToolbarProps {
   buttons?: ToolbarButton[];
@@ -26,7 +27,7 @@ interface ToolbarProps {
 
 const defaultButtons: ToolbarButton[] = [];
 
-export function Toolbar({ 
+export function Toolbar({
   buttons = defaultButtons,
   activeView = 'graph',
   onViewChange,
@@ -37,100 +38,46 @@ export function Toolbar({
   onBlockingFitToView,
   manpowerOverloadCount = 0,
 }: ToolbarProps) {
+  // Subscribe to the stable `enabledTools` record (not a derived selector) so
+  // we don't trigger a render loop. zustand uses Object.is equality, so a
+  // selector that returns `.filter(...)` would emit a new array reference on
+  // every call and re-render forever. The filtered list is derived during
+  // render instead.
+  const enabledTools = useUiPrefsStore((s) => s.enabledTools);
+  const enabledTabDefs = TOOLS_TAB_DEFS.filter((def) => enabledTools[def.id]);
+  const showToolsButton = enabledTabDefs.length > 0;
+
   return (
     <div className="h-toolbar bg-bg-light border-b border-border px-2 flex items-center gap-4">
       {/* Left: Tools tabs (shown when in tools view) */}
-      {activeView === 'tools' && onToolsTabChange && (
+      {activeView === 'tools' && onToolsTabChange && enabledTabDefs.length > 0 && (
         <div className="flex items-center bg-bg-dark border border-border rounded p-1">
-          <button
-            onClick={() => onToolsTabChange('velocity')}
-            className={`px-3 py-1.5 rounded text-sm font-semibold transition-colors flex items-center gap-2 ${
-              activeToolsTab === 'velocity'
-                ? 'bg-accent-primary text-fg-primary'
-                : 'text-fg-secondary hover:text-fg-primary'
-            }`}
-            title="Switch to velocity view"
-          >
-            <TrendingUp size={16} />
-            Velocity
-          </button>
-          <button
-            onClick={() => onToolsTabChange('blocking')}
-            className={`px-3 py-1.5 rounded text-sm font-semibold transition-colors flex items-center gap-2 ${
-              activeToolsTab === 'blocking'
-                ? 'bg-accent-primary text-fg-primary'
-                : 'text-fg-secondary hover:text-fg-primary'
-            }`}
-            title="Switch to blocking view"
-          >
-            <Zap size={16} />
-            Blocking
-          </button>
-          <button
-            onClick={() => onToolsTabChange('budget')}
-            className={`px-3 py-1.5 rounded text-sm font-semibold transition-colors flex items-center gap-2 ${
-              activeToolsTab === 'budget'
-                ? 'bg-accent-primary text-fg-primary'
-                : 'text-fg-secondary hover:text-fg-primary'
-            }`}
-            title="Switch to budget view"
-          >
-            <DollarSign size={16} />
-            Budget
-          </button>
-          <button
-            onClick={() => onToolsTabChange('gantt')}
-            className={`px-3 py-1.5 rounded text-sm font-semibold transition-colors flex items-center gap-2 ${
-              activeToolsTab === 'gantt'
-                ? 'bg-accent-primary text-fg-primary'
-                : 'text-fg-secondary hover:text-fg-primary'
-            }`}
-            title="Switch to Gantt chart"
-          >
-            <Calendar size={16} />
-            Gantt
-          </button>
-          <button
-            onClick={() => onToolsTabChange('manpower')}
-            className={`px-3 py-1.5 rounded text-sm font-semibold transition-colors flex items-center gap-2 relative ${
-              activeToolsTab === 'manpower'
-                ? 'bg-accent-primary text-fg-primary'
-                : 'text-fg-secondary hover:text-fg-primary'
-            }`}
-            title="Switch to manpower view"
-          >
-            <Users size={16} />
-            Manpower
-            {manpowerOverloadCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-status-danger text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-0.5 leading-none">
-                {manpowerOverloadCount > 99 ? '99+' : manpowerOverloadCount}
-              </span>
-            )}
-          </button>
-          <button
-            onClick={() => onToolsTabChange('charts')}
-            className={`px-3 py-1.5 rounded text-sm font-semibold transition-colors flex items-center gap-2 ${
-              activeToolsTab === 'charts'
-                ? 'bg-accent-primary text-fg-primary'
-                : 'text-fg-secondary hover:text-fg-primary'
-            }`}
-            title="Switch to charts view"
-          >
-            <ChartColumn size={16} />
-            Charts
-          </button>
-          <button
-            onClick={() => onToolsTabChange('agile')}
-            className={`px-3 py-1.5 rounded text-sm font-semibold transition-colors flex items-center gap-2 ${
-              activeToolsTab === 'agile'
-                ? 'bg-accent-primary text-fg-primary'
-                : 'text-fg-secondary hover:text-fg-primary'
-            }`}
-            title="Switch to Agile Kanban view"
-          >
-            <Kanban size={16} />
-            Agile
-          </button>
+          {enabledTabDefs.map((def) => {
+            const Icon = def.icon;
+            const isActive = activeToolsTab === def.id;
+            return (
+              <button
+                key={def.id}
+                onClick={() => onToolsTabChange(def.id)}
+                className={`px-3 py-1.5 rounded text-sm font-semibold transition-colors flex items-center gap-2 ${
+                  def.id === 'manpower' ? 'relative' : ''
+                } ${
+                  isActive
+                    ? 'bg-accent-primary text-fg-primary'
+                    : 'text-fg-secondary hover:text-fg-primary'
+                }`}
+                title={def.title}
+              >
+                <Icon size={16} />
+                {def.label}
+                {def.id === 'manpower' && manpowerOverloadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-status-danger text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-0.5 leading-none">
+                    {manpowerOverloadCount > 99 ? '99+' : manpowerOverloadCount}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
       )}
 
@@ -154,7 +101,9 @@ export function Toolbar({
       {/* Center: Spacer */}
       <div className="flex-1" />
 
-      {/* Right: View Switcher */}
+      {/* Right: View Switcher. The "Tools" button is hidden when every tool
+          tab is disabled in Settings — leaving an empty Tools view would be
+          a dead end, so the entire view toggle disappears. */}
       {onViewChange && (
         <div className="flex items-center bg-bg-dark border border-border rounded p-1">
           <button
@@ -168,17 +117,19 @@ export function Toolbar({
           >
             Tree
           </button>
-          <button
-            onClick={() => onViewChange('tools')}
-            className={`px-3 py-1.5 rounded text-sm font-semibold transition-colors ${
-              activeView === 'tools'
-                ? 'bg-accent-primary text-fg-primary'
-                : 'text-fg-secondary hover:text-fg-primary hover:bg-bg-selection'
-            }`}
-            title="Switch to tools view"
-          >
-            Tools
-          </button>
+          {showToolsButton && (
+            <button
+              onClick={() => onViewChange('tools')}
+              className={`px-3 py-1.5 rounded text-sm font-semibold transition-colors ${
+                activeView === 'tools'
+                  ? 'bg-accent-primary text-fg-primary'
+                  : 'text-fg-secondary hover:text-fg-primary hover:bg-bg-selection'
+              }`}
+              title="Switch to tools view"
+            >
+              Tools
+            </button>
+          )}
         </div>
       )}
     </div>

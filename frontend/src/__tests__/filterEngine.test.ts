@@ -736,6 +736,236 @@ describe('evaluateNodeVisibility', () => {
       expect(evaluateNodeVisibility(node, rules)).toBe(false);
     });
   });
+
+  describe('date operators', () => {
+    const makeNode = (due_date: any) => ({
+      id: 'task-1',
+      name: 'Date task',
+      type: 'task',
+      properties: { due_date },
+    });
+
+    it('before: returns true when property date is strictly earlier than rule', () => {
+      const rules: FilterRule[] = [
+        { id: 'r1', property: 'due_date', operator: 'before', value: '2026-06-15' },
+      ];
+      expect(evaluateNodeVisibility(makeNode('2026-06-14'), rules)).toBe(true);
+    });
+
+    it('before: returns false on the same calendar day', () => {
+      const rules: FilterRule[] = [
+        { id: 'r1', property: 'due_date', operator: 'before', value: '2026-06-15' },
+      ];
+      expect(evaluateNodeVisibility(makeNode('2026-06-15'), rules)).toBe(false);
+    });
+
+    it('before: returns false when property date is later than rule', () => {
+      const rules: FilterRule[] = [
+        { id: 'r1', property: 'due_date', operator: 'before', value: '2026-06-15' },
+      ];
+      expect(evaluateNodeVisibility(makeNode('2026-06-16'), rules)).toBe(false);
+    });
+
+    it('after: returns true when property date is strictly later', () => {
+      const rules: FilterRule[] = [
+        { id: 'r1', property: 'due_date', operator: 'after', value: '2026-06-15' },
+      ];
+      expect(evaluateNodeVisibility(makeNode('2026-06-16'), rules)).toBe(true);
+    });
+
+    it('after: returns false on the same calendar day', () => {
+      const rules: FilterRule[] = [
+        { id: 'r1', property: 'due_date', operator: 'after', value: '2026-06-15' },
+      ];
+      expect(evaluateNodeVisibility(makeNode('2026-06-15'), rules)).toBe(false);
+    });
+
+    it('on_or_before: includes the boundary day', () => {
+      const rules: FilterRule[] = [
+        { id: 'r1', property: 'due_date', operator: 'on_or_before', value: '2026-06-15' },
+      ];
+      expect(evaluateNodeVisibility(makeNode('2026-06-15'), rules)).toBe(true);
+      expect(evaluateNodeVisibility(makeNode('2026-06-14'), rules)).toBe(true);
+      expect(evaluateNodeVisibility(makeNode('2026-06-16'), rules)).toBe(false);
+    });
+
+    it('on_or_after: includes the boundary day', () => {
+      const rules: FilterRule[] = [
+        { id: 'r1', property: 'due_date', operator: 'on_or_after', value: '2026-06-15' },
+      ];
+      expect(evaluateNodeVisibility(makeNode('2026-06-15'), rules)).toBe(true);
+      expect(evaluateNodeVisibility(makeNode('2026-06-16'), rules)).toBe(true);
+      expect(evaluateNodeVisibility(makeNode('2026-06-14'), rules)).toBe(false);
+    });
+
+    it('two date rules combine with AND to produce a date range', () => {
+      const rules: FilterRule[] = [
+        { id: 'r1', property: 'due_date', operator: 'on_or_after', value: '2026-06-01' },
+        { id: 'r2', property: 'due_date', operator: 'on_or_before', value: '2026-06-30' },
+      ];
+      expect(evaluateNodeVisibility(makeNode('2026-06-15'), rules)).toBe(true);
+      expect(evaluateNodeVisibility(makeNode('2026-06-01'), rules)).toBe(true);
+      expect(evaluateNodeVisibility(makeNode('2026-06-30'), rules)).toBe(true);
+      expect(evaluateNodeVisibility(makeNode('2026-05-31'), rules)).toBe(false);
+      expect(evaluateNodeVisibility(makeNode('2026-07-01'), rules)).toBe(false);
+    });
+
+    it('returns false when the property is undefined', () => {
+      const rules: FilterRule[] = [
+        { id: 'r1', property: 'due_date', operator: 'before', value: '2026-06-15' },
+      ];
+      expect(evaluateNodeVisibility(makeNode(undefined), rules)).toBe(false);
+    });
+
+    it('returns false when the property value is unparseable', () => {
+      const rules: FilterRule[] = [
+        { id: 'r1', property: 'due_date', operator: 'before', value: '2026-06-15' },
+      ];
+      expect(evaluateNodeVisibility(makeNode('not-a-date'), rules)).toBe(false);
+    });
+
+    it('returns false when the rule value is unparseable', () => {
+      const rules: FilterRule[] = [
+        { id: 'r1', property: 'due_date', operator: 'before', value: 'not-a-date' },
+      ];
+      expect(evaluateNodeVisibility(makeNode('2026-06-15'), rules)).toBe(false);
+    });
+
+    it('returns false when the rule value is empty', () => {
+      const rules: FilterRule[] = [
+        { id: 'r1', property: 'due_date', operator: 'after', value: '' },
+      ];
+      expect(evaluateNodeVisibility(makeNode('2026-06-15'), rules)).toBe(false);
+    });
+
+    it('YYYY-MM-DD parsing is timezone-stable (no off-by-one drift)', () => {
+      // A "2026-06-15" property and a "2026-06-15" rule must compare as equal
+      // regardless of the host timezone — i.e. on_or_before/on_or_after both
+      // include the boundary day.
+      const rules: FilterRule[] = [
+        { id: 'r1', property: 'due_date', operator: 'on_or_before', value: '2026-06-15' },
+        { id: 'r2', property: 'due_date', operator: 'on_or_after', value: '2026-06-15' },
+      ];
+      expect(evaluateNodeVisibility(makeNode('2026-06-15'), rules)).toBe(true);
+    });
+
+    it('accepts ISO datetime strings on the property side', () => {
+      const rules: FilterRule[] = [
+        { id: 'r1', property: 'due_date', operator: 'before', value: '2026-06-15' },
+      ];
+      expect(evaluateNodeVisibility(makeNode('2026-06-14T23:59:59Z'), rules)).toBe(true);
+    });
+  });
+
+  describe('grouped property keys (pipe-joined UUID OR-match)', () => {
+    // FilterBar collapses duplicate-labeled schema properties (e.g. "Status"
+    // defined on 8 node types) into a single dropdown entry whose underlying
+    // rule.property is the pipe-joined list of all matching per-node-type
+    // UUIDs. The engine must OR-match across those UUIDs so a single rule
+    // works for any node type that defines that label.
+    const taskNode = {
+      id: 'task-1',
+      type: 'task',
+      properties: { 'uuid-task-status': 'active', 'uuid-task-name': 'Write script' },
+    };
+    const episodeNode = {
+      id: 'ep-1',
+      type: 'episode',
+      properties: { 'uuid-ep-status': 'active', 'uuid-ep-name': 'Pilot' },
+    };
+    const footageNode = {
+      id: 'foot-1',
+      type: 'footage',
+      properties: { 'uuid-foot-status': 'archived' },
+    };
+
+    it('matches on a node whose UUID is the first in the group', () => {
+      const rules: FilterRule[] = [
+        {
+          id: 'r1',
+          property: 'uuid-task-status|uuid-ep-status|uuid-foot-status',
+          operator: 'equals',
+          value: 'active',
+        },
+      ];
+      expect(evaluateNodeVisibility(taskNode, rules)).toBe(true);
+    });
+
+    it('matches on a node whose UUID is in the middle of the group', () => {
+      const rules: FilterRule[] = [
+        {
+          id: 'r1',
+          property: 'uuid-task-status|uuid-ep-status|uuid-foot-status',
+          operator: 'equals',
+          value: 'active',
+        },
+      ];
+      expect(evaluateNodeVisibility(episodeNode, rules)).toBe(true);
+    });
+
+    it('returns false when no UUID in the group has a matching value', () => {
+      const rules: FilterRule[] = [
+        {
+          id: 'r1',
+          property: 'uuid-task-status|uuid-ep-status|uuid-foot-status',
+          operator: 'equals',
+          value: 'active',
+        },
+      ];
+      expect(evaluateNodeVisibility(footageNode, rules)).toBe(false);
+    });
+
+    it('returns false when the node has none of the grouped UUIDs', () => {
+      const otherNode = { id: 'x', type: 'task', properties: { 'unrelated': 'active' } };
+      const rules: FilterRule[] = [
+        {
+          id: 'r1',
+          property: 'uuid-task-status|uuid-ep-status|uuid-foot-status',
+          operator: 'equals',
+          value: 'active',
+        },
+      ];
+      expect(evaluateNodeVisibility(otherNode, rules)).toBe(false);
+    });
+
+    it('legacy single-UUID rules still work unchanged', () => {
+      const rules: FilterRule[] = [
+        { id: 'r1', property: 'uuid-task-status', operator: 'equals', value: 'active' },
+      ];
+      expect(evaluateNodeVisibility(taskNode, rules)).toBe(true);
+      expect(evaluateNodeVisibility(episodeNode, rules)).toBe(false);
+    });
+
+    it('skips empty-string values when picking which UUID provides the value', () => {
+      const node = {
+        id: 'mixed',
+        type: 'task',
+        properties: { 'uuid-task-status': '', 'uuid-ep-status': 'active' },
+      };
+      const rules: FilterRule[] = [
+        {
+          id: 'r1',
+          property: 'uuid-task-status|uuid-ep-status',
+          operator: 'equals',
+          value: 'active',
+        },
+      ];
+      expect(evaluateNodeVisibility(node, rules)).toBe(true);
+    });
+
+    it('contains operator works across grouped UUIDs', () => {
+      const rules: FilterRule[] = [
+        {
+          id: 'r1',
+          property: 'uuid-task-name|uuid-ep-name',
+          operator: 'contains',
+          value: 'pilot',
+        },
+      ];
+      expect(evaluateNodeVisibility(episodeNode, rules)).toBe(true);
+      expect(evaluateNodeVisibility(taskNode, rules)).toBe(false);
+    });
+  });
 });
 
 describe('extractUniquePropertyKeys', () => {

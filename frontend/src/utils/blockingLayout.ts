@@ -1,4 +1,5 @@
 import type { Node, NodeTypeSchema } from '../api/client';
+import { resolveNodeLabel, resolveNodeLabelById } from './propertyValueDisplay';
 
 function parseBlockedByValue(value: unknown): string[] {
   if (Array.isArray(value)) {
@@ -42,7 +43,7 @@ function getBlockedByIds(node: Node): string[] {
 }
 
 function getNodeLabel(node: Node): string {
-  return String(node?.properties?.name || node?.id || '');
+  return resolveNodeLabel(node);
 }
 
 export function calculateDependencyLevels(nodes: Node[], targetNodeId?: string): Node[][] {
@@ -365,7 +366,7 @@ export function buildBlockingHierarchyLayout(
     const n = levelNodes.length;
     positions.push({
       id: nodeId,
-      label: nodes[nodeId]?.properties?.name || nodeId,
+      label: resolveNodeLabelById(nodes, nodeId),
       x: centerX + (i - (n - 1) / 2) * cellSize,
       y: paddingY + depth * cellSize,
     });

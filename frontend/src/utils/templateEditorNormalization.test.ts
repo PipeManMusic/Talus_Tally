@@ -42,6 +42,56 @@ describe('template editor normalization', () => {
       { name: 'Done' },
     ]);
   });
+
+  it('preserves spaces in select option names during normalization', () => {
+    const [nodeType] = normalizeTemplateNodeTypes([
+      {
+        id: 'episode',
+        label: 'Episode',
+        properties: [
+          {
+            id: 'status',
+            type: 'select',
+            indicator_set: 'status',
+            options: [
+              { name: 'In Progress' },
+              { name: 'QA Blocked' },
+            ],
+          },
+        ],
+      },
+    ]);
+
+    expect(nodeType.properties[0].options).toEqual([
+      { name: 'In Progress' },
+      { name: 'QA Blocked' },
+    ]);
+  });
+
+  it('normalizes whitespace-only select option names to defaults', () => {
+    const [nodeType] = normalizeTemplateNodeTypes([
+      {
+        id: 'episode',
+        label: 'Episode',
+        properties: [
+          {
+            id: 'status',
+            type: 'select',
+            indicator_set: 'status',
+            options: [
+              { name: '   ' },
+              { name: '' },
+            ],
+          },
+        ],
+      },
+    ]);
+
+    expect(nodeType.properties[0].options).toEqual([
+      { name: 'Option 1' },
+      { name: 'Option 2' },
+    ]);
+  });
 });
 
 describe('template schema validation', () => {

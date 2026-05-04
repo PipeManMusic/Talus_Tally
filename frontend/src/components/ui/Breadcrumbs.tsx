@@ -13,20 +13,24 @@ interface BreadcrumbsProps {
 
 export function Breadcrumbs({ items }: BreadcrumbsProps) {
   return (
-    <nav className="flex items-center gap-1 text-sm">
+    <nav className="flex flex-wrap items-center gap-x-1 gap-y-1 text-sm">
       {items.map((item, index) => (
         <div key={index} className="flex items-center gap-1">
-          {index > 0 && <ChevronRight size={14} className="text-fg-secondary" />}
+          {index > 0 && <ChevronRight size={14} className="text-fg-secondary shrink-0" />}
 
           {item.onClick || item.href ? (
             <button
               onClick={item.onClick}
-              className="text-accent-primary hover:text-accent-hover transition-colors"
+              className="text-accent-primary hover:text-accent-hover transition-colors whitespace-nowrap"
             >
               {item.label}
             </button>
           ) : (
-            <span className={item.active ? 'text-fg-primary font-semibold' : 'text-fg-secondary'}>
+            <span
+              className={`whitespace-nowrap ${
+                item.active ? 'text-fg-primary font-semibold' : 'text-fg-secondary'
+              }`}
+            >
               {item.label}
             </span>
           )}

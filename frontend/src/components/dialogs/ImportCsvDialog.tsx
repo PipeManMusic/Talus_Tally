@@ -5,6 +5,8 @@ import type {
   Node,
   TemplateSchema,
   CsvImportRowError,
+  CsvImportMode,
+  CsvImportUnmatchedRow,
 } from '../../api/client';
 import { apiClient, type CsvColumnMapping, type CsvImportError } from '../../api/client';
 import { parseCsvPreview, CsvParseError, type CsvPreview } from '../../utils/csvPreview';
@@ -39,6 +41,9 @@ interface ImportCsvDialogProps {
     parentId: string;
     blueprintTypeId: string;
     createdCount: number;
+    updatedCount?: number;
+    updatedNodeIds?: string[];
+    mode?: CsvImportMode;
     undoAvailable: boolean;
     redoAvailable: boolean;
   }) => void;
@@ -67,8 +72,11 @@ export function ImportCsvDialog({
   const [parseError, setParseError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [rowErrors, setRowErrors] = useState<CsvImportRowError[]>([]);
+  const [unmatchedRows, setUnmatchedRows] = useState<CsvImportUnmatchedRow[]>([]);
   const [isParsing, setIsParsing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mode, setMode] = useState<CsvImportMode>('create');
+  const [matchPropertyId, setMatchPropertyId] = useState<string>('name');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const parentOptions = useMemo<ParentOption[]>(() => {
@@ -91,8 +99,11 @@ export function ImportCsvDialog({
       setParseError(null);
       setSubmitError(null);
       setRowErrors([]);
+      setUnmatchedRows([]);
       setIsParsing(false);
       setIsSubmitting(false);
+      setMode('create');
+      setMatchPropertyId('name');
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -230,9 +241,23 @@ export function ImportCsvDialog({
     });
   }, [preview, blueprintProperties]);
 
-  const requiredPropertyIds = useMemo(() =>
-    blueprintProperties.filter((prop) => prop.required).map((prop) => prop.id),
-  [blueprintProperties]);
+  const isMatchMode = mode === 'update' || mode === 'upsert';
+
+  const requiredPropertyIds = useMemo(() => {
+    if (mode === 'update') {
+      return matchPropertyId ? [matchPropertyId] : [];
+    }
+    if (mode === 'upsert') {
+      // Need both the match column and a name binding (used when creating
+      // unmatched rows as new nodes).
+      const ids = new Set<string>();
+      if (matchPropertyId) ids.add(matchPropertyId);
+      const hasNameProp = blueprintProperties.some((p) => p.id === 'name');
+      if (hasNameProp) ids.add('name');
+      return Array.from(ids);
+    }
+    return blueprintProperties.filter((prop) => prop.required).map((prop) => prop.id);
+  }, [blueprintProperties, mode, matchPropertyId]);
 
   const missingRequired = requiredPropertyIds.filter((propId) => !assignments[propId]);
 
@@ -242,12 +267,32 @@ export function ImportCsvDialog({
       .map(([property_id, header]) => ({ property_id, header: header as string }));
   }, [assignments]);
 
+  // Ensure matchPropertyId always points at an existing blueprint property.
+  useEffect(() => {
+    if (!blueprintProperties.length) {
+      return;
+    }
+    const ids = blueprintProperties.map((p) => p.id);
+    if (!ids.includes(matchPropertyId)) {
+      setMatchPropertyId(ids.includes('name') ? 'name' : ids[0]);
+    }
+  }, [blueprintProperties, matchPropertyId]);
+
+  // In match modes the match property must be mapped, and at least one
+  // additional property must be mapped to actually update / create something.
+  const matchModeReady =
+    !isMatchMode ||
+    (Boolean(matchPropertyId) &&
+      Boolean(assignments[matchPropertyId]) &&
+      columnMap.length >= 2);
+
   const canSubmit =
     Boolean(selectedParentId) &&
     Boolean(selectedBlueprintType) &&
     Boolean(file) &&
     missingRequired.length === 0 &&
     columnMap.length > 0 &&
+    matchModeReady &&
     !isSubmitting;
 
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -303,6 +348,7 @@ export function ImportCsvDialog({
 
     setSubmitError(null);
     setRowErrors([]);
+    setUnmatchedRows([]);
     setIsSubmitting(true);
 
     try {
@@ -313,7 +359,13 @@ export function ImportCsvDialog({
         blueprintTypeId: selectedBlueprintType,
         columnMap,
         file,
+        mode,
+        matchPropertyId: isMatchMode ? matchPropertyId : undefined,
       });
+
+      const unmatched = result.unmatched_rows ?? [];
+      const updatedNodeIds = result.updated_node_ids ?? [];
+      const updatedCount = result.updated_count ?? 0;
 
       onImported({
         graph: result.graph,
@@ -321,9 +373,25 @@ export function ImportCsvDialog({
         parentId: selectedParentId,
         blueprintTypeId: selectedBlueprintType,
         createdCount: result.created_count,
+        updatedCount,
+        updatedNodeIds,
+        mode,
         undoAvailable: result.undo_available,
         redoAvailable: result.redo_available,
       });
+
+      // If every row in update mode failed to match, keep the dialog open so
+      // the user can adjust the match column or fix the CSV. Upsert always
+      // closes since unmatched rows are created.
+      if (mode === 'update' && updatedCount === 0 && unmatched.length > 0) {
+        setUnmatchedRows(unmatched);
+        setSubmitError(`No rows matched existing ${selectedBlueprintType} nodes by '${matchPropertyId}'.`);
+        return;
+      }
+
+      if (unmatched.length > 0) {
+        setUnmatchedRows(unmatched);
+      }
       onClose();
     } catch (err) {
       const error = err as CsvImportError;
@@ -420,7 +488,9 @@ export function ImportCsvDialog({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-bg-light border border-border rounded-lg shadow-xl w-[720px] max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-          <h2 className="font-display text-lg font-bold text-fg-primary">Import Nodes from CSV</h2>
+          <h2 className="font-display text-lg font-bold text-fg-primary">
+            {mode === 'update' ? 'Update Nodes from CSV' : mode === 'upsert' ? 'Upsert Nodes from CSV' : 'Import Nodes from CSV'}
+          </h2>
           <button
             type="button"
             onClick={handleClose}
@@ -437,6 +507,57 @@ export function ImportCsvDialog({
               Load a template before importing nodes.
             </div>
           )}
+
+          <section className="space-y-2">
+            <div className="text-sm text-fg-secondary uppercase tracking-wide">Mode</div>
+            <div className="flex flex-wrap gap-4">
+              <label className="flex items-center gap-2 text-sm text-fg-primary">
+                <input
+                  type="radio"
+                  name="csv-import-mode"
+                  value="create"
+                  checked={mode === 'create'}
+                  onChange={() => setMode('create')}
+                  data-testid="csv-mode-create"
+                />
+                Create new nodes
+              </label>
+              <label className="flex items-center gap-2 text-sm text-fg-primary">
+                <input
+                  type="radio"
+                  name="csv-import-mode"
+                  value="update"
+                  checked={mode === 'update'}
+                  onChange={() => setMode('update')}
+                  data-testid="csv-mode-update"
+                />
+                Update existing nodes
+              </label>
+              <label className="flex items-center gap-2 text-sm text-fg-primary">
+                <input
+                  type="radio"
+                  name="csv-import-mode"
+                  value="upsert"
+                  checked={mode === 'upsert'}
+                  onChange={() => setMode('upsert')}
+                  data-testid="csv-mode-upsert"
+                />
+                Update existing & create new (upsert)
+              </label>
+            </div>
+            {mode === 'update' && (
+              <div className="text-xs text-fg-secondary">
+                Each CSV row is matched to an existing child node by the selected match property. Rows
+                that do not match any child are skipped and reported below.
+              </div>
+            )}
+            {mode === 'upsert' && (
+              <div className="text-xs text-fg-secondary">
+                Each CSV row is matched to an existing child node by the selected match property. Rows
+                that do not match are <strong>created</strong> as new child nodes (a name mapping is required).
+              </div>
+            )}
+          </section>
 
           <section className="space-y-3">
             <div className="text-sm text-fg-secondary uppercase tracking-wide">Parent Selection</div>
@@ -472,6 +593,25 @@ export function ImportCsvDialog({
                 ))}
               </select>
             </div>
+
+            {isMatchMode && (
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <label className="text-sm text-fg-primary">Match By</label>
+                <select
+                  className="w-full px-3 py-2 bg-bg-dark border border-border rounded text-fg-primary"
+                  value={matchPropertyId}
+                  onChange={(event) => setMatchPropertyId(event.target.value)}
+                  disabled={!blueprintProperties.length}
+                  data-testid="csv-match-property"
+                >
+                  {blueprintProperties.map((prop) => (
+                    <option key={prop.id} value={prop.id}>
+                      {prop.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </section>
 
           <section className="space-y-3">
@@ -577,7 +717,16 @@ export function ImportCsvDialog({
             </div>
             {missingRequired.length > 0 && (
               <div className="text-sm text-red-400">
-                Map required fields: {missingRequired.join(', ')}.
+                {mode === 'update'
+                  ? `Map the match property (${matchPropertyId}) before continuing.`
+                  : mode === 'upsert'
+                    ? `Map required fields for upsert: ${missingRequired.join(', ')}.`
+                    : `Map required fields: ${missingRequired.join(', ')}.`}
+              </div>
+            )}
+            {isMatchMode && missingRequired.length === 0 && columnMap.length < 2 && (
+              <div className="text-sm text-yellow-300">
+                Map at least one property in addition to the match column to apply changes.
               </div>
             )}
           </section>
@@ -605,6 +754,19 @@ export function ImportCsvDialog({
               </div>
             </section>
           )}
+
+          {unmatchedRows.length > 0 && (
+            <section className="space-y-2" data-testid="csv-unmatched-rows">
+              <div className="text-sm text-fg-secondary uppercase tracking-wide">Unmatched Rows</div>
+              <div className="space-y-1 max-h-40 overflow-auto border border-border rounded px-3 py-2 text-xs text-yellow-200">
+                {unmatchedRows.map((row) => (
+                  <div key={`unmatched-${row.row_number}`}>
+                    Row {row.row_number}: no existing node with {matchPropertyId} = "{row.match_value}"
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
         </div>
 
         <div className="px-6 py-4 border-t border-border flex justify-end gap-2 bg-bg-light">
@@ -622,7 +784,9 @@ export function ImportCsvDialog({
             className="px-4 py-2 bg-accent-primary rounded text-fg-primary hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={!canSubmit}
           >
-            {isSubmitting ? 'Importing...' : 'Import Nodes'}
+            {isSubmitting
+              ? (mode === 'update' ? 'Updating...' : mode === 'upsert' ? 'Upserting...' : 'Importing...')
+              : (mode === 'update' ? 'Update Nodes' : mode === 'upsert' ? 'Upsert Nodes' : 'Import Nodes')}
           </button>
         </div>
       </div>

@@ -209,6 +209,77 @@ describe('Inspector', () => {
     });
   });
 
+  it('renders select with UUID-form value and shows the matching label', () => {
+    // Architectural invariant: select property values are stored as option
+    // UUIDs.  The control receives the UUID and the browser renders the
+    // matching <option>'s text as the label.
+    const statusProperties: NodeProperty[] = [
+      { id: 'name', name: 'Name', type: 'text', value: 'Task A' },
+      {
+        id: 'status',
+        name: 'Status',
+        type: 'select',
+        value: 'opt-ip',
+        options: [
+          { value: 'opt-open', label: 'Open' },
+          { value: 'opt-ip', label: 'In Progress' },
+          { value: 'opt-done', label: 'Done' },
+          { value: 'opt-blocked', label: 'Blocked Waiting' },
+        ],
+      },
+    ];
+
+    render(
+      <Inspector
+        nodeId="task-1"
+        nodeName="Task A"
+        nodeType="task"
+        properties={statusProperties}
+      />,
+    );
+
+    const select = screen.getAllByRole('combobox')[0] as HTMLSelectElement;
+    expect(select.value).toBe('opt-ip');
+    // The visible option text (label) is what the user sees
+    const selectedOption = select.options[select.selectedIndex];
+    expect(selectedOption.textContent).toBe('In Progress');
+  });
+
+  it('does NOT silently coerce label-form values; UI shows the raw stored value', () => {
+    // After the architectural fix, the Inspector no longer hides bad data by
+    // resolving label -> UUID.  If a label slips through, the <select> falls
+    // through to its default behaviour, which makes the bug visible instead
+    // of masking it.  The backend load-time migration guarantees this case
+    // does not occur in healthy data.
+    const statusProperties: NodeProperty[] = [
+      {
+        id: 'status',
+        name: 'Status',
+        type: 'select',
+        value: 'In Progress', // legacy label-form (should never reach UI)
+        options: [
+          { value: 'opt-open', label: 'Open' },
+          { value: 'opt-ip', label: 'In Progress' },
+        ],
+      },
+    ];
+
+    render(
+      <Inspector
+        nodeId="task-1"
+        nodeName="Task A"
+        nodeType="task"
+        properties={statusProperties}
+      />,
+    );
+
+    const select = screen.getAllByRole('combobox')[0] as HTMLSelectElement;
+    // Browser will not match 'In Progress' to any option's value attribute,
+    // so it falls back to the first option.  This is the visible signal that
+    // bad data made it past the migration -- which we WANT to surface.
+    expect(select.value).toBe('opt-open');
+  });
+
   describe('Velocity Section', () => {
     it('renders velocity information when provided', () => {
       render(
@@ -354,6 +425,66 @@ describe('Inspector', () => {
 
       expect(screen.getByText('Numerical:')).toBeInTheDocument();
       expect(screen.getByText('5')).toBeInTheDocument();
+    });
+  });
+
+  describe('media node Launch button', () => {
+    it('renders a Launch button next to a media_url property and disables it when empty', () => {
+      const properties: NodeProperty[] = [
+        { id: 'name', name: 'Name', type: 'text', value: 'Trailer' },
+        { id: 'mu-uuid', key: 'media_url', name: 'File Path or URL', type: 'text', value: '' },
+      ];
+      const schemas = {
+        media_asset: {
+          id: 'media_asset',
+          name: 'Media Asset',
+          allowed_children: [],
+          properties: [],
+          features: ['is_media'],
+        },
+      } as any;
+
+      render(
+        <Inspector
+          nodeId="m-1"
+          nodeName="Trailer"
+          nodeType="media_asset"
+          properties={properties}
+          nodeTypeSchemas={schemas}
+        />,
+      );
+
+      const launch = screen.getByTestId('inspector-launch-media') as HTMLButtonElement;
+      expect(launch).toBeInTheDocument();
+      expect(launch.disabled).toBe(true);
+    });
+
+    it('enables the Launch button once a value is entered', () => {
+      const properties: NodeProperty[] = [
+        { id: 'mu-uuid', key: 'media_url', name: 'File Path or URL', type: 'text', value: 'https://example.com' },
+      ];
+      const schemas = {
+        media_asset: {
+          id: 'media_asset',
+          name: 'Media Asset',
+          allowed_children: [],
+          properties: [],
+          features: ['is_media'],
+        },
+      } as any;
+
+      render(
+        <Inspector
+          nodeId="m-2"
+          nodeName="Doc"
+          nodeType="media_asset"
+          properties={properties}
+          nodeTypeSchemas={schemas}
+        />,
+      );
+
+      const launch = screen.getByTestId('inspector-launch-media') as HTMLButtonElement;
+      expect(launch.disabled).toBe(false);
     });
   });
 });

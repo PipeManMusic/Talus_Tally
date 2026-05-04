@@ -221,10 +221,47 @@ export const ManpowerView = memo(function ManpowerView({
     (sum, [, resource]) => sum + Object.values(resource.load).reduce((daySum, value) => daySum + getLoadTotal(value), 0),
     0,
   );
+
+  // Map node-type id -> { estimated_hours UUID, actual_hours UUID } so we can sum
+  // those properties across the project regardless of UUID-keyed storage.
+  const hoursPropertyByType = useMemo(() => {
+    const map = new Map<string, { estimated?: string; actual?: string }>();
+    if (!templateSchema?.node_types) return map;
+    for (const nt of templateSchema.node_types) {
+      const uuidMap = buildPropertyUuidMap(nt);
+      const estimated = uuidMap?.get('estimated_hours');
+      const actual = uuidMap?.get('actual_hours');
+      if (estimated || actual) map.set(nt.id, { estimated, actual });
+    }
+    return map;
+  }, [templateSchema]);
+
+  const { totalBudgetedHours, totalActualHours } = useMemo(() => {
+    let budgeted = 0;
+    let actual = 0;
+    if (nodes) {
+      for (const node of Object.values(nodes)) {
+        const keys = hoursPropertyByType.get(node.type);
+        if (!keys) continue;
+        const props = node.properties ?? {};
+        if (keys.estimated) {
+          const v = Number(props[keys.estimated] ?? props.estimated_hours ?? 0);
+          if (Number.isFinite(v)) budgeted += v;
+        }
+        if (keys.actual) {
+          const v = Number(props[keys.actual] ?? props.actual_hours ?? 0);
+          if (Number.isFinite(v)) actual += v;
+        }
+      }
+    }
+    return { totalBudgetedHours: budgeted, totalActualHours: actual };
+  }, [nodes, hoursPropertyByType]);
   const hasData = Boolean(data && resources.length > 0 && data.date_columns.length > 0);
   const firstDate = data?.date_columns[0] ?? null;
   const lastDate = data?.date_columns[data.date_columns.length - 1] ?? null;
   const unallocatedTasks = data?.unallocated_tasks ?? [];
+  const unassignedTasks = data?.unassigned_tasks ?? [];
+  const [isUnassignedCollapsed, setIsUnassignedCollapsed] = useState(false);
   const todayKey = useMemo(() => {
     const now = new Date();
     const year = now.getFullYear();
@@ -788,6 +825,12 @@ export const ManpowerView = memo(function ManpowerView({
               <div className="text-fg-secondary">
                 Assigned: <span className="text-fg-primary">{formatHours(totalAssigned)}</span>
               </div>
+              <div className="text-fg-secondary" title="Sum of estimated_hours across all task nodes in the project">
+                Budgeted: <span className="text-fg-primary">{formatHours(totalBudgetedHours)}</span>
+              </div>
+              <div className="text-fg-secondary" title="Sum of actual_hours across all task nodes in the project">
+                Actual: <span className={totalActualHours > totalBudgetedHours ? 'text-status-danger' : 'text-fg-primary'}>{formatHours(totalActualHours)}</span>
+              </div>
               <button
                 type="button"
                 onClick={handleRecalculate}
@@ -863,6 +906,91 @@ export const ManpowerView = memo(function ManpowerView({
               </tr>
             </thead>
             <tbody>
+              {unassignedTasks.length > 0 && (
+                <Fragment key="__unassigned__">
+                  <tr
+                    className="cursor-pointer hover:bg-bg-light"
+                    style={{ backgroundColor: '#1e1e1e' }}
+                    onClick={() => setIsUnassignedCollapsed((v) => !v)}
+                  >
+                    <td
+                      className="relative sticky left-0 z-40 px-4 py-2 border-b border-r border-border w-56 min-w-56 max-w-56 overflow-hidden"
+                      style={{ backgroundColor: '#121212' }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          className="shrink-0 text-fg-secondary hover:text-fg-primary transition-colors w-4 text-xs"
+                          onClick={(e) => { e.stopPropagation(); setIsUnassignedCollapsed((v) => !v); }}
+                          title={isUnassignedCollapsed ? 'Expand unassigned tasks' : 'Collapse unassigned tasks'}
+                        >
+                          {isUnassignedCollapsed ? '▶' : '▼'}
+                        </button>
+                        <span className="font-medium text-fg-secondary truncate italic">Unassigned</span>
+                        <span className="text-xs text-fg-secondary ml-auto shrink-0 pr-1">
+                          {unassignedTasks.length} task{unassignedTasks.length !== 1 ? 's' : ''}
+                        </span>
+                      </div>
+                    </td>
+                    <td
+                      className="sticky left-[14rem] z-30 px-3 py-2 text-right font-mono border-b border-r border-border text-fg-secondary"
+                      style={{ backgroundColor: '#121212' }}
+                      title="Unassigned tasks have no resource capacity"
+                    >
+                      —
+                    </td>
+                    {data.date_columns.map((day) => (
+                      <td
+                        key={day}
+                        className="px-2 py-2 border-b border-r border-border"
+                        style={{ backgroundColor: '#121212' }}
+                      />
+                    ))}
+                  </tr>
+                  {!isUnassignedCollapsed && unassignedTasks.map((task) => {
+                    const taskStart = normalizeDateKey(task.start_date);
+                    const taskEnd = normalizeDateKey(task.end_date);
+                    const isTaskSelected = effectiveSelection === task.node_id;
+                    return (
+                      <tr
+                        key={`__unassigned__:${task.node_id}`}
+                        className={`cursor-pointer transition-colors ${isTaskSelected ? 'ring-2 ring-accent-primary' : 'hover:bg-bg-light'}`}
+                        style={{ backgroundColor: isTaskSelected ? '#432115' : '#181818' }}
+                        onClick={() => handleSelect(task.node_id)}
+                      >
+                        <td
+                          className={`sticky left-0 z-40 px-4 py-2 border-b border-r border-border w-56 min-w-56 max-w-56 overflow-hidden ${isTaskSelected ? 'bg-bg-selection' : ''}`}
+                          style={isTaskSelected ? undefined : { backgroundColor: '#161616' }}
+                        >
+                          <div className="flex items-center gap-2 pl-6">
+                            <span className="truncate text-fg-primary" title={task.name}>{task.name}</span>
+                          </div>
+                        </td>
+                        <td
+                          className={`sticky left-[14rem] z-30 px-3 py-2 text-right font-mono border-b border-r border-border text-fg-secondary ${isTaskSelected ? 'bg-bg-selection' : ''}`}
+                          style={isTaskSelected ? undefined : { backgroundColor: '#161616' }}
+                          title={`Estimated: ${formatHours(task.estimated_hours)}h (no assignee)`}
+                        >
+                          {formatHours(task.estimated_hours)}
+                        </td>
+                        {data.date_columns.map((day) => {
+                          const isOutsideScheduledWindow = Boolean(
+                            taskStart && taskEnd && (day < taskStart || day > taskEnd),
+                          );
+                          return (
+                            <td
+                              key={day}
+                              className={`px-2 py-2 border-2 ${isOutsideScheduledWindow ? 'border-border' : 'border-amber-700'}`}
+                              style={{ backgroundColor: isOutsideScheduledWindow ? '#121212' : '#1a1410' }}
+                              title={isOutsideScheduledWindow ? 'Outside scheduled task duration' : 'Assign a person to allocate hours'}
+                            />
+                          );
+                        })}
+                      </tr>
+                    );
+                  })}
+                </Fragment>
+              )}
               {resources.map(([personId, resource]) => {
                 const isSelected = selectedNodeId === personId;
                 const personTasks = personTaskMap.get(personId) ?? [];

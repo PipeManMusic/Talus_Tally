@@ -31,6 +31,50 @@ const subtreeHasMatch = (node: TreeNode, filterRules: ReturnType<typeof useFilte
   return node.children.some((child) => subtreeHasMatch(child, filterRules, velocityScores));
 };
 
+const getOrderedChildGroups = (
+  node: TreeNode,
+  allowedChildrenList: any[],
+  resolveTypeLabel: (type: string) => string,
+): Array<{ key: string; title: string; items: TreeNode[] }> => {
+  const groups: Array<{ key: string; title: string; items: TreeNode[] }> = [];
+  const typeMap = new Map<string, { title: string; items: TreeNode[] }>();
+
+  node.children?.forEach((child) => {
+    const rawType = child.type ?? 'Unknown';
+    const normalized = rawType.trim().toLowerCase();
+    if (!typeMap.has(normalized)) {
+      typeMap.set(normalized, {
+        title: resolveTypeLabel(rawType),
+        items: [],
+      });
+    }
+    typeMap.get(normalized)?.items.push(child);
+  });
+
+  const consumed = new Set<string>();
+  allowedChildrenList.forEach((typeId) => {
+    const normalized = String(typeId ?? '').trim().toLowerCase();
+    if (!normalized || consumed.has(normalized)) {
+      return;
+    }
+    const group = typeMap.get(normalized);
+    if (!group || group.items.length === 0) {
+      return;
+    }
+    groups.push({ key: normalized, title: resolveTypeLabel(String(typeId)), items: group.items });
+    consumed.add(normalized);
+  });
+
+  typeMap.forEach((group, normalized) => {
+    if (consumed.has(normalized) || group.items.length === 0) {
+      return;
+    }
+    groups.push({ key: normalized, title: group.title, items: group.items });
+  });
+
+  return groups;
+};
+
 // Helper to recolor SVG fills and strokes with the blueprint color
 const recolorSvg = (svgString: string, color: string | undefined): string => {
   if (!color || !svgString) return svgString;
@@ -95,7 +139,10 @@ function FilteredTreeContent({
   nodeTypeSchemas,
   velocityScores = {},
   selectedNodeId,
+  selectedNodeIds,
   onSelect,
+  onMultiSelectNode,
+  onRangeSelectNode,
   onExpand,
   onContextMenu,
   expandedMap,
@@ -103,6 +150,7 @@ function FilteredTreeContent({
   getTypeLabel,
   scrollContainerRef,
   level,
+  nodeTemplates,
 }: {
   node: TreeNode;
   allowedChildrenList: any[];
@@ -110,7 +158,10 @@ function FilteredTreeContent({
   nodeTypeSchemas?: Record<string, NodeTypeSchema>;
   velocityScores?: Record<string, any>;
   selectedNodeId?: string | null;
+  selectedNodeIds?: string[];
   onSelect?: (id: string) => void;
+  onMultiSelectNode?: (id: string, nodeType: string) => void;
+  onRangeSelectNode?: (id: string, nodeType: string) => void;
   onExpand?: (id: string) => void;
   onContextMenu?: (nodeId: string, action: string) => void;
   expandedMap: Record<string, boolean>;
@@ -118,44 +169,10 @@ function FilteredTreeContent({
   getTypeLabel?: (type: string) => string;
   scrollContainerRef?: React.RefObject<HTMLDivElement | null>;
   level: number;
+  nodeTemplates?: Array<{ id: string; name: string; rootType: string }>;
 }) {
   const { rules: filterRules, filterMode } = useFilterStore();
-
-  const groups: Array<{ key: string; title: string; items: TreeNode[] }> = [];
-  const typeMap = new Map<string, { title: string; items: TreeNode[] }>();
-
-  node.children?.forEach((child) => {
-    const rawType = child.type ?? 'Unknown';
-    const normalized = rawType.trim().toLowerCase();
-    if (!typeMap.has(normalized)) {
-      typeMap.set(normalized, {
-        title: resolveTypeLabel(rawType),
-        items: [],
-      });
-    }
-    typeMap.get(normalized)?.items.push(child);
-  });
-
-  const consumed = new Set<string>();
-  allowedChildrenList.forEach((typeId) => {
-    const normalized = String(typeId ?? '').trim().toLowerCase();
-    if (!normalized || consumed.has(normalized)) {
-      return;
-    }
-    const group = typeMap.get(normalized);
-    if (!group || group.items.length === 0) {
-      return;
-    }
-    groups.push({ key: normalized, title: resolveTypeLabel(String(typeId)), items: group.items });
-    consumed.add(normalized);
-  });
-
-  typeMap.forEach((group, normalized) => {
-    if (consumed.has(normalized) || group.items.length === 0) {
-      return;
-    }
-    groups.push({ key: normalized, title: group.title, items: group.items });
-  });
+  const groups = getOrderedChildGroups(node, allowedChildrenList, resolveTypeLabel);
 
   return (
     <>
@@ -187,13 +204,17 @@ function FilteredTreeContent({
                         velocityScores={velocityScores}
                         level={level + 1}
                         selectedNodeId={selectedNodeId}
+                        selectedNodeIds={selectedNodeIds}
                         onSelect={onSelect}
+                        onMultiSelectNode={onMultiSelectNode}
+                        onRangeSelectNode={onRangeSelectNode}
                         onExpand={onExpand}
                         onContextMenu={onContextMenu}
                         expandedMap={expandedMap}
                         setExpandedMap={setExpandedMap}
                         getTypeLabel={getTypeLabel}
                         scrollContainerRef={scrollContainerRef}
+                        nodeTemplates={nodeTemplates}
                         isGhosted={filterMode === 'ghost' && !isDirectMatch && !hasMatchingDescendant}
                       />
                     );
@@ -215,13 +236,17 @@ type TreeItemProps = {
   level?: number;
   isGhosted?: boolean;
   selectedNodeId?: string | null;
+  selectedNodeIds?: string[];
   onSelect?: (id: string) => void;
+  onMultiSelectNode?: (id: string, nodeType: string) => void;
+  onRangeSelectNode?: (id: string, nodeType: string) => void;
   onExpand?: (id: string) => void;
   onContextMenu?: (nodeId: string, action: string) => void;
   expandedMap: Record<string, boolean>;
   setExpandedMap: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
   getTypeLabel?: (typeId: string) => string;
   scrollContainerRef?: React.RefObject<HTMLDivElement | null>;
+  nodeTemplates?: Array<{ id: string; name: string; rootType: string }>;
 };
 
 function TreeItem({
@@ -231,13 +256,17 @@ function TreeItem({
   level = 0,
   isGhosted = false,
   selectedNodeId,
+  selectedNodeIds,
   onSelect,
+  onMultiSelectNode,
+  onRangeSelectNode,
   onExpand,
   onContextMenu,
   expandedMap,
   setExpandedMap,
   getTypeLabel,
   scrollContainerRef,
+  nodeTemplates,
 }: TreeItemProps) {
   const [statusIndicators, setStatusIndicators] = useState<Array<{ key: string; svg?: string; text?: string; color?: string }>>([]);
   const [textColor, setTextColor] = useState<string | undefined>(undefined);
@@ -252,7 +281,10 @@ function TreeItem({
   const addButtonRef = useRef<HTMLButtonElement>(null);
   const [iconCacheVersion, setIconCacheVersion] = useState(0);
   const rowRef = useRef<HTMLDivElement>(null);
-  const isSelected = selectedNodeId != null ? node.id === selectedNodeId : node.selected === true;
+  const isSelected = selectedNodeIds
+    ? selectedNodeIds.includes(node.id)
+    : (selectedNodeId != null ? node.id === selectedNodeId : node.selected === true);
+  const isInMultiSelection = selectedNodeIds !== undefined && selectedNodeIds.length > 1 && selectedNodeIds.includes(node.id);
   const orphanedReason = typeof node.metadata?.orphaned_reason === 'string' ? node.metadata.orphaned_reason.toLowerCase() : '';
   const hasTemplateType = !nodeTypeSchemas || Boolean(nodeTypeSchemas[node.type]);
   const isOrphaned = Boolean(node.metadata?.orphaned) && (
@@ -269,6 +301,12 @@ function TreeItem({
     const setId = property?.indicator_set || 'status';
     return setId === 'status';
   });
+  // Checkbox properties may carry an optional property-level indicator that
+  // appears only while the box is checked. Used to flag critical items
+  // visually (e.g. a red flag for "blocker").
+  const checkboxIndicatorProperties = (nodeTypeSchema?.properties || []).filter(
+    (property: any) => property?.type === 'checkbox' && property?.indicator_id,
+  );
   const fallbackIndicatorId = (node as any).indicator_id ?? undefined;
   const primaryStatusPropertyId =
     (nodeTypeSchema as any)?.primary_status_property_id ||
@@ -332,6 +370,26 @@ function TreeItem({
       indicatorRequests.push(
         mapNodeIndicator({ ...node, indicator_id: indicatorId, indicator_set: indicatorSet }).then((indicator) => ({
           key: `${String(property.id || 'status')}:${indicatorId}:${requestIndex}`,
+          propertyId: property.id,
+          indicator,
+        }))
+      );
+    });
+
+    // Checkbox-property indicators: render only while the box is checked.
+    checkboxIndicatorProperties.forEach((property: any) => {
+      const rawValue = (node.properties as Record<string, any> | undefined)?.[property.id];
+      const isChecked = rawValue === true || (
+        typeof rawValue === 'string' && rawValue.trim().toLowerCase() === 'true'
+      );
+      if (!isChecked) return;
+
+      const indicatorId = property.indicator_id as string;
+      const indicatorSet = property?.indicator_set || 'status';
+      const requestIndex = indicatorRequestIndex++;
+      indicatorRequests.push(
+        mapNodeIndicator({ ...node, indicator_id: indicatorId, indicator_set: indicatorSet }).then((indicator) => ({
+          key: `${String(property.id || 'checkbox')}:${indicatorId}:${requestIndex}`,
           propertyId: property.id,
           indicator,
         }))
@@ -668,13 +726,15 @@ function TreeItem({
     'relative flex w-full items-center gap-1 px-2 py-1.5 rounded-sm cursor-pointer transition-colors border-l-2 border-transparent',
     isGhosted ? 'opacity-30' : '',
     isOrphaned ? 'bg-status-danger/10 border-l-status-danger/60' : '',
-    isSelected
-      ? 'bg-bg-selection border-l-4 border-accent-primary shadow-inner ring-1 ring-accent-primary/60'
-      : isMoveTarget
-        ? 'bg-accent-primary/20 border-l-4 border-accent-primary shadow-inner ring-2 ring-accent-primary/70'
-        : isActiveDropTarget
-          ? 'bg-accent-primary/10 border-l-2 border-accent-primary/60 ring-1 ring-accent-primary/40'
-          : 'hover:bg-bg-selection'
+    isInMultiSelection
+      ? 'bg-bg-selection border-l-4 border-accent-primary/60 shadow-inner ring-1 ring-accent-primary/40'
+      : isSelected
+        ? 'bg-bg-selection border-l-4 border-accent-primary shadow-inner ring-1 ring-accent-primary/60'
+        : isMoveTarget
+          ? 'bg-accent-primary/20 border-l-4 border-accent-primary shadow-inner ring-2 ring-accent-primary/70'
+          : isActiveDropTarget
+            ? 'bg-accent-primary/10 border-l-2 border-accent-primary/60 ring-1 ring-accent-primary/40'
+            : 'hover:bg-bg-selection'
   ].join(' ');
 
   const renderReorderLine = (position: 'above' | 'below') => (
@@ -696,9 +756,23 @@ function TreeItem({
         data-testid="tree-item-row"
         data-selected={isSelected ? 'true' : 'false'}
         aria-selected={isSelected}
-        onClick={() => onSelect?.(node.id)}
+        onClick={(event) => {
+          if (event.shiftKey) {
+            event.preventDefault();
+            onRangeSelectNode?.(node.id, node.type);
+          } else if (event.ctrlKey || event.metaKey) {
+            event.preventDefault();
+            onMultiSelectNode?.(node.id, node.type);
+          } else {
+            onSelect?.(node.id);
+          }
+        }}
         onContextMenu={(event) => {
           event.preventDefault();
+          // If the right-clicked node is not in the current multi-selection, clear it first
+          if (!isInMultiSelection) {
+            onSelect?.(node.id);
+          }
           setContextMenu({ x: event.clientX, y: event.clientY });
         }}
         onDragEnter={handleDragOver}
@@ -866,7 +940,22 @@ function TreeItem({
             className="fixed bg-bg-light border border-border rounded-sm shadow-lg z-50 min-w-max"
             style={{ top: `${contextMenu.y}px`, left: `${contextMenu.x}px` }}
             onMouseLeave={() => setContextMenu(null)}
+            onClick={(e) => e.stopPropagation()}
           >
+            {isInMultiSelection && (
+              <>
+                <button
+                  onClick={() => handleMenuAction('edit-as-spreadsheet')}
+                  className="w-full text-left px-4 py-2 text-sm text-fg-primary hover:bg-bg-selection transition-colors first:rounded-t-sm"
+                >
+                  📊 Bulk Edit
+                  <span className="ml-2 text-xs opacity-60">
+                    ({selectedNodeIds!.length} nodes)
+                  </span>
+                </button>
+                <div className="border-t border-border my-1" />
+              </>
+            )}
             {hasAllowedChildren && showAssetCategoryAction && (
               <button
                 onClick={() => handleMenuAction('add-asset-category')}
@@ -885,6 +974,18 @@ function TreeItem({
               </button>
             ))}
             <button
+              onClick={() => handleMenuAction('copy')}
+              className="w-full text-left px-4 py-2 text-sm text-fg-primary hover:bg-bg-selection transition-colors"
+            >
+              📋 Copy Node
+            </button>
+            <button
+              onClick={() => handleMenuAction('paste')}
+              className="w-full text-left px-4 py-2 text-sm text-fg-primary hover:bg-bg-selection transition-colors"
+            >
+              📌 Paste as Child
+            </button>
+            <button
               onClick={() => handleMenuAction('delete')}
               className="w-full text-left px-4 py-2 text-sm text-fg-primary hover:bg-status-danger hover:text-fg-primary transition-colors last:rounded-b-sm"
             >
@@ -897,6 +998,29 @@ function TreeItem({
             >
               📥 Import CSV Here
             </button>
+            {(() => {
+              const compatTemplates = (nodeTemplates ?? []).filter((tpl) =>
+                allowedChildrenList.some((c) => String(c).trim().toLowerCase() === tpl.rootType.trim().toLowerCase())
+              );
+              if (compatTemplates.length === 0) return null;
+              return (
+                <>
+                  <div className="px-4 py-1 text-[11px] uppercase tracking-wide text-fg-secondary opacity-70">
+                    Insert Template
+                  </div>
+                  {compatTemplates.map((tpl) => (
+                    <button
+                      key={tpl.id}
+                      onClick={() => handleMenuAction(`insert-template:${tpl.id}`)}
+                      className="w-full text-left px-4 py-2 text-sm text-fg-primary hover:bg-bg-selection transition-colors"
+                      data-testid={`insert-template-${tpl.id}`}
+                    >
+                      🧩 {tpl.name}
+                    </button>
+                  ))}
+                </>
+              );
+            })()}
             <button
               onClick={() => handleMenuAction('export-branch')}
               className="w-full text-left px-4 py-2 text-sm text-fg-primary hover:bg-bg-selection transition-colors last:rounded-b-sm"
@@ -918,7 +1042,10 @@ function TreeItem({
             nodeTypeSchemas={nodeTypeSchemas}
             velocityScores={velocityScores}
             selectedNodeId={selectedNodeId}
+            selectedNodeIds={selectedNodeIds}
             onSelect={onSelect}
+            onMultiSelectNode={onMultiSelectNode}
+            onRangeSelectNode={onRangeSelectNode}
             onExpand={onExpand}
             onContextMenu={onContextMenu}
             expandedMap={expandedMap}
@@ -926,6 +1053,7 @@ function TreeItem({
             getTypeLabel={getTypeLabel}
             scrollContainerRef={scrollContainerRef}
             level={level}
+            nodeTemplates={nodeTemplates}
           />
         </div>
       )}
@@ -936,9 +1064,12 @@ function TreeItem({
 type TreeViewProps = {
   nodes: TreeNode[];
   selectedNodeId?: string | null;
+  selectedNodeIds?: string[];
   nodeTypeSchemas?: Record<string, NodeTypeSchema>;
   velocityScores?: Record<string, any>;
   onSelectNode?: (id: string) => void;
+  onMultiSelectNode?: (id: string, nodeType: string) => void;
+  onRangeSelectNodes?: (ids: string[], nodeType: string) => void;
   onExpandNode?: (id: string) => void;
   onContextMenu?: (id: string, action: string) => void;
   expandAllSignal?: number;
@@ -946,6 +1077,7 @@ type TreeViewProps = {
   getTypeLabel?: (type: string) => string;
   expandedMap?: Record<string, boolean>;
   setExpandedMap?: Dispatch<SetStateAction<Record<string, boolean>>>;
+  nodeTemplates?: Array<{ id: string; name: string; rootType: string }>;
 };
 
 export function TreeView({
@@ -953,6 +1085,8 @@ export function TreeView({
   nodeTypeSchemas,
   velocityScores = {},
   onSelectNode,
+  onMultiSelectNode,
+  onRangeSelectNodes,
   onExpandNode,
   onContextMenu,
   expandAllSignal,
@@ -961,6 +1095,8 @@ export function TreeView({
   expandedMap: externalExpandedMap,
   setExpandedMap: externalSetExpandedMap,
   selectedNodeId,
+  selectedNodeIds,
+  nodeTemplates,
 }: TreeViewProps) {
   const [internalExpandedMap, setInternalExpandedMap] = useState<Record<string, boolean>>({});
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -969,6 +1105,82 @@ export function TreeView({
 
   const expandedMap = externalExpandedMap || internalExpandedMap;
   const setExpandedMap = externalSetExpandedMap || setInternalExpandedMap;
+
+  // Get filter state - must be called at top level, not in map loop
+  const { rules: filterRules, filterMode } = useFilterStore();
+
+  const flattenVisibleNodes = (
+    nodeList: TreeNode[],
+    resolveTypeLabel: (type: string) => string,
+  ): Array<{ id: string; type: string }> => {
+    const flattened: Array<{ id: string; type: string }> = [];
+
+    const visit = (items: TreeNode[]) => {
+      items.forEach((item) => {
+        const isDirectMatch = nodeMatchesFilters(item, filterRules, velocityScores);
+        const hasMatchingDescendant = Array.isArray(item.children) && item.children.length > 0
+          ? item.children.some((child) => subtreeHasMatch(child, filterRules, velocityScores))
+          : false;
+
+        if (!isDirectMatch && !hasMatchingDescendant && filterMode === 'hide') {
+          return;
+        }
+
+        flattened.push({ id: item.id, type: item.type });
+
+        const isExpanded = expandedMap[item.id] ?? false;
+        if (!isExpanded || !Array.isArray(item.children) || item.children.length === 0) {
+          return;
+        }
+
+        const allowedChildrenList = Array.isArray(item.allowed_children) ? item.allowed_children : [];
+        const orderedChildren = getOrderedChildGroups(item, allowedChildrenList, resolveTypeLabel)
+          .flatMap((group) => group.items)
+          .filter((child) => filterMode !== 'hide' || subtreeHasMatch(child, filterRules, velocityScores));
+
+        visit(orderedChildren);
+      });
+    };
+
+    visit(nodeList);
+    return flattened;
+  };
+
+  const resolveTypeLabel = (type: string) => (getTypeLabel ? getTypeLabel(type) : type);
+  const visibleNodeOrder = flattenVisibleNodes(nodes, resolveTypeLabel);
+
+  const handleRangeSelectNode = (targetId: string, targetType: string) => {
+    const anchorId = selectedNodeIds?.[0] ?? selectedNodeId ?? null;
+    if (!anchorId) {
+      onSelectNode?.(targetId);
+      return;
+    }
+
+    const anchorIndex = visibleNodeOrder.findIndex((entry) => entry.id === anchorId);
+    const targetIndex = visibleNodeOrder.findIndex((entry) => entry.id === targetId);
+    if (anchorIndex === -1 || targetIndex === -1) {
+      onSelectNode?.(targetId);
+      return;
+    }
+
+    const anchorType = visibleNodeOrder[anchorIndex]?.type;
+    if (anchorType && anchorType !== targetType) {
+      return;
+    }
+
+    const start = Math.min(anchorIndex, targetIndex);
+    const end = Math.max(anchorIndex, targetIndex);
+    const rangeIds = visibleNodeOrder
+      .slice(start, end + 1)
+      .filter((entry) => entry.type === targetType)
+      .map((entry) => entry.id);
+
+    if (rangeIds.length === 0) {
+      return;
+    }
+
+    onRangeSelectNodes?.(rangeIds, targetType);
+  };
 
   const getAllNodeIds = (nodeList: TreeNode[]): string[] => {
     const ids: string[] = [];
@@ -1013,9 +1225,6 @@ export function TreeView({
 
   const projectRoots = nodes.filter((node) => nodeTypeSchemas?.[node.type]?.features?.includes('is_root'));
   const hasMultipleProjects = projectRoots.length > 1;
-
-  // Get filter state - must be called at top level, not in map loop
-  const { rules: filterRules, filterMode } = useFilterStore();
 
   // Debug: log when filter rules change
   useEffect(() => {
@@ -1067,13 +1276,17 @@ export function TreeView({
                 velocityScores={velocityScores}
                 isGhosted={filterMode === 'ghost' && !isDirectMatch && !hasMatchingDescendant}
                 selectedNodeId={selectedNodeId}
+                selectedNodeIds={selectedNodeIds}
                 onSelect={onSelectNode}
+                onMultiSelectNode={onMultiSelectNode}
+                onRangeSelectNode={handleRangeSelectNode}
                 onExpand={onExpandNode}
                 onContextMenu={onContextMenu}
                 expandedMap={expandedMap}
                 setExpandedMap={setExpandedMap}
                 getTypeLabel={getTypeLabel}
                 scrollContainerRef={scrollContainerRef}
+                nodeTemplates={nodeTemplates}
               />
             </div>
           );

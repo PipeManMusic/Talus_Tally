@@ -6,6 +6,9 @@ import { TemplateAwareEditor } from '../ui/TemplateAwareEditor';
 import { Breadcrumbs } from '../ui/Breadcrumbs';
 import type { MarkupToken } from '../../services/markupRenderService';
 import type { NodeTypeSchema } from '../../api/client';
+import { resolveNodeLabel, resolveNodeLabelById } from '../../utils/propertyValueDisplay';
+import { buildPropertyUuidMap } from '../../utils/propertyResolver';
+import { launchMedia, isExternalUrl } from '../../utils/openExternal';
 
 const WEEKDAY_LABELS = [
   { key: 'monday', short: 'Mon', full: 'Monday' },
@@ -35,6 +38,12 @@ const PERSON_SPECIAL_PROPERTY_IDS = new Set([
   ...PERSON_OVERTIME_CAPACITY_PROPERTY_IDS,
   'overtime_capacity',
 ]);
+
+/**
+ * Sentinel value used when a property has different values across multiple selected nodes.
+ * When this value appears in `NodeProperty.value`, the Inspector shows "*Varies*" for that field.
+ */
+export const VARIES_SENTINEL = '__VARIES__';
 
 export interface NodeProperty {
   id: string;
@@ -103,6 +112,8 @@ interface InspectorProps {
   onClearSingleBlock?: (blockedNodeId: string) => void;
   velocityScore?: VelocityScore;
   onNodeSelect?: (nodeId: string) => void;
+  /** When more than one node is selected, pass the count here to show the multi-select banner. */
+  selectedNodeCount?: number;
 }
 
 export const Inspector = memo(function Inspector({
@@ -126,6 +137,7 @@ export const Inspector = memo(function Inspector({
   onClearSingleBlock,
   velocityScore,
   onNodeSelect,
+  selectedNodeCount,
 }: InspectorProps) {
   const [draftValues, setDraftValues] = useState<Record<string, string>>({});
   const pendingCommits = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
@@ -767,7 +779,10 @@ export const Inspector = memo(function Inspector({
     return map;
   }, [nodes]);
 
-  // Build breadcrumb path from current node up through parent chain
+  // Build breadcrumb path from current node up through parent chain.
+  // The full chain is always rendered — the Breadcrumbs component is
+  // responsible for wrapping segments onto additional lines if the chain
+  // is wider than the inspector pane.
   const breadcrumbItems = useMemo(() => {
     if (!nodeId || !nodes) return [];
 
@@ -778,19 +793,9 @@ export const Inspector = memo(function Inspector({
       const node = nodes[currentId];
       path.unshift({
         id: currentId,
-        name: node.properties?.name || node.name || currentId,
+        name: resolveNodeLabel(node, currentId),
       });
       currentId = parentMap.get(currentId);
-    }
-
-    // Truncate long paths: show first 2 + "…" + last 2
-    if (path.length > 5) {
-      const truncated = [
-        ...path.slice(0, 2),
-        { id: '__ellipsis__', name: '…' },
-        ...path.slice(-2),
-      ];
-      return truncated;
     }
 
     return path;
@@ -801,11 +806,99 @@ export const Inspector = memo(function Inspector({
       label: item.name,
       active: index === breadcrumbItems.length - 1,
       onClick:
-        item.id !== '__ellipsis__' && index < breadcrumbItems.length - 1 && onNodeSelect
+        index < breadcrumbItems.length - 1 && onNodeSelect
           ? () => onNodeSelect(item.id)
           : undefined,
     }));
   }, [breadcrumbItems, onNodeSelect]);
+
+  /**
+   * Cumulative budget rollup for the selected node.
+   *
+   * Walks the descendant tree summing each node's own ``estimated_cost`` and
+   * ``actual_cost`` (resolved through the per-type schema UUID map). Returns
+   * null when there is nothing meaningful to display — i.e. neither the node
+   * itself nor any descendant has any non-zero estimated/actual cost.
+   *
+   * The section renders even on node types without the budgeting feature
+   * provided their descendants carry data.
+   */
+  const budgetRollup = useMemo(() => {
+    if (!nodeId || !nodes || !nodes[nodeId]) return null;
+
+    // Per-type UUID maps for the cost property keys, cached for the walk.
+    const typeMaps = new Map<string, Map<string, string> | undefined>();
+    const getTypeMap = (typeId: string | undefined) => {
+      if (!typeId) return undefined;
+      if (typeMaps.has(typeId)) return typeMaps.get(typeId);
+      const m = nodeTypeSchemas ? buildPropertyUuidMap(nodeTypeSchemas[typeId]) : undefined;
+      typeMaps.set(typeId, m);
+      return m;
+    };
+
+    const readCost = (node: any, key: 'estimated_cost' | 'actual_cost'): { value: number; defined: boolean } => {
+      const map = getTypeMap(node?.type);
+      const propId = map?.get(key);
+      if (!propId) return { value: 0, defined: false };
+      const raw = node?.properties?.[propId];
+      if (raw === undefined || raw === null || raw === '') return { value: 0, defined: true };
+      const num = Number(raw);
+      return { value: Number.isFinite(num) ? num : 0, defined: true };
+    };
+
+    // Own values — only meaningful when this node type defines the cost props.
+    const selfNode = nodes[nodeId];
+    const selfEstimated = readCost(selfNode, 'estimated_cost');
+    const selfActual = readCost(selfNode, 'actual_cost');
+    const selfHasBudgeting = selfEstimated.defined || selfActual.defined;
+
+    // Recursive descendant rollup. Cycles are guarded with a visited set
+    // because graph data can occasionally contain duplicates.
+    const visited = new Set<string>();
+    let descendantsEstimated = 0;
+    let descendantsActual = 0;
+    let descendantsHaveAny = false;
+
+    const walk = (id: string) => {
+      if (visited.has(id)) return;
+      visited.add(id);
+      const node = nodes[id];
+      if (!node) return;
+      const est = readCost(node, 'estimated_cost');
+      const act = readCost(node, 'actual_cost');
+      if (est.value !== 0 || act.value !== 0) {
+        descendantsHaveAny = true;
+      }
+      descendantsEstimated += est.value;
+      descendantsActual += act.value;
+      const children: string[] = Array.isArray(node.children) ? node.children : [];
+      for (const childId of children) {
+        if (typeof childId === 'string') walk(childId);
+      }
+    };
+
+    const rootChildren: string[] = Array.isArray(selfNode.children) ? selfNode.children : [];
+    for (const childId of rootChildren) {
+      if (typeof childId === 'string') walk(childId);
+    }
+
+    const totalEstimated = selfEstimated.value + descendantsEstimated;
+    const totalActual = selfActual.value + descendantsActual;
+    const variance = totalActual - totalEstimated;
+
+    const selfHasValue = selfEstimated.value !== 0 || selfActual.value !== 0;
+    if (!selfHasValue && !descendantsHaveAny) return null;
+
+    return {
+      hasOwn: selfHasBudgeting,
+      ownEstimated: selfEstimated.value,
+      ownActual: selfActual.value,
+      totalEstimated,
+      totalActual,
+      variance,
+      hasDescendants: descendantsHaveAny,
+    };
+  }, [nodeId, nodes, nodeTypeSchemas]);
 
   if (!nodeId) {
     return (
@@ -823,9 +916,11 @@ export const Inspector = memo(function Inspector({
         Properties
       </div>
 
-      {/* Parent hierarchy breadcrumb */}
+      {/* Parent hierarchy breadcrumb. Allowed to wrap onto multiple lines so
+          the full chain is always visible; the wrapper grows downward as the
+          chain gets longer (no horizontal scroll, no ellipsis). */}
       {breadcrumbNavItems.length > 1 && (
-        <div className="px-3 pb-2 flex-shrink-0 overflow-x-auto">
+        <div className="px-3 pb-2 flex-shrink-0">
           <Breadcrumbs items={breadcrumbNavItems} />
         </div>
       )}
@@ -897,6 +992,15 @@ export const Inspector = memo(function Inspector({
           </div>
         )}
 
+        {/* Multi-select banner */}
+        {selectedNodeCount !== undefined && selectedNodeCount > 1 && (
+          <div data-testid="multi-select-banner" className="mb-4 rounded border border-accent-primary/40 bg-accent-primary/10 px-3 py-2 text-xs text-accent-primary">
+            <span className="font-semibold">{selectedNodeCount} nodes selected</span>
+            {' '}— Edits apply to all selected nodes.
+            Fields showing <em>*Varies*</em> have different values across the selection.
+          </div>
+        )}
+
         {/* Properties — grouped by section */}
         {(() => {
           // Ordered group names — properties are rendered within each group
@@ -944,8 +1048,9 @@ export const Inspector = memo(function Inspector({
             }
 
             const displayValue = prop.value;
+            const isVaries = displayValue === VARIES_SENTINEL;
             const draftKey = makeDraftKey(prop.id, false);
-            const draftValue = draftValues[draftKey] ?? String(displayValue ?? '');
+            const draftValue = draftValues[draftKey] ?? (isVaries ? '' : String(displayValue ?? ''));
             const isAssigneeField = propKey === 'assigned_to';
             const isManualAllocationsField =
               propKey === 'allocations'
@@ -970,7 +1075,7 @@ export const Inspector = memo(function Inspector({
                 .sort((a, b) => a.localeCompare(b))
               : [];
             return (
-              <div key={prop.id} data-testid={`inspector-property-${prop.id}`}>
+              <div key={prop.id} data-testid={`inspector-property-${prop.key ?? prop.id}`}>
                 {isAssigneeField && (
                   <div>
                     <label className="block text-sm text-fg-secondary mb-1">
@@ -1013,12 +1118,16 @@ export const Inspector = memo(function Inspector({
                       <div className="text-xs text-fg-muted">No people assigned</div>
                     ) : (
                       <div className="flex flex-wrap gap-2">
-                        {assignedIds.map((assigneeId) => (
+                        {assignedIds.map((assigneeId, idx) => {
+                          const currentNodeLabels = nodeId ? nodes[nodeId]?.node_labels : undefined;
+                          const labelFromBackend = currentNodeLabels?.[prop.id]?.[idx];
+                          const label = labelFromBackend ?? assigneeLabelById.get(assigneeId) ?? assigneeId;
+                          return (
                           <span
                             key={assigneeId}
                             className="inline-flex items-center gap-2 bg-bg-dark border border-border rounded px-2 py-1 text-xs text-fg-primary"
                           >
-                            <span>{assigneeLabelById.get(assigneeId) ?? assigneeId}</span>
+                            <span>{label}</span>
                             <button
                               type="button"
                               onClick={() => {
@@ -1034,7 +1143,7 @@ export const Inspector = memo(function Inspector({
                               ✕
                             </button>
                           </span>
-                        ))}
+                        ); })}
                       </div>
                     )}
                   </div>
@@ -1079,26 +1188,75 @@ export const Inspector = memo(function Inspector({
                   </div>
                 )}
                 {prop.type === 'text' && !isAssigneeField && !isManualAllocationsField && (
-                  <Input
-                    label={prop.name}
-                    value={draftValue}
-                    onChange={(e) => {
-                      const nextValue = e.target.value;
-                      setDraftValues((prev) => ({ ...prev, [draftKey]: nextValue }));
-                      scheduleCommit(draftKey, prop.id, nextValue, false);
-                    }}
-                    onBlur={(e) => {
-                      flushCommit(draftKey, prop.id, e.target.value, false);
-                    }}
-                    required={prop.required}
-                    disabled={isReadOnly}
-                  />
+                  <>
+                    <Input
+                      label={prop.name}
+                      value={draftValue}
+                      placeholder={isVaries ? '*Varies*' : undefined}
+                      onChange={(e) => {
+                        const nextValue = e.target.value;
+                        setDraftValues((prev) => ({ ...prev, [draftKey]: nextValue }));
+                        scheduleCommit(draftKey, prop.id, nextValue, false);
+                      }}
+                      onBlur={(e) => {
+                        flushCommit(draftKey, prop.id, e.target.value, false);
+                      }}
+                      required={prop.required}
+                      disabled={isReadOnly}
+                    />
+                    {propKey === 'media_url' && (
+                      <div className="mt-1 flex gap-2">
+                        <button
+                          type="button"
+                          data-testid="inspector-browse-media"
+                          className="px-3 py-1 text-xs rounded bg-bg-tertiary text-fg-primary border border-border-primary hover:bg-bg-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled={isReadOnly}
+                          title="Select a file from your computer"
+                          onClick={async () => {
+                            try {
+                              const { open } = await import('@tauri-apps/plugin-dialog');
+                              const selected = await open({ multiple: false, directory: false });
+                              if (typeof selected === 'string' && selected) {
+                                setDraftValues((prev) => ({ ...prev, [draftKey]: selected }));
+                                flushCommit(draftKey, prop.id, selected, false);
+                              }
+                            } catch (err) {
+                              console.error('Failed to open file picker:', err);
+                              alert(`Could not open file picker: ${err instanceof Error ? err.message : String(err)}`);
+                            }
+                          }}
+                        >
+                          Browse…
+                        </button>
+                        <button
+                          type="button"
+                          data-testid="inspector-launch-media"
+                          className="px-3 py-1 text-xs rounded bg-accent-primary/20 text-fg-primary border border-accent-primary/40 hover:bg-accent-primary/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled={!String(draftValue ?? '').trim()}
+                          title={isExternalUrl(String(draftValue ?? '').trim()) ? 'Open URL in default browser' : 'Open file with default application'}
+                          onClick={async () => {
+                            const target = String(draftValue ?? '').trim();
+                            if (!target) return;
+                            try {
+                              await launchMedia(target);
+                            } catch (err) {
+                              console.error('Failed to launch media:', err);
+                              alert(`Could not launch media: ${err instanceof Error ? err.message : String(err)}`);
+                            }
+                          }}
+                        >
+                          Launch
+                        </button>
+                      </div>
+                    )}
+                  </>
                 )}
                 {prop.type === 'number' && !isAssigneeField && !isManualAllocationsField && (
                   <Input
                     label={prop.name}
                     type="number"
                     value={draftValue}
+                    placeholder={isVaries ? '*Varies*' : undefined}
                     onChange={(e) => {
                       const nextValue = e.target.value;
                       setDraftValues((prev) => ({ ...prev, [draftKey]: nextValue }));
@@ -1115,6 +1273,7 @@ export const Inspector = memo(function Inspector({
                   <CurrencyInput
                     label={prop.name}
                     value={draftValue}
+                    placeholder={isVaries ? '*Varies*' : undefined}
                     onChange={(e) => {
                       const nextValue = e.target.value;
                       setDraftValues((prev) => ({ ...prev, [draftKey]: nextValue }));
@@ -1132,6 +1291,7 @@ export const Inspector = memo(function Inspector({
                     label={prop.name}
                     type="date"
                     value={draftValue}
+                    placeholder={isVaries ? '*Varies*' : undefined}
                     onChange={(e) => {
                       const nextValue = e.target.value;
                       setDraftValues((prev) => ({ ...prev, [draftKey]: nextValue }));
@@ -1147,9 +1307,18 @@ export const Inspector = memo(function Inspector({
                 {prop.type === 'select' && prop.options && !isAssigneeField && !isManualAllocationsField && (
                   <Select
                     label={prop.name}
-                    value={String(displayValue)}
-                    onChange={(e) => handlePropertyChange(prop.id, e.target.value)}
-                    options={prop.options}
+                    value={
+                      isVaries && !draftValues[draftKey]
+                        ? ''
+                        : String(displayValue ?? '')
+                    }
+                    onChange={(e) => {
+                      if (isVaries) {
+                        setDraftValues((prev) => ({ ...prev, [draftKey]: e.target.value }));
+                      }
+                      handlePropertyChange(prop.id, e.target.value);
+                    }}
+                    options={isVaries ? [{ value: '', label: '— *Varies* —' }, ...prop.options] : prop.options}
                     required={prop.required}
                     disabled={isReadOnly}
                   />
@@ -1161,6 +1330,7 @@ export const Inspector = memo(function Inspector({
                     </label>
                     <textarea
                       value={draftValue}
+                      placeholder={isVaries ? '*Varies*' : undefined}
                       onChange={(e) => {
                         const nextValue = e.target.value;
                         setDraftValues((prev) => ({ ...prev, [draftKey]: nextValue }));
@@ -1177,24 +1347,46 @@ export const Inspector = memo(function Inspector({
                   </div>
                 )}
                 {prop.type === 'checkbox' && !isAssigneeField && !isManualAllocationsField && (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id={`checkbox-${prop.id}`}
-                      checked={displayValue === 'true' || displayValue === 1 || displayValue === '1'}
-                      onChange={(e) =>
-                        handlePropertyChange(prop.id, e.target.checked ? 'true' : 'false')
-                      }
-                      className="w-4 h-4 cursor-pointer accent-accent-primary"
-                      disabled={isReadOnly}
-                    />
-                    <label
-                      htmlFor={`checkbox-${prop.id}`}
-                      className="text-sm text-fg-secondary cursor-pointer"
-                    >
-                      {prop.name}
-                    </label>
-                  </div>
+                  isVaries ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-fg-secondary italic">{prop.name}: <span className="text-fg-muted">*Varies*</span></span>
+                      <button
+                        type="button"
+                        onClick={() => handlePropertyChange(prop.id, 'true')}
+                        className="px-2 py-0.5 text-xs bg-bg-dark border border-border rounded hover:bg-accent-primary/20 transition-colors"
+                        disabled={isReadOnly}
+                      >
+                        Set all On
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handlePropertyChange(prop.id, 'false')}
+                        className="px-2 py-0.5 text-xs bg-bg-dark border border-border rounded hover:bg-accent-primary/20 transition-colors"
+                        disabled={isReadOnly}
+                      >
+                        Set all Off
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id={`checkbox-${prop.id}`}
+                        checked={displayValue === 'true' || displayValue === 1 || displayValue === '1'}
+                        onChange={(e) =>
+                          handlePropertyChange(prop.id, e.target.checked ? 'true' : 'false')
+                        }
+                        className="w-4 h-4 cursor-pointer accent-accent-primary"
+                        disabled={isReadOnly}
+                      />
+                      <label
+                        htmlFor={`checkbox-${prop.id}`}
+                        className="text-sm text-fg-secondary cursor-pointer"
+                      >
+                        {prop.name}
+                      </label>
+                    </div>
+                  )
                 )}
                 {prop.type === 'editor' && !isAssigneeField && !isManualAllocationsField && (
                   <div>
@@ -1202,11 +1394,14 @@ export const Inspector = memo(function Inspector({
                       {prop.name}
                     </label>
                     <div className="flex gap-2 items-center">
-                      <div className="flex-1 bg-bg-dark text-fg-primary border border-border rounded-sm px-2 py-1 text-sm truncate">
-                        {String(displayValue).substring(0, 50)}{String(displayValue).length > 50 ? '...' : ''}
+                      <div className="flex-1 bg-bg-dark border border-border rounded-sm px-2 py-1 text-sm truncate">
+                        {isVaries
+                          ? <span className="text-fg-muted italic">*Varies*</span>
+                          : <span className="text-fg-primary">{String(displayValue).substring(0, 50)}{String(displayValue).length > 50 ? '...' : ''}</span>
+                        }
                       </div>
                       <button
-                        onClick={() => openEditor(prop.id, prop.name, displayValue, false, prop.markupProfile)}
+                        onClick={() => openEditor(prop.id, prop.name, isVaries ? '' : displayValue, false, prop.markupProfile)}
                         className="px-3 py-1 bg-accent-primary text-fg-primary rounded hover:bg-accent-hover transition-colors text-sm font-semibold"
                         disabled={isReadOnly}
                       >
@@ -1256,7 +1451,7 @@ export const Inspector = memo(function Inspector({
                 <div className="space-y-1">
                   {blockedByNodes.map((blockerId) => {
                     const blocker = nodes[blockerId];
-                    const blockerName = blocker?.name || blocker?.properties?.name || blockerId;
+                    const blockerName = resolveNodeLabelById(nodes, blockerId);
                     return (
                       <div key={blockerId} className="flex items-center justify-between gap-1 text-sm text-fg-primary bg-bg-dark/50 rounded px-2 py-1">
                         <span className="truncate" title={blockerName}>{blockerName}</span>
@@ -1293,7 +1488,7 @@ export const Inspector = memo(function Inspector({
                 <div className="space-y-1">
                   {blocksNodes.map((blockedId) => {
                     const blocked = nodes[blockedId];
-                    const blockedName = blocked?.name || blocked?.properties?.name || blockedId;
+                    const blockedName = resolveNodeLabelById(nodes, blockedId);
                     return (
                       <div key={blockedId} className="flex items-center justify-between gap-1 text-sm text-fg-primary bg-bg-dark/50 rounded px-2 py-1">
                         <span className="truncate" title={blockedName}>{blockedName}</span>
@@ -1359,6 +1554,65 @@ export const Inspector = memo(function Inspector({
                     <span className="text-fg-primary">{velocityScore.blockingPenalty}</span>
                   </div>
                 )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Budget Rollup Section — cumulative estimated/actual costs for this
+            node and all its descendants. Renders even when this node type
+            doesn't have the budgeting feature, as long as a descendant does. */}
+        {budgetRollup && (
+          <div className="mt-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="flex-1 border-t border-border" />
+              <span className="text-xs font-semibold text-fg-secondary uppercase tracking-wider whitespace-nowrap">
+                Budget Rollup
+              </span>
+              <div className="flex-1 border-t border-border" />
+            </div>
+            <div className="space-y-2 text-xs">
+              {budgetRollup.hasOwn && (
+                <>
+                  <div className="flex justify-between items-center">
+                    <span className="text-fg-secondary">Own Estimated:</span>
+                    <span className="font-mono text-fg-primary">
+                      {budgetRollup.ownEstimated.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-fg-secondary">Own Actual:</span>
+                    <span className="font-mono text-fg-primary">
+                      {budgetRollup.ownActual.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                </>
+              )}
+              <div className={`flex justify-between items-center ${budgetRollup.hasOwn ? 'border-t border-border/50 pt-2' : ''}`}>
+                <span className="text-fg-secondary">Total Estimated:</span>
+                <span className="font-mono font-semibold text-fg-primary">
+                  {budgetRollup.totalEstimated.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-fg-secondary">Total Actual:</span>
+                <span className="font-mono font-semibold text-fg-primary">
+                  {budgetRollup.totalActual.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-fg-secondary">Variance:</span>
+                <span
+                  className={`font-mono font-semibold ${
+                    budgetRollup.variance > 0
+                      ? 'text-status-danger'
+                      : budgetRollup.variance < 0
+                        ? 'text-status-success'
+                        : 'text-fg-primary'
+                  }`}
+                >
+                  {budgetRollup.variance.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
               </div>
             </div>
           </div>
@@ -1500,7 +1754,7 @@ export const Inspector = memo(function Inspector({
                     {prop.type === 'select' && prop.options && (
                       <Select
                         label={prop.name}
-                        value={String(assetDisplayValue)}
+                        value={String(assetDisplayValue ?? '')}
                         onChange={(e) => handleLinkedAssetPropertyChange(prop.id, e.target.value)}
                         options={prop.options}
                         required={prop.required}
@@ -1797,7 +2051,7 @@ export const Inspector = memo(function Inspector({
                           <td className="px-3 py-2 border-b border-r border-border text-fg-primary font-medium sticky left-0 bg-bg-dark z-20 whitespace-nowrap">
                             <div className="flex items-center gap-2">
                               <span className={`shrink-0 text-sm font-bold ${statusIcon.cls}`}>{statusIcon.char}</span>
-                              <span>{assigneeLabelById.get(personId) ?? personId}</span>
+                              <span>{assigneeLabelById.get(personId) ?? nodes[nodeId ?? '']?.node_labels?.[prop.id]?.[manualAllocationsEditor.assignedIds.indexOf(personId)] ?? personId}</span>
                             </div>
                           </td>
                           <td

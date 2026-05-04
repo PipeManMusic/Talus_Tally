@@ -40,8 +40,14 @@ function evaluateRule(node: any, rule: FilterRule): boolean {
     // Node type is stored at the top-level node.type field
     propertyValue = node?.type;
   } else {
-    // Regular node properties
-    propertyValue = node?.properties?.[rule.property];
+    // Regular node properties. The rule.property value may be either
+    //   - a single property key (legacy single-UUID rules), or
+    //   - a pipe-joined UUID list created by the FilterBar when multiple
+    //     node types share the same property label (e.g. "Status" lives on
+    //     task, episode, footage with three distinct UUIDs).
+    // For pipe-joined keys we OR-match: pick the first UUID that has a
+    // defined value on this node, falling back to undefined if none do.
+    propertyValue = resolveGroupedPropertyValue(node, rule.property);
   }
 
   switch (rule.operator) {
@@ -77,10 +83,94 @@ function evaluateRule(node: any, rule: FilterRule): boolean {
       }
       return numValue2 < numRuleValue2;
 
+    case 'before':
+    case 'after':
+    case 'on_or_before':
+    case 'on_or_after': {
+      const left = parseFilterDate(propertyValue);
+      const right = parseFilterDate(rule.value);
+      if (left === null || right === null) {
+        // Unparseable on either side → rule does not match (filter excludes the node)
+        return false;
+      }
+      if (rule.operator === 'before') return left < right;
+      if (rule.operator === 'after') return left > right;
+      if (rule.operator === 'on_or_before') return left <= right;
+      return left >= right; // on_or_after
+    }
+
     default:
       // Unknown operator defaults to true (don't filter)
       return true;
   }
+}
+
+/**
+ * Resolves a (possibly grouped) property key against a node's properties dict.
+ *
+ * - For a plain key (no `|`), this is a direct `node.properties[key]` lookup.
+ * - For a pipe-joined group token (e.g. `"uuid-a|uuid-b|uuid-c"`), each UUID
+ *   is tried in order and the first defined, non-empty value wins. Empty
+ *   strings are treated as "missing" so that a stale empty entry on one node
+ *   type does not shadow a real value stored under another type's UUID.
+ */
+function resolveGroupedPropertyValue(node: any, propertyKey: string): any {
+  if (!propertyKey) return undefined;
+  const props = node?.properties;
+  if (!props || typeof props !== 'object') return undefined;
+  if (!propertyKey.includes('|')) {
+    return props[propertyKey];
+  }
+  const parts = propertyKey.split('|');
+  for (const part of parts) {
+    if (!part) continue;
+    const v = props[part];
+    if (v !== undefined && v !== null && v !== '') {
+      return v;
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Parses a value into a UTC day-aligned timestamp (ms) for date comparisons.
+ * Accepts:
+ *   - "YYYY-MM-DD" (preferred — interpreted as that calendar day)
+ *   - ISO datetime strings (e.g. "2026-01-15T12:00:00Z")
+ *   - Date objects
+ *   - Numeric epoch millis
+ * Returns null when the value cannot be parsed as a date.
+ *
+ * For "YYYY-MM-DD" we anchor to UTC midnight so that comparisons are
+ * timezone-stable (a date stored as "2026-01-15" never drifts to the 14th
+ * or 16th depending on the user's locale).
+ */
+function parseFilterDate(value: any): number | null {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+  if (value instanceof Date) {
+    const t = value.getTime();
+    return isNaN(t) ? null : t;
+  }
+  if (typeof value === 'number') {
+    return isNaN(value) ? null : value;
+  }
+  const str = String(value).trim();
+  if (!str) {
+    return null;
+  }
+  // Fast path for YYYY-MM-DD → UTC midnight
+  const ymd = /^(\d{4})-(\d{2})-(\d{2})$/.exec(str);
+  if (ymd) {
+    const year = Number(ymd[1]);
+    const month = Number(ymd[2]);
+    const day = Number(ymd[3]);
+    const t = Date.UTC(year, month - 1, day);
+    return isNaN(t) ? null : t;
+  }
+  const parsed = Date.parse(str);
+  return isNaN(parsed) ? null : parsed;
 }
 
 /**

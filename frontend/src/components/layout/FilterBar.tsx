@@ -4,9 +4,24 @@ import { useFilterStore, type FilterOperator } from '../../store/filterStore';
 import { extractUniquePropertyKeys } from '../../utils/filterEngine';
 import { useGraphStore } from '../../store';
 import type { TemplateSchema } from '../../api/client';
-import { getSelectOptionsByProperty, getPropertyLabelMap } from '../../utils/propertyValueDisplay';
+import {
+  getSelectOptionsByProperty,
+  getPropertyLabelMap,
+  getPropertyGroups,
+  type PropertyGroup,
+} from '../../utils/propertyValueDisplay';
 
-const OPERATORS: FilterOperator[] = ['equals', 'not_equals', 'contains', 'greater_than', 'less_than'];
+const OPERATORS: FilterOperator[] = [
+  'equals',
+  'not_equals',
+  'contains',
+  'greater_than',
+  'less_than',
+  'before',
+  'after',
+  'on_or_before',
+  'on_or_after',
+];
 
 const OPERATOR_LABELS: Record<FilterOperator, string> = {
   equals: 'Equals',
@@ -14,7 +29,18 @@ const OPERATOR_LABELS: Record<FilterOperator, string> = {
   contains: 'Contains',
   greater_than: 'Greater Than',
   less_than: 'Less Than',
+  before: 'Before (date)',
+  after: 'After (date)',
+  on_or_before: 'On or Before (date)',
+  on_or_after: 'On or After (date)',
 };
+
+const DATE_OPERATORS: ReadonlySet<FilterOperator> = new Set([
+  'before',
+  'after',
+  'on_or_before',
+  'on_or_after',
+]);
 
 const BLOCKING_STATUS_VALUES = [
   { value: 'blocked', label: 'Blocked' },
@@ -51,15 +77,66 @@ export function FilterBar({
   const { nodes } = useGraphStore();
   const [saveAsName, setSaveAsName] = useState('');
 
-  // Extract all unique property keys from current nodes, plus special velocity/blocking properties
-  const availableProperties = useMemo(() => {
+  // Property groups built from the template schema. One entry per unique
+  // (label, type) pair — collapses the per-node-type UUID duplication that
+  // otherwise renders e.g. "Status" 8 times in the property dropdown.
+  const propertyGroups = useMemo<PropertyGroup[]>(
+    () => getPropertyGroups(templateSchema),
+    [templateSchema],
+  );
+
+  // Reverse index: every UUID known to any group → that group's token.
+  // Used to map legacy single-UUID rule.property values onto a group entry
+  // so existing saved filter sets keep displaying the right label.
+  const uuidToGroupToken = useMemo<Record<string, string>>(() => {
+    const map: Record<string, string> = {};
+    propertyGroups.forEach((group) => {
+      group.uuids.forEach((uuid) => {
+        if (!map[uuid]) {
+          map[uuid] = group.token;
+        }
+      });
+    });
+    return map;
+  }, [propertyGroups]);
+
+  /**
+   * Resolves the dropdown's *displayed* value for a stored rule.property.
+   * Handles three shapes:
+   *   - special properties (`node_type` / `velocity_score` / `blocking_status`)
+   *   - already-grouped tokens (pipe-joined UUIDs that match a known group)
+   *   - legacy single UUIDs that belong to a group
+   * Falls back to the raw property string for anything unrecognized so the
+   * value still round-trips even if the schema changed.
+   */
+  const resolveDropdownValue = (storedProperty: string): string => {
+    if (!storedProperty) return '';
+    if (
+      storedProperty === 'node_type' ||
+      storedProperty === 'velocity_score' ||
+      storedProperty === 'blocking_status'
+    ) {
+      return storedProperty;
+    }
+    // Direct group-token match
+    if (storedProperty.includes('|')) {
+      const exact = propertyGroups.find((g) => g.token === storedProperty);
+      if (exact) return exact.token;
+    }
+    // Legacy single UUID → look up its group
+    const groupToken = uuidToGroupToken[storedProperty];
+    if (groupToken) return groupToken;
+    return storedProperty;
+  };
+
+  // Property keys actually present on at least one node — used to keep
+  // entries that aren't in the schema (orphaned properties) reachable.
+  const orphanPropertyKeys = useMemo(() => {
     const nodeList = Object.values(nodes);
     const extracted = extractUniquePropertyKeys(nodeList);
-    // Special filterable properties always available
-    const special = ['node_type', 'velocity_score', 'blocking_status'];
-    // Put special properties first for visibility, then regular properties sorted
-    return [...special, ...extracted.sort()];
-  }, [nodes]);
+    const knownUuids = new Set(Object.keys(uuidToGroupToken));
+    return extracted.filter((key) => !knownUuids.has(key));
+  }, [nodes, uuidToGroupToken]);
 
   const availableNodeTypes = useMemo(() => {
     const types = new Set<string>();
@@ -90,6 +167,103 @@ export function FilterBar({
     () => getPropertyLabelMap(templateSchema),
     [templateSchema],
   );
+
+  // Map group token → schema-declared type. For grouped properties the type
+  // is taken from the group itself; for legacy/orphan keys we fall back to
+  // searching by id/uuid in the raw schema so date inputs still appear.
+  const groupByToken = useMemo<Record<string, PropertyGroup>>(() => {
+    const map: Record<string, PropertyGroup> = {};
+    propertyGroups.forEach((g) => {
+      map[g.token] = g;
+    });
+    return map;
+  }, [propertyGroups]);
+
+  const isDateRule = (rule: { property: string; operator: FilterOperator }): boolean => {
+    if (DATE_OPERATORS.has(rule.operator)) return true;
+    const dropdownValue = resolveDropdownValue(rule.property);
+    return groupByToken[dropdownValue]?.type === 'date';
+  };
+
+  /**
+   * Merge select options across every UUID in a group so a unified
+   * dropdown surfaces the union of choices. For non-grouped (single
+   * UUID / id-slug) properties this falls back to the existing per-key map.
+   */
+  const getSelectOptionsForRule = (storedProperty: string) => {
+    const dropdownValue = resolveDropdownValue(storedProperty);
+    const group = groupByToken[dropdownValue];
+    if (!group) {
+      return selectOptionsByProperty[storedProperty] ?? selectOptionsByProperty[dropdownValue];
+    }
+    const seen = new Map<string, { value: string; label: string }>();
+    group.uuids.forEach((uuid) => {
+      const opts = selectOptionsByProperty[uuid];
+      if (!opts) return;
+      opts.forEach((opt) => {
+        if (!seen.has(opt.value)) {
+          seen.set(opt.value, opt);
+        }
+      });
+    });
+    if (seen.size === 0) return undefined;
+    return Array.from(seen.values()).sort((a, b) => a.label.localeCompare(b.label));
+  };
+
+  /**
+   * The list of <option> elements rendered inside the property <select>.
+   * Built from: special filterable properties, then one entry per
+   * (label, type) group derived from the template schema, then any
+   * orphan property keys present on nodes but absent from the schema.
+   */
+  const renderPropertyOptions = (currentDropdownValue: string) => {
+    const specials: Array<{ value: string; label: string }> = [
+      { value: 'node_type', label: PROPERTY_LABELS.node_type },
+      { value: 'velocity_score', label: PROPERTY_LABELS.velocity_score },
+      { value: 'blocking_status', label: PROPERTY_LABELS.blocking_status },
+    ];
+
+    const orphanOptions = orphanPropertyKeys.map((key) => ({
+      value: key,
+      label: propertyLabelMap[key] || key,
+    }));
+
+    // If the rule's stored value isn't in any of the buckets above, surface
+    // it as a "(legacy)" option so the user can still see and edit the rule.
+    const allKnownValues = new Set<string>([
+      ...specials.map((s) => s.value),
+      ...propertyGroups.map((g) => g.token),
+      ...orphanOptions.map((o) => o.value),
+      '',
+    ]);
+    const legacyOption =
+      currentDropdownValue && !allKnownValues.has(currentDropdownValue)
+        ? [{ value: currentDropdownValue, label: `${propertyLabelMap[currentDropdownValue] || currentDropdownValue} (legacy)` }]
+        : [];
+
+    return (
+      <>
+        <option value="">Select property...</option>
+        {specials.map((opt) => (
+          <option key={opt.value} value={opt.value}>{opt.label}</option>
+        ))}
+        {propertyGroups.length > 0 && <option disabled>──────────</option>}
+        {propertyGroups.map((group) => (
+          <option key={group.token} value={group.token}>
+            {group.label}
+            {group.uuids.length > 1 ? ` (${group.uuids.length})` : ''}
+          </option>
+        ))}
+        {orphanOptions.length > 0 && <option disabled>── orphans ──</option>}
+        {orphanOptions.map((opt) => (
+          <option key={opt.value} value={opt.value}>{opt.label}</option>
+        ))}
+        {legacyOption.map((opt) => (
+          <option key={opt.value} value={opt.value}>{opt.label}</option>
+        ))}
+      </>
+    );
+  };
 
   const hasActiveFilters = rules.length > 0;
   const showExpanded = forceExpanded || isExpanded;
@@ -167,16 +341,11 @@ export function FilterBar({
                       </div>
 
                       <select
-                        value={rule.property}
+                        value={resolveDropdownValue(rule.property)}
                         onChange={(e) => updateRule(rule.id, { property: e.target.value })}
                         className="w-full px-2 py-1.5 text-sm bg-bg-dark border border-border rounded text-fg-primary focus:outline-none focus:ring-1 focus:ring-accent-primary"
                       >
-                        <option value="">Select property...</option>
-                        {availableProperties.map((prop) => (
-                          <option key={prop} value={prop}>
-                            {PROPERTY_LABELS[prop as keyof typeof PROPERTY_LABELS] || propertyLabelMap[prop] || prop}
-                          </option>
-                        ))}
+                        {renderPropertyOptions(resolveDropdownValue(rule.property))}
                       </select>
 
                       <select
@@ -204,14 +373,21 @@ export function FilterBar({
                             </option>
                           ))}
                         </select>
-                      ) : rule.property && selectOptionsByProperty[rule.property]?.length ? (
+                      ) : isDateRule(rule) ? (
+                        <input
+                          type="date"
+                          value={typeof rule.value === 'string' ? rule.value : ''}
+                          onChange={(e) => updateRule(rule.id, { value: e.target.value })}
+                          className="w-full px-2 py-1.5 text-sm bg-bg-dark border border-border rounded text-fg-primary focus:outline-none focus:ring-1 focus:ring-accent-primary"
+                        />
+                      ) : rule.property && getSelectOptionsForRule(rule.property)?.length ? (
                         <select
                           value={rule.value}
                           onChange={(e) => updateRule(rule.id, { value: e.target.value })}
                           className="w-full px-2 py-1.5 text-sm bg-bg-dark border border-border rounded text-fg-primary focus:outline-none focus:ring-1 focus:ring-accent-primary"
                         >
                           <option value="">Select value...</option>
-                          {selectOptionsByProperty[rule.property].map((option) => (
+                          {getSelectOptionsForRule(rule.property)!.map((option) => (
                             <option key={option.value} value={option.value}>
                               {option.label}
                             </option>
@@ -231,16 +407,11 @@ export function FilterBar({
                     <>
                       {/* Property Select */}
                       <select
-                        value={rule.property}
+                        value={resolveDropdownValue(rule.property)}
                         onChange={(e) => updateRule(rule.id, { property: e.target.value })}
                         className="flex-1 px-2 py-1 text-sm bg-bg-dark border border-border rounded text-fg-primary focus:outline-none focus:ring-1 focus:ring-accent-primary"
                       >
-                        <option value="">Select property...</option>
-                        {availableProperties.map((prop) => (
-                          <option key={prop} value={prop}>
-                            {PROPERTY_LABELS[prop as keyof typeof PROPERTY_LABELS] || propertyLabelMap[prop] || prop}
-                          </option>
-                        ))}
+                        {renderPropertyOptions(resolveDropdownValue(rule.property))}
                       </select>
 
                       {/* Operator Select */}
@@ -270,14 +441,21 @@ export function FilterBar({
                             </option>
                           ))}
                         </select>
-                      ) : rule.property && selectOptionsByProperty[rule.property]?.length ? (
+                      ) : isDateRule(rule) ? (
+                        <input
+                          type="date"
+                          value={typeof rule.value === 'string' ? rule.value : ''}
+                          onChange={(e) => updateRule(rule.id, { value: e.target.value })}
+                          className="flex-1 px-2 py-1 text-sm bg-bg-dark border border-border rounded text-fg-primary focus:outline-none focus:ring-1 focus:ring-accent-primary"
+                        />
+                      ) : rule.property && getSelectOptionsForRule(rule.property)?.length ? (
                         <select
                           value={rule.value}
                           onChange={(e) => updateRule(rule.id, { value: e.target.value })}
                           className="flex-1 px-2 py-1 text-sm bg-bg-dark border border-border rounded text-fg-primary focus:outline-none focus:ring-1 focus:ring-accent-primary"
                         >
                           <option value="">Select value...</option>
-                          {selectOptionsByProperty[rule.property].map((option) => (
+                          {getSelectOptionsForRule(rule.property)!.map((option) => (
                             <option key={option.value} value={option.value}>
                               {option.label}
                             </option>

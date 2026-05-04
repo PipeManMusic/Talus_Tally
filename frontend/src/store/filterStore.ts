@@ -70,7 +70,16 @@ const persistSavedFilterSets = (sets: SavedFilterSet[]) => {
   } catch {}
 };
 
-export type FilterOperator = 'equals' | 'not_equals' | 'contains' | 'greater_than' | 'less_than';
+export type FilterOperator =
+  | 'equals'
+  | 'not_equals'
+  | 'contains'
+  | 'greater_than'
+  | 'less_than'
+  | 'before'
+  | 'after'
+  | 'on_or_before'
+  | 'on_or_after';
 
 export interface FilterRule {
   id: string;

@@ -1,6 +1,8 @@
 import { X, FolderOpen, RotateCcw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { API_BASE_URL, apiClient } from '../../api/client';
+import { TOOLS_TAB_DEFS } from '../../types/toolsTabs';
+import { useUiPrefsStore } from '../../store/uiPrefsStore';
 
 type IndicatorCatalog = {
   indicator_sets: Record<
@@ -131,6 +133,13 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
   });
   const [defaultPaths, setDefaultPaths] = useState<Record<string, string>>({});
   const [overrideDirsSaved, setOverrideDirsSaved] = useState(false);
+
+  // Per-project tool-tab visibility. Lives in the UI prefs store and is
+  // persisted alongside the rest of the project file (filter_sets,
+  // expanded_map, etc.) on save.
+  const enabledTools = useUiPrefsStore((s) => s.enabledTools);
+  const setToolEnabled = useUiPrefsStore((s) => s.setToolEnabled);
+  const resetEnabledTools = useUiPrefsStore((s) => s.resetEnabledTools);
 
   useEffect(() => {
     const savedSize = localStorage.getItem('indicator_size');
@@ -314,6 +323,44 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
                   <div className="text-xs text-[var(--color-fg-secondary)]">Loading indicators...</div>
                 )}
               </div>
+            </div>
+          </section>
+
+          <section>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-[var(--color-fg-primary)]">Tools View</h3>
+              <button
+                type="button"
+                onClick={resetEnabledTools}
+                className="text-xs text-[var(--color-fg-secondary)] hover:text-[var(--color-fg-primary)] transition-colors"
+                title="Re-enable every tools tab"
+              >
+                Reset
+              </button>
+            </div>
+            <p className="text-xs text-[var(--color-fg-secondary)] mb-3">
+              Choose which tabs appear in the Tools view for this project. When every tab is disabled the Tools view button itself is hidden so the toolbar stays uncluttered. These preferences are saved with the project file.
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {TOOLS_TAB_DEFS.map((def) => {
+                const Icon = def.icon;
+                const checked = enabledTools[def.id] ?? true;
+                return (
+                  <label
+                    key={def.id}
+                    className="flex items-center gap-2 px-3 py-2 rounded border border-[var(--color-border-default)] bg-[var(--color-bg-dark)] hover:bg-[var(--color-bg-selection)] cursor-pointer transition-colors"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={(e) => setToolEnabled(def.id, e.target.checked)}
+                      className="accent-[var(--color-accent-primary)]"
+                    />
+                    <Icon size={14} className="text-[var(--color-fg-secondary)]" />
+                    <span className="text-sm text-[var(--color-fg-primary)]">{def.label}</span>
+                  </label>
+                );
+              })}
             </div>
           </section>
 

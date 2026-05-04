@@ -1,5 +1,7 @@
 // ...existing code...
 // MetaSchema type for meta_schema.yaml
+import type { NodeTemplate, NodeTemplateListEntry } from '../types/nodeTemplate';
+
 export interface MetaSchema {
   property_types: Array<{
     id: string;
@@ -59,6 +61,10 @@ export interface Node {
   schema_shape?: string;
   schema_color?: string;
   allowed_children?: string[]; // From backend schema enrichment
+  /** Resolved human-readable labels for node_reference properties. Keys are property IDs;
+   *  values are arrays of display labels in the same order as the raw ID array.
+   *  Provided by the backend at serialisation time; never use for data writes. */
+  node_labels?: Record<string, string[]>;
   parent_id?: string;
   metadata?: {
     orphaned?: boolean;
@@ -72,15 +78,26 @@ export interface CsvColumnMapping {
   property_id: string;
 }
 
+export type CsvImportMode = 'create' | 'update' | 'upsert';
+
 export interface CsvImportRowError {
   row_number: number;
   messages: string[];
 }
 
+export interface CsvImportUnmatchedRow {
+  row_number: number;
+  match_value: string;
+}
+
 export interface CsvImportResult {
   success: boolean;
+  mode?: CsvImportMode;
   created_count: number;
   created_node_ids: string[];
+  updated_count?: number;
+  updated_node_ids?: string[];
+  unmatched_rows?: CsvImportUnmatchedRow[];
   graph: Graph;
   undo_available: boolean;
   redo_available: boolean;
@@ -391,10 +408,19 @@ export interface ManpowerPayload {
   task_allocations?: ManpowerTaskAllocation[];
   allocation_property_id?: string;
   person_tasks?: Record<string, ManpowerPersonTask[]>;
+  unassigned_tasks?: ManpowerUnassignedTask[];
   updated_tasks?: number;
   total_tasks?: number;
   timestamp: number;
   changes?: Array<{ node_id: string; property_id: string; new_value: unknown }>;
+}
+
+export interface ManpowerUnassignedTask {
+  node_id: string;
+  name: string;
+  start_date: string;
+  end_date: string;
+  estimated_hours: number;
 }
 
 export class APIClient {
@@ -863,7 +889,8 @@ export class APIClient {
     graph: any,
     templateId: string | null,
     blockingRelationships: Array<{ blockedNodeId: string; blockingNodeId: string }> = [],
-    projectFilePath?: string | null
+    projectFilePath?: string | null,
+    nodeTemplates?: NodeTemplate[]
   ): Promise<any> {
     const response = await fetch(`${this.baseUrl}/api/v1/sessions/${sessionId}/load-graph`, {
       method: 'POST',
@@ -873,12 +900,50 @@ export class APIClient {
         template_id: templateId,
         blocking_relationships: blockingRelationships,
         project_file_path: projectFilePath,
+        node_templates: nodeTemplates ?? [],
       }),
     });
     if (!response.ok) {
       throw new Error('Failed to load graph into session');
     }
     return response.json();
+  }
+
+  // Node Templates (in-project subtree presets)
+  async listNodeTemplates(
+    sessionId: string,
+    parentType?: string | null
+  ): Promise<NodeTemplateListEntry[]> {
+    const url = new URL(`${this.baseUrl}/api/v1/sessions/${sessionId}/node-templates`);
+    if (parentType) url.searchParams.set('parent_type', parentType);
+    const response = await fetch(url.toString());
+    if (!response.ok) {
+      throw new Error('Failed to list node templates');
+    }
+    const body = await response.json();
+    return body.templates ?? [];
+  }
+
+  async createNodeTemplate(sessionId: string, template: NodeTemplate): Promise<any> {
+    return this.executeCommand(sessionId, 'CreateNodeTemplate', { template });
+  }
+
+  async updateNodeTemplate(sessionId: string, templateId: string, template: NodeTemplate): Promise<any> {
+    return this.executeCommand(sessionId, 'UpdateNodeTemplate', {
+      template_id: templateId,
+      template,
+    });
+  }
+
+  async deleteNodeTemplate(sessionId: string, templateId: string): Promise<any> {
+    return this.executeCommand(sessionId, 'DeleteNodeTemplate', { template_id: templateId });
+  }
+
+  async instantiateNodeTemplate(sessionId: string, templateId: string, parentId: string): Promise<any> {
+    return this.executeCommand(sessionId, 'InstantiateNodeTemplate', {
+      template_id: templateId,
+      parent_id: parentId,
+    });
   }
 
   // Dirty State Management
@@ -960,6 +1025,8 @@ export class APIClient {
     blueprintTypeId: string;
     columnMap: CsvColumnMapping[];
     file: File;
+    mode?: CsvImportMode;
+    matchPropertyId?: string;
   }): Promise<CsvImportResult> {
     const formData = new FormData();
     formData.append('session_id', params.sessionId);
@@ -967,6 +1034,15 @@ export class APIClient {
     formData.append('blueprint_type_id', params.blueprintTypeId);
     formData.append('column_map', JSON.stringify(params.columnMap));
     formData.append('file', params.file);
+    if (params.mode) {
+      formData.append('mode', params.mode);
+    }
+    if (params.mode === 'update' && params.matchPropertyId) {
+      formData.append('match_property_id', params.matchPropertyId);
+    }
+    if (params.mode === 'upsert' && params.matchPropertyId) {
+      formData.append('match_property_id', params.matchPropertyId);
+    }
 
     const response = await fetch(`${this.baseUrl}/api/v1/imports/csv`, {
       method: 'POST',
