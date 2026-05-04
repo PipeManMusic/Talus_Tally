@@ -1,5 +1,6 @@
 from uuid import UUID
 from typing import Optional
+import copy
 from backend.handlers.command import Command
 from backend.core.node import Node
 from backend.infra.orphan_manager import OrphanManager
@@ -213,6 +214,117 @@ class LinkNodeCommand(Command):
                 # Emit node-unlinked event
                 if self.session_id:
                     emit_node_unlinked(self.session_id, str(self.parent_id), str(self.child_id))
+
+
+class PasteNodeCommand(Command):
+    """Command to paste (deep-clone) a node subtree under a target parent."""
+
+    def __init__(self, source_node_id: UUID, target_parent_id: UUID, graph=None, blueprint=None, session_id=None):
+        self.source_node_id = source_node_id
+        self.target_parent_id = target_parent_id
+        self.graph = graph
+        self.blueprint = blueprint
+        self.session_id = session_id
+
+        self._cloned_nodes = {}
+        self._created_order = []
+        self._pasted_root_id: Optional[UUID] = None
+
+    def _validate_target_parent(self, source_node: Node, target_parent: Node) -> None:
+        parent_dict = {
+            'metadata': target_parent.metadata if hasattr(target_parent, 'metadata') else {}
+        }
+        if not OrphanManager.can_add_child(parent_dict):
+            raise ValueError(
+                f"Cannot paste into orphaned parent {self.target_parent_id}. "
+                f"Orphaned nodes exist outside the template and cannot have children added."
+            )
+
+        if self.blueprint and not self.blueprint.is_allowed_child(
+            target_parent.blueprint_type_id,
+            source_node.blueprint_type_id,
+        ):
+            raise ValueError(
+                f"Node type '{source_node.blueprint_type_id}' is not allowed as a child of "
+                f"'{target_parent.blueprint_type_id}'."
+            )
+
+    def _clone_subtree(self, original_id: UUID, parent_clone_id: Optional[UUID], is_root: bool = False) -> UUID:
+        original = self.graph.get_node(original_id)
+        if not original:
+            raise ValueError(f"Source node {original_id} not found")
+
+        cloned_name = f"{original.name} Copy" if is_root and original.name else original.name
+        clone = Node(blueprint_type_id=original.blueprint_type_id, name=cloned_name)
+        clone.parent_id = parent_clone_id
+        clone.properties = copy.deepcopy(getattr(original, 'properties', {}) or {})
+
+        metadata_copy = copy.deepcopy(getattr(original, 'metadata', {}) or {})
+        metadata_copy.pop('orphaned', None)
+        metadata_copy.pop('orphaned_reason', None)
+        metadata_copy.pop('orphaned_properties', None)
+        clone.metadata = metadata_copy
+
+        if 'name' in clone.properties and clone.properties.get('name') is not None:
+            clone.properties['name'] = cloned_name
+
+        self._cloned_nodes[clone.id] = clone
+        self._created_order.append(clone.id)
+
+        for child_id in list(getattr(original, 'children', []) or []):
+            child_clone_id = self._clone_subtree(child_id, clone.id, is_root=False)
+            clone.children.append(child_clone_id)
+
+        return clone.id
+
+    def execute(self) -> Optional[UUID]:
+        if not self.graph:
+            return None
+
+        source_node = self.graph.get_node(self.source_node_id)
+        target_parent = self.graph.get_node(self.target_parent_id)
+        if not source_node:
+            raise ValueError(f"Source node {self.source_node_id} not found")
+        if not target_parent:
+            raise ValueError(f"Target parent {self.target_parent_id} not found")
+
+        self._validate_target_parent(source_node, target_parent)
+
+        if not self._cloned_nodes:
+            self._pasted_root_id = self._clone_subtree(self.source_node_id, self.target_parent_id, is_root=True)
+
+        for clone_id in self._created_order:
+            clone = self._cloned_nodes.get(clone_id)
+            if clone and not self.graph.get_node(clone_id):
+                self.graph.add_node(clone)
+
+        if self._pasted_root_id is not None and self._pasted_root_id not in target_parent.children:
+            target_parent.children.append(self._pasted_root_id)
+
+        if self.session_id:
+            for clone_id in self._created_order:
+                clone = self._cloned_nodes.get(clone_id)
+                if not clone:
+                    continue
+                emit_node_created(
+                    self.session_id,
+                    str(clone.id),
+                    str(clone.parent_id) if clone.parent_id else None,
+                    clone.blueprint_type_id,
+                    clone.name,
+                )
+
+        return self._pasted_root_id
+
+    def undo(self) -> None:
+        if not self.graph:
+            return
+
+        for clone_id in reversed(self._created_order):
+            if self.graph.get_node(clone_id):
+                self.graph.remove_node(clone_id)
+                if self.session_id:
+                    emit_node_deleted(self.session_id, str(clone_id))
 
 
 class UpdatePropertyCommand(Command):

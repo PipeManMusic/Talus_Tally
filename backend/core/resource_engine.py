@@ -267,6 +267,49 @@ def _get_task_allocations_from_properties(props: Dict[str, Any]) -> Dict[str, Di
     return _parse_allocations(raw)
 
 
+def _parse_unavailable_dates(raw_value: Any) -> set:
+    """Normalize a person's ``unavailable_dates`` property into a set of
+    ISO ``YYYY-MM-DD`` strings.
+
+    Accepted input shapes (so older saved projects and free-form user input
+    keep working):
+      - list / tuple / set of date strings or ``date`` objects
+      - JSON-encoded string (``"[\"2026-06-15\"]"``)
+      - comma- or newline-separated string
+      - single date string
+
+    Invalid entries are skipped silently (logged at debug).
+    """
+    if raw_value is None or raw_value == "":
+        return set()
+
+    items: List[Any]
+    if isinstance(raw_value, (list, tuple, set)):
+        items = list(raw_value)
+    elif isinstance(raw_value, str):
+        text = raw_value.strip()
+        if not text:
+            return set()
+        if text.startswith("[") and text.endswith("]"):
+            try:
+                parsed = json.loads(text)
+                items = list(parsed) if isinstance(parsed, list) else []
+            except (TypeError, ValueError):
+                items = []
+        else:
+            # Split on commas and newlines so users can paste either form
+            items = [chunk for piece in text.splitlines() for chunk in piece.split(",")]
+    else:
+        items = [raw_value]
+
+    out: set = set()
+    for entry in items:
+        parsed = _parse_date(entry)
+        if parsed is not None:
+            out.add(parsed.isoformat())
+    return out
+
+
 def _slugify(value: Any) -> str:
     raw = str(value or '').strip().lower()
     if not raw:
@@ -427,6 +470,57 @@ def _iter_schedulable_tasks(node_list: List[Any], people: Dict[str, Dict[str, An
     return tasks
 
 
+def _iter_unassigned_tasks(node_list: List[Any], people: Dict[str, Dict[str, Any]], pr: PropertyResolver = None) -> List[Dict[str, Any]]:
+    """Return scheduling-ready tasks that have no valid assignee.
+
+    A task is considered unassigned when it has ``estimated_hours``,
+    ``start_date`` and ``end_date`` set but its ``assigned_to`` is empty
+    or contains no IDs that resolve to a person resource.
+    """
+    pr = pr or PropertyResolver()
+    people_ids = set(people.keys())
+    out: List[Dict[str, Any]] = []
+    for node in node_list:
+        metadata = node.get("metadata") if isinstance(node, dict) else getattr(node, "metadata", None)
+        if isinstance(metadata, dict):
+            if metadata.get("orphaned"):
+                continue
+            orphaned_props = metadata.get("orphaned_properties", {})
+            if isinstance(orphaned_props, dict) and (
+                "start_date" in orphaned_props or "end_date" in orphaned_props or "assigned_to" in orphaned_props
+            ):
+                continue
+
+        props = _resolved_properties(node, pr)
+        assigned_to_values = _parse_assigned_to_values(props.get("assigned_to"))
+        assigned_person_ids = [pid for pid in assigned_to_values if pid in people_ids]
+        if assigned_person_ids:
+            continue
+
+        estimated_hours = _to_float(props.get("estimated_hours") or 0, 0.0)
+        if estimated_hours <= 0:
+            continue
+
+        start_date = _parse_date(props.get("start_date"))
+        end_date = _parse_date(props.get("end_date"))
+        if not start_date or not end_date:
+            continue
+
+        if end_date < start_date:
+            start_date, end_date = end_date, start_date
+
+        out.append(
+            {
+                "node_id": _node_id(node),
+                "name": _node_name(node, pr=pr),
+                "estimated_hours": estimated_hours,
+                "start_date": start_date.isoformat(),
+                "end_date": end_date.isoformat(),
+            }
+        )
+    return out
+
+
 def _allocation_status(
     allocated_hours: float,
     target_hours: float,
@@ -458,11 +552,13 @@ def _build_people_resources(node_list: List[Any], person_type_ids: Optional[set]
         props = _resolved_properties(node, pr)
         weekday_capacity_profile = _build_weekday_capacity_profile(props)
         weekday_overtime_profile = _build_weekday_overtime_profile(props)
+        unavailable_dates = _parse_unavailable_dates(props.get("unavailable_dates"))
 
         people[node_id] = {
             "name": _node_name(node, pr=pr),
             "weekday_capacity": weekday_capacity_profile,
             "weekday_overtime_capacity": weekday_overtime_profile,
+            "unavailable_dates": unavailable_dates,
             "load": {},
         }
     return people
@@ -615,7 +711,9 @@ def calculate_manpower_load(nodes: Iterable[Any], _today: Optional[date] = None,
 
     tasks = _iter_schedulable_tasks(node_list, people, pr=pr)
 
-    manual_allocation_dates: set[date] = set()
+    # Collect manual-allocation dates so we can report any that fall outside
+    # the project window without expanding the displayed timeline.
+    manual_allocation_dates: set = set()
     for task in tasks:
         for day_key in task["allocations"].keys():
             parsed_day = _parse_date(day_key)
@@ -623,21 +721,19 @@ def calculate_manpower_load(nodes: Iterable[Any], _today: Optional[date] = None,
                 manual_allocation_dates.add(parsed_day)
 
     start, end = _find_project_bounds(node_list, pr=pr)
-    if manual_allocation_dates:
-        min_manual = min(manual_allocation_dates)
-        max_manual = max(manual_allocation_dates)
-        if not start or min_manual < start:
-            start = min_manual
-        if not end or max_manual > end:
-            end = max_manual
 
-    # Always include today in the visible manpower range so the UI can
-    # consistently indicate the current date column.
-    today = _today or _today_date()
-    if start and today < start:
-        start = today
-    if end and today > end:
-        end = today
+    # If the project has no explicit bounds, fall back to the union of
+    # task bounds + manual allocation dates so the view still has a window
+    # to draw.  When project bounds ARE present we honor them strictly --
+    # stray dates surface separately via ``out_of_bounds_allocations``.
+    if not start or not end:
+        fallback_dates: set = set(manual_allocation_dates)
+        for task in tasks:
+            fallback_dates.add(task["start_date"])
+            fallback_dates.add(task["end_date"])
+        if fallback_dates:
+            start = start or min(fallback_dates)
+            end = end or max(fallback_dates)
 
     if not start or not end:
         return {
@@ -659,24 +755,32 @@ def calculate_manpower_load(nodes: Iterable[Any], _today: Optional[date] = None,
 
     resources: Dict[str, Dict[str, Any]] = {}
     for person_id, person_data in people.items():
+        unavailable = person_data.get("unavailable_dates") or set()
         capacity_by_day = {
-            day: person_data["weekday_capacity"][datetime.strptime(day, "%Y-%m-%d").weekday()]
+            day: (
+                0.0 if day in unavailable
+                else person_data["weekday_capacity"][datetime.strptime(day, "%Y-%m-%d").weekday()]
+            )
             for day in date_columns
         }
         overtime_capacity_by_day = {
-            day: person_data["weekday_overtime_capacity"][datetime.strptime(day, "%Y-%m-%d").weekday()]
+            day: (
+                0.0 if day in unavailable
+                else person_data["weekday_overtime_capacity"][datetime.strptime(day, "%Y-%m-%d").weekday()]
+            )
             for day in date_columns
         }
         # Capacity is total available hours for the project period (no overtime)
         total_capacity = sum(capacity_by_day.values())
         total_overtime_capacity = sum(overtime_capacity_by_day.values())
-        
+
         resources[person_id] = {
             "name": person_data["name"],
             "capacity": total_capacity,
             "overtime_capacity": total_overtime_capacity,
             "capacity_by_day": capacity_by_day,
             "overtime_capacity_by_day": overtime_capacity_by_day,
+            "unavailable_dates": sorted(unavailable),
             "load": {day: _empty_load_bucket() for day in date_columns},
         }
 
@@ -748,11 +852,42 @@ def calculate_manpower_load(nodes: Iterable[Any], _today: Optional[date] = None,
             if person_id in person_tasks:
                 person_tasks[person_id].append(task_entry)
 
+    # Surface manual allocations that fall outside the displayed window.
+    # The window itself is no longer widened to include these days; instead
+    # we report them so the UI can flag the situation.
+    out_of_bounds_allocations: List[Dict[str, Any]] = []
+    if start and end:
+        date_column_set = set(date_columns)
+        for task in tasks:
+            stray_days: List[Dict[str, Any]] = []
+            for day_key, day_alloc in task["allocations"].items():
+                if day_key in date_column_set:
+                    continue
+                if not isinstance(day_alloc, dict):
+                    continue
+                day_total = sum(_to_float(v, 0.0) for v in day_alloc.values() if _to_float(v, 0.0) > 0)
+                if day_total <= 0:
+                    continue
+                stray_days.append({
+                    "date": day_key,
+                    "hours": day_total,
+                    "by_person": {pid: _to_float(h, 0.0) for pid, h in day_alloc.items()},
+                })
+            if stray_days:
+                out_of_bounds_allocations.append({
+                    "node_id": task["node_id"],
+                    "name": task["name"],
+                    "stray_days": sorted(stray_days, key=lambda d: d["date"]),
+                    "total_hours": sum(d["hours"] for d in stray_days),
+                })
+
     return {
         "date_columns": date_columns,
         "resources": resources,
         "unallocated_tasks": unallocated_tasks,
+        "out_of_bounds_allocations": out_of_bounds_allocations,
         "task_allocations": task_allocations,
         "allocation_property_id": ALLOCATIONS_PROPERTY_ID,
         "person_tasks": person_tasks,
+        "unassigned_tasks": _iter_unassigned_tasks(node_list, people, pr=pr),
     }

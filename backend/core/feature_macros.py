@@ -71,6 +71,7 @@ FEATURE_MACROS: Dict[str, List[Dict[str, Any]]] = {
             "options": [
                 {"name": "To Do", "indicator_id": "empty"},
                 {"name": "In Progress", "indicator_id": "partial"},
+                {"name": "Blocked", "indicator_id": "alert"},
                 {"name": "Done", "indicator_id": "filled"},
             ],
             "value": "To Do",
@@ -92,6 +93,17 @@ FEATURE_MACROS: Dict[str, List[Dict[str, Any]]] = {
             "type": "currency",
             "system_locked": True,
             "ui_group": "Financial",
+        },
+    ],
+    "is_media": [
+        {
+            "id": "media_url",
+            "label": "File Path or URL",
+            "type": "text",
+            "value": "",
+            "system_locked": True,
+            "ui_group": "Media",
+            "description": "Local file path (e.g. /Users/me/clip.mp4 or C:\\Videos\\clip.mp4) or a web URL (https://...). Use the Launch button to open it.",
         },
     ],
     "is_person": [
@@ -139,17 +151,32 @@ def _find_existing_macro_property_index(properties: List[Dict[str, Any]], featur
     or under a generated ID like ``_feat_scheduling_status`` with
     ``key=status``. Match both forms so reapplying macros updates the existing
     property instead of appending another copy.
+
+    Prefer macro-injected / system_locked / generated-id matches over a bare
+    user-defined property that happens to share the macro's id. Otherwise a
+    user-defined ``status`` property would shadow the system status, and
+    macro option updates (e.g. adding ``Blocked``) would never reach the
+    real macro property.
     """
     generated_id = f"_feat_{feature}_{property_id}"
+    fallback_index: int | None = None
     for index, prop in enumerate(properties):
         if not isinstance(prop, dict):
             continue
         prop_id = prop.get("id")
-        if prop_id == property_id or prop_id == generated_id:
+        # Strong matches: macro-injected or generated id or system_locked
+        # property whose key/id matches the macro key.
+        if prop_id == generated_id:
             return index
         if prop.get("_macro_injected") and prop.get("key") == property_id:
             return index
-    return None
+        if prop.get("system_locked") and (prop_id == property_id or prop.get("key") == property_id):
+            return index
+        # Weak match: bare user-defined property sharing the macro id.
+        # Remember it but keep scanning in case a stronger match exists.
+        if prop_id == property_id and fallback_index is None:
+            fallback_index = index
+    return fallback_index
 
 
 def _dedupe_properties(properties: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -263,6 +290,34 @@ def apply_feature_macros(template_data: Dict[str, Any]) -> Dict[str, Any]:
                         for key, value in macro_prop.items():
                             if key not in existing:
                                 existing[key] = value
+                        # For select macro properties (e.g. scheduling.status),
+                        # also refresh the options list so newly-introduced
+                        # options (e.g. "Blocked") propagate to legacy
+                        # templates. UUIDs are regenerated deterministically
+                        # from option names by _generate_option_uuids, so
+                        # existing nodes' status values keep binding.
+                        if (
+                            macro_prop.get("type") == "select"
+                            and isinstance(macro_prop.get("options"), list)
+                        ):
+                            macro_option_names = [
+                                opt.get("name")
+                                for opt in macro_prop["options"]
+                                if isinstance(opt, dict) and opt.get("name")
+                            ]
+                            existing_options = existing.get("options") or []
+                            existing_option_names = [
+                                opt.get("name")
+                                for opt in existing_options
+                                if isinstance(opt, dict) and opt.get("name")
+                            ]
+                            if macro_option_names != existing_option_names:
+                                # Drop existing UUIDs so they regenerate from
+                                # the canonical option names.
+                                existing["options"] = [
+                                    {k: v for k, v in dict(opt).items() if k != "id"}
+                                    for opt in macro_prop["options"]
+                                ]
                     else:
                         # User-defined property with the same id — append the
                         # macro property alongside it with a unique id so each

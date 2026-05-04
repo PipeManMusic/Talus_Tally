@@ -373,6 +373,8 @@ def update_blocking_relationship(session_id: str, node_id: str):
             new_blocking_node_id=new_blocking_id_str,
             relationships=relationships,
             session_id=session_id,
+            graph=session_data.get('graph'),
+            blueprint=session_data.get('blueprint'),
         )
 
         dispatcher.execute(command)

@@ -487,6 +487,101 @@ class OrphanManager:
         }
 
     @staticmethod
+    def migrate_select_values_to_uuids(graph: Any, template: Dict[str, Any]) -> int:
+        """Convert label-form select property values to their option UUIDs.
+
+        Older project files stored a select property's value as the option's
+        human-readable name (e.g. ``"In Progress"``).  The current contract
+        requires every transactional value to be the option's UUID, with the
+        label only ever resolved at the UI layer.
+
+        For each node, every select property defined in *template* is
+        inspected.  If the stored value matches an option's ``name`` rather
+        than its ``id``, it is rewritten to the matching option's ``id``.
+        Values that are already valid UUIDs, ``None``, or unknown labels
+        are left untouched (unknown labels surface elsewhere as orphan
+        candidates / mismatches).
+
+        Returns the number of property values that were rewritten.
+        """
+        node_types = template.get('node_types', []) if isinstance(template, dict) else []
+
+        # Build map: node_type_id_or_uuid -> { prop_key: {'name_to_id': {...}, 'valid_ids': {...}} }
+        select_index: Dict[str, Dict[str, Dict[str, Any]]] = {}
+        for nt in node_types:
+            if not isinstance(nt, dict):
+                continue
+            per_prop: Dict[str, Dict[str, Any]] = {}
+            for prop in nt.get('properties', []) or []:
+                if not isinstance(prop, dict) or prop.get('type') != 'select':
+                    continue
+                options = prop.get('options', []) or []
+                name_to_id: Dict[str, str] = {}
+                valid_ids: set = set()
+                for opt in options:
+                    if not isinstance(opt, dict):
+                        continue
+                    opt_id = opt.get('id')
+                    opt_name = opt.get('name')
+                    if opt_id:
+                        valid_ids.add(str(opt_id))
+                        if opt_name:
+                            name_to_id[str(opt_name)] = str(opt_id)
+                if not valid_ids:
+                    continue
+                prop_key = prop.get('uuid') or prop.get('id')
+                if prop_key:
+                    per_prop[str(prop_key)] = {
+                        'name_to_id': name_to_id,
+                        'valid_ids': valid_ids,
+                    }
+                # Also register under legacy id so we can rewrite both keyings
+                legacy_prop_id = prop.get('id')
+                if legacy_prop_id and legacy_prop_id != prop_key:
+                    per_prop[str(legacy_prop_id)] = {
+                        'name_to_id': name_to_id,
+                        'valid_ids': valid_ids,
+                    }
+            if not per_prop:
+                continue
+            for key in (nt.get('id'), nt.get('uuid')):
+                if key:
+                    select_index[str(key)] = per_prop
+
+        if not select_index:
+            return 0
+
+        migrated = 0
+        for _node_id, node in OrphanManager._iter_graph_nodes(graph):
+            node_type = OrphanManager._get_node_type(node)
+            per_prop = select_index.get(str(node_type))
+            if not per_prop:
+                continue
+            properties = OrphanManager._get_node_properties(node)
+            metadata = OrphanManager._get_node_metadata(node)
+            if metadata.get('orphaned'):
+                continue
+            for prop_key, info in per_prop.items():
+                if prop_key not in properties:
+                    continue
+                value = properties[prop_key]
+                if value is None:
+                    continue
+                value_str = str(value)
+                if value_str in info['valid_ids']:
+                    # Already a valid UUID — leave as-is
+                    continue
+                resolved = info['name_to_id'].get(value_str)
+                if resolved:
+                    properties[prop_key] = resolved
+                    migrated += 1
+                    logger.info(
+                        "[OrphanManager] Migrated select value '%s' -> '%s' on node_type '%s' property '%s'",
+                        value_str, resolved, node_type, prop_key,
+                    )
+        return migrated
+
+    @staticmethod
     def backfill_select_defaults(graph: Any, template: Dict[str, Any]) -> int:
         """Backfill missing select property defaults for existing nodes.
 

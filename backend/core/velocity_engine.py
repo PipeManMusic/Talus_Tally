@@ -11,6 +11,7 @@ Handles calculation of task velocity scores based on:
 
 from typing import Dict, List, Optional, Tuple, Set
 from dataclasses import dataclass
+from datetime import date, datetime
 from enum import Enum
 
 
@@ -325,17 +326,43 @@ class VelocityEngine:
             return node.get("properties", {})
     
     def _calculate_status_score(self, node_id: str, node_type: str) -> float:
-        """Calculate score based on current status"""
+        """Calculate score based on current status / boolean toggle / date properties.
+
+        Velocity modes contributing here:
+
+          * ``status``    — select-type property; score looked up by current
+                            option name (``statusScores`` map keyed by name).
+          * ``checkbox``  — boolean toggle; ``checkedScore`` when the value
+                            is truthy, ``uncheckedScore`` when falsy/unset.
+          * ``date``      — date-typed property; score ramps up as the date
+                            approaches today and / or as it falls past.
+                            Config keys (any may be 0 / omitted):
+                              - ``approachingWindow`` (int days; the window
+                                before the date during which approaching
+                                points accrue. 0 disables approaching.)
+                              - ``approachingPerDay`` (points added for each
+                                day inside the window — full window value
+                                reached on the date itself).
+                              - ``overduePerDay`` (points added for each day
+                                past the date).
+                              - ``maxScore`` (optional cap on the date's
+                                contribution; combined approaching+overdue).
+
+        Multiple velocity-enabled properties on the same node type accumulate
+        (mirrors ``_calculate_numerical_scores``) so e.g. a "Status" select,
+        a "Reviewed" checkbox and a "Due Date" can each contribute points.
+        """
         properties = self._get_node_properties(node_id)
-        
+
         # Look for status property in schema
         if not self.schema or "node_types" not in self.schema:
             return 0
-        
+
+        score = 0.0
         for nt in self.schema["node_types"]:
             if nt["id"] != node_type:
                 continue
-            
+
             for prop in nt.get("properties", []):
                 prop_id = prop.get("id")
                 current_value = properties.get(prop_id)
@@ -344,7 +371,9 @@ class VelocityEngine:
                 if not velocity_config or not velocity_config.get("enabled"):
                     continue
 
-                if velocity_config.get("mode") == "status":
+                mode = velocity_config.get("mode")
+
+                if mode == "status":
                     status_scores = velocity_config.get("statusScores", {})
                     lookup_value = current_value
 
@@ -355,9 +384,93 @@ class VelocityEngine:
                                 lookup_value = option.get("name")
                                 break
 
-                    return status_scores.get(lookup_value, 0)
-        
-        return 0
+                    score += status_scores.get(lookup_value, 0) or 0
+                elif mode == "checkbox":
+                    # Truthiness check accommodates both real booleans and
+                    # string forms persisted by some serializers ("true"/"false").
+                    is_checked = current_value is True or (
+                        isinstance(current_value, str)
+                        and current_value.strip().lower() == "true"
+                    )
+                    if is_checked:
+                        score += velocity_config.get("checkedScore", 0) or 0
+                    else:
+                        score += velocity_config.get("uncheckedScore", 0) or 0
+                elif mode == "date":
+                    score += self._calculate_date_velocity(current_value, velocity_config)
+
+        return score
+
+    def _calculate_date_velocity(self, value, velocity_config: Dict) -> float:
+        """Compute a velocity contribution for a date-typed property.
+
+        Returns 0 when the value is missing or unparseable so unset due dates
+        don't penalise nodes. The ramp is linear: 0 points outside the
+        approaching window, growing to ``approachingWindow * approachingPerDay``
+        on the date itself, then continuing to accrue ``overduePerDay`` per
+        day past. Optional ``maxScore`` caps the contribution to keep ancient
+        overdue items from dominating the leaderboard.
+        """
+        target = self._parse_date_value(value)
+        if target is None:
+            return 0.0
+
+        today = self._today()
+        days_until = (target - today).days
+
+        approaching_window = max(0, int(velocity_config.get("approachingWindow", 0) or 0))
+        approaching_per_day = float(velocity_config.get("approachingPerDay", 0) or 0)
+        overdue_per_day = float(velocity_config.get("overduePerDay", 0) or 0)
+
+        contribution = 0.0
+        if days_until >= 0:
+            # Inside (or before) the approaching window. Score ramps from 0
+            # at the window edge up to (window * per_day) on the day itself.
+            if approaching_window > 0 and days_until <= approaching_window:
+                contribution = (approaching_window - days_until) * approaching_per_day
+        else:
+            # Overdue: full approaching score plus per-day overdue accrual.
+            full_approaching = approaching_window * approaching_per_day
+            contribution = full_approaching + (-days_until) * overdue_per_day
+
+        max_score = velocity_config.get("maxScore")
+        if isinstance(max_score, (int, float)) and max_score > 0:
+            contribution = min(contribution, float(max_score))
+
+        return contribution
+
+    def _today(self) -> date:
+        """Return today's date. Isolated so tests can monkeypatch the clock."""
+        return date.today()
+
+    @staticmethod
+    def _parse_date_value(value) -> Optional[date]:
+        """Best-effort parser for stored date property values.
+
+        Accepts ``date``/``datetime`` objects, YYYY-MM-DD strings, and full
+        ISO 8601 datetimes. Returns ``None`` for anything else (including
+        empty strings) so callers can short-circuit.
+        """
+        if value is None:
+            return None
+        if isinstance(value, datetime):
+            return value.date()
+        if isinstance(value, date):
+            return value
+        if isinstance(value, str):
+            stripped = value.strip()
+            if not stripped:
+                return None
+            # Try plain YYYY-MM-DD first (cheapest path).
+            try:
+                return date.fromisoformat(stripped[:10])
+            except ValueError:
+                pass
+            try:
+                return datetime.fromisoformat(stripped.replace("Z", "+00:00")).date()
+            except ValueError:
+                return None
+        return None
     
     def _calculate_numerical_scores(self, node_id: str, node_type: str) -> float:
         """Calculate scores from numerical field multipliers"""

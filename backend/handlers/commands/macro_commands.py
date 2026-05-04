@@ -1,9 +1,9 @@
 from uuid import UUID
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 from backend.handlers.command import Command
 from backend.core.node import Node
 from backend.core.imports import CSVImportPlan, PreparedCSVNode
-from backend.handlers.commands.node_commands import CreateNodeCommand
+from backend.handlers.commands.node_commands import CreateNodeCommand, UpdatePropertyCommand
 from backend.api.broadcaster import emit_property_changed
 
 
@@ -282,3 +282,215 @@ class ImportNodesCommand(Command):
         for child_command, _ in reversed(self._child_commands):
             child_command.undo()
         # Keep created_node_ids intact so caller can verify they're removed from graph
+
+
+class UpdateNodesFromCsvCommand(Command):
+    """Command to bulk-update existing child nodes from prepared CSV data.
+
+    Each prepared row is matched against an existing child of ``plan.parent_id``
+    by comparing the row's match value to the candidate node's value for
+    ``plan.match_property_id``. Matching is case-insensitive on the trimmed
+    string form of both sides. The first matching child wins.
+
+    Rows that don't match any existing node are recorded in
+    ``unmatched_rows``. When ``create_unmatched`` is ``True`` (upsert mode)
+    those rows are also created as new children via :class:`CreateNodeCommand`,
+    using the row's mapped values. Matched rows have their non-match
+    properties updated via :class:`UpdatePropertyCommand` so each individual
+    change supports undo/redo and emits the standard property-changed events.
+    """
+
+    def __init__(
+        self,
+        plan: CSVImportPlan,
+        prepared_nodes: List[PreparedCSVNode],
+        graph=None,
+        blueprint=None,
+        graph_service=None,
+        session_id: Optional[str] = None,
+        create_unmatched: bool = False,
+    ):
+        self.plan = plan
+        self.prepared_nodes = prepared_nodes
+        self.graph = graph
+        self.blueprint = blueprint
+        self.graph_service = graph_service
+        self.session_id = session_id
+        self.create_unmatched = create_unmatched
+        self._child_commands: List[UpdatePropertyCommand] = []
+        # Per-row create commands paired with the prepared row that drove them
+        # so we can backfill properties after creation (mirrors ImportNodesCommand).
+        self._create_commands: List[Tuple[CreateNodeCommand, PreparedCSVNode]] = []
+        self.updated_node_ids: List[UUID] = []
+        self.created_node_ids: List[UUID] = []
+        # Rows whose match value did not resolve to an existing child node.
+        # Each entry is ``{"row_number": int, "match_value": str}``.
+        self.unmatched_rows: List[Dict[str, object]] = []
+
+    @staticmethod
+    def _normalize_match(value) -> str:
+        if value is None:
+            return ""
+        return str(value).strip().casefold()
+
+    def _find_child(self, parent: Node, match_uuid: str, target: str) -> Optional[Node]:
+        """Locate the first child of ``parent`` (filtered by blueprint type)
+        whose value for ``match_uuid`` equals ``target`` (case-insensitive)."""
+        if not self.graph or not parent:
+            return None
+        normalized_target = self._normalize_match(target)
+        if not normalized_target:
+            return None
+
+        # Resolve the canonical UUID for the "name" property so we can fall
+        # back to ``node.name`` when the property dict doesn't carry it.
+        name_uuid: Optional[str] = None
+        if self.blueprint:
+            pmap = self.blueprint.build_property_uuid_map(self.plan.blueprint_type_id)
+            if pmap:
+                name_uuid = pmap.get("name")
+
+        for child_id in list(parent.children):
+            child = self.graph.get_node(child_id)
+            if not child:
+                continue
+            if child.blueprint_type_id != self.plan.blueprint_type_id:
+                continue
+
+            candidate_value = None
+            if hasattr(child, "properties") and child.properties:
+                candidate_value = child.properties.get(match_uuid)
+            if candidate_value is None and name_uuid and match_uuid == name_uuid:
+                candidate_value = getattr(child, "name", None)
+            if self._normalize_match(candidate_value) == normalized_target:
+                return child
+        return None
+
+    def execute(self) -> None:
+        if not self.graph:
+            raise ValueError("Graph is required for update execution")
+        if not self.plan.match_property_id:
+            raise ValueError("match_property_id is required for update execution")
+
+        parent_node = self.graph.get_node(self.plan.parent_id) if self.plan.parent_id else None
+        if not parent_node:
+            raise ValueError(f"Parent node {self.plan.parent_id} not found")
+
+        # Resolve the canonical UUID for the "name" property — used both for
+        # finding existing child names and for stamping new nodes in upsert.
+        name_uuid: Optional[str] = None
+        if self.blueprint:
+            pmap = self.blueprint.build_property_uuid_map(self.plan.blueprint_type_id)
+            if pmap:
+                name_uuid = pmap.get("name")
+
+        # First execution: build the update plan. Subsequent re-executions
+        # (after undo) just replay the captured child commands.
+        if not self._child_commands and not self._create_commands:
+            match_uuid = self.plan.match_property_id
+
+            for prepared in self.prepared_nodes:
+                target = prepared.match_value or ""
+                existing = self._find_child(parent_node, match_uuid, target)
+                if not existing:
+                    self.unmatched_rows.append({
+                        "row_number": prepared.row_number,
+                        "match_value": target,
+                    })
+                    if self.create_unmatched:
+                        # Skip rows that have no usable name — CreateNodeCommand
+                        # requires one and the service will normally have caught
+                        # this, but guard anyway.
+                        if not prepared.name:
+                            continue
+                        create_cmd = CreateNodeCommand(
+                            blueprint_type_id=self.plan.blueprint_type_id,
+                            name=prepared.name,
+                            graph=self.graph,
+                            blueprint=self.blueprint,
+                            session_id=self.session_id,
+                            parent_id=self.plan.parent_id,
+                        )
+                        self._create_commands.append((create_cmd, prepared))
+                    continue
+
+                if existing.id not in self.updated_node_ids:
+                    self.updated_node_ids.append(existing.id)
+
+                for prop_id, new_value in prepared.properties.items():
+                    # Skip the match column itself — there's no semantic value
+                    # in rewriting it to the same value we just matched on.
+                    if prop_id == match_uuid:
+                        continue
+                    old_value = (
+                        existing.properties.get(prop_id)
+                        if hasattr(existing, "properties") and existing.properties
+                        else None
+                    )
+                    if old_value == new_value:
+                        continue
+                    self._child_commands.append(
+                        UpdatePropertyCommand(
+                            node_id=existing.id,
+                            property_id=prop_id,
+                            old_value=old_value,
+                            new_value=new_value,
+                            graph=self.graph,
+                            graph_service=self.graph_service,
+                            session_id=self.session_id,
+                        )
+                    )
+
+        for cmd in self._child_commands:
+            cmd.execute()
+
+        # Apply create commands for unmatched rows (upsert mode). Mirrors the
+        # property-population logic from ImportNodesCommand.
+        self.created_node_ids = []
+        for create_cmd, prepared in self._create_commands:
+            create_cmd.execute()
+            node = create_cmd.node
+            if not node:
+                continue
+
+            node.name = prepared.name
+            if not hasattr(node, "properties") or node.properties is None:
+                node.properties = {}
+
+            name_key = name_uuid or "name"
+            previous_name = node.properties.get(name_key)
+            node.properties[name_key] = prepared.name
+            if self.session_id and previous_name != prepared.name:
+                emit_property_changed(
+                    self.session_id,
+                    str(node.id),
+                    name_key,
+                    previous_name,
+                    prepared.name,
+                )
+
+            for prop_id, value in prepared.properties.items():
+                # Skip the name binding (already handled above) so we don't
+                # double-emit a property-changed event.
+                if prop_id == name_key:
+                    continue
+                previous = node.properties.get(prop_id)
+                if previous == value:
+                    continue
+                node.properties[prop_id] = value
+                if self.session_id:
+                    emit_property_changed(
+                        self.session_id,
+                        str(node.id),
+                        prop_id,
+                        previous,
+                        value,
+                    )
+
+            self.created_node_ids.append(node.id)
+
+    def undo(self) -> None:
+        for create_cmd, _ in reversed(self._create_commands):
+            create_cmd.undo()
+        for cmd in reversed(self._child_commands):
+            cmd.undo()

@@ -250,8 +250,35 @@ class TemplateValidator:
         
         if 'mode' in velocity_config:
             mode = velocity_config['mode']
-            if mode not in ['status', 'multiplier', 'inherit']:
-                errors.append(f"{path}.mode: must be 'status', 'multiplier', or 'inherit', got '{mode}'")
+            allowed_modes = ['status', 'multiplier', 'inherit', 'checkbox', 'date']
+            if mode not in allowed_modes:
+                errors.append(
+                    f"{path}.mode: must be one of {allowed_modes}, got '{mode}'"
+                )
+
+        # Checkbox-mode score fields (numeric, optional).
+        for key in ('checkedScore', 'uncheckedScore'):
+            if key in velocity_config and not isinstance(velocity_config[key], (int, float)):
+                errors.append(
+                    f"{path}.{key}: must be number, got {type(velocity_config[key]).__name__}"
+                )
+
+        # Date-mode ramp fields (numeric, optional, non-negative window).
+        for key in ('approachingPerDay', 'overduePerDay', 'maxScore'):
+            if key in velocity_config and not isinstance(velocity_config[key], (int, float)):
+                errors.append(
+                    f"{path}.{key}: must be number, got {type(velocity_config[key]).__name__}"
+                )
+        if 'approachingWindow' in velocity_config:
+            window = velocity_config['approachingWindow']
+            if not isinstance(window, (int, float)):
+                errors.append(
+                    f"{path}.approachingWindow: must be number, got {type(window).__name__}"
+                )
+            elif window < 0:
+                errors.append(
+                    f"{path}.approachingWindow: must be non-negative, got {window}"
+                )
         
         if 'statusScores' in velocity_config:
             status_scores = velocity_config['statusScores']

@@ -199,9 +199,18 @@ from backend.infra.template_validator import TemplateValidationError
 from backend.infra.orphan_manager import OrphanManager
 from backend.infra.persistence import string_to_uuid
 from backend.api.broadcaster import emit_node_created
-from backend.core.imports import CSVColumnBinding, CSVImportPlan, CSVImportPlanError
+from backend.core.imports import (
+    CSV_MATCH_MODES,
+    CSV_MODE_CREATE,
+    CSV_MODE_UPDATE,
+    CSV_MODE_UPSERT,
+    CSV_VALID_MODES,
+    CSVColumnBinding,
+    CSVImportPlan,
+    CSVImportPlanError,
+)
 from backend.infra.imports.csv_service import CSVImportService
-from backend.handlers.commands.macro_commands import ImportNodesCommand
+from backend.handlers.commands.macro_commands import ImportNodesCommand, UpdateNodesFromCsvCommand
 from uuid import UUID
 import os
 import re
@@ -277,6 +286,7 @@ def _create_session():
         'current_project_id': None,
         'blueprint': None,
         'blocking_relationships': [],  # Initialize empty blocking relationships
+        'node_templates': {},  # template_id -> NodeTemplate (in-project subtree presets)
     }
     
     # Track session metadata
@@ -516,12 +526,30 @@ def import_nodes_from_csv():
     blueprint_type_id = request.form.get('blueprint_type_id')
     column_map_payload = request.form.get('column_map')
     file_storage = request.files.get('file')
+    mode = (request.form.get('mode') or CSV_MODE_CREATE).strip().lower()
+    match_property_id = request.form.get('match_property_id') or None
 
     if not session_id or not parent_id_str or not blueprint_type_id or not column_map_payload or not file_storage:
         return jsonify({
             'error': {
                 'code': 'INVALID_REQUEST',
                 'message': 'session_id, parent_id, blueprint_type_id, column_map, and file are required'
+            }
+        }), 400
+
+    if mode not in CSV_VALID_MODES:
+        return jsonify({
+            'error': {
+                'code': 'INVALID_REQUEST',
+                'message': f"mode must be one of: {', '.join(sorted(CSV_VALID_MODES))}"
+            }
+        }), 400
+
+    if mode in CSV_MATCH_MODES and not match_property_id:
+        return jsonify({
+            'error': {
+                'code': 'INVALID_REQUEST',
+                'message': f'match_property_id is required when mode is "{mode}"'
             }
         }), 400
 
@@ -603,6 +631,8 @@ def import_nodes_from_csv():
             parent_id=parent_id,
             blueprint_type_id=blueprint_type_id,
             column_bindings=column_bindings,
+            mode=mode,
+            match_property_id=match_property_id if mode in CSV_MATCH_MODES else None,
         )
     except ValueError as err:
         return jsonify({
@@ -674,6 +704,46 @@ def import_nodes_from_csv():
             }
         }), 400
 
+    if mode in CSV_MATCH_MODES:
+        update_command = UpdateNodesFromCsvCommand(
+            plan=plan,
+            prepared_nodes=batch.prepared_nodes,
+            graph=graph,
+            blueprint=blueprint,
+            session_id=session_id,
+            create_unmatched=(mode == CSV_MODE_UPSERT),
+        )
+
+        try:
+            dispatcher.execute(update_command)
+        except ValueError as err:
+            return jsonify({
+                'error': {
+                    'code': 'INVALID_PLAN',
+                    'message': str(err)
+                }
+            }), 400
+
+        updated_ids = [str(node_id) for node_id in update_command.updated_node_ids]
+        created_ids = [str(node_id) for node_id in update_command.created_node_ids]
+
+        if updated_ids or created_ids:
+            _mark_session_dirty(session_id)
+        _update_session_activity(session_id)
+
+        return jsonify({
+            'success': True,
+            'mode': mode,
+            'updated_count': len(updated_ids),
+            'updated_node_ids': updated_ids,
+            'unmatched_rows': update_command.unmatched_rows,
+            'created_count': len(created_ids),
+            'created_node_ids': created_ids,
+            'graph': _serialize_graph(graph, blueprint),
+            'undo_available': len(dispatcher.undo_stack) > 0 if dispatcher else False,
+            'redo_available': len(dispatcher.redo_stack) > 0 if dispatcher else False,
+        }), 200
+
     import_command = ImportNodesCommand(
         plan=plan,
         prepared_nodes=batch.prepared_nodes,
@@ -699,8 +769,12 @@ def import_nodes_from_csv():
 
     return jsonify({
         'success': True,
+        'mode': CSV_MODE_CREATE,
         'created_count': len(created_ids),
         'created_node_ids': created_ids,
+        'updated_count': 0,
+        'updated_node_ids': [],
+        'unmatched_rows': [],
         'graph': _serialize_graph(graph, blueprint),
         'undo_available': len(dispatcher.undo_stack) > 0 if dispatcher else False,
         'redo_available': len(dispatcher.redo_stack) > 0 if dispatcher else False,
@@ -971,6 +1045,21 @@ def reload_blueprint(session_id):
 
                     reconcile_result = orphan_mgr.reconcile_graph_with_template(graph_data, new_template_dict)
                     mismatch_count = int(reconcile_result.get('mismatch_count', 0) or 0)
+                    # After a template reload, option UUIDs may have been (re)generated.
+                    # Migrate any legacy label-form select values to UUID-form so
+                    # transactions stay UUID-only.
+                    try:
+                        migrated_select = orphan_mgr.migrate_select_values_to_uuids(graph_data, new_template_dict)
+                        if migrated_select > 0:
+                            logger.info(
+                                "[API] Template reload migrated %s legacy label-form select values",
+                                migrated_select,
+                            )
+                    except Exception as migrate_err:
+                        logger.warning(
+                            "[API] Failed to migrate select values on template reload: %s",
+                            migrate_err, exc_info=True,
+                        )
                     if mismatch_count > 0:
                         session_entry = next(
                             (entry for entry in orphan_info['orphaned_sessions'] if entry.get('session_id') == session_id),
@@ -2308,7 +2397,12 @@ def load_graph_into_session(session_id):
 
                 # Migrate legacy keys inside metadata.orphaned_properties so the
                 # reconciliation pass can match them against UUID-keyed allowed sets.
+                # If a legacy key now resolves to a valid schema property (e.g. a
+                # feature like ``budgeting`` was re-enabled), promote the value back
+                # into node.properties under the property UUID and drop the entry
+                # from orphaned_properties so it no longer appears as orphaned.
                 orphan_key_migrated = 0
+                orphan_keys_restored = 0
                 for node in graph.nodes.values():
                     meta = node.metadata if isinstance(node.metadata, dict) else {}
                     orphaned = meta.get('orphaned_properties')
@@ -2321,7 +2415,18 @@ def load_graph_into_session(session_id):
                     changed = False
                     for key, value in orphaned.items():
                         if key in pmap:
-                            remapped[pmap[key]] = value
+                            target_uuid = pmap[key]
+                            # Restore the value to the live properties dict if not
+                            # already populated; the property is no longer orphaned.
+                            if target_uuid not in node.properties or node.properties.get(target_uuid) in (None, ''):
+                                node.properties[target_uuid] = value
+                            orphan_keys_restored += 1
+                            changed = True
+                        elif key in pmap.values():
+                            # Already a UUID that matches a current schema property.
+                            if key not in node.properties or node.properties.get(key) in (None, ''):
+                                node.properties[key] = value
+                            orphan_keys_restored += 1
                             changed = True
                         else:
                             remapped[key] = value
@@ -2329,7 +2434,11 @@ def load_graph_into_session(session_id):
                         meta['orphaned_properties'] = remapped
                         orphan_key_migrated += 1
                 if orphan_key_migrated:
-                    logger.info("[API] Migrated orphaned-property keys from legacy IDs to UUIDs on %s nodes", orphan_key_migrated)
+                    logger.info(
+                        "[API] Migrated orphaned-property keys on %s nodes (%s entries restored to live properties)",
+                        orphan_key_migrated,
+                        orphan_keys_restored,
+                    )
 
                 # Fix up node.name for nodes whose properties were already UUID-keyed
                 # (no migration occurred, so node.name may still be 'Unnamed').
@@ -2401,6 +2510,23 @@ def load_graph_into_session(session_id):
 
                 # Backfill missing select property defaults (e.g. status) for existing nodes
                 try:
+                    # First migrate any legacy label-form select values to option UUIDs.
+                    # Older saved projects stored option *names* in node properties; the
+                    # current contract requires UUIDs for every transactional value with
+                    # labels resolved only at the UI layer.  This pass fixes legacy data
+                    # on load so downstream code can assume UUID-form values.
+                    try:
+                        migrated_select = OrphanManager.migrate_select_values_to_uuids(graph, template_dict)
+                        if migrated_select > 0:
+                            logger.info(
+                                "[API] Migrated %s legacy label-form select values to option UUIDs",
+                                migrated_select,
+                            )
+                    except Exception as migrate_err:
+                        logger.warning(
+                            "[API] Failed to migrate legacy select values: %s",
+                            migrate_err, exc_info=True,
+                        )
                     backfilled = OrphanManager.backfill_select_defaults(graph, template_dict)
                     if backfilled > 0:
                         logger.info("[API] Backfilled %s missing select property defaults", backfilled)
@@ -2454,6 +2580,24 @@ def load_graph_into_session(session_id):
         session_data['graph_service'] = GraphService(graph)
         session_data['current_project_id'] = str(uuid.uuid4())
         session_data['blocking_relationships'] = blocking_relationships
+
+        # Hydrate saved node templates (in-project subtree presets) from the
+        # project file payload, if any. Invalid entries are silently dropped
+        # so a stale/corrupt template can't break project loading.
+        try:
+            from backend.core.node_templates import NodeTemplate as _NodeTemplate
+            raw_templates = data.get('node_templates') or graph_data.get('node_templates') or []
+            templates_store: dict = {}
+            for entry in raw_templates:
+                try:
+                    tpl = _NodeTemplate.from_dict(entry)
+                    templates_store[tpl.id] = tpl
+                except Exception as tpl_err:
+                    logger.warning(f"[API] Skipping malformed node template: {tpl_err}")
+            session_data['node_templates'] = templates_store
+        except Exception as tpl_err:
+            logger.warning(f"[API] Failed to hydrate node templates: {tpl_err}")
+            session_data.setdefault('node_templates', {})
         
         # Initialize ProjectManager for file watching if file path provided
         if not session_data.get('project_manager'):
@@ -2595,6 +2739,7 @@ def get_template_schema(template_id):
                     'type': prop_type,
                     'required': required,
                     'indicator_set': indicator_set,
+                    'indicator_id': prop_data.get('indicator_id'),
                     'options': options,
                     'markup_profile': markup_profile,
                     'markup_tokens': markup_tokens,
@@ -3200,9 +3345,16 @@ def execute_command():
         # Execute command through dispatcher
         try:
             # Import command classes
-            from backend.handlers.commands.node_commands import CreateNodeCommand, DeleteNodeCommand, LinkNodeCommand, UpdatePropertyCommand, MoveNodeCommand, ReorderNodeCommand, DeleteOrphanedPropertyCommand
+            from backend.handlers.commands.node_commands import CreateNodeCommand, DeleteNodeCommand, LinkNodeCommand, UpdatePropertyCommand, MoveNodeCommand, ReorderNodeCommand, DeleteOrphanedPropertyCommand, PasteNodeCommand
             from backend.handlers.commands.velocity_commands import UpdateBlockingRelationshipCommand
             from backend.handlers.commands.macro_commands import ApplyKitCommand
+            from backend.handlers.commands.node_template_commands import (
+                CreateNodeTemplateCommand,
+                UpdateNodeTemplateCommand,
+                DeleteNodeTemplateCommand,
+                InstantiateNodeTemplateCommand,
+            )
+            from backend.core.node_templates import NodeTemplate
             from uuid import UUID
 
             graph = session_data['graph']
@@ -3216,9 +3368,14 @@ def execute_command():
                 'UpdateProperty': UpdatePropertyCommand,
                 'MoveNode': MoveNodeCommand,
                 'ReorderNode': ReorderNodeCommand,
+                'PasteNode': PasteNodeCommand,
                 'UpdateBlockingRelationship': UpdateBlockingRelationshipCommand,
                 'ApplyKit': ApplyKitCommand,
                 'DeleteOrphanedProperty': DeleteOrphanedPropertyCommand,
+                'CreateNodeTemplate': CreateNodeTemplateCommand,
+                'UpdateNodeTemplate': UpdateNodeTemplateCommand,
+                'DeleteNodeTemplate': DeleteNodeTemplateCommand,
+                'InstantiateNodeTemplate': InstantiateNodeTemplateCommand,
             }
 
             if command_type not in command_map:
@@ -3308,11 +3465,53 @@ def execute_command():
                     resolved_uuid = prop_map.get(property_id)
                     if resolved_uuid:
                         property_id = resolved_uuid
+
+                # Architectural invariant: select property values are stored as
+                # option UUIDs only.  If a label slipped through from the
+                # frontend, coerce it here and log a warning so we can hunt
+                # down the source.  Genuinely unknown values are left untouched
+                # and surface as an orphan/mismatch downstream.
+                new_value = command_data.get('new_value')
+                if node and blueprint and isinstance(new_value, str) and new_value:
+                    node_type_def = blueprint.get_node_type(node.blueprint_type_id)
+                    if node_type_def is not None:
+                        properties_def = []
+                        if hasattr(node_type_def, '_extra_props') and isinstance(node_type_def._extra_props, dict):
+                            properties_def = node_type_def._extra_props.get('properties', []) or []
+                        for prop_def in properties_def:
+                            if not isinstance(prop_def, dict) or prop_def.get('type') != 'select':
+                                continue
+                            prop_key = prop_def.get('uuid') or prop_def.get('id')
+                            if str(prop_key) != str(property_id) and str(prop_def.get('id') or '') != str(property_id):
+                                continue
+                            options = prop_def.get('options', []) or []
+                            valid_ids = {
+                                str(opt.get('id')) for opt in options
+                                if isinstance(opt, dict) and opt.get('id')
+                            }
+                            if new_value in valid_ids:
+                                break
+                            label_to_id = {
+                                str(opt.get('name')): str(opt.get('id'))
+                                for opt in options
+                                if isinstance(opt, dict) and opt.get('id') and opt.get('name')
+                            }
+                            resolved = label_to_id.get(new_value)
+                            if resolved:
+                                logger.warning(
+                                    "[API] UpdateProperty received label '%s' for select property '%s'; "
+                                    "coercing to UUID '%s'. Source should be sending UUIDs.",
+                                    new_value, property_id, resolved,
+                                )
+                                new_value = resolved
+                                command_data['new_value'] = resolved
+                            break
+
                 command = UpdatePropertyCommand(
                     node_id=UUID(node_id),
                     property_id=property_id,
                     old_value=command_data.get('old_value'),
-                    new_value=command_data.get('new_value'),
+                    new_value=new_value,
                     graph=graph,
                     graph_service=graph_service,
                     session_id=session_id,
@@ -3375,6 +3574,32 @@ def execute_command():
                             'message': str(e)
                         }
                     }), 400
+            elif command_type == 'PasteNode':
+                source_node_id = command_data.get('source_node_id')
+                target_parent_id = command_data.get('target_parent_id')
+                if not source_node_id or not target_parent_id:
+                    return jsonify({
+                        'error': {
+                            'code': 'INVALID_COMMAND',
+                            'message': 'PasteNode requires source_node_id and target_parent_id'
+                        }
+                    }), 400
+                try:
+                    command = PasteNodeCommand(
+                        source_node_id=UUID(source_node_id),
+                        target_parent_id=UUID(target_parent_id),
+                        graph=graph,
+                        blueprint=session_data.get('blueprint'),
+                        session_id=session_id,
+                    )
+                    dispatcher.execute(command)
+                except ValueError as e:
+                    return jsonify({
+                        'error': {
+                            'code': 'PASTE_INVALID',
+                            'message': str(e)
+                        }
+                    }), 400
             elif command_type == 'UpdateBlockingRelationship':
                 blocked_node_id = command_data.get('blocked_node_id')
                 blocking_node_id = command_data.get('blocking_node_id')
@@ -3412,6 +3637,8 @@ def execute_command():
                     new_blocking_node_id=blocking_node_id,
                     relationships=session_data['blocking_relationships'],
                     session_id=session_id,
+                    graph=graph,
+                    blueprint=session_data.get('blueprint'),
                 )
                 dispatcher.execute(command)
             elif command_type == 'ApplyKit':
@@ -3442,6 +3669,76 @@ def execute_command():
                     property_key=property_key,
                     graph=graph,
                     graph_service=graph_service,
+                    session_id=session_id,
+                )
+                dispatcher.execute(command)
+
+            elif command_type == 'CreateNodeTemplate':
+                template_dict = command_data.get('template')
+                if not isinstance(template_dict, dict):
+                    return jsonify({'error': {'code': 'INVALID_COMMAND', 'message': 'CreateNodeTemplate requires template dict'}}), 400
+                try:
+                    template = NodeTemplate.from_dict(template_dict)
+                except Exception as e:
+                    return jsonify({'error': {'code': 'INVALID_COMMAND', 'message': f'Invalid template: {e}'}}), 400
+                store = session_data.setdefault('node_templates', {})
+                command = CreateNodeTemplateCommand(
+                    template=template,
+                    store=store,
+                    blueprint=session_data.get('blueprint'),
+                    session_id=session_id,
+                )
+                dispatcher.execute(command)
+
+            elif command_type == 'UpdateNodeTemplate':
+                template_id = command_data.get('template_id')
+                template_dict = command_data.get('template')
+                if not template_id or not isinstance(template_dict, dict):
+                    return jsonify({'error': {'code': 'INVALID_COMMAND', 'message': 'UpdateNodeTemplate requires template_id and template'}}), 400
+                try:
+                    new_template = NodeTemplate.from_dict({**template_dict, 'id': template_id})
+                except Exception as e:
+                    return jsonify({'error': {'code': 'INVALID_COMMAND', 'message': f'Invalid template: {e}'}}), 400
+                store = session_data.setdefault('node_templates', {})
+                command = UpdateNodeTemplateCommand(
+                    template_id=template_id,
+                    new_template=new_template,
+                    store=store,
+                    blueprint=session_data.get('blueprint'),
+                    session_id=session_id,
+                )
+                dispatcher.execute(command)
+
+            elif command_type == 'DeleteNodeTemplate':
+                template_id = command_data.get('template_id')
+                if not template_id:
+                    return jsonify({'error': {'code': 'INVALID_COMMAND', 'message': 'DeleteNodeTemplate requires template_id'}}), 400
+                store = session_data.setdefault('node_templates', {})
+                command = DeleteNodeTemplateCommand(
+                    template_id=template_id,
+                    store=store,
+                    session_id=session_id,
+                )
+                dispatcher.execute(command)
+
+            elif command_type == 'InstantiateNodeTemplate':
+                template_id = command_data.get('template_id')
+                parent_id_str = command_data.get('parent_id')
+                if not template_id or not parent_id_str:
+                    return jsonify({'error': {'code': 'INVALID_COMMAND', 'message': 'InstantiateNodeTemplate requires template_id and parent_id'}}), 400
+                store = session_data.setdefault('node_templates', {})
+                template = store.get(template_id)
+                if template is None:
+                    return jsonify({'error': {'code': 'INVALID_COMMAND', 'message': f'Node template {template_id} not found'}}), 400
+                try:
+                    parent_uuid = UUID(parent_id_str)
+                except (ValueError, TypeError):
+                    return jsonify({'error': {'code': 'INVALID_COMMAND', 'message': 'Invalid parent_id'}}), 400
+                command = InstantiateNodeTemplateCommand(
+                    template=template,
+                    parent_id=parent_uuid,
+                    graph=graph,
+                    blueprint=session_data.get('blueprint'),
                     session_id=session_id,
                 )
                 dispatcher.execute(command)
@@ -3634,22 +3931,13 @@ def _serialize_graph(graph, blueprint=None):
     # get_indicator_metadata is now a top-level function
     
     def get_allowed_children(node_type_id: str) -> list:
-        """Get allowed_children from blueprint schema for a node type, with logging."""
-        import logging
-        logger = logging.getLogger("talus.api.routes")
-        logger.info(f"[get_allowed_children] node_type_id={node_type_id} blueprint={blueprint}")
+        """Get allowed_children from blueprint schema for a node type."""
         if not blueprint:
-            logger.warning(f"[get_allowed_children] blueprint is None!")
             return []
-        logger.info(f"[get_allowed_children] blueprint._node_type_map keys: {list(blueprint._node_type_map.keys())}")
         node_type_def = blueprint.get_node_type(node_type_id)
-        logger.info(f"[get_allowed_children] node_type_def={node_type_def}")
         if not node_type_def:
-            logger.warning(f"[get_allowed_children] node_type_def not found for {node_type_id}")
             return []
-        allowed = list(node_type_def.allowed_children or [])
-        logger.info(f"[get_allowed_children] returning allowed_children={allowed}")
-        return allowed
+        return list(node_type_def.allowed_children or [])
     
     markup_registry = MarkupRegistry()
     markup_parser = MarkupParser()
@@ -3726,6 +4014,41 @@ def _serialize_graph(graph, blueprint=None):
                     }
                 if property_markup:
                     node_data['property_markup'] = property_markup
+
+                # Resolve node_reference properties to human-readable labels.
+                # node_labels[prop_id] = [label, ...] — one entry per referenced node ID.
+                # Raw IDs stay in properties; node_labels is for display only.
+                node_labels = {}
+                for prop_def in prop_defs:
+                    if prop_def.get('type') != 'node_reference':
+                        continue
+                    prop_id = prop_def.get('uuid') or prop_def.get('id')
+                    if not prop_id:
+                        continue
+                    raw = node.properties.get(prop_id)
+                    if raw is None:
+                        continue
+                    ids = raw if isinstance(raw, list) else [raw]
+                    labels = []
+                    for ref_id in ids:
+                        ref_node = graph.nodes.get(str(ref_id))
+                        if ref_node is None:
+                            try:
+                                ref_node = graph.nodes.get(UUID(str(ref_id)))
+                            except Exception:
+                                ref_node = graph.nodes.get(ref_id)
+                        if ref_node:
+                            label = (getattr(ref_node, 'properties', None) or {}).get('name') \
+                                    or getattr(ref_node, 'name', None) \
+                                    or str(ref_id)
+                        else:
+                            label = str(ref_id)
+                        labels.append(label)
+                    if labels:
+                        node_labels[prop_id] = labels
+                if node_labels:
+                    node_data['node_labels'] = node_labels
+
         # Add indicator metadata if available
         indicator_meta = get_indicator_metadata(node, blueprint)
         if indicator_meta:
@@ -4211,3 +4534,28 @@ def recalculate_orphan_status(session_id):
                 'message': f'Failed to recalculate orphan status: {str(e)}'
             }
         }), 500
+
+
+# ============================================================================
+# Node Templates (in-project subtree presets)
+# ============================================================================
+
+@api_bp.route('/sessions/<session_id>/node-templates', methods=['GET'])
+def list_node_templates(session_id):
+    """Return the saved node templates for the session."""
+    session_data = _get_session_data(session_id)
+    if not session_data:
+        return jsonify({'error': {'code': 'SESSION_NOT_FOUND', 'message': 'Session not found'}}), 404
+
+    store = session_data.get('node_templates') or {}
+    blueprint = session_data.get('blueprint')
+    parent_type = request.args.get('parent_type')
+
+    templates = []
+    for tpl in store.values():
+        compatible = True
+        if parent_type and blueprint is not None and hasattr(blueprint, 'is_allowed_child'):
+            compatible = bool(blueprint.is_allowed_child(parent_type, tpl.root.blueprint_type_id))
+        templates.append({**tpl.to_dict(), 'compatible': compatible})
+
+    return jsonify({'templates': templates}), 200

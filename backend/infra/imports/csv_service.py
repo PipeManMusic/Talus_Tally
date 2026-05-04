@@ -2,6 +2,9 @@ import csv
 from typing import Callable, Dict, Iterable, List, Optional, TextIO
 
 from backend.core.imports import (
+    CSV_MATCH_MODES,
+    CSV_MODE_UPDATE,
+    CSV_MODE_UPSERT,
     CSVColumnBinding,
     CSVImportBatch,
     CSVImportPlan,
@@ -44,6 +47,12 @@ class CSVImportService:
             )
         plan.column_bindings = resolved_bindings
 
+        # Resolve the match property id (semantic key -> UUID) for match modes.
+        if plan.mode in CSV_MATCH_MODES and plan.match_property_id:
+            plan.match_property_id = key_to_uuid.get(
+                plan.match_property_id, plan.match_property_id
+            )
+
         schema_by_id = {
             str(prop.get("id")): prop
             for prop in schema
@@ -67,11 +76,31 @@ class CSVImportService:
         if name_prop_id is None:
             name_prop_id = "name"
 
-        # Name is a system field used by node creation and CSV import payloads.
-        # Some custom templates may omit it from node_type.properties, but import
-        # still needs to accept and require the name binding consistently.
-        required_properties.add(name_prop_id)
-        valid_properties.add(name_prop_id)
+        is_update_mode = plan.mode == CSV_MODE_UPDATE
+        is_upsert_mode = plan.mode == CSV_MODE_UPSERT
+        is_match_mode = plan.mode in CSV_MATCH_MODES
+
+        if is_update_mode:
+            # In update mode the only mandatory binding is the match key.
+            # Any other property is optional and only updated when supplied.
+            required_properties = {plan.match_property_id} if plan.match_property_id else set()
+            valid_properties.add(name_prop_id)
+            if plan.match_property_id:
+                valid_properties.add(plan.match_property_id)
+        elif is_upsert_mode:
+            # Upsert may create rows that didn't match, so we still need a
+            # name binding (for new node creation) plus the match column.
+            required_properties = {name_prop_id}
+            if plan.match_property_id:
+                required_properties.add(plan.match_property_id)
+                valid_properties.add(plan.match_property_id)
+            valid_properties.add(name_prop_id)
+        else:
+            # Name is a system field used by node creation and CSV import payloads.
+            # Some custom templates may omit it from node_type.properties, but import
+            # still needs to accept and require the name binding consistently.
+            required_properties.add(name_prop_id)
+            valid_properties.add(name_prop_id)
 
         missing = plan.missing_required_properties(required_properties)
         if missing:
@@ -108,6 +137,7 @@ class CSVImportService:
             errors: List[str] = []
             properties: Dict[str, str] = {}
             name_value: Optional[str] = None
+            match_value: Optional[str] = None
 
             for binding in plan.column_bindings:
                 raw_value = row.get(binding.header)
@@ -120,14 +150,29 @@ class CSVImportService:
 
                 if binding.property_id == name_prop_id:
                     name_value = value
+                    if is_update_mode or is_upsert_mode:
+                        # Store name as a property too so update/upsert can
+                        # refresh it on existing nodes.
+                        properties[binding.property_id] = value
                 else:
                     properties[binding.property_id] = _normalize_property_value(
                         schema_by_id.get(binding.property_id),
                         value,
                     )
 
-            if name_value is None:
+                if is_match_mode and binding.property_id == plan.match_property_id:
+                    match_value = value
+
+            if not (is_update_mode or is_upsert_mode) and name_value is None:
                 errors.append("Missing value for 'name'")
+
+            if is_upsert_mode and name_value is None:
+                errors.append("Missing value for 'name'")
+
+            if is_match_mode and not match_value:
+                errors.append(
+                    f"Missing match value for '{plan.match_property_id}'"
+                )
 
             if errors:
                 row_errors.append(
@@ -136,7 +181,12 @@ class CSVImportService:
                 continue
 
             prepared_nodes.append(
-                PreparedCSVNode(name=name_value, properties=properties)
+                PreparedCSVNode(
+                    name=name_value or "",
+                    properties=properties,
+                    row_number=row_index,
+                    match_value=match_value,
+                )
             )
 
         return CSVImportBatch(plan=plan, prepared_nodes=prepared_nodes, errors=row_errors)
