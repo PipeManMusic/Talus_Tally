@@ -46,3 +46,4 @@ data/templates/new_template.yaml
 
 # Dependency artifacts
 /node_modules/
+data/templates/tmp*.yaml
