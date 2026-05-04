@@ -206,22 +206,22 @@ node_types:
     required: false
     type: text
     uuid: 88dede94-ffe9-0568-07ec-698935357b80
-  - _macro_injected: true
-    id: estimated_cost
+  - id: estimated_cost
     label: Estimated Cost
-    required: false
-    system_locked: true
     type: currency
+    system_locked: true
     ui_group: Financial
     uuid: 7358748a-b8f0-aea9-2b60-11fbb7d199e9
-  - _macro_injected: true
-    id: actual_cost
-    label: Actual Cost
+    _macro_injected: true
     required: false
-    system_locked: true
+  - id: actual_cost
+    label: Actual Cost
     type: currency
+    system_locked: true
     ui_group: Financial
     uuid: 119c6c76-e05d-8136-becc-fc5b2e21b0f8
+    _macro_injected: true
+    required: false
   shape: rounded
   uuid: 459f58ca-bce4-59ea-bca9-82e83ec03013
 - allowed_asset_types: []
@@ -285,29 +285,31 @@ node_types:
       enabled: true
       mode: status
       statusScores:
+        Wishlist: -1
+        Ordered: 1
         Arrived: 2
         Installed: -1
-        Ordered: 1
-        Wishlist: -1
   - id: notes
     label: Notes
     required: false
     type: editor
     uuid: 45cbca7f-0214-bad0-6035-01ae376584cc
-  - _macro_injected: true
-    id: estimated_cost
+  - id: estimated_cost
     label: Estimated Cost
-    system_locked: true
     type: currency
+    system_locked: true
     ui_group: Financial
     uuid: 7e5304d1-7583-8e9a-3117-03eb04177987
-  - _macro_injected: true
-    id: actual_cost
+    _macro_injected: true
+    required: false
+  - id: actual_cost
     label: Actual Cost
-    system_locked: true
     type: currency
+    system_locked: true
     ui_group: Financial
     uuid: 33a76eed-3a7d-94a2-6512-e6cd0b74e6ab
+    _macro_injected: true
+    required: false
   shape: circle
   uuid: 8efe0b14-3125-d3dd-2608-050a62d027f4
 - allowed_asset_types: []
@@ -346,6 +348,8 @@ node_types:
 - allowed_asset_types: []
   allowed_children: []
   color: '#86efac'
+  features:
+  - budgeting
   icon: wrench-screwdriver
   id: tool_asset
   label: Tool
@@ -412,6 +416,22 @@ node_types:
     required: false
     type: editor
     uuid: 8b8456eb-3026-9e3f-9a4e-30133c072715
+  - id: estimated_cost
+    label: Estimated Cost
+    type: currency
+    system_locked: true
+    ui_group: Financial
+    uuid: f0e600fd-e3aa-12cd-b326-2cfe05f1c511
+    _macro_injected: true
+    required: false
+  - id: actual_cost
+    label: Actual Cost
+    type: currency
+    system_locked: true
+    ui_group: Financial
+    uuid: 5f19d1fa-b971-7100-c610-14cf7ae2e597
+    _macro_injected: true
+    required: false
   shape: circle
   uuid: 47111e56-edbd-21ee-35f7-ab5c494da2a6
   velocityConfig:
@@ -456,8 +476,8 @@ node_types:
       mode: status
       penaltyMode: false
       statusScores:
-        In Production: 1
         Planning: -1
+        In Production: 1
         Released: -1
   shape: circle
   uuid: 6af49a72-a129-e754-a0af-ff1c8e509673
@@ -519,9 +539,9 @@ node_types:
       enabled: true
       mode: status
       statusScores:
-        Editing: 2
         Planning: -1
         Shooting: 1
+        Editing: 2
         Uploaded: -1
   - id: start_date
     label: Start Date
@@ -563,36 +583,39 @@ node_types:
     ui_group: Schedule
     uuid: 26ec34d3-4b5f-e946-cbd4-d74d19820ca5
     value: 0
-  - _macro_injected: true
-    id: allocations
+  - id: allocations
     label: Allocations
-    required: false
-    system_locked: true
     type: object
+    value: {}
+    system_locked: true
     ui_group: Schedule
     uuid: 0be32bfa-1a1f-b648-2fc9-a5ec1e6db36d
-    value: {}
-  - _macro_injected: true
-    id: _feat_scheduling_status
-    indicator_set: status
-    key: status
-    label: Status
-    options:
-    - id: 226e3070-bda2-86ca-2e46-401776a8983f
-      indicator_id: empty
-      name: To Do
-    - id: 32325919-25d0-4d3c-e75b-8a437f6f96ee
-      indicator_id: partial
-      name: In Progress
-    - id: 453611e8-44c7-a633-0264-dcb7fe690269
-      indicator_id: filled
-      name: Done
+    _macro_injected: true
     required: false
-    system_locked: true
+  - id: _feat_scheduling_status
+    label: Status
     type: select
-    ui_group: Schedule
-    uuid: 21a07b17-c7a0-aa65-85b7-814f94e04fb6
+    indicator_set: status
+    options:
+    - name: To Do
+      indicator_id: empty
+      id: 226e3070-bda2-86ca-2e46-401776a8983f
+    - name: In Progress
+      indicator_id: partial
+      id: 32325919-25d0-4d3c-e75b-8a437f6f96ee
+    - name: Blocked
+      indicator_id: alert
+      id: f81f7ca9-66d8-6966-7b69-c151cf638379
+    - name: Done
+      indicator_id: filled
+      id: 453611e8-44c7-a633-0264-dcb7fe690269
     value: 226e3070-bda2-86ca-2e46-401776a8983f
+    system_locked: true
+    ui_group: Schedule
+    key: status
+    uuid: 21a07b17-c7a0-aa65-85b7-814f94e04fb6
+    _macro_injected: true
+    required: false
   shape: roundedSquare
   uuid: 32f6b4b7-b425-73c3-3332-769bdb5af2f8
 - allowed_asset_types:
@@ -601,6 +624,7 @@ node_types:
   - uses_camera_gear
   - uses_car_part
   - uses_tool
+  - media_asset
   color: '#10b981'
   icon: film
   id: footage
@@ -647,9 +671,9 @@ node_types:
       enabled: true
       mode: status
       statusScores:
-        Complete: -2
-        In Production: 1
         Planned: -1
+        In Production: 1
+        Complete: -2
   shape: circle
   uuid: 18cef54e-3f62-7f82-9c77-4b4579cf23b5
 - allowed_asset_types: []
@@ -858,18 +882,6 @@ node_types:
     type: number
     uuid: b37ee4e7-559f-ad5d-24f0-b480bee8e20e
   uuid: e9db1d3f-7b14-13d9-e797-715b666783cd
-- allowed_asset_types: []
-  allowed_children: []
-  icon: document-text
-  id: node_type_1773847596886
-  label: New Node Type
-  properties:
-  - id: name
-    label: Name
-    required: false
-    type: text
-    uuid: 10432142-acee-b8aa-4f71-34fa6d4f1549
-  uuid: 29219903-da69-b179-cfd6-8707ad8b752b
 - allowed_asset_types: []
   allowed_children:
   - person
@@ -1092,7 +1104,58 @@ node_types:
     system_locked: true
     type: text
     uuid: 8171e2bf-f6d2-642b-020c-83e77a0d3815
+  - id: daily_capacity
+    label: Daily Capacity (Hours)
+    type: number
+    value: 8
+    system_locked: true
+    ui_group: Capacity
+    uuid: 12302379-59c1-41f9-f62e-6d4fa2d31cb4
+    _macro_injected: true
+    required: false
+  - id: hourly_rate
+    label: Hourly Rate
+    type: number
+    value: 0
+    system_locked: true
+    ui_group: Rates
+    uuid: 6bdc94ca-94b2-6f7a-385c-b0598bd3b457
+    _macro_injected: true
+    required: false
   shape: circle
   uuid: 7230f246-66ef-dfb4-1010-c4ade5ac5418
+- allowed_asset_types: []
+  allowed_children: []
+  base_type: media
+  color: '#a78bfa'
+  features:
+  - is_media
+  icon: film
+  id: media_asset
+  label: Media Asset
+  properties:
+  - id: name
+    label: Name
+    required: true
+    type: text
+    uuid: 5b3b3a48-9e2a-4f7d-9e3a-9c1f0d7b1f2a
+  - id: notes
+    label: Notes
+    required: false
+    type: editor
+    uuid: 6d2f8c10-3a91-4b8d-8c6e-2f4d1c9e0a3b
+  - id: media_url
+    label: File Path or URL
+    type: text
+    value: ''
+    system_locked: true
+    ui_group: Media
+    description: Local file path (e.g. /Users/me/clip.mp4 or C:\Videos\clip.mp4) or
+      a web URL (https://...). Use the Launch button to open it.
+    uuid: e786485f-f19b-48a7-babf-55a34b8f77f2
+    _macro_injected: true
+    required: false
+  shape: roundedSquare
+  uuid: 4f8e2c7a-1d3b-4e6f-9a2c-7b8f1e0d5a93
 uuid: 574ecd39-bad3-4e44-b6e4-247d00cc5eca
 version: 0.2.1

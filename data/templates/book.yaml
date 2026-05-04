@@ -17,7 +17,7 @@ node_types:
   label: Book
   properties:
   - id: name
-    label: Tile
+    label: Title
     required: false
     type: text
     uuid: fa022033-b113-6c72-9d43-23ffbb36331a
@@ -53,26 +53,26 @@ node_types:
     type: text
     uuid: 98a87ef7-35cb-85a8-7ec7-618f9bbb1581
   - id: prop_1776363403248
-    label: Notes
-    type: editor
     indicator_set: status
+    label: Notes
     required: false
+    type: editor
     uuid: 489cf726-1a65-d8c6-c85b-f71fcbebe0ca
   - id: prop_1776363438244
-    label: Status
-    type: select
     indicator_set: status
+    label: Status
     options:
-    - name: Unverified
+    - id: fab31900-f7d8-07f3-9dc1-f215469b75d3
       indicator_id: x-mark
-      id: fab31900-f7d8-07f3-9dc1-f215469b75d3
-    - name: InProgress
+      name: Unverified
+    - id: 0929fc91-986e-2726-7def-3209f11df7c2
       indicator_id: clock
-      id: 0929fc91-986e-2726-7def-3209f11df7c2
-    - name: verified
+      name: InProgress
+    - id: 4a803397-1951-f7a1-08d3-037a99301d16
       indicator_id: check
-      id: 4a803397-1951-f7a1-08d3-037a99301d16
+      name: verified
     required: false
+    type: select
     uuid: 7c217cbc-45ce-84fa-a34d-102b7e72f99f
   uuid: 8e677411-e9ad-76ef-d713-4b91da711270
 uuid: 69ff5bb9-c64b-4f66-a241-9573e2d5b173

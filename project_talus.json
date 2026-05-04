@@ -105,6 +105,18 @@
             "agile_status": "To Do",
             "manual_allocations": {},
             "synopsis": "The who what where and why of Project Talus"
+          },
+          "property_mismatch_hints": {
+            "agile_status": {
+              "legacy_property": "agile_status",
+              "score": 0.85,
+              "suggested_property": "status"
+            },
+            "manual_allocations": {
+              "legacy_property": "manual_allocations",
+              "score": 0.85,
+              "suggested_property": "allocations"
+            }
           }
         },
         "indicator_id": "partial",
@@ -259,12 +271,25 @@
           "71945aab-7b63-43ce-8acd-5bf331688fc9",
           "f527e3cb-0fc6-418d-891a-7f59d0049543",
           "a7b6e320-f290-47bf-9be9-ae455233e893",
-          "a60a9ab4-f613-4461-9874-8bd674c25bde"
+          "a60a9ab4-f613-4461-9874-8bd674c25bde",
+          "8cace8b5-0a39-4202-bee2-ff254383ce33"
         ],
         "metadata": {
           "orphaned_properties": {
             "agile_status": "To Do",
             "manual_allocations": {}
+          },
+          "property_mismatch_hints": {
+            "agile_status": {
+              "legacy_property": "agile_status",
+              "score": 0.85,
+              "suggested_property": "status"
+            },
+            "manual_allocations": {
+              "legacy_property": "manual_allocations",
+              "score": 0.85,
+              "suggested_property": "allocations"
+            }
           }
         },
         "indicator_id": "partial",
@@ -1070,12 +1095,13 @@
         "type": "18cef54e-3f62-7f82-9c77-4b4579cf23b5",
         "properties": {
           "name": "Ride height",
-          "65e69171-36f0-7cd6-33e0-45c206c7fd8b": "73af3b66-1e07-98eb-09a3-6403a771929a",
+          "65e69171-36f0-7cd6-33e0-45c206c7fd8b": "29666e58-9f31-a814-91df-cdc056dfbc76",
+          "6b1ecc54-6188-8abb-e434-c1b1162077b2": "Need to film the b-roll but it was 3.5\"",
           "7c6007ae-01b6-b6ce-a3a5-90b51d6a2e89": "Ride height"
         },
         "children": [],
         "metadata": {},
-        "indicator_id": "partial",
+        "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "film",
         "schema_shape": "circle",
@@ -1281,6 +1307,29 @@
         "schema_shape": "circle",
         "schema_color": "#10b981",
         "allowed_children": [
+          "37c98aa8-1ecf-f734-aae6-2147962200ef",
+          "64c246cc-0e2e-98b3-edb0-c0bb252e6a45",
+          "85253198-5a24-cc0b-09b8-3104ed399bec"
+        ]
+      },
+      {
+        "id": "8cace8b5-0a39-4202-bee2-ff254383ce33",
+        "name": "Check Compression",
+        "type": "df26a76a-47e9-229d-25cb-fb1b64e3d621",
+        "properties": {
+          "name": "Check Compression",
+          "d4de7dbf-40f0-30da-eed6-4f27e05732e9": "b131e3d8-1af5-5c04-e1dd-72e3187c06dc",
+          "d7d0c0e3-0845-4dc3-8225-3d188cdcd6ec": "Check Compression"
+        },
+        "children": [],
+        "metadata": {},
+        "indicator_id": "empty",
+        "indicator_set": "status",
+        "icon_id": "clipboard-document-check",
+        "schema_shape": "roundedSquare",
+        "schema_color": "#f59e0b",
+        "allowed_children": [
+          "e9db1d3f-7b14-13d9-e797-715b666783cd",
           "37c98aa8-1ecf-f734-aae6-2147962200ef",
           "64c246cc-0e2e-98b3-edb0-c0bb252e6a45",
           "85253198-5a24-cc0b-09b8-3104ed399bec"
@@ -1588,7 +1637,7 @@
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Front Axel",
-          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "32325919-25d0-4d3c-e75b-8a437f6f96ee",
           "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "3fac8eeb-a982-515d-724b-717f5fc1f38b": 5,
           "cb142469-a5db-3ba7-ef0d-345bfebc84ef": "Front Axel"
@@ -4288,13 +4337,13 @@
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "31527",
           "7e5304d1-7583-8e9a-3117-03eb04177987": "9.09",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
-          "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
+          "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
         "metadata": {},
-        "indicator_id": "partial",
+        "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
         "schema_shape": "circle",
@@ -5171,13 +5220,13 @@
           "45cbca7f-0214-bad0-6035-01ae376584cc": "Order 113-5755298-4531422",
           "7e5304d1-7583-8e9a-3117-03eb04177987": "55.99",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
-          "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
+          "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
         "metadata": {},
-        "indicator_id": "partial",
+        "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
         "schema_shape": "circle",
@@ -5221,13 +5270,13 @@
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "99-5700",
           "7e5304d1-7583-8e9a-3117-03eb04177987": "14.99",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
-          "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
+          "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
         "metadata": {},
-        "indicator_id": "partial",
+        "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
         "schema_shape": "circle",
@@ -5246,13 +5295,13 @@
           "4ed6c417-615e-4745-e50f-49434eb4e1f4": "70-1770",
           "7e5304d1-7583-8e9a-3117-03eb04177987": "8.60",
           "8a7b2d25-7add-79b1-e953-02069a478fdc": "1",
-          "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "33e4c8cb-5b8b-ff4d-660c-fd282fb93abf",
+          "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "ec911e69-6edd-a843-3958-39a2f773cf58",
           "c87572aa-ee3c-eebb-794b-87231be5b9e4": "Amazon",
           "e5385df7-3cf2-6b4f-9f98-72c0927b8500": ""
         },
         "children": [],
         "metadata": {},
-        "indicator_id": "partial",
+        "indicator_id": "filled",
         "indicator_set": "status",
         "icon_id": "cog",
         "schema_shape": "circle",
@@ -5336,6 +5385,7 @@
         "type": "8efe0b14-3125-d3dd-2608-050a62d027f4",
         "properties": {
           "name": "Mega Squirt",
+          "2e17d1a4-3869-1f05-fc0c-675b6b3bef0e": "Mega Squirt",
           "7e5304d1-7583-8e9a-3117-03eb04177987": "1749.00",
           "b1b8f8d4-1ce4-8889-5e03-89f035762ca4": "49ea8160-2c4d-4d91-4800-1c3176029d26"
         },
@@ -6893,7 +6943,7 @@
     "a6a6c972-0c4b-444d-9013-f33f729a701e": true,
     "2be1250e-7c5c-47f3-a93e-9258718dbe90": true,
     "0c2aeed7-bf17-4a96-922a-68bd41be7cbf": true,
-    "141251af-850d-4868-a75a-16bd0afc90a6": false,
+    "141251af-850d-4868-a75a-16bd0afc90a6": true,
     "b1fe1049-5d9e-44c4-8d25-31965d40995d": true,
     "1b7ac27b-401d-4645-a4d2-8670e8c07cce": true,
     "98fc1da2-b9fb-4ad9-a0c0-477937617e32": true,
@@ -6948,10 +6998,6 @@
   },
   "blocking_relationships": [
     {
-      "blockedNodeId": "154d79df-57be-4bc1-85b6-86d773974066",
-      "blockingNodeId": "89941716-6549-4335-9b87-7a9a5b544233"
-    },
-    {
       "blockedNodeId": "1c00929d-a96f-42e3-9759-a66e91ae24bc",
       "blockingNodeId": "89941716-6549-4335-9b87-7a9a5b544233"
     },
@@ -6965,10 +7011,6 @@
     },
     {
       "blockedNodeId": "99ad04e7-9c4d-4168-8cc8-a001eab7783e",
-      "blockingNodeId": "89941716-6549-4335-9b87-7a9a5b544233"
-    },
-    {
-      "blockedNodeId": "c80dab8c-ab7d-4685-b260-fcbdcef5536b",
       "blockingNodeId": "89941716-6549-4335-9b87-7a9a5b544233"
     }
   ],
@@ -6987,5 +7029,14 @@
       "filterMode": "hide",
       "createdAt": "2026-03-11T16:20:22.456Z"
     }
-  ]
+  ],
+  "enabled_tools": {
+    "velocity": true,
+    "blocking": true,
+    "budget": true,
+    "gantt": true,
+    "manpower": true,
+    "charts": true,
+    "agile": true
+  }
 }
