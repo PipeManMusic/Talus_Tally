@@ -2051,7 +2051,7 @@ export const Inspector = memo(function Inspector({
                           <td className="px-3 py-2 border-b border-r border-border text-fg-primary font-medium sticky left-0 bg-bg-dark z-20 whitespace-nowrap">
                             <div className="flex items-center gap-2">
                               <span className={`shrink-0 text-sm font-bold ${statusIcon.cls}`}>{statusIcon.char}</span>
-                              <span>{assigneeLabelById.get(personId) ?? nodes[nodeId ?? '']?.node_labels?.[prop.id]?.[manualAllocationsEditor.assignedIds.indexOf(personId)] ?? personId}</span>
+                              <span>{assigneeLabelById.get(personId) ?? nodes[nodeId ?? '']?.node_labels?.[manualAllocationsEditor.propId ?? '']?.[manualAllocationsEditor.assignedIds.indexOf(personId)] ?? personId}</span>
                             </div>
                           </td>
                           <td

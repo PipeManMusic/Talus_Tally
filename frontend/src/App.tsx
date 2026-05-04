@@ -2328,7 +2328,7 @@ function App() {
     createdCount: number;
     updatedCount?: number;
     updatedNodeIds?: string[];
-    mode?: 'create' | 'update';
+    mode?: 'create' | 'update' | 'upsert';
     undoAvailable: boolean;
     redoAvailable: boolean;
   }) => {
