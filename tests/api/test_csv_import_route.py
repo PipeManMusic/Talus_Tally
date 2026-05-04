@@ -115,3 +115,185 @@ def test_csv_import_route_returns_row_errors(client):
     rows = payload["error"]["rows"]
     assert rows[0]["row_number"] == 2
     assert "Missing value" in rows[0]["messages"][0]
+
+def _import_create(client, session_id, parent_id, csv_content):
+    column_map = json.dumps([
+        {"header": "Name", "property_id": "name"},
+        {"header": "Cost", "property_id": "cost"},
+    ])
+    data = {
+        "session_id": session_id,
+        "parent_id": parent_id,
+        "blueprint_type_id": "task",
+        "column_map": column_map,
+        "file": (io.BytesIO(csv_content.encode("utf-8")), "import.csv"),
+    }
+    response = client.post(
+        "/api/v1/imports/csv",
+        data=data,
+        content_type="multipart/form-data",
+    )
+    assert response.status_code == 200, response.get_json()
+    return response.get_json()
+
+
+def test_csv_import_route_update_mode_updates_existing(client):
+    project = create_project(client)
+    session_id = project["session_id"]
+    parent_id = project["graph"]["roots"][0]["id"]
+
+    _import_create(
+        client,
+        session_id,
+        parent_id,
+        "Name,Cost\nTask A,100\nTask B,250\n",
+    )
+
+    update_csv = "Name,Cost\nTask A,500\nTask B,750\n"
+    column_map = json.dumps([
+        {"header": "Name", "property_id": "name"},
+        {"header": "Cost", "property_id": "cost"},
+    ])
+
+    data = {
+        "session_id": session_id,
+        "parent_id": parent_id,
+        "blueprint_type_id": "task",
+        "column_map": column_map,
+        "mode": "update",
+        "match_property_id": "name",
+        "file": (io.BytesIO(update_csv.encode("utf-8")), "update.csv"),
+    }
+
+    response = client.post(
+        "/api/v1/imports/csv",
+        data=data,
+        content_type="multipart/form-data",
+    )
+
+    assert response.status_code == 200, response.get_json()
+    result = response.get_json()
+    assert result["success"] is True
+    assert result["mode"] == "update"
+    assert result["updated_count"] == 2
+    assert result["created_count"] == 0
+    assert result["unmatched_rows"] == []
+
+
+def test_csv_import_route_update_mode_reports_unmatched(client):
+    project = create_project(client)
+    session_id = project["session_id"]
+    parent_id = project["graph"]["roots"][0]["id"]
+
+    _import_create(
+        client,
+        session_id,
+        parent_id,
+        "Name,Cost\nTask A,100\n",
+    )
+
+    update_csv = "Name,Cost\nTask A,500\nGhost Task,999\n"
+    column_map = json.dumps([
+        {"header": "Name", "property_id": "name"},
+        {"header": "Cost", "property_id": "cost"},
+    ])
+
+    data = {
+        "session_id": session_id,
+        "parent_id": parent_id,
+        "blueprint_type_id": "task",
+        "column_map": column_map,
+        "mode": "update",
+        "match_property_id": "name",
+        "file": (io.BytesIO(update_csv.encode("utf-8")), "update.csv"),
+    }
+
+    response = client.post(
+        "/api/v1/imports/csv",
+        data=data,
+        content_type="multipart/form-data",
+    )
+
+    assert response.status_code == 200, response.get_json()
+    result = response.get_json()
+    assert result["updated_count"] == 1
+    unmatched = result["unmatched_rows"]
+    assert len(unmatched) == 1
+    assert unmatched[0]["match_value"] == "Ghost Task"
+
+
+def test_csv_import_route_update_mode_requires_match_property(client):
+    project = create_project(client)
+    session_id = project["session_id"]
+    parent_id = project["graph"]["roots"][0]["id"]
+
+    csv_content = "Name,Cost\nTask A,100\n"
+    column_map = json.dumps([
+        {"header": "Name", "property_id": "name"},
+        {"header": "Cost", "property_id": "cost"},
+    ])
+
+    data = {
+        "session_id": session_id,
+        "parent_id": parent_id,
+        "blueprint_type_id": "task",
+        "column_map": column_map,
+        "mode": "update",
+        "file": (io.BytesIO(csv_content.encode("utf-8")), "update.csv"),
+    }
+
+    response = client.post(
+        "/api/v1/imports/csv",
+        data=data,
+        content_type="multipart/form-data",
+    )
+
+    assert response.status_code == 400
+    assert response.get_json()["error"]["code"] == "INVALID_REQUEST"
+
+
+def test_csv_import_route_upsert_creates_and_updates(client):
+    project = create_project(client)
+    session_id = project["session_id"]
+    parent_id = project["graph"]["roots"][0]["id"]
+
+    _import_create(
+        client,
+        session_id,
+        parent_id,
+        "Name,Cost\nTask A,100\n",
+    )
+
+    upsert_csv = "Name,Cost\nTask A,500\nTask C,750\n"
+    column_map = json.dumps([
+        {"header": "Name", "property_id": "name"},
+        {"header": "Cost", "property_id": "cost"},
+    ])
+
+    data = {
+        "session_id": session_id,
+        "parent_id": parent_id,
+        "blueprint_type_id": "task",
+        "column_map": column_map,
+        "mode": "upsert",
+        "match_property_id": "name",
+        "file": (io.BytesIO(upsert_csv.encode("utf-8")), "upsert.csv"),
+    }
+
+    response = client.post(
+        "/api/v1/imports/csv",
+        data=data,
+        content_type="multipart/form-data",
+    )
+
+    assert response.status_code == 200, response.get_json()
+    result = response.get_json()
+    assert result["mode"] == "upsert"
+    assert result["updated_count"] == 1
+    assert result["created_count"] == 1
+    unmatched = result["unmatched_rows"]
+    assert len(unmatched) == 1
+    assert unmatched[0]["match_value"] == "Task C"
+    child_names = [child["name"] for child in result["graph"]["roots"][0]["children"]]
+    assert "Task A" in child_names
+    assert "Task C" in child_names

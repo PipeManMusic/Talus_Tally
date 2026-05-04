@@ -408,7 +408,7 @@ class TestEdgeCases:
         assert len(status_properties) == 1
         assert status_properties[0]["id"] == "_feat_scheduling_status"
         assert status_properties[0]["uuid"] == "21a07b17-c7a0-aa65-85b7-814f94e04fb6"
-        assert [option["name"] for option in status_properties[0]["options"]] == ["To Do", "In Progress", "Done"]
+        assert [option["name"] for option in status_properties[0]["options"]] == ["To Do", "In Progress", "Blocked", "Done"]
 
     def test_returns_same_object(self, base_template):
         """apply_feature_macros mutates and returns the same dict."""
@@ -464,3 +464,43 @@ class TestPersonFeatureAutoCorrection:
         }
         apply_feature_macros(template)
         assert "is_person" not in template["node_types"][0]["features"]
+
+
+class TestIsMediaFeature:
+    """Tests for the is_media feature macro."""
+
+    def test_is_media_injects_media_url_property(self):
+        template = {
+            "node_types": [
+                {"id": "media_asset", "label": "Media Asset", "features": ["is_media"], "properties": []},
+            ]
+        }
+        apply_feature_macros(template)
+        prop_ids = {p["id"] for p in template["node_types"][0]["properties"]}
+        assert "media_url" in prop_ids
+        media_prop = next(p for p in template["node_types"][0]["properties"] if p["id"] == "media_url")
+        assert media_prop["type"] == "text"
+        assert media_prop["system_locked"] is True
+
+    def test_is_media_macro_definition_exists(self):
+        assert "is_media" in FEATURE_MACROS
+        ids = {p["id"] for p in FEATURE_MACROS["is_media"]}
+        assert ids == {"media_url"}
+
+    def test_disabling_is_media_removes_media_url(self):
+        template = {
+            "node_types": [
+                {
+                    "id": "media_asset",
+                    "label": "Media Asset",
+                    "features": ["is_media"],
+                    "properties": [],
+                }
+            ]
+        }
+        apply_feature_macros(template)
+        # Now disable the feature
+        template["node_types"][0]["features"] = []
+        apply_feature_macros(template)
+        prop_ids = {p["id"] for p in template["node_types"][0]["properties"]}
+        assert "media_url" not in prop_ids

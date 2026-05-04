@@ -800,3 +800,106 @@ def test_backfill_select_defaults_handles_multiple_selects():
     assert count == 2
     assert node.properties['prop-pri'] == 'o-low'
     assert node.properties['prop-col'] == 'o-red'
+
+
+# ---------------------------------------------------------------------------
+# migrate_select_values_to_uuids
+# ---------------------------------------------------------------------------
+
+def _select_template():
+    return {
+        'node_types': [{
+            'id': 'task',
+            'uuid': 'task-type-uuid',
+            'properties': [{
+                'id': 'status',
+                'uuid': 'prop-status-uuid',
+                'type': 'select',
+                'options': [
+                    {'name': 'To Do', 'id': 'opt-todo-uuid'},
+                    {'name': 'In Progress', 'id': 'opt-progress-uuid'},
+                    {'name': 'Done', 'id': 'opt-done-uuid'},
+                ],
+            }],
+        }],
+    }
+
+
+def test_migrate_select_values_replaces_label_with_uuid():
+    """Legacy label-form select values are rewritten to option UUIDs."""
+    graph = ProjectGraph()
+    node = Node(blueprint_type_id='task-type-uuid', name='Legacy Node')
+    node.properties = {'prop-status-uuid': 'In Progress'}
+    graph.add_node(node)
+
+    migrated = OrphanManager.migrate_select_values_to_uuids(graph, _select_template())
+
+    assert migrated == 1
+    assert node.properties['prop-status-uuid'] == 'opt-progress-uuid'
+
+
+def test_migrate_select_values_leaves_uuids_untouched():
+    """Values that are already valid option UUIDs are not modified."""
+    graph = ProjectGraph()
+    node = Node(blueprint_type_id='task-type-uuid', name='Modern Node')
+    node.properties = {'prop-status-uuid': 'opt-done-uuid'}
+    graph.add_node(node)
+
+    migrated = OrphanManager.migrate_select_values_to_uuids(graph, _select_template())
+
+    assert migrated == 0
+    assert node.properties['prop-status-uuid'] == 'opt-done-uuid'
+
+
+def test_migrate_select_values_leaves_unknown_labels_for_orphan_handling():
+    """Unknown labels (not matching any option) are left alone so the
+    reconcile pass can flag them as mismatch candidates."""
+    graph = ProjectGraph()
+    node = Node(blueprint_type_id='task-type-uuid', name='Stale Node')
+    node.properties = {'prop-status-uuid': 'Cancelled'}  # not in options
+    graph.add_node(node)
+
+    migrated = OrphanManager.migrate_select_values_to_uuids(graph, _select_template())
+
+    assert migrated == 0
+    assert node.properties['prop-status-uuid'] == 'Cancelled'
+
+
+def test_migrate_select_values_handles_legacy_node_type_id_lookup():
+    """Nodes whose blueprint_type_id is the legacy string id (not the uuid)
+    are still migrated, since the index maps both keys to the same options."""
+    graph = ProjectGraph()
+    node = Node(blueprint_type_id='task', name='Legacy Type Key')
+    node.properties = {'prop-status-uuid': 'Done'}
+    graph.add_node(node)
+
+    migrated = OrphanManager.migrate_select_values_to_uuids(graph, _select_template())
+
+    assert migrated == 1
+    assert node.properties['prop-status-uuid'] == 'opt-done-uuid'
+
+
+def test_migrate_select_values_skips_orphaned_nodes():
+    """Orphaned nodes are outside the template; their values are preserved."""
+    graph = ProjectGraph()
+    node = Node(blueprint_type_id='task-type-uuid', name='Orphaned')
+    node.properties = {'prop-status-uuid': 'In Progress'}
+    node.metadata = {'orphaned': True}
+    graph.add_node(node)
+
+    migrated = OrphanManager.migrate_select_values_to_uuids(graph, _select_template())
+
+    assert migrated == 0
+    assert node.properties['prop-status-uuid'] == 'In Progress'
+
+
+def test_migrate_select_values_returns_zero_for_empty_template():
+    """No node_types / no select properties -> zero migrations, no errors."""
+    graph = ProjectGraph()
+    node = Node(blueprint_type_id='task-type-uuid', name='Anything')
+    node.properties = {'whatever': 'value'}
+    graph.add_node(node)
+
+    assert OrphanManager.migrate_select_values_to_uuids(graph, {}) == 0
+    assert OrphanManager.migrate_select_values_to_uuids(graph, {'node_types': []}) == 0
+

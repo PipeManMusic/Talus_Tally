@@ -4,7 +4,8 @@ from backend.handlers.commands.node_commands import (
     CreateNodeCommand, 
     DeleteNodeCommand, 
     LinkNodeCommand,
-    UpdatePropertyCommand
+    UpdatePropertyCommand,
+    PasteNodeCommand,
 )
 from backend.core.graph import ProjectGraph
 from backend.core.node import Node
@@ -212,3 +213,80 @@ def test_update_property_command_rejects_orphaned_property_edits():
 
     with pytest.raises(ValueError, match="Cannot edit orphaned property"):
         dispatcher.execute(cmd)
+
+
+def test_paste_node_command_clones_subtree_and_undo_redo():
+    """PasteNode should deep-clone source subtree under target parent with undo/redo support."""
+    graph = ProjectGraph()
+
+    target_parent = Node(blueprint_type_id="phase", name="Target Parent")
+    source_parent = Node(blueprint_type_id="phase", name="Source Parent")
+    source_task = Node(blueprint_type_id="task", name="Source Task")
+
+    graph.add_node(target_parent)
+    graph.add_node(source_parent)
+    graph.add_node(source_task)
+
+    source_parent.children.append(source_task.id)
+    source_task.parent_id = source_parent.id
+
+    dispatcher = CommandDispatcher(graph)
+    paste = PasteNodeCommand(
+        source_node_id=source_parent.id,
+        target_parent_id=target_parent.id,
+        graph=graph,
+    )
+
+    pasted_root_id = dispatcher.execute(paste)
+    assert pasted_root_id is not None
+    assert pasted_root_id in graph.nodes
+
+    pasted_root = graph.get_node(pasted_root_id)
+    assert pasted_root is not None
+    assert pasted_root.parent_id == target_parent.id
+    assert pasted_root.blueprint_type_id == source_parent.blueprint_type_id
+    assert pasted_root.id != source_parent.id
+    assert pasted_root.name.endswith("Copy")
+    assert pasted_root.id in target_parent.children
+
+    assert len(pasted_root.children) == 1
+    pasted_child_id = pasted_root.children[0]
+    pasted_child = graph.get_node(pasted_child_id)
+    assert pasted_child is not None
+    assert pasted_child.blueprint_type_id == source_task.blueprint_type_id
+    assert pasted_child.parent_id == pasted_root.id
+    assert pasted_child.id != source_task.id
+
+    dispatcher.undo()
+    assert pasted_root_id not in graph.nodes
+    assert pasted_child_id not in graph.nodes
+    assert pasted_root_id not in target_parent.children
+
+    dispatcher.redo()
+    assert pasted_root_id in graph.nodes
+    assert pasted_child_id in graph.nodes
+
+
+def test_paste_node_command_validates_allowed_child_type():
+    """PasteNode should reject paste targets that do not allow the source root type."""
+    graph = ProjectGraph()
+
+    source_task = Node(blueprint_type_id="task", name="Task")
+    target_parent = Node(blueprint_type_id="person", name="Person")
+    graph.add_node(source_task)
+    graph.add_node(target_parent)
+
+    class BlueprintStub:
+        def is_allowed_child(self, parent_type, child_type):
+            return False
+
+    dispatcher = CommandDispatcher(graph)
+    paste = PasteNodeCommand(
+        source_node_id=source_task.id,
+        target_parent_id=target_parent.id,
+        graph=graph,
+        blueprint=BlueprintStub(),
+    )
+
+    with pytest.raises(ValueError, match="is not allowed as a child"):
+        dispatcher.execute(paste)
