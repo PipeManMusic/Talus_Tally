@@ -10,6 +10,23 @@
 
 use crate::ids::NodeId;
 
+/// Identifier for one option of a select-typed property.
+///
+/// Today these are slug strings carried over from the Python backend
+/// (`"to_do"`, `"in_progress"`, ...). Phase 3 introduces UUID-keyed
+/// option ids on the blueprint side; this newtype is the migration
+/// boundary so the value-side enum doesn't change shape.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct SelectOptionId(String);
+
+impl SelectOptionId {
+    /// Borrow the slug as a `&str`.
+    #[must_use]
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
 /// A typed property value attached to a node.
 ///
 /// One variant per shape we know how to handle. Adding a variant is a
@@ -63,6 +80,12 @@ pub enum Property {
     /// let _ = Property::NodeRef(TemplateId::new());
     /// ```
     NodeRef(NodeId),
+
+    /// A reference to one option of a select-typed property.
+    ///
+    /// Construct via [`Property::select_token`] which enforces the slug
+    /// shape (non-empty, no whitespace).
+    SelectToken(SelectOptionId),
 }
 
 impl Property {
@@ -126,6 +149,24 @@ impl Property {
             return Err(invalid());
         }
         Ok(Property::DateIso { year, month, day })
+    }
+
+    /// Construct a [`Property::SelectToken`] from a slug.
+    ///
+    /// The slug must be non-empty and must not contain whitespace; a
+    /// slug with internal whitespace is almost always a UI display
+    /// string accidentally being stored as an option id.
+    ///
+    /// # Errors
+    /// Returns [`crate::error::Error::SchemaValidation`] if `slug` is
+    /// empty, whitespace-only, or contains any whitespace character.
+    pub fn select_token(slug: &str) -> crate::error::Result<Self> {
+        if slug.is_empty() || slug.chars().any(char::is_whitespace) {
+            return Err(crate::error::Error::SchemaValidation(format!(
+                "SelectToken requires a non-empty whitespace-free slug, got {slug:?}"
+            )));
+        }
+        Ok(Property::SelectToken(SelectOptionId(slug.to_owned())))
     }
 }
 
@@ -278,10 +319,7 @@ mod tests {
     fn select_token_accepts_slugs_seen_in_python_data() {
         // From the Python backend audit (data/examples/...):
         for slug in ["to_do", "in_progress", "done"] {
-            assert!(
-                Property::select_token(slug).is_ok(),
-                "failed on {slug}"
-            );
+            assert!(Property::select_token(slug).is_ok(), "failed on {slug}");
         }
     }
 
