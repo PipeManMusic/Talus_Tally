@@ -16,10 +16,31 @@
 pub enum Property {
     /// A finite numeric value (currency, hours, percentage, count, ...).
     ///
-    /// `NaN` and infinities are rejected at construction; see future
-    /// constructor cycles. The raw `f64` form is exposed for now to keep
-    /// the GREEN step minimal.
+    /// Construct via [`Property::number`] to reject `NaN` and infinities.
+    /// The variant remains public so pattern-matching in consumers stays
+    /// ergonomic, but trusted callers (deserializers, ports from Python
+    /// JSON) must validate before constructing.
     Number(f64),
+}
+
+impl Property {
+    /// Construct a [`Property::Number`] after validating the value is finite.
+    ///
+    /// Returns [`crate::error::Error::SchemaValidation`] if `value` is
+    /// `NaN` or infinite. JSON cannot represent these natively, so any
+    /// such value would be data corruption.
+    ///
+    /// # Errors
+    /// Returns an error if `value` is not finite.
+    pub fn number(value: f64) -> crate::error::Result<Self> {
+        if value.is_finite() {
+            Ok(Property::Number(value))
+        } else {
+            Err(crate::error::Error::SchemaValidation(format!(
+                "Property::Number requires a finite f64, got {value}"
+            )))
+        }
+    }
 }
 
 #[cfg(test)]
