@@ -191,8 +191,13 @@ function App() {
   });
   const [backendError, setBackendError] = useState<string | null>(null);
   const [isInitialConnection, setIsInitialConnection] = useState(true);
+  const [connectElapsedSec, setConnectElapsedSec] = useState(0);
   const initialLoadStartRef = useRef<number>(Date.now());
-  const INITIAL_LOADING_MS = 30000;
+  // Allow up to 2 minutes for backend to start. PyInstaller-bundled Python on
+  // Windows can take 30-90s on first launch due to Windows Defender scanning
+  // every file as the bundle unpacks. On Linux/macOS the backend is ready in
+  // ~1-2s so this longer ceiling is invisible there.
+  const INITIAL_LOADING_MS = 120000;
   const schemaRecoveryAttemptsRef = useRef<Set<string>>(new Set());
   const { nodes: storeNodes, currentGraph, setCurrentGraph } = useGraphStore();
 
@@ -326,6 +331,9 @@ function App() {
           
           // Wait 300ms before next attempt
           await new Promise(resolve => setTimeout(resolve, 300));
+          if (isActive) {
+            setConnectElapsedSec(Math.floor((Date.now() - startTime) / 1000));
+          }
         }
         
         if (!isActive) return;
@@ -2885,6 +2893,12 @@ function App() {
               <div className="text-sm text-fg-secondary">
                 {isInitialConnection ? 'Connecting to backend server...' : 'Initializing session...'}
               </div>
+              {isInitialConnection && connectElapsedSec >= 5 && (
+                <div className="text-xs text-fg-secondary mt-2 opacity-70">
+                  {connectElapsedSec}s elapsed
+                  {connectElapsedSec >= 15 && ' — first launch can take up to a minute on Windows'}
+                </div>
+              )}
             </div>
           </div>
         </div>
