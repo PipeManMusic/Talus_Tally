@@ -1,6 +1,6 @@
-talus-tally (0.1.11.1~alpha-1) jammy; urgency=high
+talus-tally (0.1.11~alpha.1-1) jammy; urgency=high
 
-  * Alpha 0.1.11.1 hotfix release
+  * Alpha 0.1.11-alpha.1 hotfix release
   * Bug fix: Windows desktop UI could not connect to backend because
     'localhost' resolves to IPv6 (::1) on Windows while the backend binds
     only to IPv4 (127.0.0.1). Frontend default API/Socket.IO URLs now use

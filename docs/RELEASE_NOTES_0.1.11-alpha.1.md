@@ -1,11 +1,11 @@
-# Talus Tally 0.1.11.1-alpha Release Notes
+# Talus Tally 0.1.11-alpha.1 Release Notes
 
 Release date: 2026-05-06
 Release type: Alpha hotfix (pre-release)
 
 ## Summary
 
-`0.1.11.1-alpha` is a hotfix that restores backend connectivity in the Windows desktop build. The Linux and macOS builds were unaffected.
+`0.1.11-alpha.1` is a hotfix that restores backend connectivity in the Windows desktop build. The Linux and macOS builds were unaffected.
 
 ## Fixes
 
@@ -20,10 +20,10 @@ If you set `VITE_API_URL` or `VITE_SOCKET_URL` as a build-time override, ensure 
 
 ## Version Metadata
 
-- Frontend package: `0.1.11.1-alpha`
-- Tauri config: `0.1.11.1-alpha`
-- Tauri Rust crate: `0.1.11.1-alpha`
-- Debian package: `0.1.11.1~alpha-1`
+- Frontend package: `0.1.11-alpha.1`
+- Tauri config: `0.1.11-alpha.1`
+- Tauri Rust crate: `0.1.11-alpha.1`
+- Debian package: `0.1.11~alpha.1-1`
 
 ## Upgrade / Build Notes
 
