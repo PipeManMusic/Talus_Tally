@@ -73,6 +73,46 @@ mod tests {
     }
 
     #[test]
+    fn date_iso_constructor_accepts_valid_iso_date() {
+        let p = Property::date_iso("2025-01-20").expect("valid ISO date");
+        match p {
+            Property::DateIso { year, month, day } => {
+                assert_eq!(year, 2025);
+                assert_eq!(month, 1);
+                assert_eq!(day, 20);
+            }
+            _ => panic!("expected DateIso variant"),
+        }
+    }
+
+    #[test]
+    fn date_iso_constructor_rejects_wrong_separator() {
+        assert!(Property::date_iso("2025/01/20").is_err());
+    }
+
+    #[test]
+    fn date_iso_constructor_rejects_short_form() {
+        assert!(Property::date_iso("2025-1-20").is_err());
+    }
+
+    #[test]
+    fn date_iso_constructor_rejects_out_of_range_month() {
+        assert!(Property::date_iso("2025-13-01").is_err());
+    }
+
+    #[test]
+    fn date_iso_constructor_rejects_out_of_range_day() {
+        assert!(Property::date_iso("2025-02-30").is_err());
+        assert!(Property::date_iso("2025-04-31").is_err());
+    }
+
+    #[test]
+    fn date_iso_constructor_accepts_leap_day() {
+        assert!(Property::date_iso("2024-02-29").is_ok());
+        assert!(Property::date_iso("2025-02-29").is_err());
+    }
+
+    #[test]
     fn number_constructor_rejects_nan() {
         assert!(Property::number(f64::NAN).is_err());
     }
