@@ -100,6 +100,15 @@ pub enum Property {
     /// Construct via [`Property::select_token`] which enforces the slug
     /// shape (non-empty, no whitespace).
     SelectToken(SelectOptionId),
+
+    /// A two-state boolean value.
+    ///
+    /// Replaces the Python pattern of using `Optional[bool]` and stringly
+    /// truthy values (`"true"`, `"yes"`, `1`) interchangeably across
+    /// callers. There is no third state: missing-vs-false is encoded by
+    /// the property's presence in the node's property map, not by the
+    /// value.
+    Boolean(bool),
 }
 
 impl Property {
@@ -222,6 +231,7 @@ mod tests {
         DateIso,
         NodeRef,
         SelectToken,
+        Boolean,
     }
 
     impl Property {
@@ -232,6 +242,7 @@ mod tests {
                 Property::DateIso { .. } => Tag::DateIso,
                 Property::NodeRef(_) => Tag::NodeRef,
                 Property::SelectToken(_) => Tag::SelectToken,
+                Property::Boolean(_) => Tag::Boolean,
             }
         }
     }
