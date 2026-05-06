@@ -156,40 +156,53 @@ fn is_leap_year(year: i32) -> bool {
 mod tests {
     use crate::property::Property;
 
+    /// Discriminant tag used by tests to assert "this is variant X" without
+    /// repeating an exhaustive match arm in every test. Update sites are
+    /// guaranteed by the compiler: adding a `Property` variant forces a new
+    /// `Tag` variant and a new arm in `Property::tag()`.
+    #[derive(Debug, PartialEq, Eq)]
+    enum Tag {
+        Number,
+        Text,
+        DateIso,
+        NodeRef,
+    }
+
+    impl Property {
+        fn tag(&self) -> Tag {
+            match self {
+                Property::Number(_) => Tag::Number,
+                Property::Text(_) => Tag::Text,
+                Property::DateIso { .. } => Tag::DateIso,
+                Property::NodeRef(_) => Tag::NodeRef,
+            }
+        }
+    }
+
     #[test]
     fn number_variant_holds_a_finite_f64() {
         let p = Property::Number(42.0);
-        match p {
-            Property::Number(n) => assert!((n - 42.0).abs() < f64::EPSILON),
-            Property::Text(_) | Property::DateIso { .. } | Property::NodeRef(_) => {
-                panic!("expected Number variant")
-            }
+        assert_eq!(p.tag(), Tag::Number);
+        if let Property::Number(n) = p {
+            assert!((n - 42.0).abs() < f64::EPSILON);
         }
     }
 
     #[test]
     fn text_variant_holds_a_string() {
         let p = Property::Text("Alice Chen".to_owned());
-        match p {
-            Property::Text(s) => assert_eq!(s, "Alice Chen"),
-            Property::Number(_) | Property::DateIso { .. } | Property::NodeRef(_) => {
-                panic!("expected Text variant")
-            }
+        assert_eq!(p.tag(), Tag::Text);
+        if let Property::Text(s) = p {
+            assert_eq!(s, "Alice Chen");
         }
     }
 
     #[test]
     fn date_iso_constructor_accepts_valid_iso_date() {
         let p = Property::date_iso("2025-01-20").expect("valid ISO date");
-        match p {
-            Property::DateIso { year, month, day } => {
-                assert_eq!(year, 2025);
-                assert_eq!(month, 1);
-                assert_eq!(day, 20);
-            }
-            Property::Number(_) | Property::Text(_) | Property::NodeRef(_) => {
-                panic!("expected DateIso variant")
-            }
+        assert_eq!(p.tag(), Tag::DateIso);
+        if let Property::DateIso { year, month, day } = p {
+            assert_eq!((year, month, day), (2025, 1, 20));
         }
     }
 
@@ -225,11 +238,9 @@ mod tests {
         use crate::ids::NodeId;
         let target = NodeId::new();
         let p = Property::NodeRef(target);
-        match p {
-            Property::NodeRef(id) => assert_eq!(id, target),
-            Property::Number(_) | Property::Text(_) | Property::DateIso { .. } => {
-                panic!("expected NodeRef variant")
-            }
+        assert_eq!(p.tag(), Tag::NodeRef);
+        if let Property::NodeRef(id) = p {
+            assert_eq!(id, target);
         }
     }
 
