@@ -3695,7 +3695,7 @@ dependencies = [
 
 [[package]]
 name = "talus-tally"
-version = "0.1.11-alpha"
+version = "0.1.11.1-alpha"
 dependencies = [
  "log",
  "serde",

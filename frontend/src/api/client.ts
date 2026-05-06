@@ -27,7 +27,11 @@ export interface Graph {
 }
 import { io, Socket } from 'socket.io-client';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+// Use 127.0.0.1 (not 'localhost') because the backend binds only to 127.0.0.1.
+// On Windows, 'localhost' often resolves to IPv6 (::1) first, which would fail
+// because the backend doesn't listen on IPv6. Using 127.0.0.1 forces IPv4 and
+// avoids this Windows-specific connection failure.
+const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || API_URL;
 export const API_BASE_URL = API_URL;
 
