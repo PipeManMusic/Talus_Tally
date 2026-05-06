@@ -158,6 +158,24 @@ module:
   distinct types — never `String`, never `Uuid` directly. The compiler catches
   the entire class of "passed a node id where a property id was expected" bugs.
   (Already done in [crates/talus-core/src/ids.rs](crates/talus-core/src/ids.rs).)
+- **One ID generator. UUID v4 only. No exceptions.** Every identifier in the
+  system is produced by the same `uuid::Uuid::new_v4()` call sitting inside
+  `id_newtype!::new()`. We do not derive ids from content hashes, do not call
+  `uuid5(NAMESPACE_DNS, s)` to "stabilize" string keys, do not pass through
+  externally-generated ids that we did not mint, and do not allow slugs,
+  short codes, or human-friendly strings to occupy id-shaped fields. The
+  Python backend acquired multiple competing id sources during its growth —
+  `string_to_uuid()` at
+  [backend/infra/persistence.py:5](backend/infra/persistence.py),
+  `_generate_stable_uuid()` (SHA1-based) at
+  [backend/infra/schema_loader.py:11](backend/infra/schema_loader.py), and
+  the slug-as-id pattern for select options
+  ([backend/handlers/commands/node_commands.py:96](backend/handlers/commands/node_commands.py)).
+  Every one of those is a bug source that this rule explicitly forbids.
+  Where legacy data carries a non-UUID identifier, the Rust port treats it
+  as **opaque external data** at the boundary and mints a fresh UUID for
+  internal storage; the original is kept in a side-table for migration
+  traceability, never as the canonical id.
 - **Make illegal states unrepresentable.** Use enums with payloads, not flag
   fields. A node either has a parent or it is a root — represent that as a
   variant, not as `parent_id: Option<NodeId>` plus three runtime checks.
@@ -271,8 +289,10 @@ removes the item is in brackets.
 ### Data model / schema
 - [backend/core/node.py](backend/core/node.py) — `properties: Dict[str, Any]`, no `schema_version`, untyped values everywhere → `Property` enum with typed variants; `Node { schema_version: SchemaVersion, properties: IndexMap<PropertyId, Property> }`. **[Phase 1]**
 - [backend/infra/orphan_manager.py:21-41](backend/infra/orphan_manager.py) — `_iter_graph_nodes()` duck-types dict-graphs vs list-graphs vs `ProjectGraph` → single typed `Graph` representation; conversion happens once at the boundary. **[Phase 1]**
-- [backend/infra/persistence.py:5](backend/infra/persistence.py) — `string_to_uuid()` invents `uuid5(NAMESPACE_DNS, s)` for unmapped strings → unmapped reference is a hard error; no silent UUID fabrication. **[Phase 3]**
-- [backend/infra/schema_loader.py:11](backend/infra/schema_loader.py) — `_generate_stable_uuid()` SHA1s without a version → derived UUIDs include `(schema_version, namespace, key)`. **[Phase 3]**
+- [backend/infra/persistence.py:5](backend/infra/persistence.py) — `string_to_uuid()` invents `uuid5(NAMESPACE_DNS, s)` for unmapped strings → forbidden by §4a "one ID generator". Unmapped references are hard errors; if a fresh id is needed it is minted via `id_newtype!::new()` and the original key kept in a migration side-table. **[Phase 3]**
+- [backend/infra/schema_loader.py:11](backend/infra/schema_loader.py) — `_generate_stable_uuid()` SHA1s a string into a UUID-shaped value → forbidden by §4a "one ID generator". UUIDs are minted, never derived from content. The schema-loader's stability requirement is satisfied by an explicit alias map persisted alongside the data. **[Phase 3]**
+- [backend/handlers/commands/node_commands.py:96-117](backend/handlers/commands/node_commands.py) — Select-option ids are bare slug strings (`"to_do"`, `"in_progress"`) carried as identifiers throughout the system → forbidden by §4a "one ID generator". Blueprints get UUID-keyed `SelectOptionId`s minted at template load; slugs become display-only labels. **[Phase 3]**
+- [crates/talus-core/src/property.rs](crates/talus-core/src/property.rs) — `SelectOptionId(String)` is a temporary Phase 1 newtype that wraps a slug to preserve compatibility with the slug-as-id Python data → migrate to `SelectOptionId(Uuid)` once blueprints are ported and the alias side-table exists. The newtype shape stays the same; only its inner type changes. **[Phase 3]**
 - [backend/api/project_manager.py:35](backend/api/project_manager.py) — `hasattr(nt, 'id') and hasattr(nt, 'name')` runtime structural typing → trait bound `NodeTypeDef`. **[Phase 1]**
 
 ### Mutation / state management

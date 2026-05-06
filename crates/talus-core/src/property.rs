@@ -12,10 +12,24 @@ use crate::ids::NodeId;
 
 /// Identifier for one option of a select-typed property.
 ///
-/// Today these are slug strings carried over from the Python backend
-/// (`"to_do"`, `"in_progress"`, ...). Phase 3 introduces UUID-keyed
-/// option ids on the blueprint side; this newtype is the migration
-/// boundary so the value-side enum doesn't change shape.
+/// **Phase 1 compromise.** Today this wraps a slug string carried over
+/// from the Python backend (`"to_do"`, `"in_progress"`, ...) so we can
+/// round-trip existing project data unchanged. This violates the
+/// project-wide rule "one ID generator, UUID v4 only" stated in
+/// `docs/architecture/RUST_MIGRATION_PLAN.md` §4a. The compromise is
+/// scoped, tracked, and explicitly temporary:
+///
+/// - Phase 3 ports template loading and introduces an alias side-table
+///   that maps legacy slugs to freshly-minted `Uuid`s.
+/// - At that point this newtype's inner type changes from `String` to
+///   `Uuid`. The newtype shape is preserved, so consumers that pattern
+///   match on `Property::SelectToken(SelectOptionId(_))` keep working.
+/// - The slug becomes a display label on the blueprint, never an id.
+///
+/// Until then, treat select-option slugs as opaque external data: they
+/// flow through the system but they are NOT the canonical identifier.
+// TODO(phase-3): replace `String` with `uuid::Uuid`. See
+// docs/architecture/RUST_MIGRATION_PLAN.md §4b "Data model / schema".
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct SelectOptionId(String);
 
