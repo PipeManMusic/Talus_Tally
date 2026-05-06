@@ -28,6 +28,22 @@ pub enum Property {
     /// Domain-specific validation (e.g. email format) is the
     /// responsibility of the property's blueprint, not this type.
     Text(String),
+
+    /// A calendar date in proleptic Gregorian, with no time-of-day or
+    /// timezone component.
+    ///
+    /// Stored as an explicit `(year, month, day)` triple, not as a
+    /// string. Any persisted form (JSON, etc.) MUST round-trip through
+    /// [`Property::date_iso`] / [`Property::date_iso_string`] so
+    /// invalid dates cannot exist in memory.
+    DateIso {
+        /// Proleptic Gregorian year. May be negative (BCE).
+        year: i32,
+        /// Month, `1..=12`.
+        month: u8,
+        /// Day of month, `1..=days_in_month(year, month)`.
+        day: u8,
+    },
 }
 
 impl Property {
@@ -48,6 +64,73 @@ impl Property {
             )))
         }
     }
+
+    /// Construct a [`Property::DateIso`] from a strict `YYYY-MM-DD` string.
+    ///
+    /// Format requirements:
+    /// - exactly 10 characters
+    /// - 4-digit year, 2-digit month, 2-digit day, separated by `-`
+    /// - month in `1..=12`, day valid for that month and year (Gregorian)
+    ///
+    /// # Errors
+    /// Returns [`crate::error::Error::SchemaValidation`] if `s` is not a
+    /// well-formed Gregorian date.
+    pub fn date_iso(s: &str) -> crate::error::Result<Self> {
+        let bytes = s.as_bytes();
+        let invalid = || {
+            crate::error::Error::SchemaValidation(format!(
+                "DateIso requires strict YYYY-MM-DD, got {s:?}"
+            ))
+        };
+        if bytes.len() != 10 || bytes[4] != b'-' || bytes[7] != b'-' {
+            return Err(invalid());
+        }
+        let year: i32 = s
+            .get(0..4)
+            .ok_or_else(invalid)?
+            .parse()
+            .map_err(|_| invalid())?;
+        let month: u8 = s
+            .get(5..7)
+            .ok_or_else(invalid)?
+            .parse()
+            .map_err(|_| invalid())?;
+        let day: u8 = s
+            .get(8..10)
+            .ok_or_else(invalid)?
+            .parse()
+            .map_err(|_| invalid())?;
+        if !(1..=12).contains(&month) {
+            return Err(invalid());
+        }
+        if day < 1 || day > days_in_month(year, month) {
+            return Err(invalid());
+        }
+        Ok(Property::DateIso { year, month, day })
+    }
+}
+
+/// Days in `month` for `year`, accounting for Gregorian leap rules.
+///
+/// Caller must pass `month` in `1..=12`.
+fn days_in_month(year: i32, month: u8) -> u8 {
+    match month {
+        1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
+        4 | 6 | 9 | 11 => 30,
+        2 => {
+            if is_leap_year(year) {
+                29
+            } else {
+                28
+            }
+        }
+        _ => 0, // unreachable for caller-validated input
+    }
+}
+
+/// Gregorian leap-year rule: divisible by 4, but not 100, unless 400.
+fn is_leap_year(year: i32) -> bool {
+    year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)
 }
 
 #[cfg(test)]
@@ -59,7 +142,7 @@ mod tests {
         let p = Property::Number(42.0);
         match p {
             Property::Number(n) => assert!((n - 42.0).abs() < f64::EPSILON),
-            Property::Text(_) => panic!("expected Number variant"),
+            Property::Text(_) | Property::DateIso { .. } => panic!("expected Number variant"),
         }
     }
 
@@ -68,7 +151,7 @@ mod tests {
         let p = Property::Text("Alice Chen".to_owned());
         match p {
             Property::Text(s) => assert_eq!(s, "Alice Chen"),
-            Property::Number(_) => panic!("expected Text variant"),
+            Property::Number(_) | Property::DateIso { .. } => panic!("expected Text variant"),
         }
     }
 
@@ -81,7 +164,7 @@ mod tests {
                 assert_eq!(month, 1);
                 assert_eq!(day, 20);
             }
-            _ => panic!("expected DateIso variant"),
+            Property::Number(_) | Property::Text(_) => panic!("expected DateIso variant"),
         }
     }
 
