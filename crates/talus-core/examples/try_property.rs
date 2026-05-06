@@ -10,6 +10,7 @@
 //! Edit values, recompile, observe. The real correctness gates are the
 //! unit + property tests in `crates/talus-core/src/property.rs`.
 
+use talus_core::ids::NodeId;
 use talus_core::property::Property;
 
 fn main() {
@@ -30,6 +31,29 @@ fn main() {
     println!("\n== Property::Text (no validation today) ==");
     let t = Property::Text("Alice Chen".into());
     println!("  {t:?}");
+
+    println!("\n== Property::select_token ==");
+    show("select_token(\"to_do\")", Property::select_token("to_do"));
+    show(
+        "select_token(\"in_progress\")",
+        Property::select_token("in_progress"),
+    );
+    show("select_token(\"\")", Property::select_token(""));
+    show(
+        "select_token(\"  has space\")",
+        Property::select_token("  has space"),
+    );
+
+    println!("\n== Property::NodeRef (typed id only) ==");
+    let target = NodeId::new();
+    let r = Property::NodeRef(target);
+    println!("  NodeRef({target:?}) -> {r:?}");
+    // Try uncommenting the next line — the compiler rejects it as a type error:
+    // let _bad = Property::NodeRef(talus_core::ids::TemplateId::new());
+
+    println!("\n== Property::Boolean ==");
+    println!("  {:?}", Property::Boolean(true));
+    println!("  {:?}", Property::Boolean(false));
 }
 
 fn show(label: &str, result: talus_core::error::Result<Property>) {
