@@ -8,8 +8,19 @@
 //!
 //! Variants are added one TDD cycle at a time as Phase 1 progresses.
 
-// Implementation lives below the test module so the failing test is added
-// first (RED) and made to compile and pass in the next commit (GREEN).
+/// A typed property value attached to a node.
+///
+/// One variant per shape we know how to handle. Adding a variant is a
+/// breaking change to persisted data and requires a `schema_version` bump.
+#[derive(Debug, Clone, PartialEq)]
+pub enum Property {
+    /// A finite numeric value (currency, hours, percentage, count, ...).
+    ///
+    /// `NaN` and infinities are rejected at construction; see future
+    /// constructor cycles. The raw `f64` form is exposed for now to keep
+    /// the GREEN step minimal.
+    Number(f64),
+}
 
 #[cfg(test)]
 mod tests {
