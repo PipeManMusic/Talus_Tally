@@ -337,6 +337,18 @@ mod tests {
         }
     }
 
+    #[test]
+    fn boolean_variant_holds_a_bool() {
+        let t = Property::Boolean(true);
+        let f = Property::Boolean(false);
+        assert_eq!(t.tag(), Tag::Boolean);
+        assert_eq!(f.tag(), Tag::Boolean);
+        if let (Property::Boolean(a), Property::Boolean(b)) = (t, f) {
+            assert!(a);
+            assert!(!b);
+        }
+    }
+
     /// Compile-time guarantee: a `TemplateId` cannot be used where a
     /// `NodeRef` is expected. This test exists so that if a future
     /// refactor accidentally relaxes the type, a reviewer is forced to
