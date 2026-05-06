@@ -33,4 +33,26 @@ mod tests {
             Property::Number(n) => assert!((n - 42.0).abs() < f64::EPSILON),
         }
     }
+
+    #[test]
+    fn number_constructor_rejects_nan() {
+        assert!(Property::number(f64::NAN).is_err());
+    }
+
+    #[test]
+    fn number_constructor_rejects_positive_infinity() {
+        assert!(Property::number(f64::INFINITY).is_err());
+    }
+
+    #[test]
+    fn number_constructor_rejects_negative_infinity() {
+        assert!(Property::number(f64::NEG_INFINITY).is_err());
+    }
+
+    #[test]
+    fn number_constructor_accepts_finite_values() {
+        assert!(Property::number(0.0).is_ok());
+        assert!(Property::number(-1.5).is_ok());
+        assert!(Property::number(1e9).is_ok());
+    }
 }
