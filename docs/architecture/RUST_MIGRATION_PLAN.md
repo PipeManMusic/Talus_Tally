@@ -132,6 +132,202 @@ These are **rules** that constrain every phase. Violating them derails the migra
    Feature freeze on migration phases is the only way they finish.
 8. **Talus-core has no knowledge of users, networking, or UI.** Enforced by code
    review and crate boundaries (`talus-core` has zero `axum`, `tokio`, `tauri` deps).
+9. **Port intent, not code.** The Rust backend is a *clean rewrite informed by the
+   Python implementation*, not a line-by-line translation. Carrying over the Python
+   structure carries over its tech debt. See §4a.
+
+---
+
+## 4a. Clean-slate principles (no carried-over tech debt)
+
+The Python backend grew organically. We now know things we did not know at the
+start: that mutations need a single pipeline, that the desktop runtime is
+PyInstaller-hostile, that the document model wants to be a CRDT, that
+formatting belongs in the document, not in the renderer. **The Rust port is
+our chance to bake those lessons in from line one.** It is a refactor disguised
+as a rewrite. The following are non-negotiable design rules for every Rust
+module:
+
+### Type system rules
+- **No `serde_json::Value` or `HashMap<String, Value>` in domain code.**
+  Every shape is a named struct or enum. JSON is parsed at the boundary into
+  typed values; if it fails, it fails loudly. The Python code's
+  `Dict[str, Any]` for node properties (see [backend/core/node.py](backend/core/node.py))
+  is the single biggest source of correctness bugs and must not survive.
+- **Newtype every id.** `ProjectId`, `NodeId`, `TemplateId`, `PropertyId` are
+  distinct types — never `String`, never `Uuid` directly. The compiler catches
+  the entire class of "passed a node id where a property id was expected" bugs.
+  (Already done in [crates/talus-core/src/ids.rs](crates/talus-core/src/ids.rs).)
+- **Make illegal states unrepresentable.** Use enums with payloads, not flag
+  fields. A node either has a parent or it is a root — represent that as a
+  variant, not as `parent_id: Option<NodeId>` plus three runtime checks.
+- **Every persisted struct carries a `schema_version`.** Migrations are typed
+  conversions between numbered versions, not stringly-typed key remapping like
+  [backend/infra/migrations.py](backend/infra/migrations.py).
+
+### Mutation rules
+- **One pipeline. No exceptions.** Every state change goes through `apply_command`.
+  No code anywhere in the workspace mutates a `Project` directly. The Python
+  bypass at [backend/api/routes.py:2119](backend/api/routes.py) (reference
+  remapping during template load that mutates `node.properties` outside the
+  command pipeline) is exactly the kind of thing that becomes impossible to do
+  in Rust because the mutation API takes `&self` and returns a new state +
+  command record.
+- **Commands are data, not behavior.** A `Command` is a serializable enum.
+  Executing it is a free function `apply(state, cmd) -> (state, event)`. This
+  is what makes undo, replay, and CRDT merge fall out for free.
+- **No global mutable state.** No equivalent of `_sessions` /
+  `_session_metadata` ([backend/api/routes.py:241-242](backend/api/routes.py)).
+  State is owned by an explicit `App` struct passed by `&self`. If a value
+  needs to be shared across tasks, it is `Arc<RwLock<T>>` and the locking is
+  visible at the call site.
+
+### Error rules
+- **No `unwrap()` outside tests and `main`.** Enforced by clippy lint.
+- **No string errors.** Every fallible operation returns `Result<T, E>` where
+  `E` is a typed error enum scoped to the module. The Python pattern of
+  `except Exception as e: return jsonify({"error": str(e)}), 500`
+  ([backend/api/routes.py:238](backend/api/routes.py)) becomes impossible
+  because there is no `Exception` to catch.
+- **HTTP status codes are derived from the error type, not chosen at the
+  catch site.** Validation errors are `400` by construction; only true
+  programming errors map to `500`.
+- **No silent skips.** The Python pattern of `except Exception: continue` over
+  malformed templates ([backend/infra/template_persistence.py:259](backend/infra/template_persistence.py))
+  is forbidden. Either we surface the error, or we do not consume the input.
+
+### Boundary rules
+- **HTTP/WebSocket types live in `talus-server`. Domain types live in
+  `talus-core`.** A handler converts between them. Domain types never grow a
+  `to_response()` method.
+- **No business logic in handlers.** A handler does: deserialize → validate
+  ids exist → build command → call `apply_command` → serialize result. If a
+  handler is more than ~30 lines, it is doing something wrong.
+- **Persistence is behind a trait.** Already done in
+  [crates/talus-storage/src/project_store.rs](crates/talus-storage/src/project_store.rs).
+  Tests use the in-memory impl. Production swaps in SQLite. Code under test
+  never knows the difference.
+- **No `eval`-equivalents.** The Python backend's `eval()` for velocity formulas
+  ([backend/infra/velocity.py:36](backend/infra/velocity.py)) is replaced by an
+  explicit expression AST evaluator, even though it costs more code.
+
+### Observability rules
+- **No `print()` in production code.** Use the `tracing` crate. The Python
+  code is littered with `print()` calls in command undo paths
+  ([backend/handlers/commands/node_commands.py:404-417](backend/handlers/commands/node_commands.py))
+  and in graph mutation ([backend/core/graph.py:51-58](backend/core/graph.py)).
+  These do not survive the port.
+- **Structured logs only.** Every log event is a `tracing::event!` with named
+  fields, not a formatted string. This is what makes log aggregation work in
+  the hosted backend (Phase 5).
+
+### Module rules
+- **Modules are named after what they do, not when they were written.** No
+  `infra/` catch-all. The Python `backend/infra/` directory holds settings,
+  migrations, persistence, velocity, markup, orphan management, and template
+  persistence — six unrelated concerns. In Rust each gets its own crate or
+  module with a single responsibility.
+- **No file over 400 lines.** No function over 50 lines. The Python
+  `load_graph_into_session()` ([backend/api/routes.py:2144](backend/api/routes.py))
+  is 150+ lines of nested helpers. That shape is not portable; it must be
+  decomposed during the port.
+- **No `core` / `util` / `helpers` modules.** Every module justifies its name.
+
+### Testing rules
+- **Property tests for every invariant.** `proptest` is already a workspace
+  dep. Anywhere we say "this should always be true" we write a property test,
+  not a single-example unit test.
+- **Snapshot tests for serialization.** `insta` is already a workspace dep.
+  Every persisted shape gets a snapshot so schema drift is caught at PR time,
+  not by a user opening an old file.
+- **No fixture mutation.** Test fixtures are `&'static` or freshly cloned per
+  test. The frontend testing workflow already records pain from shared
+  fixture state ([frontend/FRONTEND_TESTING_WORKFLOW.md](frontend/FRONTEND_TESTING_WORKFLOW.md));
+  we do not repeat it on the backend side.
+
+### Process rules
+- **Each ported module is reviewed against this section before merge.** The
+  PR template (added in Phase 1) includes a checklist mapping to these rules.
+- **A "matches the Python" review comment is grounds for changes.** If the
+  Rust shape mirrors the Python shape, that is a smell, not a feature. The
+  Python backend is reference behavior, not reference design.
+
+---
+
+## 4b. Tech debt inventory (Python backend, audited 2026-05-06)
+
+This is the list of concrete smells the rewrite must NOT carry forward. It
+was assembled by reading `backend/` and the architecture docs end-to-end. Each
+item names a file:line, the smell, and the Rust remediation. The phase that
+removes the item is in brackets.
+
+### Architecture / boundary leaks
+- [backend/app.py:61](backend/app.py) — Global `socketio` singleton without sync → owned by an `App` struct, locking visible at call sites. **[Phase 2]**
+- [backend/api/routes.py:241-242](backend/api/routes.py) — Two parallel global session dicts (`_sessions`, `_session_metadata`) accessed unlocked from Flask + SocketIO threads → single `SessionRegistry` owned by `App`, behind `RwLock`. **[Phase 2]**
+- [backend/infra/settings.py:79](backend/infra/settings.py) — Mutable `_cache` global for settings, can go stale → `OnceCell` for immutable lazy init; explicit reload API. **[Phase 2]**
+- [backend/infra/migrations.py:277](backend/infra/migrations.py) — Mutable global `_migrations_registry` → static slice of typed migrations registered at compile time. **[Phase 3]**
+- `backend/infra/` — One directory holds six unrelated concerns → split into `talus-storage`, `talus-templates`, `talus-formulas`, `talus-markup`, `talus-migrations`. **[Phases 1–3]**
+
+### Data model / schema
+- [backend/core/node.py](backend/core/node.py) — `properties: Dict[str, Any]`, no `schema_version`, untyped values everywhere → `Property` enum with typed variants; `Node { schema_version: SchemaVersion, properties: IndexMap<PropertyId, Property> }`. **[Phase 1]**
+- [backend/infra/orphan_manager.py:21-41](backend/infra/orphan_manager.py) — `_iter_graph_nodes()` duck-types dict-graphs vs list-graphs vs `ProjectGraph` → single typed `Graph` representation; conversion happens once at the boundary. **[Phase 1]**
+- [backend/infra/persistence.py:5](backend/infra/persistence.py) — `string_to_uuid()` invents `uuid5(NAMESPACE_DNS, s)` for unmapped strings → unmapped reference is a hard error; no silent UUID fabrication. **[Phase 3]**
+- [backend/infra/schema_loader.py:11](backend/infra/schema_loader.py) — `_generate_stable_uuid()` SHA1s without a version → derived UUIDs include `(schema_version, namespace, key)`. **[Phase 3]**
+- [backend/api/project_manager.py:35](backend/api/project_manager.py) — `hasattr(nt, 'id') and hasattr(nt, 'name')` runtime structural typing → trait bound `NodeTypeDef`. **[Phase 1]**
+
+### Mutation / state management
+- [backend/api/routes.py:2119-2122](backend/api/routes.py) — Reference remapping during template load mutates `node.properties` directly, bypassing the command pipeline → mutations only via `apply_command(state, Command::Reconcile { .. })`. **[Phase 2]**
+- [backend/api/routes.py:2141-2169](backend/api/routes.py) — Bulk default-property writes during project load skip dispatcher → `Command::HydrateDefaults` issued after load completes. **[Phase 2]**
+- [backend/handlers/commands/node_commands.py:404-417](backend/handlers/commands/node_commands.py) — `print()` debug in `undo()` path → `tracing::trace!` with structured fields. **[Phase 2]**
+
+### Validation
+- [backend/infra/velocity.py:36](backend/infra/velocity.py) — `eval(formula, {"__builtins__": {}})` for velocity formulas → typed expression AST + interpreter; no host-language eval. **[Phase 3]**
+- [backend/api/text_editor_routes.py:328](backend/api/text_editor_routes.py) — `TODO`: incomplete spell-check word validation → no `TODO` comments allowed in ported code; either implement or `unimplemented!()` with tracking issue. **[Phase 2]**
+- [backend/infra/migrations.py:101](backend/infra/migrations.py) — `apply()` returns `(False, [error_str])` instead of typed errors → `Result<MigrationOutcome, MigrationError>`. **[Phase 3]**
+
+### Error handling
+- [backend/__main__.py:12](backend/__main__.py), [backend/app.py:228](backend/app.py), [backend/handlers/commands/node_commands.py:756](backend/handlers/commands/node_commands.py), [backend/infra/template_persistence.py:259](backend/infra/template_persistence.py), [backend/infra/velocity.py:41](backend/infra/velocity.py), [backend/infra/markup.py:90](backend/infra/markup.py) — Six bare `except Exception:` sites that swallow or stringify errors → typed module-level error enums; clippy lint forbids `unwrap()` outside tests/main. **[All phases]**
+- [backend/infra/persistence.py:267](backend/infra/persistence.py) — Template load errors `print()`ed instead of logged → `tracing::error!` + propagated `LoadError`. **[Phase 3]**
+- [backend/api/routes.py:238](backend/api/routes.py) — HTTP 500 used as catch-all (including for validation) → `IntoResponse` impl on typed errors picks 4xx vs 5xx by variant. **[Phase 2]**
+
+### Concurrency / IO
+- [backend/api/routes.py:241](backend/api/routes.py) — Shared dicts touched from Flask thread pool + SocketIO threads without locks → tokio `RwLock` with documented invariants. **[Phase 2]**
+- [backend/infra/persistence.py:67](backend/infra/persistence.py) — Atomic tempfile-rename used here but not elsewhere → all writes go through a single `atomic_write()` helper in `talus-storage`. **[Phase 1]**
+
+### Persistence
+- [backend/infra/persistence.py:49](backend/infra/persistence.py) — Full-document JSON rewrite on every mutation → Automerge document with binary delta append; full snapshot only on compaction. **[Phase 3]**
+- [backend/core/node.py](backend/core/node.py) — No `schema_version` field; in-memory and on-disk shapes drift silently → `schema_version` required on every persisted struct; unknown future versions fail-closed with a typed error. **[Phase 1]**
+- [backend/infra/migrations.py:60](backend/infra/migrations.py) — Property-id remapping by string match without verifying the source key exists → migrations are total typed functions `vN -> vN+1`; missing fields are explicit. **[Phase 3]**
+
+### Templates / formatting
+- [backend/api/text_editor_routes.py:324](backend/api/text_editor_routes.py) — Token formatting conditionally applied based on `token_config` presence → `FormattingConfig` is required, with an explicit `Default` variant. **[Phase 2]**
+- See [docs/BACKEND_FORMATTING_ARCHITECTURE.md](docs/BACKEND_FORMATTING_ARCHITECTURE.md) — formatting currently spread across renderer + persistence layer → consolidated into a single `talus-formatting` module that owns the conversion model. **[Phase 2]**
+
+### Build / packaging
+- [talus-tally.spec:5](talus-tally.spec) — Hardcoded PyInstaller hidden-imports (watchdog, engineio drivers) → no PyInstaller; native binary, no hidden-import lists. **[Phase 2]**
+- [backend/app.py:33](backend/app.py) — `sys.frozen + hasattr(sys, '_MEIPASS')` runtime detection of packaging mode → compile-time `cfg(feature = "...")` flags. **[Phase 2]**
+- [backend/app.py:52](backend/app.py) — Multi-candidate asset path resolution → `include_bytes!` / `RUST_EMBED` at build time. **[Phase 2]**
+- *Windows cold-start* (root cause of v0.1.11-alpha.2 hotfix) — PyInstaller + Defender 30–90s start → native Rust binary launches in <100ms; hotfix's 120s timeout becomes irrelevant. **[Phase 2]**
+
+### Naming / readability
+- [backend/api/routes.py:2144-2290](backend/api/routes.py) — `load_graph_into_session()` is 150+ lines with nested helpers → decomposed into `parse → validate → hydrate → register` free functions, each <50 lines. **[Phase 2]**
+- [backend/infra/persistence.py:173,193,287](backend/infra/persistence.py) — `_normalize_property_uuid()` interleaves business logic with `print()` debug → `tracing::trace_span!` instrumentation; logic is straight-line. **[Phase 3]**
+- [backend/core/graph.py:51-58](backend/core/graph.py) — `remove_node()` mixes `print()` debug with mutation → tracing span around the operation; the function body is just the mutation. **[Phase 1]**
+
+### Outstanding TODO / HACK / FIXME comments
+- [backend/api/text_editor_routes.py:328](backend/api/text_editor_routes.py) — `TODO` on spell-check word validation → tracked, resolved during port (no `TODO` survives the rewrite without an issue link).
+
+---
+
+### How this section is used
+
+- **At the start of each phase**, re-read the items tagged `[Phase N]`.
+- **In every PR** that ports a Python module, the description must list which
+  inventory items the PR resolves and link to the diff that proves it.
+- **At the end of each phase**, items marked done are struck through (not
+  deleted — the audit trail matters).
+- **New debt found mid-port** is added here with a `[Phase N]` tag, never
+  silently absorbed.
 
 ---
 

@@ -1,0 +1,21 @@
+[package]
+name = "talus-bin-bench"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Microbenchmark and parity-testing CLI for the Rust port."
+publish = false
+
+[[bin]]
+name = "talus-bench"
+path = "src/main.rs"
+
+[dependencies]
+talus-core = { path = "../talus-core" }
+talus-storage = { path = "../talus-storage" }
+
+[lints.rust]
+unsafe_code = "forbid"
