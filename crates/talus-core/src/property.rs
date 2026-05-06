@@ -76,4 +76,20 @@ mod tests {
         assert!(Property::number(-1.5).is_ok());
         assert!(Property::number(1e9).is_ok());
     }
+
+    proptest::proptest! {
+        #[test]
+        fn number_constructor_accepts_every_finite_f64(value in proptest::num::f64::NORMAL | proptest::num::f64::ZERO | proptest::num::f64::SUBNORMAL) {
+            let result = Property::number(value);
+            proptest::prop_assert!(result.is_ok(), "expected Ok for finite {value}, got {result:?}");
+            if let Ok(Property::Number(stored)) = result {
+                proptest::prop_assert!(stored.to_bits() == value.to_bits(), "value not preserved");
+            }
+        }
+
+        #[test]
+        fn number_constructor_rejects_every_non_finite_f64(value in proptest::num::f64::INFINITE | proptest::num::f64::QUIET_NAN | proptest::num::f64::SIGNALING_NAN) {
+            proptest::prop_assert!(Property::number(value).is_err());
+        }
+    }
 }
