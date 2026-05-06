@@ -8,6 +8,8 @@
 //!
 //! Variants are added one TDD cycle at a time as Phase 1 progresses.
 
+use crate::ids::NodeId;
+
 /// A typed property value attached to a node.
 ///
 /// One variant per shape we know how to handle. Adding a variant is a
@@ -44,6 +46,23 @@ pub enum Property {
         /// Day of month, `1..=days_in_month(year, month)`.
         day: u8,
     },
+
+    /// A reference to another node within the same project.
+    ///
+    /// The compiler enforces that only a [`NodeId`] can be placed here —
+    /// a [`crate::ids::TemplateId`] or [`crate::ids::PropertyId`] is a
+    /// type error at the call site. This is the typed replacement for
+    /// the Python pattern of storing the target's UUID as a bare string
+    /// (see e.g. `data/examples/budget_smoke_test_project.json`).
+    ///
+    /// # Doctest: cross-id substitution is rejected
+    ///
+    /// ```compile_fail
+    /// use talus_core::ids::TemplateId;
+    /// use talus_core::property::Property;
+    /// let _ = Property::NodeRef(TemplateId::new());
+    /// ```
+    NodeRef(NodeId),
 }
 
 impl Property {
@@ -142,7 +161,9 @@ mod tests {
         let p = Property::Number(42.0);
         match p {
             Property::Number(n) => assert!((n - 42.0).abs() < f64::EPSILON),
-            Property::Text(_) | Property::DateIso { .. } => panic!("expected Number variant"),
+            Property::Text(_) | Property::DateIso { .. } | Property::NodeRef(_) => {
+                panic!("expected Number variant")
+            }
         }
     }
 
@@ -151,7 +172,9 @@ mod tests {
         let p = Property::Text("Alice Chen".to_owned());
         match p {
             Property::Text(s) => assert_eq!(s, "Alice Chen"),
-            Property::Number(_) | Property::DateIso { .. } => panic!("expected Text variant"),
+            Property::Number(_) | Property::DateIso { .. } | Property::NodeRef(_) => {
+                panic!("expected Text variant")
+            }
         }
     }
 
@@ -164,7 +187,9 @@ mod tests {
                 assert_eq!(month, 1);
                 assert_eq!(day, 20);
             }
-            Property::Number(_) | Property::Text(_) => panic!("expected DateIso variant"),
+            Property::Number(_) | Property::Text(_) | Property::NodeRef(_) => {
+                panic!("expected DateIso variant")
+            }
         }
     }
 
