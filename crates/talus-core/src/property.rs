@@ -56,6 +56,15 @@ mod tests {
     }
 
     #[test]
+    fn text_variant_holds_a_string() {
+        let p = Property::Text("Alice Chen".to_owned());
+        match p {
+            Property::Text(s) => assert_eq!(s, "Alice Chen"),
+            _ => panic!("expected Text variant"),
+        }
+    }
+
+    #[test]
     fn number_constructor_rejects_nan() {
         assert!(Property::number(f64::NAN).is_err());
     }
