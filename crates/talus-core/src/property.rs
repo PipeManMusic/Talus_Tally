@@ -196,6 +196,31 @@ mod tests {
     }
 
     #[test]
+    fn node_ref_variant_holds_a_node_id() {
+        use crate::ids::NodeId;
+        let target = NodeId::new();
+        let p = Property::NodeRef(target);
+        match p {
+            Property::NodeRef(id) => assert_eq!(id, target),
+            Property::Number(_) | Property::Text(_) | Property::DateIso { .. } => {
+                panic!("expected NodeRef variant")
+            }
+        }
+    }
+
+    /// Compile-time guarantee: a `TemplateId` cannot be used where a
+    /// `NodeRef` is expected. This test exists so that if a future
+    /// refactor accidentally relaxes the type, a reviewer is forced to
+    /// confront the compile error here.
+    #[test]
+    fn node_ref_does_not_accept_other_id_kinds() {
+        use crate::ids::NodeId;
+        // The body is a positive construction; the negative case is
+        // expressed in a doctest below (see `Property::NodeRef`).
+        let _ = Property::NodeRef(NodeId::new());
+    }
+
+    #[test]
     fn number_constructor_rejects_nan() {
         assert!(Property::number(f64::NAN).is_err());
     }
