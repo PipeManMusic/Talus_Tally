@@ -21,6 +21,13 @@ pub enum Property {
     /// ergonomic, but trusted callers (deserializers, ports from Python
     /// JSON) must validate before constructing.
     Number(f64),
+
+    /// A free-form string value (names, descriptions, email-shaped
+    /// strings, etc.).
+    ///
+    /// Domain-specific validation (e.g. email format) is the
+    /// responsibility of the property's blueprint, not this type.
+    Text(String),
 }
 
 impl Property {
@@ -52,6 +59,7 @@ mod tests {
         let p = Property::Number(42.0);
         match p {
             Property::Number(n) => assert!((n - 42.0).abs() < f64::EPSILON),
+            Property::Text(_) => panic!("expected Number variant"),
         }
     }
 
@@ -60,7 +68,7 @@ mod tests {
         let p = Property::Text("Alice Chen".to_owned());
         match p {
             Property::Text(s) => assert_eq!(s, "Alice Chen"),
-            _ => panic!("expected Text variant"),
+            Property::Number(_) => panic!("expected Text variant"),
         }
     }
 
