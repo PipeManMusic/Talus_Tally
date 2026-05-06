@@ -166,6 +166,7 @@ mod tests {
         Text,
         DateIso,
         NodeRef,
+        SelectToken,
     }
 
     impl Property {
@@ -175,6 +176,7 @@ mod tests {
                 Property::Text(_) => Tag::Text,
                 Property::DateIso { .. } => Tag::DateIso,
                 Property::NodeRef(_) => Tag::NodeRef,
+                Property::SelectToken(_) => Tag::SelectToken,
             }
         }
     }
@@ -241,6 +243,45 @@ mod tests {
         assert_eq!(p.tag(), Tag::NodeRef);
         if let Property::NodeRef(id) = p {
             assert_eq!(id, target);
+        }
+    }
+
+    #[test]
+    fn select_token_constructor_accepts_valid_slug() {
+        let p = Property::select_token("in_progress").expect("valid slug");
+        assert_eq!(p.tag(), Tag::SelectToken);
+        if let Property::SelectToken(tok) = p {
+            assert_eq!(tok.as_str(), "in_progress");
+        }
+    }
+
+    #[test]
+    fn select_token_constructor_rejects_empty_string() {
+        assert!(Property::select_token("").is_err());
+    }
+
+    #[test]
+    fn select_token_constructor_rejects_whitespace_only() {
+        assert!(Property::select_token("   ").is_err());
+    }
+
+    #[test]
+    fn select_token_constructor_rejects_internal_whitespace() {
+        // Slugs must be a single token; whitespace inside indicates a UI
+        // string accidentally being stored as a token id.
+        assert!(Property::select_token("in progress").is_err());
+        assert!(Property::select_token("a\tb").is_err());
+        assert!(Property::select_token("a\nb").is_err());
+    }
+
+    #[test]
+    fn select_token_accepts_slugs_seen_in_python_data() {
+        // From the Python backend audit (data/examples/...):
+        for slug in ["to_do", "in_progress", "done"] {
+            assert!(
+                Property::select_token(slug).is_ok(),
+                "failed on {slug}"
+            );
         }
     }
 
