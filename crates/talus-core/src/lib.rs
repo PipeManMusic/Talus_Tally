@@ -21,6 +21,9 @@ pub mod ids;
 /// Typed property values (replaces Python's `Dict[str, Any]`).
 pub mod property;
 
+/// A single node in a project tree.
+pub mod node;
+
 /// Schema and validation primitives. Phase 1: types only; rules ported per module.
 pub mod schema;
 
