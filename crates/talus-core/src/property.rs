@@ -360,6 +360,30 @@ mod tests {
         }
     }
 
+    #[test]
+    fn property_roundtrips_through_json() {
+        use crate::ids::NodeId;
+        let cases = vec![
+            Property::Number(42.0),
+            Property::Text("Alice Chen".into()),
+            Property::DateIso {
+                year: 2025,
+                month: 1,
+                day: 20,
+            },
+            Property::NodeRef(NodeId::new()),
+            Property::select_token("in_progress").unwrap(),
+            Property::Boolean(true),
+            Property::Boolean(false),
+        ];
+        for original in cases {
+            let json = serde_json::to_string(&original).expect("serialize");
+            let parsed: Property =
+                serde_json::from_str(&json).unwrap_or_else(|e| panic!("deserialize {json}: {e}"));
+            assert_eq!(original, parsed, "round-trip mismatch for {json}");
+        }
+    }
+
     /// Compile-time guarantee: a `TemplateId` cannot be used where a
     /// `NodeRef` is expected. This test exists so that if a future
     /// refactor accidentally relaxes the type, a reviewer is forced to
