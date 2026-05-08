@@ -395,6 +395,34 @@ mod tests {
         }
     }
 
+    #[test]
+    fn property_json_shape_is_locked() {
+        use crate::ids::NodeId;
+        use uuid::Uuid;
+
+        // Stable id so the snapshot is deterministic.
+        let stable_node_id =
+            NodeId::from(Uuid::parse_str("00000000-0000-4000-8000-000000000001").unwrap());
+
+        insta::assert_json_snapshot!("property_number", Property::Number(42.0));
+        insta::assert_json_snapshot!("property_text", Property::Text("Alice Chen".into()));
+        insta::assert_json_snapshot!(
+            "property_date_iso",
+            Property::DateIso {
+                year: 2025,
+                month: 1,
+                day: 20,
+            }
+        );
+        insta::assert_json_snapshot!("property_node_ref", Property::NodeRef(stable_node_id));
+        insta::assert_json_snapshot!(
+            "property_select_token",
+            Property::select_token("in_progress").unwrap()
+        );
+        insta::assert_json_snapshot!("property_boolean_true", Property::Boolean(true));
+        insta::assert_json_snapshot!("property_boolean_false", Property::Boolean(false));
+    }
+
     /// Compile-time guarantee: a `TemplateId` cannot be used where a
     /// `NodeRef` is expected. This test exists so that if a future
     /// refactor accidentally relaxes the type, a reviewer is forced to
