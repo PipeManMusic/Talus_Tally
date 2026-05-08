@@ -8,6 +8,8 @@
 //!
 //! Variants are added one TDD cycle at a time as Phase 1 progresses.
 
+use serde::{Deserialize, Serialize};
+
 use crate::ids::NodeId;
 
 /// Identifier for one option of a select-typed property.
@@ -30,7 +32,8 @@ use crate::ids::NodeId;
 /// flow through the system but they are NOT the canonical identifier.
 // TODO(phase-3): replace `String` with `uuid::Uuid`. See
 // docs/architecture/RUST_MIGRATION_PLAN.md §4b "Data model / schema".
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(transparent)]
 pub struct SelectOptionId(String);
 
 impl SelectOptionId {
@@ -45,7 +48,15 @@ impl SelectOptionId {
 ///
 /// One variant per shape we know how to handle. Adding a variant is a
 /// breaking change to persisted data and requires a `schema_version` bump.
-#[derive(Debug, Clone, PartialEq)]
+///
+/// # On-disk shape
+///
+/// Serialized via serde with adjacent tagging:
+/// `{ "type": "<VariantName>", "value": <payload> }`. The tag is
+/// explicit so the JSON is self-describing and survives schema
+/// evolution without ambiguity.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "type", content = "value")]
 pub enum Property {
     /// A finite numeric value (currency, hours, percentage, count, ...).
     ///
