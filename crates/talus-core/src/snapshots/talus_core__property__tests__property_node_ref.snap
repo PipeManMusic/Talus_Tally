@@ -1,0 +1,8 @@
+---
+source: crates/talus-core/src/property.rs
+expression: "Property::NodeRef(stable_node_id)"
+---
+{
+  "type": "NodeRef",
+  "value": "00000000-0000-4000-8000-000000000001"
+}

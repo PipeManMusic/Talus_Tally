@@ -1,0 +1,8 @@
+---
+source: crates/talus-core/src/property.rs
+expression: "Property::Number(42.0)"
+---
+{
+  "type": "Number",
+  "value": 42.0
+}

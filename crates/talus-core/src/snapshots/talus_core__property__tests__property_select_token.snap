@@ -1,0 +1,8 @@
+---
+source: crates/talus-core/src/property.rs
+expression: "Property::select_token(\"in_progress\").unwrap()"
+---
+{
+  "type": "SelectToken",
+  "value": "in_progress"
+}

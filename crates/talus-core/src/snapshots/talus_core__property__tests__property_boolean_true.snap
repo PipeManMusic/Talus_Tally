@@ -1,0 +1,8 @@
+---
+source: crates/talus-core/src/property.rs
+expression: "Property::Boolean(true)"
+---
+{
+  "type": "Boolean",
+  "value": true
+}

@@ -1,0 +1,12 @@
+---
+source: crates/talus-core/src/property.rs
+expression: "Property::DateIso { year: 2025, month: 1, day: 20, }"
+---
+{
+  "type": "DateIso",
+  "value": {
+    "year": 2025,
+    "month": 1,
+    "day": 20
+  }
+}

@@ -1,0 +1,8 @@
+---
+source: crates/talus-core/src/property.rs
+expression: "Property::Text(\"Alice Chen\".into())"
+---
+{
+  "type": "Text",
+  "value": "Alice Chen"
+}
