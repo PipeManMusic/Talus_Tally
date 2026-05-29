@@ -27,9 +27,7 @@ impl FilesystemProjectStore {
     /// created if it does not exist.
     ///
     /// # Errors
-    /// Returns [`Error::Serialization`] (used here as the generic I/O
-    /// error variant until a dedicated `Error::Io` exists) if the
-    /// directory cannot be created.
+    /// Returns [`Error::Io`] if the directory cannot be created.
     pub fn new(root: impl Into<PathBuf>) -> Result<Self> {
         let root = root.into();
         fs::create_dir_all(&root).map_err(|e| io_err(&e))?;
@@ -42,7 +40,7 @@ impl FilesystemProjectStore {
 }
 
 fn io_err(e: &std::io::Error) -> Error {
-    Error::Serialization(format!("io: {e}"))
+    Error::Io(e.to_string())
 }
 
 impl ProjectStore for FilesystemProjectStore {

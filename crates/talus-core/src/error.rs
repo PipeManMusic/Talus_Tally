@@ -23,6 +23,10 @@ pub enum Error {
     /// A serialization or deserialization step failed.
     #[error("serialization error: {0}")]
     Serialization(String),
+
+    /// An underlying I/O operation failed (filesystem, network, etc.).
+    #[error("io error: {0}")]
+    Io(String),
 }
 
 /// Convenience alias for `Result<T, Error>`.
