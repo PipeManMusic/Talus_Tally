@@ -27,3 +27,21 @@ pub enum Error {
 
 /// Convenience alias for `Result<T, Error>`.
 pub type Result<T> = std::result::Result<T, Error>;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn io_variant_displays_with_io_prefix() {
+        let err = Error::Io("disk on fire".to_string());
+        assert_eq!(err.to_string(), "io error: disk on fire");
+    }
+
+    #[test]
+    fn io_variant_is_distinct_from_serialization() {
+        let err = Error::Io("x".into());
+        assert!(matches!(err, Error::Io(_)));
+        assert!(!matches!(err, Error::Serialization(_)));
+    }
+}
