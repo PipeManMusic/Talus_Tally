@@ -482,4 +482,69 @@ mod tests {
 
         insta::assert_json_snapshot!("project_full_shape", p);
     }
+
+    // Test helper: project with one NodeType "Task" that allows one
+    // PropertyId, and one node of that kind already inserted. Returns
+    // (project, node_id, allowed_pid).
+    fn project_with_one_allowed_property() -> (Project, crate::ids::NodeId, crate::ids::PropertyId)
+    {
+        let mut p = Project::new("P", TemplateId::new());
+        let pid = crate::ids::PropertyId::new();
+        let nt = crate::node_type::NodeType::new("Task").with_allowed_property(pid);
+        let kind = nt.id();
+        p.register_node_type(nt).unwrap();
+        let node = crate::node::Node::new(kind, "n");
+        let nid = node.id();
+        p.insert_node(node).unwrap();
+        (p, nid, pid)
+    }
+
+    #[test]
+    fn set_property_succeeds_when_property_is_allowed() {
+        let (mut p, nid, pid) = project_with_one_allowed_property();
+        p.set_property(nid, pid, crate::property::Property::Boolean(true))
+            .unwrap();
+        let stored = p.graph().get(nid).unwrap().properties().get(&pid).cloned();
+        assert_eq!(stored, Some(crate::property::Property::Boolean(true)));
+    }
+
+    #[test]
+    fn set_property_overwrites_existing_value_for_same_pid() {
+        let (mut p, nid, pid) = project_with_one_allowed_property();
+        p.set_property(nid, pid, crate::property::Property::Boolean(false))
+            .unwrap();
+        p.set_property(nid, pid, crate::property::Property::Boolean(true))
+            .unwrap();
+        let stored = p.graph().get(nid).unwrap().properties().get(&pid).cloned();
+        assert_eq!(stored, Some(crate::property::Property::Boolean(true)));
+        assert_eq!(p.graph().get(nid).unwrap().properties().len(), 1);
+    }
+
+    #[test]
+    fn set_property_rejects_pid_not_in_allowed_properties() {
+        let (mut p, nid, _allowed) = project_with_one_allowed_property();
+        let stray = crate::ids::PropertyId::new();
+        let err = p
+            .set_property(nid, stray, crate::property::Property::Boolean(true))
+            .expect_err("disallowed property");
+        assert!(
+            matches!(err, crate::error::Error::InvariantViolation(_)),
+            "got {err:?}"
+        );
+        // Node unchanged.
+        assert!(p.graph().get(nid).unwrap().properties().is_empty());
+    }
+
+    #[test]
+    fn set_property_returns_not_found_for_unknown_node() {
+        let (mut p, _nid, pid) = project_with_one_allowed_property();
+        let stray = crate::ids::NodeId::new();
+        let err = p
+            .set_property(stray, pid, crate::property::Property::Boolean(true))
+            .expect_err("unknown node");
+        assert!(
+            matches!(err, crate::error::Error::NotFound(_)),
+            "got {err:?}"
+        );
+    }
 }
