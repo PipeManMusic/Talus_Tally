@@ -8,6 +8,7 @@
 //! Built one TDD cycle at a time.
 
 use indexmap::IndexMap;
+use serde::{Deserialize, Serialize};
 
 use crate::ids::{NodeId, NodeTypeId, PropertyId};
 use crate::property::Property;
@@ -20,7 +21,7 @@ use crate::property::Property;
 pub const NODE_SCHEMA_VERSION: u32 = 1;
 
 /// A single node in a project tree.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Node {
     id: NodeId,
     kind: NodeTypeId,
