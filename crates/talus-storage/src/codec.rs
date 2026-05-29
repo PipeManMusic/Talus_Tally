@@ -33,7 +33,8 @@ pub fn decode(bytes: &[u8]) -> Result<Project> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use talus_core::ids::TemplateId;
+    use talus_core::command::{Command, Event};
+    use talus_core::ids::{NodeId, TemplateId};
     use talus_core::node_type::NodeType;
     use talus_core::project::Project;
 
@@ -61,5 +62,35 @@ mod tests {
             matches!(err, talus_core::error::Error::Serialization(_)),
             "got {err:?}"
         );
+    }
+
+    #[test]
+    fn encode_then_decode_command_round_trips() {
+        let cmd = Command::RegisterNodeType(NodeType::new("Equipment"));
+        let bytes = encode_command(&cmd).unwrap();
+        let parsed = decode_command(&bytes).unwrap();
+        assert_eq!(parsed, cmd);
+    }
+
+    #[test]
+    fn decode_command_invalid_json_returns_serialization_error() {
+        let err = decode_command(b"not json").expect_err("invalid json");
+        assert!(matches!(err, Error::Serialization(_)), "got {err:?}");
+    }
+
+    #[test]
+    fn encode_then_decode_event_round_trips() {
+        let ev = Event::NodeInserted {
+            node_id: NodeId::new(),
+        };
+        let bytes = encode_event(&ev).unwrap();
+        let parsed = decode_event(&bytes).unwrap();
+        assert_eq!(parsed, ev);
+    }
+
+    #[test]
+    fn decode_event_invalid_json_returns_serialization_error() {
+        let err = decode_event(b"not json").expect_err("invalid json");
+        assert!(matches!(err, Error::Serialization(_)), "got {err:?}");
     }
 }
