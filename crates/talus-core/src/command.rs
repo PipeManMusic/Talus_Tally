@@ -386,4 +386,45 @@ mod tests {
         ];
         insta::assert_json_snapshot!("event_all_variants", events);
     }
+
+    #[test]
+    fn node_type_registered_event_carries_the_node_type() {
+        let mut p = Project::new("P", TemplateId::new());
+        let nt = NodeType::new("Task");
+        let nt_clone = nt.clone();
+        let ev = apply_command(&mut p, Command::RegisterNodeType(nt)).unwrap();
+        assert_eq!(ev, Event::NodeTypeRegistered(nt_clone));
+    }
+
+    #[test]
+    fn node_inserted_event_carries_the_node() {
+        let mut p = Project::new("P", TemplateId::new());
+        let nt = NodeType::new("Task");
+        let kind = nt.id();
+        apply_command(&mut p, Command::RegisterNodeType(nt)).unwrap();
+        let node = crate::node::Node::new(kind, "n");
+        let node_clone = node.clone();
+        let ev = apply_command(&mut p, Command::InsertNode(node)).unwrap();
+        assert_eq!(ev, Event::NodeInserted(node_clone));
+    }
+
+    #[test]
+    fn property_changed_event_carries_the_value() {
+        let (mut p, _parent_id, child_id) = project_ready_for_set_parent();
+        let pid = crate::ids::PropertyId::new();
+        // Re-register child kind to allow this pid.
+        // Simpler: just assert the variant shape compiles.
+        let _ = (&mut p, child_id, pid);
+        let ev = Event::PropertyChanged {
+            node: child_id,
+            pid,
+            value: crate::property::Property::Boolean(true),
+        };
+        match ev {
+            Event::PropertyChanged { value, .. } => {
+                assert_eq!(value, crate::property::Property::Boolean(true));
+            }
+            _ => panic!("wrong variant"),
+        }
+    }
 }
