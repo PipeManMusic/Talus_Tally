@@ -83,6 +83,32 @@ impl Project {
     pub fn node_types(&self) -> impl Iterator<Item = &NodeType> + '_ {
         self.node_types.values()
     }
+
+    /// Look up a registered [`NodeType`] by id.
+    #[must_use]
+    pub fn get_node_type(&self, id: NodeTypeId) -> Option<&NodeType> {
+        self.node_types.get(&id)
+    }
+
+    /// Register a new [`NodeType`] in this project's registry.
+    ///
+    /// # Errors
+    /// - [`crate::error::Error::InvariantViolation`] if a `NodeType` with
+    ///   the same id is already registered. On error the registry is
+    ///   unchanged. Callers that want to replace a `NodeType` must
+    ///   remove the existing entry first (a future `unregister` slice).
+    pub fn register_node_type(&mut self, nt: NodeType) -> crate::error::Result<()> {
+        use crate::error::Error;
+
+        if self.node_types.contains_key(&nt.id()) {
+            return Err(Error::InvariantViolation(format!(
+                "node type {} is already registered",
+                nt.id()
+            )));
+        }
+        self.node_types.insert(nt.id(), nt);
+        Ok(())
+    }
 }
 
 #[cfg(test)]
@@ -130,7 +156,7 @@ mod tests {
         p.register_node_type(a).unwrap();
         p.register_node_type(b).unwrap();
         p.register_node_type(c).unwrap();
-        let ids: Vec<_> = p.node_types().map(|nt| nt.id()).collect();
+        let ids: Vec<_> = p.node_types().map(NodeType::id).collect();
         assert_eq!(ids, vec![aid, bid, cid]);
     }
 
