@@ -106,6 +106,12 @@ fn validate_token(token: &Value, index: usize) -> Vec<String> {
         ));
     }
 
+    if let Some(scope) = token.get("format_scope") {
+        if !matches!(scope.as_str(), Some("line" | "prefix")) {
+            errors.push(format!("{path}.format_scope: must be 'line' or 'prefix'"));
+        }
+    }
+
     errors
 }
 
