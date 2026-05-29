@@ -49,6 +49,19 @@ impl NodeType {
         }
     }
 
+    /// Build a `NodeType` with a caller-supplied id, for deterministic
+    /// snapshot fixtures only.
+    #[cfg(test)]
+    pub(crate) fn with_id_for_test(id: NodeTypeId, name: impl Into<String>) -> Self {
+        Self {
+            id,
+            name: name.into(),
+            schema_version: NODE_TYPE_SCHEMA_VERSION,
+            allowed_properties: IndexSet::new(),
+            allowed_children: IndexSet::new(),
+        }
+    }
+
     /// The stable identifier for this node type.
     #[must_use]
     pub fn id(&self) -> NodeTypeId {

@@ -56,6 +56,23 @@ impl Project {
         }
     }
 
+    /// Build a `Project` with a caller-supplied id, for deterministic
+    /// snapshot fixtures only.
+    #[cfg(test)]
+    pub(crate) fn with_id_for_test(
+        id: ProjectId,
+        name: impl Into<String>,
+        template: TemplateId,
+    ) -> Self {
+        Self {
+            id,
+            name: name.into(),
+            schema_version: PROJECT_SCHEMA_VERSION,
+            graph: Graph::new(template),
+            node_types: IndexMap::new(),
+        }
+    }
+
     /// Stable identifier for this project.
     #[must_use]
     pub fn id(&self) -> ProjectId {
@@ -425,5 +442,44 @@ mod tests {
         );
         // Graph is unchanged.
         assert_eq!(p.graph().node_count(), 2);
+    }
+
+    #[test]
+    fn project_json_shape_is_locked() {
+        use crate::ids::{NodeId, NodeTypeId, ProjectId, PropertyId, TemplateId};
+        use crate::node::Node;
+        use crate::node_type::NodeType;
+        use crate::property::Property;
+        use uuid::Uuid;
+
+        let mk =
+            |n: u8| Uuid::parse_str(&format!("00000000-0000-4000-8000-0000000000{n:02}")).unwrap();
+
+        let child_kind_id = NodeTypeId::from(mk(0x20));
+        let parent_kind_id = NodeTypeId::from(mk(0x21));
+        let prop_id = PropertyId::from(mk(0x30));
+
+        let child_kind =
+            NodeType::with_id_for_test(child_kind_id, "Task").with_allowed_property(prop_id);
+        let parent_kind =
+            NodeType::with_id_for_test(parent_kind_id, "Section").with_allowed_child(child_kind_id);
+
+        let mut p = Project::with_id_for_test(
+            ProjectId::from(mk(0x01)),
+            "Snapshot",
+            TemplateId::from(mk(0x02)),
+        );
+        p.register_node_type(parent_kind).unwrap();
+        p.register_node_type(child_kind).unwrap();
+
+        let root = Node::with_id_for_test(NodeId::from(mk(0x10)), parent_kind_id, "Root");
+        let leaf = Node::with_id_for_test(NodeId::from(mk(0x11)), child_kind_id, "Leaf")
+            .with_property(prop_id, Property::Boolean(true));
+        let (root_id, leaf_id) = (root.id(), leaf.id());
+        p.insert_node(root).unwrap();
+        p.insert_node(leaf).unwrap();
+        p.set_parent(leaf_id, root_id).unwrap();
+
+        insta::assert_json_snapshot!("project_full_shape", p);
     }
 }
