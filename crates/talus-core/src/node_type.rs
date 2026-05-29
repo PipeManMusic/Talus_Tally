@@ -28,6 +28,8 @@ pub struct NodeType {
     schema_version: u32,
     #[serde(default)]
     allowed_properties: IndexSet<PropertyId>,
+    #[serde(default)]
+    allowed_children: IndexSet<NodeTypeId>,
 }
 
 impl NodeType {
@@ -43,6 +45,7 @@ impl NodeType {
             name: name.into(),
             schema_version: NODE_TYPE_SCHEMA_VERSION,
             allowed_properties: IndexSet::new(),
+            allowed_children: IndexSet::new(),
         }
     }
 
@@ -84,6 +87,27 @@ impl NodeType {
     /// Iterate the allowed-property ids in insertion order.
     pub fn allowed_properties(&self) -> impl Iterator<Item = PropertyId> + '_ {
         self.allowed_properties.iter().copied()
+    }
+
+    /// Return a new `NodeType` with `child_kind` added to the allowed-child set.
+    ///
+    /// Same semantics as [`Self::with_allowed_property`]: idempotent on
+    /// repeat, insertion order preserved.
+    #[must_use]
+    pub fn with_allowed_child(mut self, child_kind: NodeTypeId) -> Self {
+        self.allowed_children.insert(child_kind);
+        self
+    }
+
+    /// `true` iff `child_kind` is in the allowed-child allowlist.
+    #[must_use]
+    pub fn allows_child(&self, child_kind: NodeTypeId) -> bool {
+        self.allowed_children.contains(&child_kind)
+    }
+
+    /// Iterate the allowed-child ids in insertion order.
+    pub fn allowed_children(&self) -> impl Iterator<Item = NodeTypeId> + '_ {
+        self.allowed_children.iter().copied()
     }
 }
 
