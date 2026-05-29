@@ -115,15 +115,28 @@ impl Project {
     ///
     /// # Errors
     /// - [`crate::error::Error::NotFound`] if `node.kind()` is not in
-    ///   the node-type registry. On error the inner graph is unchanged.
+    ///   the node-type registry.
+    /// - [`crate::error::Error::InvariantViolation`] if any of the
+    ///   node's properties carries a `PropertyId` outside the
+    ///   registered `NodeType`'s allowed-property set.
+    ///
+    /// On error the inner graph is unchanged.
     pub fn insert_node(&mut self, node: Node) -> crate::error::Result<()> {
         use crate::error::Error;
 
-        if !self.node_types.contains_key(&node.kind()) {
+        let Some(nt) = self.node_types.get(&node.kind()) else {
             return Err(Error::NotFound(format!(
                 "node type {} is not registered",
                 node.kind()
             )));
+        };
+        for pid in node.properties().keys() {
+            if !nt.allows_property(*pid) {
+                return Err(Error::InvariantViolation(format!(
+                    "property {pid} is not in the allowlist for node type {}",
+                    node.kind()
+                )));
+            }
         }
         self.graph.insert_node(node);
         Ok(())
