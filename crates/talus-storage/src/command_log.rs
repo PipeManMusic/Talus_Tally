@@ -20,9 +20,9 @@ use crate::event_log::EventLog;
 /// [`talus_core::error::Error::Io`] / [`talus_core::error::Error::Serialization`]
 /// if the log append fails.
 pub fn apply_command_logged(state: &mut Project, cmd: Command, log: &EventLog) -> Result<Event> {
-    let _ = apply_command;
-    let _ = (state, cmd, log);
-    unimplemented!("apply_command_logged")
+    let event = apply_command(state, cmd)?;
+    log.append(&event)?;
+    Ok(event)
 }
 
 #[cfg(test)]
