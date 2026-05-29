@@ -124,4 +124,63 @@ mod tests {
         assert!(matches!(err, Error::NotFound(_)), "got {err:?}");
         assert_eq!(p.graph().node_count(), 0);
     }
+
+    // Test helper: project with parent kind allowing child kind, and one
+    // node of each kind already inserted. Returns (project, parent_id, child_id).
+    fn project_ready_for_set_parent() -> (Project, crate::ids::NodeId, crate::ids::NodeId) {
+        let mut p = Project::new("P", TemplateId::new());
+        let child_kind = NodeType::new("Task");
+        let child_kind_id = child_kind.id();
+        let parent_kind = NodeType::new("Section").with_allowed_child(child_kind_id);
+        let parent_kind_id = parent_kind.id();
+        apply_command(&mut p, Command::RegisterNodeType(child_kind)).unwrap();
+        apply_command(&mut p, Command::RegisterNodeType(parent_kind)).unwrap();
+        let parent_node = crate::node::Node::new(parent_kind_id, "Root");
+        let parent_id = parent_node.id();
+        let child_node = crate::node::Node::new(child_kind_id, "Leaf");
+        let child_id = child_node.id();
+        apply_command(&mut p, Command::InsertNode(parent_node)).unwrap();
+        apply_command(&mut p, Command::InsertNode(child_node)).unwrap();
+        (p, parent_id, child_id)
+    }
+
+    #[test]
+    fn set_parent_command_succeeds_and_emits_parent_changed_event() {
+        let (mut p, parent_id, child_id) = project_ready_for_set_parent();
+        let ev = apply_command(
+            &mut p,
+            Command::SetParent {
+                child: child_id,
+                parent: parent_id,
+            },
+        )
+        .unwrap();
+        assert_eq!(
+            ev,
+            Event::ParentChanged {
+                child: child_id,
+                parent: parent_id,
+            }
+        );
+        assert_eq!(p.graph().children_of(parent_id), vec![child_id]);
+    }
+
+    #[test]
+    fn set_parent_command_rejects_unknown_child_and_leaves_graph_unchanged() {
+        let (mut p, parent_id, _child_id) = project_ready_for_set_parent();
+        let stray = crate::ids::NodeId::new();
+        let err = apply_command(
+            &mut p,
+            Command::SetParent {
+                child: stray,
+                parent: parent_id,
+            },
+        )
+        .expect_err("unknown child");
+        assert!(matches!(err, Error::NotFound(_)), "got {err:?}");
+        assert_eq!(
+            p.graph().children_of(parent_id),
+            Vec::<crate::ids::NodeId>::new()
+        );
+    }
 }
