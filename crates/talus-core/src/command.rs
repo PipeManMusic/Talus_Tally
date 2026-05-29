@@ -321,4 +321,38 @@ mod tests {
         assert!(matches!(err, Error::NotFound(_)), "got {err:?}");
         assert_eq!(p.graph().node_count(), 2);
     }
+
+    #[test]
+    fn command_json_shape_is_locked() {
+        use crate::ids::{NodeId, NodeTypeId, PropertyId};
+        use uuid::Uuid;
+
+        let mk =
+            |n: u8| Uuid::parse_str(&format!("00000000-0000-4000-8000-0000000000{n:02}")).unwrap();
+
+        let kind_id = NodeTypeId::from(mk(0x20));
+        let node_id = NodeId::from(mk(0x10));
+        let parent_id = NodeId::from(mk(0x11));
+        let pid = PropertyId::from(mk(0x30));
+
+        let nt = crate::node_type::NodeType::with_id_for_test(kind_id, "Task")
+            .with_allowed_property(pid);
+        let node = crate::node::Node::with_id_for_test(node_id, kind_id, "n");
+
+        let commands: Vec<Command> = vec![
+            Command::RegisterNodeType(nt),
+            Command::InsertNode(node),
+            Command::SetParent {
+                child: node_id,
+                parent: parent_id,
+            },
+            Command::SetProperty {
+                node: node_id,
+                pid,
+                value: crate::property::Property::Boolean(true),
+            },
+            Command::RemoveNode { id: node_id },
+        ];
+        insta::assert_json_snapshot!("command_all_variants", commands);
+    }
 }
