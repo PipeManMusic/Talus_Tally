@@ -75,6 +75,19 @@ impl Node {
     pub fn properties(&self) -> &IndexMap<PropertyId, Property> {
         &self.properties
     }
+
+    /// Return a new `Node` with `value` inserted (or overwritten) at `id`.
+    ///
+    /// Consuming-self builder shape: this is construction, not in-place
+    /// mutation, so it doesn't violate §4a "all mutation through
+    /// `apply_command`". The actual `Command::SetProperty` pipeline
+    /// arrives in Phase 2 and will be the only entry point for changing
+    /// an existing node's properties at runtime.
+    #[must_use]
+    pub fn with_property(mut self, id: PropertyId, value: Property) -> Self {
+        self.properties.insert(id, value);
+        self
+    }
 }
 
 #[cfg(test)]
