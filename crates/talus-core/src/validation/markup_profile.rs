@@ -1,10 +1,12 @@
 //! Top-level structural validation for markup profile documents.
 //!
 //! Port of the *profile-level* checks in
-//! `backend/infra/schema_validator.py::SchemaValidator.validate_markup_profile`.
-//! Per-token validation lands in a follow-up slice. Error strings are
-//! byte-for-byte parity with Python so the existing API surface and UI
-//! messages do not change.
+//! `backend/infra/schema_validator.py::SchemaValidator.validate_markup_profile`
+//! and the *token-identity* checks in `_validate_markup_token` (id, label,
+//! prefix-or-pattern). The remaining per-token rules (`format_scope`,
+//! `format` object) ship in follow-up slices. Error strings are byte-for-byte
+//! parity with Python so the existing API surface and UI messages do not
+//! change.
 
 use serde_json::Value;
 
@@ -44,6 +46,15 @@ pub fn validate(data: &Value) -> Vec<String> {
     errors
 }
 
+/// Validate the identity portion of a single token: id, label, and the
+/// `prefix`-or-`pattern` requirement. Format rules are validated by a
+/// separate slice.
+#[allow(dead_code)]
+fn validate_token(token: &Value, index: usize) -> Vec<String> {
+    let _ = (token, index);
+    unimplemented!("validation::markup_profile::validate_token")
+}
+
 fn is_non_empty_string(v: &Value) -> bool {
     v.as_str().is_some_and(|s| !s.trim().is_empty())
 }
@@ -52,6 +63,10 @@ fn is_non_empty_string(v: &Value) -> bool {
 mod tests {
     use super::*;
     use serde_json::json;
+
+    fn minimal_token() -> Value {
+        json!({"id": "h1", "label": "Heading 1", "prefix": "# "})
+    }
 
     #[test]
     fn minimal_valid_profile_returns_no_errors() {
@@ -139,5 +154,133 @@ mod tests {
         let errors = validate(&data);
         assert!(errors.contains(&"markup_profile: missing required field 'id'".to_string()));
         assert!(errors.contains(&"markup_profile: missing required field 'label'".to_string()));
+    }
+
+    // ----- per-token rules -----
+
+    #[test]
+    fn valid_token_returns_no_errors() {
+        let data = json!({"id": "p", "label": "P", "tokens": [minimal_token()]});
+        assert_eq!(validate(&data), Vec::<String>::new());
+    }
+
+    #[test]
+    fn token_missing_id_is_reported() {
+        let data = json!({"id": "p", "label": "P", "tokens": [
+            {"label": "X", "prefix": "> "}
+        ]});
+        assert!(validate(&data)
+            .contains(&"markup_profile.tokens[0]: missing required field 'id'".to_string()));
+    }
+
+    #[test]
+    fn token_empty_id_is_reported() {
+        let data = json!({"id": "p", "label": "P", "tokens": [
+            {"id": "  ", "label": "X", "prefix": "> "}
+        ]});
+        assert!(validate(&data)
+            .contains(&"markup_profile.tokens[0].id: must be non-empty string".to_string()));
+    }
+
+    #[test]
+    fn token_non_string_id_is_reported() {
+        let data = json!({"id": "p", "label": "P", "tokens": [
+            {"id": 1, "label": "X", "prefix": "> "}
+        ]});
+        assert!(validate(&data)
+            .contains(&"markup_profile.tokens[0].id: must be non-empty string".to_string()));
+    }
+
+    #[test]
+    fn token_missing_label_is_reported() {
+        let data = json!({"id": "p", "label": "P", "tokens": [
+            {"id": "x", "prefix": "> "}
+        ]});
+        assert!(validate(&data)
+            .contains(&"markup_profile.tokens[0]: missing required field 'label'".to_string()));
+    }
+
+    #[test]
+    fn token_missing_prefix_without_pattern_reports_both_errors() {
+        let data = json!({"id": "p", "label": "P", "tokens": [
+            {"id": "x", "label": "X"}
+        ]});
+        let errors = validate(&data);
+        assert!(errors
+            .contains(&"markup_profile.tokens[0]: missing required field 'prefix'".to_string()));
+        assert!(errors.contains(
+            &"markup_profile.tokens[0]: missing required field 'prefix' (or provide 'pattern')"
+                .to_string()
+        ));
+    }
+
+    #[test]
+    fn token_non_string_prefix_is_reported() {
+        let data = json!({"id": "p", "label": "P", "tokens": [
+            {"id": "x", "label": "X", "prefix": 9}
+        ]});
+        assert!(validate(&data)
+            .contains(&"markup_profile.tokens[0].prefix: must be string".to_string()));
+    }
+
+    #[test]
+    fn token_empty_prefix_string_is_allowed() {
+        // Python: any string counts as has_prefix, even empty.
+        let data = json!({"id": "p", "label": "P", "tokens": [
+            {"id": "x", "label": "X", "prefix": ""}
+        ]});
+        assert_eq!(validate(&data), Vec::<String>::new());
+    }
+
+    #[test]
+    fn token_pattern_non_string_is_reported() {
+        let data = json!({"id": "p", "label": "P", "tokens": [
+            {"id": "x", "label": "X", "prefix": "> ", "pattern": 5}
+        ]});
+        assert!(validate(&data).contains(
+            &"markup_profile.tokens[0].pattern: must be non-empty string if provided".to_string()
+        ));
+    }
+
+    #[test]
+    fn token_pattern_empty_string_is_reported() {
+        let data = json!({"id": "p", "label": "P", "tokens": [
+            {"id": "x", "label": "X", "prefix": "> ", "pattern": ""}
+        ]});
+        assert!(validate(&data).contains(
+            &"markup_profile.tokens[0].pattern: must be non-empty string if provided".to_string()
+        ));
+    }
+
+    #[test]
+    fn token_pattern_only_no_prefix_is_valid() {
+        let data = json!({"id": "p", "label": "P", "tokens": [
+            {"id": "x", "label": "X", "pattern": "^- "}
+        ]});
+        assert_eq!(validate(&data), Vec::<String>::new());
+    }
+
+    #[test]
+    fn token_index_appears_in_error_path() {
+        let data = json!({"id": "p", "label": "P", "tokens": [
+            minimal_token(),
+            minimal_token(),
+            {"label": "X", "prefix": "> "}
+        ]});
+        assert!(validate(&data)
+            .contains(&"markup_profile.tokens[2]: missing required field 'id'".to_string()));
+    }
+
+    #[test]
+    fn null_prefix_is_treated_as_missing() {
+        let data = json!({"id": "p", "label": "P", "tokens": [
+            {"id": "x", "label": "X", "prefix": null, "pattern": "^x"}
+        ]});
+        let errors = validate(&data);
+        // Pattern present, so the combined message is NOT emitted; only the
+        // bare "missing required field 'prefix'" remains.
+        assert!(errors
+            .contains(&"markup_profile.tokens[0]: missing required field 'prefix'".to_string()));
+        assert!(!errors.iter().any(|e| e.contains("or provide 'pattern'")));
     }
 }
