@@ -293,4 +293,78 @@ mod tests {
 
         insta::assert_json_snapshot!("graph_root_and_child", g);
     }
+
+    #[test]
+    fn remove_node_unknown_returns_not_found() {
+        let mut g = Graph::new(crate::ids::TemplateId::new());
+        let stray = crate::ids::NodeId::new();
+        let err = g.remove_node(stray).expect_err("not in graph");
+        assert!(
+            matches!(err, crate::error::Error::NotFound(_)),
+            "got {err:?}"
+        );
+    }
+
+    #[test]
+    fn remove_node_leaf_removes_only_that_node() {
+        let kind = crate::ids::NodeTypeId::new();
+        let a = Node::new(kind, "A");
+        let b = Node::new(kind, "B");
+        let (aid, bid) = (a.id(), b.id());
+        let mut g = Graph::new(crate::ids::TemplateId::new());
+        g.insert_node(a);
+        g.insert_node(b);
+        g.set_parent(bid, aid).unwrap();
+
+        let removed = g.remove_node(bid).unwrap();
+        assert_eq!(removed, vec![bid]);
+        assert_eq!(g.node_count(), 1);
+        assert!(g.get(aid).is_some());
+        assert!(g.get(bid).is_none());
+        assert_eq!(g.children_of(aid), Vec::<crate::ids::NodeId>::new());
+    }
+
+    #[test]
+    fn remove_node_cascades_subtree_and_prunes_edges() {
+        // Tree:   a
+        //        / \
+        //       b   c
+        //       |
+        //       d
+        // Removing b should drop {b, d}, leave {a, c} intact, and prune
+        // every edge that touched the removed set.
+        let kind = crate::ids::NodeTypeId::new();
+        let a = Node::new(kind, "A");
+        let b = Node::new(kind, "B");
+        let c = Node::new(kind, "C");
+        let d = Node::new(kind, "D");
+        let (aid, bid, cid, did) = (a.id(), b.id(), c.id(), d.id());
+        let mut g = Graph::new(crate::ids::TemplateId::new());
+        g.insert_node(a);
+        g.insert_node(b);
+        g.insert_node(c);
+        g.insert_node(d);
+        g.set_parent(bid, aid).unwrap();
+        g.set_parent(cid, aid).unwrap();
+        g.set_parent(did, bid).unwrap();
+
+        let mut removed = g.remove_node(bid).unwrap();
+        removed.sort();
+        let mut expected = vec![bid, did];
+        expected.sort();
+        assert_eq!(removed, expected);
+
+        assert_eq!(g.node_count(), 2);
+        assert!(g.get(aid).is_some());
+        assert!(g.get(cid).is_some());
+        assert!(g.get(bid).is_none());
+        assert!(g.get(did).is_none());
+
+        // Every surviving edge must reference only surviving nodes.
+        for (child, parent) in &g.edges {
+            assert!(g.nodes.contains_key(child), "dangling child {child}");
+            assert!(g.nodes.contains_key(parent), "dangling parent {parent}");
+        }
+        assert_eq!(g.children_of(aid), vec![cid]);
+    }
 }
