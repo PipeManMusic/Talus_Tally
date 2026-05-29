@@ -88,6 +88,26 @@ impl Node {
         self.properties.insert(id, value);
         self
     }
+
+    /// Test-only constructor accepting an explicit [`NodeId`].
+    ///
+    /// Public `Node::new` always mints a fresh id per §4a "one ID
+    /// generator". This sibling constructor exists solely so cross-module
+    /// tests (most notably the `Graph` snapshot test in `graph.rs`) can
+    /// build deterministic fixtures with stable UUIDs without violating
+    /// field privacy. Gated behind `#[cfg(test)]` so production code
+    /// cannot reach it.
+    #[cfg(test)]
+    #[must_use]
+    pub(crate) fn with_id_for_test(id: NodeId, kind: NodeTypeId, name: impl Into<String>) -> Self {
+        Self {
+            id,
+            kind,
+            name: name.into(),
+            schema_version: NODE_SCHEMA_VERSION,
+            properties: IndexMap::new(),
+        }
+    }
 }
 
 #[cfg(test)]
