@@ -230,4 +230,42 @@ mod tests {
         // Graph is unchanged on rejection.
         assert_eq!(p.graph().node_count(), 0);
     }
+
+    #[test]
+    fn insert_node_with_allowed_property_succeeds() {
+        let mut p = Project::new("P", TemplateId::new());
+        let pid = crate::ids::PropertyId::new();
+        let nt = crate::node_type::NodeType::new("Equipment").with_allowed_property(pid);
+        let kind = nt.id();
+        p.register_node_type(nt).unwrap();
+
+        let node = crate::node::Node::new(kind, "Crane")
+            .with_property(pid, crate::property::Property::Boolean(true));
+        let nid = node.id();
+        p.insert_node(node).unwrap();
+        assert!(p.graph().get(nid).is_some());
+    }
+
+    #[test]
+    fn insert_node_with_disallowed_property_is_rejected() {
+        let mut p = Project::new("P", TemplateId::new());
+        let allowed_pid = crate::ids::PropertyId::new();
+        let stray_pid = crate::ids::PropertyId::new();
+        let nt = crate::node_type::NodeType::new("Equipment").with_allowed_property(allowed_pid);
+        let kind = nt.id();
+        p.register_node_type(nt).unwrap();
+
+        // Mix one allowed property and one disallowed property; the whole
+        // insert must be rejected, leaving the graph unchanged.
+        let node = crate::node::Node::new(kind, "Crane")
+            .with_property(allowed_pid, crate::property::Property::Boolean(true))
+            .with_property(stray_pid, crate::property::Property::Number(1.0));
+
+        let err = p.insert_node(node).expect_err("disallowed property");
+        assert!(
+            matches!(err, crate::error::Error::InvariantViolation(_)),
+            "got {err:?}"
+        );
+        assert_eq!(p.graph().node_count(), 0);
+    }
 }
