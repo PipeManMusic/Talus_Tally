@@ -203,4 +203,55 @@ mod tests {
             Vec::<crate::ids::NodeId>::new()
         );
     }
+
+    #[test]
+    fn set_property_command_succeeds_and_emits_property_changed_event() {
+        let mut p = Project::new("P", TemplateId::new());
+        let pid = crate::ids::PropertyId::new();
+        let nt = NodeType::new("Task").with_allowed_property(pid);
+        let kind = nt.id();
+        apply_command(&mut p, Command::RegisterNodeType(nt)).unwrap();
+        let node = crate::node::Node::new(kind, "n");
+        let nid = node.id();
+        apply_command(&mut p, Command::InsertNode(node)).unwrap();
+
+        let ev = apply_command(
+            &mut p,
+            Command::SetProperty {
+                node: nid,
+                pid,
+                value: crate::property::Property::Boolean(true),
+            },
+        )
+        .unwrap();
+        assert_eq!(ev, Event::PropertyChanged { node: nid, pid });
+        assert_eq!(
+            p.graph().get(nid).unwrap().properties().get(&pid).cloned(),
+            Some(crate::property::Property::Boolean(true))
+        );
+    }
+
+    #[test]
+    fn set_property_command_rejects_disallowed_pid_and_leaves_node_unchanged() {
+        let mut p = Project::new("P", TemplateId::new());
+        let nt = NodeType::new("Task"); // no allowed_properties
+        let kind = nt.id();
+        apply_command(&mut p, Command::RegisterNodeType(nt)).unwrap();
+        let node = crate::node::Node::new(kind, "n");
+        let nid = node.id();
+        apply_command(&mut p, Command::InsertNode(node)).unwrap();
+
+        let stray = crate::ids::PropertyId::new();
+        let err = apply_command(
+            &mut p,
+            Command::SetProperty {
+                node: nid,
+                pid: stray,
+                value: crate::property::Property::Boolean(true),
+            },
+        )
+        .expect_err("disallowed property");
+        assert!(matches!(err, Error::InvariantViolation(_)), "got {err:?}");
+        assert!(p.graph().get(nid).unwrap().properties().is_empty());
+    }
 }
