@@ -1,19 +1,28 @@
 ---
 source: crates/talus-core/src/command.rs
-assertion_line: 387
 expression: events
 ---
 [
   {
     "type": "NodeTypeRegistered",
     "data": {
-      "node_type_id": "00000000-0000-4000-8000-000000000032"
+      "id": "00000000-0000-4000-8000-000000000032",
+      "name": "Task",
+      "schema_version": 1,
+      "allowed_properties": [
+        "00000000-0000-4000-8000-000000000048"
+      ],
+      "allowed_children": []
     }
   },
   {
     "type": "NodeInserted",
     "data": {
-      "node_id": "00000000-0000-4000-8000-000000000016"
+      "id": "00000000-0000-4000-8000-000000000016",
+      "kind": "00000000-0000-4000-8000-000000000032",
+      "name": "n",
+      "schema_version": 1,
+      "properties": {}
     }
   },
   {
@@ -27,7 +36,11 @@ expression: events
     "type": "PropertyChanged",
     "data": {
       "node": "00000000-0000-4000-8000-000000000016",
-      "pid": "00000000-0000-4000-8000-000000000048"
+      "pid": "00000000-0000-4000-8000-000000000048",
+      "value": {
+        "type": "Boolean",
+        "value": true
+      }
     }
   },
   {

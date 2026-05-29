@@ -42,15 +42,10 @@ mod tests {
     fn successful_command_appends_event_and_returns_it() {
         let (mut project, log, _dir) = fixture();
         let nt = NodeType::new("Equipment");
-        let nt_id = nt.id();
+        let nt_clone = nt.clone();
         let event = apply_command_logged(&mut project, Command::RegisterNodeType(nt), &log)
             .expect("apply ok");
-        assert_eq!(
-            event,
-            Event::NodeTypeRegistered {
-                node_type_id: nt_id
-            }
-        );
+        assert_eq!(event, Event::NodeTypeRegistered(nt_clone));
         assert_eq!(log.read_all().unwrap(), vec![event]);
     }
 
@@ -73,14 +68,14 @@ mod tests {
         let (mut project, log, _dir) = fixture();
         let a = NodeType::new("A");
         let b = NodeType::new("B");
-        let (a_id, b_id) = (a.id(), b.id());
+        let (a_clone, b_clone) = (a.clone(), b.clone());
         apply_command_logged(&mut project, Command::RegisterNodeType(a), &log).unwrap();
         apply_command_logged(&mut project, Command::RegisterNodeType(b), &log).unwrap();
         assert_eq!(
             log.read_all().unwrap(),
             vec![
-                Event::NodeTypeRegistered { node_type_id: a_id },
-                Event::NodeTypeRegistered { node_type_id: b_id },
+                Event::NodeTypeRegistered(a_clone),
+                Event::NodeTypeRegistered(b_clone),
             ]
         );
     }

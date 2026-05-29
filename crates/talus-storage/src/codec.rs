@@ -69,7 +69,7 @@ pub fn decode_event(bytes: &[u8]) -> Result<Event> {
 mod tests {
     use super::*;
     use talus_core::command::{Command, Event};
-    use talus_core::ids::{NodeId, TemplateId};
+    use talus_core::ids::TemplateId;
     use talus_core::node_type::NodeType;
     use talus_core::project::Project;
 
@@ -115,9 +115,10 @@ mod tests {
 
     #[test]
     fn encode_then_decode_event_round_trips() {
-        let ev = Event::NodeInserted {
-            node_id: NodeId::new(),
-        };
+        let ev = Event::NodeInserted(talus_core::node::Node::new(
+            talus_core::ids::NodeTypeId::new(),
+            "n",
+        ));
         let bytes = encode_event(&ev).unwrap();
         let parsed = decode_event(&bytes).unwrap();
         assert_eq!(parsed, ev);

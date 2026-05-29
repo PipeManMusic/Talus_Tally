@@ -9,7 +9,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::error::Result;
-use crate::ids::{NodeId, NodeTypeId, PropertyId};
+use crate::ids::{NodeId, PropertyId};
 use crate::node::Node;
 use crate::node_type::NodeType;
 use crate::project::Project;
@@ -52,19 +52,13 @@ pub enum Command {
 }
 
 /// A fact describing a change that was applied to a [`Project`].
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type", content = "data")]
 pub enum Event {
     /// A new [`NodeType`] was added to the registry.
-    NodeTypeRegistered {
-        /// The id of the newly registered [`NodeType`].
-        node_type_id: NodeTypeId,
-    },
+    NodeTypeRegistered(NodeType),
     /// A new [`Node`] was inserted into the graph.
-    NodeInserted {
-        /// The id of the inserted [`Node`].
-        node_id: NodeId,
-    },
+    NodeInserted(Node),
     /// `child`'s parent was set to `parent`.
     ParentChanged {
         /// The re-parented node.
@@ -78,6 +72,8 @@ pub enum Event {
         node: NodeId,
         /// The property id whose value was set.
         pid: PropertyId,
+        /// The new value.
+        value: Property,
     },
     /// A subtree rooted at the first id was removed from the graph.
     SubtreeRemoved {
@@ -97,22 +93,27 @@ pub enum Event {
 pub fn apply_command(state: &mut Project, cmd: Command) -> Result<Event> {
     match cmd {
         Command::RegisterNodeType(nt) => {
-            let id = nt.id();
+            let nt_clone = nt.clone();
             state.register_node_type(nt)?;
-            Ok(Event::NodeTypeRegistered { node_type_id: id })
+            Ok(Event::NodeTypeRegistered(nt_clone))
         }
         Command::InsertNode(node) => {
-            let id = node.id();
+            let node_clone = node.clone();
             state.insert_node(node)?;
-            Ok(Event::NodeInserted { node_id: id })
+            Ok(Event::NodeInserted(node_clone))
         }
         Command::SetParent { child, parent } => {
             state.set_parent(child, parent)?;
             Ok(Event::ParentChanged { child, parent })
         }
         Command::SetProperty { node, pid, value } => {
+            let value_clone = value.clone();
             state.set_property(node, pid, value)?;
-            Ok(Event::PropertyChanged { node, pid })
+            Ok(Event::PropertyChanged {
+                node,
+                pid,
+                value: value_clone,
+            })
         }
         Command::RemoveNode { id } => {
             let ids = state.remove_node(id)?;
@@ -134,13 +135,9 @@ mod tests {
         let mut p = Project::new("P", TemplateId::new());
         let nt = NodeType::new("Task");
         let nt_id = nt.id();
+        let nt_clone = nt.clone();
         let ev = apply_command(&mut p, Command::RegisterNodeType(nt)).unwrap();
-        assert_eq!(
-            ev,
-            Event::NodeTypeRegistered {
-                node_type_id: nt_id
-            }
-        );
+        assert_eq!(ev, Event::NodeTypeRegistered(nt_clone));
         assert!(p.get_node_type(nt_id).is_some());
     }
 
@@ -166,8 +163,9 @@ mod tests {
 
         let node = crate::node::Node::new(kind, "n");
         let nid = node.id();
+        let node_clone = node.clone();
         let ev = apply_command(&mut p, Command::InsertNode(node)).unwrap();
-        assert_eq!(ev, Event::NodeInserted { node_id: nid });
+        assert_eq!(ev, Event::NodeInserted(node_clone));
         assert!(p.graph().get(nid).is_some());
     }
 
@@ -260,7 +258,14 @@ mod tests {
             },
         )
         .unwrap();
-        assert_eq!(ev, Event::PropertyChanged { node: nid, pid });
+        assert_eq!(
+            ev,
+            Event::PropertyChanged {
+                node: nid,
+                pid,
+                value: crate::property::Property::Boolean(true),
+            }
+        );
         assert_eq!(
             p.graph().get(nid).unwrap().properties().get(&pid).cloned(),
             Some(crate::property::Property::Boolean(true))
@@ -370,16 +375,22 @@ mod tests {
         let child_id = NodeId::from(mk(0x12));
         let pid = PropertyId::from(mk(0x30));
 
+        let nt = crate::node_type::NodeType::with_id_for_test(kind_id, "Task")
+            .with_allowed_property(pid);
+        let node = crate::node::Node::with_id_for_test(node_id, kind_id, "n");
+
         let events: Vec<Event> = vec![
-            Event::NodeTypeRegistered {
-                node_type_id: kind_id,
-            },
-            Event::NodeInserted { node_id },
+            Event::NodeTypeRegistered(nt),
+            Event::NodeInserted(node),
             Event::ParentChanged {
                 child: child_id,
                 parent: parent_id,
             },
-            Event::PropertyChanged { node: node_id, pid },
+            Event::PropertyChanged {
+                node: node_id,
+                pid,
+                value: crate::property::Property::Boolean(true),
+            },
             Event::SubtreeRemoved {
                 ids: vec![parent_id, child_id],
             },
@@ -410,21 +421,31 @@ mod tests {
 
     #[test]
     fn property_changed_event_carries_the_value() {
-        let (mut p, _parent_id, child_id) = project_ready_for_set_parent();
+        let mut p = Project::new("P", TemplateId::new());
         let pid = crate::ids::PropertyId::new();
-        // Re-register child kind to allow this pid.
-        // Simpler: just assert the variant shape compiles.
-        let _ = (&mut p, child_id, pid);
-        let ev = Event::PropertyChanged {
-            node: child_id,
-            pid,
-            value: crate::property::Property::Boolean(true),
-        };
-        match ev {
-            Event::PropertyChanged { value, .. } => {
-                assert_eq!(value, crate::property::Property::Boolean(true));
+        let nt = NodeType::new("Task").with_allowed_property(pid);
+        let kind = nt.id();
+        apply_command(&mut p, Command::RegisterNodeType(nt)).unwrap();
+        let node = crate::node::Node::new(kind, "n");
+        let nid = node.id();
+        apply_command(&mut p, Command::InsertNode(node)).unwrap();
+
+        let ev = apply_command(
+            &mut p,
+            Command::SetProperty {
+                node: nid,
+                pid,
+                value: crate::property::Property::Boolean(true),
+            },
+        )
+        .unwrap();
+        assert_eq!(
+            ev,
+            Event::PropertyChanged {
+                node: nid,
+                pid,
+                value: crate::property::Property::Boolean(true),
             }
-            _ => panic!("wrong variant"),
-        }
+        );
     }
 }

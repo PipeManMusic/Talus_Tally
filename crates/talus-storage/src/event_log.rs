@@ -87,7 +87,12 @@ fn io_err(e: &std::io::Error) -> Error {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use talus_core::ids::NodeId;
+    use talus_core::ids::NodeTypeId;
+    use talus_core::node::Node;
+
+    fn sample_event() -> Event {
+        Event::NodeInserted(Node::new(NodeTypeId::new(), "n"))
+    }
 
     fn log() -> (EventLog, tempfile::TempDir) {
         let dir = tempfile::tempdir().expect("tempdir");
@@ -104,9 +109,7 @@ mod tests {
     #[test]
     fn append_then_read_round_trips_one_event() {
         let (log, _dir) = log();
-        let ev = Event::NodeInserted {
-            node_id: NodeId::new(),
-        };
+        let ev = sample_event();
         log.append(&ev).unwrap();
         assert_eq!(log.read_all().unwrap(), vec![ev]);
     }
@@ -114,15 +117,9 @@ mod tests {
     #[test]
     fn append_preserves_order() {
         let (log, _dir) = log();
-        let a = Event::NodeInserted {
-            node_id: NodeId::new(),
-        };
-        let b = Event::NodeInserted {
-            node_id: NodeId::new(),
-        };
-        let c = Event::NodeInserted {
-            node_id: NodeId::new(),
-        };
+        let a = sample_event();
+        let b = sample_event();
+        let c = sample_event();
         log.append(&a).unwrap();
         log.append(&b).unwrap();
         log.append(&c).unwrap();
@@ -133,9 +130,7 @@ mod tests {
     fn reopen_sees_prior_events() {
         let dir = tempfile::tempdir().expect("tempdir");
         let path = dir.path().join("events.ndjson");
-        let ev = Event::NodeInserted {
-            node_id: NodeId::new(),
-        };
+        let ev = sample_event();
         {
             let log = EventLog::open(&path).unwrap();
             log.append(&ev).unwrap();
