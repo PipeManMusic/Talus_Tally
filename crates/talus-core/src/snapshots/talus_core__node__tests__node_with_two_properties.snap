@@ -1,0 +1,20 @@
+---
+source: crates/talus-core/src/node.rs
+expression: node
+---
+{
+  "id": "00000000-0000-4000-8000-000000000001",
+  "kind": "00000000-0000-4000-8000-000000000002",
+  "name": "Task A",
+  "schema_version": 1,
+  "properties": {
+    "00000000-0000-4000-8000-000000000003": {
+      "type": "Text",
+      "value": "Alice"
+    },
+    "00000000-0000-4000-8000-000000000004": {
+      "type": "Boolean",
+      "value": true
+    }
+  }
+}
