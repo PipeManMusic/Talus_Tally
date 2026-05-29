@@ -36,6 +36,9 @@ pub mod project;
 /// Command/Event pipeline that owns all runtime mutations of a `Project`.
 pub mod command;
 
+/// Fold an event stream back into a `Project`.
+pub mod replay;
+
 /// Schema and validation primitives. Phase 1: types only; rules ported per module.
 pub mod schema;
 
