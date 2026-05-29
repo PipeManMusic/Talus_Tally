@@ -20,23 +20,21 @@ use crate::project_store::ProjectStore;
 /// # Errors
 /// Returns any [`Error`] produced by encoding, the store, or the log.
 pub fn save<S: ProjectStore>(project: &Project, store: &S, log: &EventLog) -> Result<()> {
-    let _ = (project, store, log);
-    unimplemented!("session::save")
+    let bytes = encode(project)?;
+    store.write(project.id(), &bytes)?;
+    log.truncate()
 }
 
 /// Reconstruct a project: read the snapshot, decode it, replay the log.
 ///
 /// # Errors
 /// Returns any [`Error`] produced by the store, decoding, the log, or replay.
-pub fn load<S: ProjectStore>(
-    project_id: ProjectId,
-    store: &S,
-    log: &EventLog,
-) -> Result<Project> {
-    let _ = (project_id, store, log);
-    let _: fn(_, &mut _) -> _ = replay::<std::vec::IntoIter<Event>>;
-    let _ = (decode, encode);
-    unimplemented!("session::load")
+pub fn load<S: ProjectStore>(project_id: ProjectId, store: &S, log: &EventLog) -> Result<Project> {
+    let bytes = store.read(project_id)?;
+    let mut project = decode(&bytes)?;
+    let events: Vec<Event> = log.read_all()?;
+    replay(events, &mut project)?;
+    Ok(project)
 }
 
 #[cfg(test)]
