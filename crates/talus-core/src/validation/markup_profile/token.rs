@@ -247,4 +247,128 @@ mod tests {
             &"markup_profile.tokens[0].format_scope: must be 'line' or 'prefix'".to_string()
         ));
     }
+
+    // ----- format object rules -----
+
+    fn token_with_format(fmt: Value) -> Value {
+        json!({"id": "x", "label": "X", "prefix": "> ", "format": fmt})
+    }
+
+    fn wrap(token: Value) -> Value {
+        json!({"id": "p", "label": "P", "tokens": [token]})
+    }
+
+    #[test]
+    fn format_absent_is_allowed() {
+        let data = wrap(json!({"id": "x", "label": "X", "prefix": "> "}));
+        assert_eq!(validate(&data), Vec::<String>::new());
+    }
+
+    #[test]
+    fn format_non_object_is_reported() {
+        let data = wrap(json!({"id": "x", "label": "X", "prefix": "> ", "format": "bold"}));
+        assert!(validate(&data)
+            .contains(&"markup_profile.tokens[0].format: must be object".to_string()));
+    }
+
+    #[test]
+    fn format_empty_object_is_allowed() {
+        let data = wrap(token_with_format(json!({})));
+        assert_eq!(validate(&data), Vec::<String>::new());
+    }
+
+    #[test]
+    fn text_transform_valid_values_pass() {
+        for v in ["uppercase", "lowercase", "capitalize", "none"] {
+            let data = wrap(token_with_format(json!({"text_transform": v})));
+            assert_eq!(validate(&data), Vec::<String>::new(), "value {v}");
+        }
+    }
+
+    #[test]
+    fn text_transform_unknown_is_reported() {
+        let data = wrap(token_with_format(json!({"text_transform": "smallcaps"})));
+        assert!(validate(&data).contains(
+            &"markup_profile.tokens[0].format.text_transform: must be one of \
+              ['uppercase', 'lowercase', 'capitalize', 'none']"
+                .to_string()
+        ));
+    }
+
+    #[test]
+    fn bold_non_bool_is_reported() {
+        let data = wrap(token_with_format(json!({"bold": "yes"})));
+        assert!(validate(&data)
+            .contains(&"markup_profile.tokens[0].format.bold: must be boolean".to_string()));
+    }
+
+    #[test]
+    fn italic_non_bool_is_reported() {
+        let data = wrap(token_with_format(json!({"italic": 1})));
+        assert!(validate(&data)
+            .contains(&"markup_profile.tokens[0].format.italic: must be boolean".to_string()));
+    }
+
+    #[test]
+    fn underline_non_bool_is_reported() {
+        let data = wrap(token_with_format(json!({"underline": null})));
+        assert!(validate(&data)
+            .contains(&"markup_profile.tokens[0].format.underline: must be boolean".to_string()));
+    }
+
+    #[test]
+    fn bool_fields_true_and_false_pass() {
+        let data = wrap(token_with_format(
+            json!({"bold": true, "italic": false, "underline": true}),
+        ));
+        assert_eq!(validate(&data), Vec::<String>::new());
+    }
+
+    #[test]
+    fn color_non_string_is_reported() {
+        let data = wrap(token_with_format(json!({"color": 7})));
+        assert!(validate(&data)
+            .contains(&"markup_profile.tokens[0].format.color: must be string".to_string()));
+    }
+
+    #[test]
+    fn background_color_non_string_is_reported() {
+        let data = wrap(token_with_format(json!({"background_color": true})));
+        assert!(validate(&data).contains(
+            &"markup_profile.tokens[0].format.background_color: must be string".to_string()
+        ));
+    }
+
+    #[test]
+    fn font_size_non_string_is_reported() {
+        let data = wrap(token_with_format(json!({"font_size": 12})));
+        assert!(validate(&data)
+            .contains(&"markup_profile.tokens[0].format.font_size: must be string".to_string()));
+    }
+
+    #[test]
+    fn string_fields_accept_strings() {
+        let data = wrap(token_with_format(
+            json!({"color": "#fff", "background_color": "#000", "font_size": "12pt"}),
+        ));
+        assert_eq!(validate(&data), Vec::<String>::new());
+    }
+
+    #[test]
+    fn align_valid_values_pass() {
+        for v in ["left", "center", "right"] {
+            let data = wrap(token_with_format(json!({"align": v})));
+            assert_eq!(validate(&data), Vec::<String>::new(), "value {v}");
+        }
+    }
+
+    #[test]
+    fn align_unknown_is_reported() {
+        let data = wrap(token_with_format(json!({"align": "justify"})));
+        assert!(validate(&data).contains(
+            &"markup_profile.tokens[0].format.align: must be one of \
+              ['left', 'center', 'right']"
+                .to_string()
+        ));
+    }
 }
