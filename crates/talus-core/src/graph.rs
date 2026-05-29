@@ -17,12 +17,27 @@ use crate::node::Node;
 /// Schema version of the persisted `Graph` shape.
 pub const GRAPH_SCHEMA_VERSION: u32 = 1;
 
+/// Whether a node is a root of the tree or has a parent.
+///
+/// Modeled as an enum with payload (§4a "make illegal states
+/// unrepresentable") rather than `Option<NodeId>` so calling code is
+/// forced to handle both cases explicitly.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Parent {
+    /// The node is a tree root — no parent.
+    Root,
+    /// The node has the given parent.
+    Of(NodeId),
+}
+
 /// The structural container for a project's nodes and tree edges.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Graph {
     template: TemplateId,
     schema_version: u32,
     nodes: IndexMap<NodeId, Node>,
+    /// child → parent. A node is a root iff it is absent here.
+    edges: IndexMap<NodeId, NodeId>,
 }
 
 impl Graph {
@@ -33,6 +48,7 @@ impl Graph {
             template,
             schema_version: GRAPH_SCHEMA_VERSION,
             nodes: IndexMap::new(),
+            edges: IndexMap::new(),
         }
     }
 
@@ -51,6 +67,39 @@ impl Graph {
     #[must_use]
     pub fn get(&self, id: NodeId) -> Option<&Node> {
         self.nodes.get(&id)
+    }
+
+    /// Return the parent relationship of a node.
+    #[must_use]
+    pub fn parent_of(&self, id: NodeId) -> Parent {
+        match self.edges.get(&id) {
+            Some(p) => Parent::Of(*p),
+            None => Parent::Root,
+        }
+    }
+
+    /// Set `parent` as the parent of `child`. Overwrites any previous parent.
+    pub fn set_parent(&mut self, child: NodeId, parent: NodeId) {
+        self.edges.insert(child, parent);
+    }
+
+    /// All node ids with no parent edge, in insertion order.
+    #[must_use]
+    pub fn roots(&self) -> Vec<NodeId> {
+        self.nodes
+            .keys()
+            .filter(|id| !self.edges.contains_key(*id))
+            .copied()
+            .collect()
+    }
+
+    /// All node ids whose parent edge points at `parent`, in insertion order.
+    #[must_use]
+    pub fn children_of(&self, parent: NodeId) -> Vec<NodeId> {
+        self.edges
+            .iter()
+            .filter_map(|(child, p)| (*p == parent).then_some(*child))
+            .collect()
     }
 }
 
