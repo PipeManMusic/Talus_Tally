@@ -8,9 +8,10 @@
 //! feature flags). This Rust port starts with the irreducible minimum
 //! and layers behaviour in subsequent cycles.
 
+use indexmap::IndexSet;
 use serde::{Deserialize, Serialize};
 
-use crate::ids::NodeTypeId;
+use crate::ids::{NodeTypeId, PropertyId};
 
 /// Schema version for serialized `NodeType`. Bump on any breaking shape
 /// change so the migration layer can route old payloads correctly.
@@ -25,6 +26,8 @@ pub struct NodeType {
     id: NodeTypeId,
     name: String,
     schema_version: u32,
+    #[serde(default)]
+    allowed_properties: IndexSet<PropertyId>,
 }
 
 impl NodeType {
@@ -39,6 +42,7 @@ impl NodeType {
             id: NodeTypeId::new(),
             name: name.into(),
             schema_version: NODE_TYPE_SCHEMA_VERSION,
+            allowed_properties: IndexSet::new(),
         }
     }
 
@@ -58,6 +62,28 @@ impl NodeType {
     #[must_use]
     pub fn schema_version(&self) -> u32 {
         self.schema_version
+    }
+
+    /// Return a new `NodeType` with `pid` added to the allowed-property set.
+    ///
+    /// Adding the same `pid` twice is a no-op (allowlist is a set, not a
+    /// multiset). Insertion order is preserved for callers that iterate
+    /// via [`Self::allowed_properties`].
+    #[must_use]
+    pub fn with_allowed_property(mut self, pid: PropertyId) -> Self {
+        self.allowed_properties.insert(pid);
+        self
+    }
+
+    /// `true` iff `pid` is in the allowed-property allowlist.
+    #[must_use]
+    pub fn allows_property(&self, pid: PropertyId) -> bool {
+        self.allowed_properties.contains(&pid)
+    }
+
+    /// Iterate the allowed-property ids in insertion order.
+    pub fn allowed_properties(&self) -> impl Iterator<Item = PropertyId> + '_ {
+        self.allowed_properties.iter().copied()
     }
 }
 
