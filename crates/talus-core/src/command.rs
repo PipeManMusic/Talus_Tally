@@ -9,10 +9,11 @@
 use serde::{Deserialize, Serialize};
 
 use crate::error::Result;
-use crate::ids::{NodeId, NodeTypeId};
+use crate::ids::{NodeId, NodeTypeId, PropertyId};
 use crate::node::Node;
 use crate::node_type::NodeType;
 use crate::project::Project;
+use crate::property::Property;
 
 /// A request to mutate a [`Project`].
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -32,6 +33,16 @@ pub enum Command {
         child: NodeId,
         /// The new parent.
         parent: NodeId,
+    },
+    /// Insert or overwrite a property on an existing node. `pid` must
+    /// be in the node kind's `allowed_properties`.
+    SetProperty {
+        /// The node whose property is being set.
+        node: NodeId,
+        /// The property id.
+        pid: PropertyId,
+        /// The new value.
+        value: Property,
     },
 }
 
@@ -55,6 +66,13 @@ pub enum Event {
         child: NodeId,
         /// Its new parent.
         parent: NodeId,
+    },
+    /// A property value on a node was inserted or overwritten.
+    PropertyChanged {
+        /// The node whose property was changed.
+        node: NodeId,
+        /// The property id whose value was set.
+        pid: PropertyId,
     },
 }
 
@@ -81,6 +99,10 @@ pub fn apply_command(state: &mut Project, cmd: Command) -> Result<Event> {
         Command::SetParent { child, parent } => {
             state.set_parent(child, parent)?;
             Ok(Event::ParentChanged { child, parent })
+        }
+        Command::SetProperty { node, pid, value } => {
+            state.set_property(node, pid, value)?;
+            Ok(Event::PropertyChanged { node, pid })
         }
     }
 }
