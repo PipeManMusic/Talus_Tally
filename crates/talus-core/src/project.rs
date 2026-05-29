@@ -390,4 +390,28 @@ mod tests {
             "got {err:?}"
         );
     }
+
+    #[test]
+    fn remove_node_returns_subtree_and_drops_nodes() {
+        let (mut p, parent_id, child_id) = project_with_two_kinds_and_two_nodes();
+        p.set_parent(child_id, parent_id).unwrap();
+        let removed = p.remove_node(parent_id).unwrap();
+        assert_eq!(removed, vec![parent_id, child_id]);
+        assert_eq!(p.graph().node_count(), 0);
+        assert!(p.graph().get(parent_id).is_none());
+        assert!(p.graph().get(child_id).is_none());
+    }
+
+    #[test]
+    fn remove_node_returns_not_found_for_unknown_id() {
+        let (mut p, _, _) = project_with_two_kinds_and_two_nodes();
+        let stray = crate::ids::NodeId::new();
+        let err = p.remove_node(stray).expect_err("unknown id");
+        assert!(
+            matches!(err, crate::error::Error::NotFound(_)),
+            "got {err:?}"
+        );
+        // Graph is unchanged.
+        assert_eq!(p.graph().node_count(), 2);
+    }
 }
