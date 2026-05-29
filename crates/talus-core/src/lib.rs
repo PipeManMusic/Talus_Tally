@@ -33,6 +33,9 @@ pub mod graph;
 /// Top-level project aggregate: id + name + graph + node-type registry.
 pub mod project;
 
+/// Command/Event pipeline that owns all runtime mutations of a `Project`.
+pub mod command;
+
 /// Schema and validation primitives. Phase 1: types only; rules ported per module.
 pub mod schema;
 
