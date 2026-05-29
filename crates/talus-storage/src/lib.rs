@@ -9,6 +9,7 @@
 #![doc(html_no_source)]
 
 pub mod codec;
+pub mod command_log;
 pub mod event_log;
 pub mod filesystem;
 pub mod memory;
