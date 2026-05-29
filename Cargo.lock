@@ -538,7 +538,9 @@ dependencies = [
  "serde",
  "serde_json",
  "talus-core",
+ "tempfile",
  "thiserror",
+ "uuid",
 ]
 
 [[package]]
