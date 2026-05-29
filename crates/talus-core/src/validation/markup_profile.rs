@@ -15,8 +15,37 @@ use serde_json::Value;
 /// problems found (empty when the document is well-formed at this layer).
 #[must_use]
 pub fn validate(data: &Value) -> Vec<String> {
-    let _ = data;
-    unimplemented!("validation::markup_profile::validate")
+    let mut errors = Vec::new();
+
+    match data.get("id") {
+        None => errors.push("markup_profile: missing required field 'id'".to_string()),
+        Some(v) => {
+            if !is_non_empty_string(v) {
+                errors.push("markup_profile.id: must be non-empty string".to_string());
+            }
+        }
+    }
+
+    match data.get("label") {
+        None => errors.push("markup_profile: missing required field 'label'".to_string()),
+        Some(v) => {
+            if !is_non_empty_string(v) {
+                errors.push("markup_profile.label: must be non-empty string".to_string());
+            }
+        }
+    }
+
+    if let Some(tokens) = data.get("tokens") {
+        if !tokens.is_array() {
+            errors.push("markup_profile.tokens: must be array".to_string());
+        }
+    }
+
+    errors
+}
+
+fn is_non_empty_string(v: &Value) -> bool {
+    v.as_str().is_some_and(|s| !s.trim().is_empty())
 }
 
 #[cfg(test)]
