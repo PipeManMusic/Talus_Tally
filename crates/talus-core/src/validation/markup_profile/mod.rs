@@ -8,6 +8,7 @@
 
 use serde_json::Value;
 
+mod format;
 mod token;
 
 /// Validate the top-level structure of a markup profile document.
