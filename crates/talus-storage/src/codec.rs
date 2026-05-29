@@ -5,6 +5,31 @@
 //! this way so a future Phase 3 binary codec (Automerge / bincode)
 //! can sit alongside without touching the store API.
 
+use talus_core::error::{Error, Result};
+use talus_core::project::Project;
+
+/// Serialize `project` to its canonical JSON byte representation.
+///
+/// The shape matches the snapshot pinned by
+/// `talus_core::project::tests::project_json_shape_is_locked`.
+///
+/// # Errors
+/// Returns [`Error::Serialization`] if `serde_json` fails (in practice
+/// only when the JSON value tree is unrepresentable; `Project`'s
+/// fields are not).
+pub fn encode(project: &Project) -> Result<Vec<u8>> {
+    serde_json::to_vec(project).map_err(|e| Error::Serialization(e.to_string()))
+}
+
+/// Parse a `Project` from its canonical JSON byte representation.
+///
+/// # Errors
+/// Returns [`Error::Serialization`] if `bytes` is not valid JSON or
+/// does not match the `Project` shape.
+pub fn decode(bytes: &[u8]) -> Result<Project> {
+    serde_json::from_slice(bytes).map_err(|e| Error::Serialization(e.to_string()))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
