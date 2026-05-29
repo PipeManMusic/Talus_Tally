@@ -78,6 +78,21 @@ impl EventLog {
     pub fn path(&self) -> &Path {
         &self.path
     }
+
+    /// Empty the log, discarding every event. The file is preserved
+    /// (subsequent `read_all` returns an empty `Vec`).
+    ///
+    /// Used by snapshot+truncate cycles: write a `Project` snapshot
+    /// elsewhere, then call `truncate` so the log restarts from the
+    /// snapshot's point in time.
+    ///
+    /// # Errors
+    /// Returns [`talus_core::error::Error::Io`] if the file cannot be
+    /// truncated.
+    pub fn truncate(&self) -> Result<()> {
+        let _ = self;
+        unimplemented!("event_log::truncate")
+    }
 }
 
 fn io_err(e: &std::io::Error) -> Error {
@@ -137,5 +152,38 @@ mod tests {
         }
         let reopened = EventLog::open(&path).unwrap();
         assert_eq!(reopened.read_all().unwrap(), vec![ev]);
+    }
+
+    #[test]
+    fn truncate_empties_the_log() {
+        let (log, _dir) = log();
+        log.append(&sample_event()).unwrap();
+        log.append(&sample_event()).unwrap();
+        assert_eq!(log.read_all().unwrap().len(), 2);
+        log.truncate().unwrap();
+        assert_eq!(log.read_all().unwrap(), Vec::<Event>::new());
+    }
+
+    #[test]
+    fn append_after_truncate_starts_fresh() {
+        let (log, _dir) = log();
+        log.append(&sample_event()).unwrap();
+        log.truncate().unwrap();
+        let next = sample_event();
+        log.append(&next).unwrap();
+        assert_eq!(log.read_all().unwrap(), vec![next]);
+    }
+
+    #[test]
+    fn truncate_survives_reopen() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let path = dir.path().join("events.ndjson");
+        {
+            let log = EventLog::open(&path).unwrap();
+            log.append(&sample_event()).unwrap();
+            log.truncate().unwrap();
+        }
+        let reopened = EventLog::open(&path).unwrap();
+        assert_eq!(reopened.read_all().unwrap(), Vec::<Event>::new());
     }
 }
