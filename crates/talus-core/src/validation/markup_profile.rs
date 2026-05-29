@@ -38,8 +38,13 @@ pub fn validate(data: &Value) -> Vec<String> {
     }
 
     if let Some(tokens) = data.get("tokens") {
-        if !tokens.is_array() {
-            errors.push("markup_profile.tokens: must be array".to_string());
+        match tokens.as_array() {
+            None => errors.push("markup_profile.tokens: must be array".to_string()),
+            Some(arr) => {
+                for (i, token) in arr.iter().enumerate() {
+                    errors.extend(validate_token(token, i));
+                }
+            }
         }
     }
 
@@ -49,10 +54,59 @@ pub fn validate(data: &Value) -> Vec<String> {
 /// Validate the identity portion of a single token: id, label, and the
 /// `prefix`-or-`pattern` requirement. Format rules are validated by a
 /// separate slice.
-#[allow(dead_code)]
 fn validate_token(token: &Value, index: usize) -> Vec<String> {
-    let _ = (token, index);
-    unimplemented!("validation::markup_profile::validate_token")
+    let path = format!("markup_profile.tokens[{index}]");
+    let mut errors = Vec::new();
+
+    match token.get("id") {
+        None => errors.push(format!("{path}: missing required field 'id'")),
+        Some(v) => {
+            if !is_non_empty_string(v) {
+                errors.push(format!("{path}.id: must be non-empty string"));
+            }
+        }
+    }
+
+    match token.get("label") {
+        None => errors.push(format!("{path}: missing required field 'label'")),
+        Some(v) => {
+            if !is_non_empty_string(v) {
+                errors.push(format!("{path}.label: must be non-empty string"));
+            }
+        }
+    }
+
+    // Python treats both missing-key and explicit-null the same via dict.get().
+    let has_prefix = match token.get("prefix").filter(|v| !v.is_null()) {
+        None => {
+            errors.push(format!("{path}: missing required field 'prefix'"));
+            false
+        }
+        Some(v) if v.is_string() => true,
+        Some(_) => {
+            errors.push(format!("{path}.prefix: must be string"));
+            false
+        }
+    };
+
+    let has_pattern = match token.get("pattern").filter(|v| !v.is_null()) {
+        None => false,
+        Some(v) if is_non_empty_string(v) => true,
+        Some(_) => {
+            errors.push(format!(
+                "{path}.pattern: must be non-empty string if provided"
+            ));
+            false
+        }
+    };
+
+    if !has_prefix && !has_pattern {
+        errors.push(format!(
+            "{path}: missing required field 'prefix' (or provide 'pattern')"
+        ));
+    }
+
+    errors
 }
 
 fn is_non_empty_string(v: &Value) -> bool {
@@ -253,11 +307,19 @@ mod tests {
     }
 
     #[test]
-    fn token_pattern_only_no_prefix_is_valid() {
+    fn token_pattern_only_no_prefix_reports_missing_prefix_only() {
+        // Python: missing prefix always emits "missing required field 'prefix'".
+        // The combined "(or provide 'pattern')" message is suppressed because
+        // has_pattern is true.
         let data = json!({"id": "p", "label": "P", "tokens": [
             {"id": "x", "label": "X", "pattern": "^- "}
         ]});
-        assert_eq!(validate(&data), Vec::<String>::new());
+        let errors = validate(&data);
+        assert!(
+            errors
+                .contains(&"markup_profile.tokens[0]: missing required field 'prefix'".to_string())
+        );
+        assert!(!errors.iter().any(|e| e.contains("or provide 'pattern'")));
     }
 
     #[test]
