@@ -17,6 +17,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::graph::Graph;
 use crate::ids::{NodeTypeId, ProjectId, TemplateId};
+use crate::node::Node;
 use crate::node_type::NodeType;
 
 /// Schema version for serialized `Project`. Bump on any breaking shape change.
@@ -107,6 +108,24 @@ impl Project {
             )));
         }
         self.node_types.insert(nt.id(), nt);
+        Ok(())
+    }
+
+    /// Insert `node` into the project's graph after validating its kind.
+    ///
+    /// # Errors
+    /// - [`crate::error::Error::NotFound`] if `node.kind()` is not in
+    ///   the node-type registry. On error the inner graph is unchanged.
+    pub fn insert_node(&mut self, node: Node) -> crate::error::Result<()> {
+        use crate::error::Error;
+
+        if !self.node_types.contains_key(&node.kind()) {
+            return Err(Error::NotFound(format!(
+                "node type {} is not registered",
+                node.kind()
+            )));
+        }
+        self.graph.insert_node(node);
         Ok(())
     }
 }
