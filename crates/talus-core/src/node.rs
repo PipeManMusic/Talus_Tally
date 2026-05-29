@@ -103,4 +103,25 @@ mod tests {
             serde_json::from_str(&json).unwrap_or_else(|e| panic!("deserialize {json}: {e}"));
         assert_eq!(original, parsed);
     }
+
+    #[test]
+    fn node_json_shape_is_locked() {
+        use uuid::Uuid;
+
+        // Deterministic ids so the snapshot is stable across runs.
+        let mk =
+            |n: u8| Uuid::parse_str(&format!("00000000-0000-4000-8000-0000000000{n:02}")).unwrap();
+        let mut properties = IndexMap::new();
+        properties.insert(PropertyId::from(mk(3)), Property::Text("Alice".into()));
+        properties.insert(PropertyId::from(mk(4)), Property::Boolean(true));
+        let node = Node {
+            id: NodeId::from(mk(1)),
+            kind: NodeTypeId::from(mk(2)),
+            name: "Task A".into(),
+            schema_version: NODE_SCHEMA_VERSION,
+            properties,
+        };
+
+        insta::assert_json_snapshot!("node_with_two_properties", node);
+    }
 }
