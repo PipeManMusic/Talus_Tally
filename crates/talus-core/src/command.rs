@@ -276,4 +276,35 @@ mod tests {
         assert!(matches!(err, Error::InvariantViolation(_)), "got {err:?}");
         assert!(p.graph().get(nid).unwrap().properties().is_empty());
     }
+
+    #[test]
+    fn remove_node_command_succeeds_and_emits_subtree_removed_event() {
+        let (mut p, parent_id, child_id) = project_ready_for_set_parent();
+        apply_command(
+            &mut p,
+            Command::SetParent {
+                child: child_id,
+                parent: parent_id,
+            },
+        )
+        .unwrap();
+        let ev = apply_command(&mut p, Command::RemoveNode { id: parent_id }).unwrap();
+        assert_eq!(
+            ev,
+            Event::SubtreeRemoved {
+                ids: vec![parent_id, child_id],
+            }
+        );
+        assert_eq!(p.graph().node_count(), 0);
+    }
+
+    #[test]
+    fn remove_node_command_rejects_unknown_id_and_leaves_graph_unchanged() {
+        let (mut p, _, _) = project_ready_for_set_parent();
+        let stray = crate::ids::NodeId::new();
+        let err =
+            apply_command(&mut p, Command::RemoveNode { id: stray }).expect_err("unknown node");
+        assert!(matches!(err, Error::NotFound(_)), "got {err:?}");
+        assert_eq!(p.graph().node_count(), 2);
+    }
 }
