@@ -9,16 +9,21 @@
 use serde::{Deserialize, Serialize};
 
 use crate::error::Result;
-use crate::ids::NodeTypeId;
+use crate::ids::{NodeId, NodeTypeId};
+use crate::node::Node;
 use crate::node_type::NodeType;
 use crate::project::Project;
 
 /// A request to mutate a [`Project`].
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type", content = "data")]
 pub enum Command {
     /// Register a new [`NodeType`] in the project's registry.
     RegisterNodeType(NodeType),
+    /// Insert a new [`Node`] into the project's graph. The node's
+    /// kind must already be registered, and every property on the
+    /// node must be in the kind's `allowed_properties`.
+    InsertNode(Node),
 }
 
 /// A fact describing a change that was applied to a [`Project`].
@@ -29,6 +34,11 @@ pub enum Event {
     NodeTypeRegistered {
         /// The id of the newly registered [`NodeType`].
         node_type_id: NodeTypeId,
+    },
+    /// A new [`Node`] was inserted into the graph.
+    NodeInserted {
+        /// The id of the inserted [`Node`].
+        node_id: NodeId,
     },
 }
 
@@ -46,6 +56,11 @@ pub fn apply_command(state: &mut Project, cmd: Command) -> Result<Event> {
             let id = nt.id();
             state.register_node_type(nt)?;
             Ok(Event::NodeTypeRegistered { node_type_id: id })
+        }
+        Command::InsertNode(node) => {
+            let id = node.id();
+            state.insert_node(node)?;
+            Ok(Event::NodeInserted { node_id: id })
         }
     }
 }
