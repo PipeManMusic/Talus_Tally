@@ -5,4 +5,5 @@
 //! existing API surface and UI behavior is preserved byte-for-byte during
 //! the migration. See `docs/architecture/RUST_MIGRATION_PLAN.md` § Phase 1.
 
+pub mod icon_catalog;
 pub mod markup_profile;
