@@ -73,4 +73,52 @@ mod tests {
         assert_eq!(g.node_count(), 1);
         assert_eq!(g.get(id), Some(&node));
     }
+
+    #[test]
+    fn newly_inserted_node_is_a_root() {
+        let mut g = Graph::new(crate::ids::TemplateId::new());
+        let n = crate::node::Node::new(crate::ids::NodeTypeId::new(), "n");
+        let id = n.id();
+        g.insert_node(n);
+        assert_eq!(g.parent_of(id), Parent::Root);
+        assert_eq!(g.roots(), vec![id]);
+        assert!(g.children_of(id).is_empty());
+    }
+
+    #[test]
+    fn set_parent_links_child_to_parent() {
+        let mut g = Graph::new(crate::ids::TemplateId::new());
+        let parent = crate::node::Node::new(crate::ids::NodeTypeId::new(), "p");
+        let child = crate::node::Node::new(crate::ids::NodeTypeId::new(), "c");
+        let (pid, cid) = (parent.id(), child.id());
+        g.insert_node(parent);
+        g.insert_node(child);
+
+        g.set_parent(cid, pid);
+
+        assert_eq!(g.parent_of(cid), Parent::Of(pid));
+        assert_eq!(g.parent_of(pid), Parent::Root);
+        assert_eq!(g.roots(), vec![pid]);
+        assert_eq!(g.children_of(pid), vec![cid]);
+        assert!(g.children_of(cid).is_empty());
+    }
+
+    #[test]
+    fn set_parent_overwrites_previous_parent() {
+        let mut g = Graph::new(crate::ids::TemplateId::new());
+        let a = crate::node::Node::new(crate::ids::NodeTypeId::new(), "a");
+        let b = crate::node::Node::new(crate::ids::NodeTypeId::new(), "b");
+        let c = crate::node::Node::new(crate::ids::NodeTypeId::new(), "c");
+        let (aid, bid, cid) = (a.id(), b.id(), c.id());
+        g.insert_node(a);
+        g.insert_node(b);
+        g.insert_node(c);
+
+        g.set_parent(cid, aid);
+        g.set_parent(cid, bid);
+
+        assert_eq!(g.parent_of(cid), Parent::Of(bid));
+        assert!(g.children_of(aid).is_empty(), "a no longer parents c");
+        assert_eq!(g.children_of(bid), vec![cid]);
+    }
 }
