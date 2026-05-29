@@ -4,13 +4,79 @@
 //! from `backend/infra/schema_validator.py`. Error strings are
 //! byte-for-byte parity with Python.
 
+use std::collections::HashSet;
+
 use serde_json::Value;
 
 /// Validate the top-level structure of an icon catalog document.
 #[must_use]
-pub fn validate(_data: &Value) -> Vec<String> {
-    // RED stub — implementation arrives in the GREEN slice.
-    Vec::new()
+pub fn validate(data: &Value) -> Vec<String> {
+    let mut errors = Vec::new();
+
+    match data.get("icons") {
+        None => errors.push("icon_catalog: missing required field 'icons'".to_string()),
+        Some(v) => match v.as_array() {
+            None => errors.push("icon_catalog.icons: must be array".to_string()),
+            Some(arr) => {
+                let mut seen: HashSet<String> = HashSet::new();
+                for (i, icon) in arr.iter().enumerate() {
+                    errors.extend(validate_icon(icon, i, &mut seen));
+                }
+            }
+        },
+    }
+
+    errors
+}
+
+fn validate_icon(icon: &Value, index: usize, seen: &mut HashSet<String>) -> Vec<String> {
+    let path = format!("icon_catalog.icons[{index}]");
+    let mut errors = Vec::new();
+
+    match icon.get("id") {
+        None => errors.push(format!("{path}: missing required field 'id'")),
+        Some(v) => match v.as_str() {
+            Some(s) if !s.trim().is_empty() => {
+                if !is_kebab_case(s) {
+                    errors.push(format!(
+                        "{path}.id: must match kebab-case pattern (got '{s}')"
+                    ));
+                }
+                if !seen.insert(s.to_string()) {
+                    errors.push(format!("{path}.id: duplicate icon id '{s}'"));
+                }
+            }
+            _ => errors.push(format!("{path}.id: must be non-empty string")),
+        },
+    }
+
+    match icon.get("file") {
+        None => errors.push(format!("{path}: missing required field 'file'")),
+        Some(v) => {
+            if !v.as_str().is_some_and(|s| !s.trim().is_empty()) {
+                errors.push(format!("{path}.file: must be non-empty string"));
+            }
+        }
+    }
+
+    errors
+}
+
+/// Matches Python's `^[a-z0-9]+(-[a-z0-9]+)*$`: lowercase alphanumerics
+/// in hyphen-separated groups, no leading/trailing/double hyphens.
+fn is_kebab_case(s: &str) -> bool {
+    if s.is_empty() {
+        return false;
+    }
+    let mut prev_dash = true; // forbid leading '-'
+    for c in s.chars() {
+        match c {
+            'a'..='z' | '0'..='9' => prev_dash = false,
+            '-' if !prev_dash => prev_dash = true,
+            _ => return false,
+        }
+    }
+    !prev_dash // forbid trailing '-'
 }
 
 #[cfg(test)]
