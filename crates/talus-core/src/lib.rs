@@ -24,6 +24,9 @@ pub mod property;
 /// A single node in a project tree.
 pub mod node;
 
+/// Node-type definitions: the blueprint side of a node.
+pub mod node_type;
+
 /// The structural container for a project's nodes and tree edges.
 pub mod graph;
 
