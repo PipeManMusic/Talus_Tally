@@ -315,10 +315,8 @@ mod tests {
             {"id": "x", "label": "X", "pattern": "^- "}
         ]});
         let errors = validate(&data);
-        assert!(
-            errors
-                .contains(&"markup_profile.tokens[0]: missing required field 'prefix'".to_string())
-        );
+        assert!(errors
+            .contains(&"markup_profile.tokens[0]: missing required field 'prefix'".to_string()));
         assert!(!errors.iter().any(|e| e.contains("or provide 'pattern'")));
     }
 
@@ -344,5 +342,49 @@ mod tests {
         assert!(errors
             .contains(&"markup_profile.tokens[0]: missing required field 'prefix'".to_string()));
         assert!(!errors.iter().any(|e| e.contains("or provide 'pattern'")));
+    }
+
+    // ----- format_scope rule -----
+
+    #[test]
+    fn format_scope_absent_is_allowed() {
+        let data = json!({"id": "p", "label": "P", "tokens": [minimal_token()]});
+        assert_eq!(validate(&data), Vec::<String>::new());
+    }
+
+    #[test]
+    fn format_scope_line_is_valid() {
+        let data = json!({"id": "p", "label": "P", "tokens": [
+            {"id": "x", "label": "X", "prefix": "> ", "format_scope": "line"}
+        ]});
+        assert_eq!(validate(&data), Vec::<String>::new());
+    }
+
+    #[test]
+    fn format_scope_prefix_value_is_valid() {
+        let data = json!({"id": "p", "label": "P", "tokens": [
+            {"id": "x", "label": "X", "prefix": "> ", "format_scope": "prefix"}
+        ]});
+        assert_eq!(validate(&data), Vec::<String>::new());
+    }
+
+    #[test]
+    fn format_scope_unknown_string_is_reported() {
+        let data = json!({"id": "p", "label": "P", "tokens": [
+            {"id": "x", "label": "X", "prefix": "> ", "format_scope": "block"}
+        ]});
+        assert!(validate(&data).contains(
+            &"markup_profile.tokens[0].format_scope: must be 'line' or 'prefix'".to_string()
+        ));
+    }
+
+    #[test]
+    fn format_scope_non_string_is_reported() {
+        let data = json!({"id": "p", "label": "P", "tokens": [
+            {"id": "x", "label": "X", "prefix": "> ", "format_scope": 1}
+        ]});
+        assert!(validate(&data).contains(
+            &"markup_profile.tokens[0].format_scope: must be 'line' or 'prefix'".to_string()
+        ));
     }
 }
