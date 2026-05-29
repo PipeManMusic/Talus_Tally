@@ -79,8 +79,40 @@ impl Graph {
     }
 
     /// Set `parent` as the parent of `child`. Overwrites any previous parent.
-    pub fn set_parent(&mut self, child: NodeId, parent: NodeId) {
+    ///
+    /// # Errors
+    /// - [`Error::NotFound`] if either `child` or `parent` is not in the graph.
+    /// - [`Error::InvariantViolation`] if `child == parent`, or if the edge
+    ///   would create a cycle (i.e. `child` is already an ancestor of `parent`).
+    ///
+    /// On error the graph is unchanged.
+    pub fn set_parent(&mut self, child: NodeId, parent: NodeId) -> crate::error::Result<()> {
+        use crate::error::Error;
+
+        if !self.nodes.contains_key(&child) {
+            return Err(Error::NotFound(format!("child node {child}")));
+        }
+        if !self.nodes.contains_key(&parent) {
+            return Err(Error::NotFound(format!("parent node {parent}")));
+        }
+        if child == parent {
+            return Err(Error::InvariantViolation(format!(
+                "node {child} cannot be its own parent"
+            )));
+        }
+        // Walk the proposed parent's ancestry; if we hit `child`, this edge
+        // would close a cycle.
+        let mut cursor = parent;
+        while let Some(next) = self.edges.get(&cursor) {
+            if *next == child {
+                return Err(Error::InvariantViolation(format!(
+                    "edge {child} -> {parent} would form a cycle"
+                )));
+            }
+            cursor = *next;
+        }
         self.edges.insert(child, parent);
+        Ok(())
     }
 
     /// All node ids with no parent edge, in insertion order.
