@@ -5,6 +5,7 @@
 //! this way so a future Phase 3 binary codec (Automerge / bincode)
 //! can sit alongside without touching the store API.
 
+use talus_core::command::{Command, Event};
 use talus_core::error::{Error, Result};
 use talus_core::project::Project;
 
@@ -27,6 +28,40 @@ pub fn encode(project: &Project) -> Result<Vec<u8>> {
 /// Returns [`Error::Serialization`] if `bytes` is not valid JSON or
 /// does not match the `Project` shape.
 pub fn decode(bytes: &[u8]) -> Result<Project> {
+    serde_json::from_slice(bytes).map_err(|e| Error::Serialization(e.to_string()))
+}
+
+/// Serialize a [`Command`] to its canonical JSON byte representation.
+///
+/// # Errors
+/// Returns [`Error::Serialization`] if `serde_json` fails.
+pub fn encode_command(cmd: &Command) -> Result<Vec<u8>> {
+    serde_json::to_vec(cmd).map_err(|e| Error::Serialization(e.to_string()))
+}
+
+/// Parse a [`Command`] from its canonical JSON byte representation.
+///
+/// # Errors
+/// Returns [`Error::Serialization`] if `bytes` is not valid JSON or
+/// does not match the `Command` shape.
+pub fn decode_command(bytes: &[u8]) -> Result<Command> {
+    serde_json::from_slice(bytes).map_err(|e| Error::Serialization(e.to_string()))
+}
+
+/// Serialize an [`Event`] to its canonical JSON byte representation.
+///
+/// # Errors
+/// Returns [`Error::Serialization`] if `serde_json` fails.
+pub fn encode_event(event: &Event) -> Result<Vec<u8>> {
+    serde_json::to_vec(event).map_err(|e| Error::Serialization(e.to_string()))
+}
+
+/// Parse an [`Event`] from its canonical JSON byte representation.
+///
+/// # Errors
+/// Returns [`Error::Serialization`] if `bytes` is not valid JSON or
+/// does not match the `Event` shape.
+pub fn decode_event(bytes: &[u8]) -> Result<Event> {
     serde_json::from_slice(bytes).map_err(|e| Error::Serialization(e.to_string()))
 }
 
