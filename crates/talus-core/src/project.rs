@@ -208,6 +208,41 @@ impl Project {
     pub fn remove_node(&mut self, id: NodeId) -> crate::error::Result<Vec<NodeId>> {
         self.graph.remove_node(id)
     }
+
+    /// Insert or overwrite a property on an existing node, enforcing
+    /// the node's [`NodeType`] `allowed_properties` allowlist.
+    ///
+    /// # Errors
+    /// - [`crate::error::Error::NotFound`] if `node` is not in the
+    ///   graph, or if the node's kind is not in the registry.
+    /// - [`crate::error::Error::InvariantViolation`] if `pid` is not in
+    ///   the node `NodeType`'s `allowed_properties`.
+    ///
+    /// On error the graph is unchanged.
+    pub fn set_property(
+        &mut self,
+        node: NodeId,
+        pid: crate::ids::PropertyId,
+        value: crate::property::Property,
+    ) -> crate::error::Result<()> {
+        use crate::error::Error;
+
+        let kind = self
+            .graph
+            .get(node)
+            .ok_or_else(|| Error::NotFound(format!("node {node}")))?
+            .kind();
+        let nt = self
+            .node_types
+            .get(&kind)
+            .ok_or_else(|| Error::NotFound(format!("node type {kind} is not registered")))?;
+        if !nt.allows_property(pid) {
+            return Err(Error::InvariantViolation(format!(
+                "node type {kind} does not allow property {pid}",
+            )));
+        }
+        self.graph.set_property(node, pid, value)
+    }
 }
 
 #[cfg(test)]

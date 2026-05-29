@@ -89,6 +89,15 @@ impl Node {
         self
     }
 
+    /// Insert or overwrite a property value on this node.
+    ///
+    /// In-place mutation companion to [`Self::with_property`]. Project
+    /// is the gate that validates `id` against the node's `NodeType`
+    /// allowlist before calling this; this method does no validation.
+    pub fn set_property(&mut self, id: PropertyId, value: Property) {
+        self.properties.insert(id, value);
+    }
+
     /// Test-only constructor accepting an explicit [`NodeId`].
     ///
     /// Public `Node::new` always mints a fresh id per §4a "one ID

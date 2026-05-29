@@ -69,6 +69,28 @@ impl Graph {
         self.nodes.get(&id)
     }
 
+    /// Insert or overwrite a property on an existing node.
+    ///
+    /// The graph performs no type-level validation (it doesn't know
+    /// about `NodeType` allowlists); callers that need that gate must
+    /// go through [`crate::project::Project::set_property`].
+    ///
+    /// # Errors
+    /// - [`crate::error::Error::NotFound`] if `node` is not in the graph.
+    ///   On error the graph is unchanged.
+    pub fn set_property(
+        &mut self,
+        node: NodeId,
+        pid: crate::ids::PropertyId,
+        value: crate::property::Property,
+    ) -> crate::error::Result<()> {
+        let Some(n) = self.nodes.get_mut(&node) else {
+            return Err(crate::error::Error::NotFound(format!("node {node}")));
+        };
+        n.set_property(pid, value);
+        Ok(())
+    }
+
     /// Return the parent relationship of a node.
     #[must_use]
     pub fn parent_of(&self, id: NodeId) -> Parent {
