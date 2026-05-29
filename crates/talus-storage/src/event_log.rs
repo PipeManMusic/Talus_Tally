@@ -4,10 +4,14 @@
 //! [`crate::codec::encode_event`]. New events are appended; readers
 //! get the full history in append order.
 
+use std::fs::OpenOptions;
+use std::io::Write;
 use std::path::{Path, PathBuf};
 
 use talus_core::command::Event;
-use talus_core::error::Result;
+use talus_core::error::{Error, Result};
+
+use crate::codec::{decode_event, encode_event};
 
 /// Append-only log of [`Event`]s persisted as newline-delimited JSON.
 #[derive(Debug)]
@@ -22,8 +26,14 @@ impl EventLog {
     /// # Errors
     /// Returns [`talus_core::error::Error::Io`] if the file cannot be
     /// created or opened for append.
-    pub fn open(_path: impl Into<PathBuf>) -> Result<Self> {
-        unimplemented!("event_log::open")
+    pub fn open(path: impl Into<PathBuf>) -> Result<Self> {
+        let path = path.into();
+        OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(&path)
+            .map_err(|e| io_err(&e))?;
+        Ok(Self { path })
     }
 
     /// Append `event` to the log. Flushes and fsyncs before returning.
@@ -32,8 +42,17 @@ impl EventLog {
     /// Returns [`talus_core::error::Error::Serialization`] if encoding
     /// fails, or [`talus_core::error::Error::Io`] if the underlying
     /// write fails.
-    pub fn append(&self, _event: &Event) -> Result<()> {
-        unimplemented!("event_log::append")
+    pub fn append(&self, event: &Event) -> Result<()> {
+        let mut bytes = encode_event(event)?;
+        bytes.push(b'\n');
+        let mut file = OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(&self.path)
+            .map_err(|e| io_err(&e))?;
+        file.write_all(&bytes).map_err(|e| io_err(&e))?;
+        file.sync_all().map_err(|e| io_err(&e))?;
+        Ok(())
     }
 
     /// Read every event in the log, in append order.
@@ -43,7 +62,15 @@ impl EventLog {
     /// read, or [`talus_core::error::Error::Serialization`] if any
     /// line fails to decode.
     pub fn read_all(&self) -> Result<Vec<Event>> {
-        unimplemented!("event_log::read_all")
+        let bytes = std::fs::read(&self.path).map_err(|e| io_err(&e))?;
+        let mut out = Vec::new();
+        for line in bytes.split(|b| *b == b'\n') {
+            if line.is_empty() {
+                continue;
+            }
+            out.push(decode_event(line)?);
+        }
+        Ok(out)
     }
 
     /// Path the log is bound to.
@@ -51,6 +78,10 @@ impl EventLog {
     pub fn path(&self) -> &Path {
         &self.path
     }
+}
+
+fn io_err(e: &std::io::Error) -> Error {
+    Error::Io(e.to_string())
 }
 
 #[cfg(test)]
