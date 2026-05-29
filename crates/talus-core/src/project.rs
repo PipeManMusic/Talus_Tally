@@ -281,4 +281,75 @@ mod tests {
         );
         assert_eq!(p.graph().node_count(), 0);
     }
+
+    /// Test helper: register two NodeTypes (parent allowing child) and
+    /// insert one node of each kind. Returns (project, parent_id, child_id).
+    fn project_with_two_kinds_and_two_nodes() -> (Project, crate::ids::NodeId, crate::ids::NodeId) {
+        let mut p = Project::new("P", TemplateId::new());
+        let child_kind = crate::node_type::NodeType::new("Task");
+        let child_kind_id = child_kind.id();
+        let parent_kind =
+            crate::node_type::NodeType::new("Project").with_allowed_child(child_kind_id);
+        let parent_kind_id = parent_kind.id();
+        p.register_node_type(child_kind).unwrap();
+        p.register_node_type(parent_kind).unwrap();
+
+        let parent_node = crate::node::Node::new(parent_kind_id, "Root");
+        let parent_id = parent_node.id();
+        let child_node = crate::node::Node::new(child_kind_id, "Leaf");
+        let child_id = child_node.id();
+        p.insert_node(parent_node).unwrap();
+        p.insert_node(child_node).unwrap();
+
+        (p, parent_id, child_id)
+    }
+
+    #[test]
+    fn set_parent_succeeds_when_parent_kind_allows_child_kind() {
+        let (mut p, parent_id, child_id) = project_with_two_kinds_and_two_nodes();
+        p.set_parent(child_id, parent_id).unwrap();
+        assert_eq!(p.graph().children_of(parent_id), vec![child_id]);
+    }
+
+    #[test]
+    fn set_parent_rejects_when_parent_kind_disallows_child_kind() {
+        // Build a project where the parent's NodeType does NOT list the
+        // child's kind in allowed_children.
+        let mut p = Project::new("P", TemplateId::new());
+        let child_kind = crate::node_type::NodeType::new("Task");
+        let parent_kind = crate::node_type::NodeType::new("Project"); // no allowed_children
+        let (child_kind_id, parent_kind_id) = (child_kind.id(), parent_kind.id());
+        p.register_node_type(child_kind).unwrap();
+        p.register_node_type(parent_kind).unwrap();
+
+        let parent_node = crate::node::Node::new(parent_kind_id, "Root");
+        let child_node = crate::node::Node::new(child_kind_id, "Leaf");
+        let (parent_id, child_id) = (parent_node.id(), child_node.id());
+        p.insert_node(parent_node).unwrap();
+        p.insert_node(child_node).unwrap();
+
+        let err = p
+            .set_parent(child_id, parent_id)
+            .expect_err("child kind not allowed under parent kind");
+        assert!(
+            matches!(err, crate::error::Error::InvariantViolation(_)),
+            "got {err:?}"
+        );
+        // Graph is unchanged on rejection.
+        assert_eq!(
+            p.graph().children_of(parent_id),
+            Vec::<crate::ids::NodeId>::new()
+        );
+    }
+
+    #[test]
+    fn set_parent_returns_not_found_when_child_missing_from_graph() {
+        let (mut p, parent_id, _) = project_with_two_kinds_and_two_nodes();
+        let stray = crate::ids::NodeId::new();
+        let err = p.set_parent(stray, parent_id).expect_err("unknown child");
+        assert!(
+            matches!(err, crate::error::Error::NotFound(_)),
+            "got {err:?}"
+        );
+    }
 }
