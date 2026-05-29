@@ -24,6 +24,15 @@ pub enum Command {
     /// kind must already be registered, and every property on the
     /// node must be in the kind's `allowed_properties`.
     InsertNode(Node),
+    /// Set `parent` as the parent of `child`. The parent's
+    /// [`NodeType`] must list the child's kind in its
+    /// `allowed_children`. Overwrites any previous parent of `child`.
+    SetParent {
+        /// The node being re-parented.
+        child: NodeId,
+        /// The new parent.
+        parent: NodeId,
+    },
 }
 
 /// A fact describing a change that was applied to a [`Project`].
@@ -39,6 +48,13 @@ pub enum Event {
     NodeInserted {
         /// The id of the inserted [`Node`].
         node_id: NodeId,
+    },
+    /// `child`'s parent was set to `parent`.
+    ParentChanged {
+        /// The re-parented node.
+        child: NodeId,
+        /// Its new parent.
+        parent: NodeId,
     },
 }
 
@@ -61,6 +77,10 @@ pub fn apply_command(state: &mut Project, cmd: Command) -> Result<Event> {
             let id = node.id();
             state.insert_node(node)?;
             Ok(Event::NodeInserted { node_id: id })
+        }
+        Command::SetParent { child, parent } => {
+            state.set_parent(child, parent)?;
+            Ok(Event::ParentChanged { child, parent })
         }
     }
 }
