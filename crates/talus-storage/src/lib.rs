@@ -8,6 +8,7 @@
 
 #![doc(html_no_source)]
 
+pub mod codec;
 pub mod memory;
 pub mod project_store;
 
