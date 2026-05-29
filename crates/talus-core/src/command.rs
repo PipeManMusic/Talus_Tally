@@ -85,4 +85,28 @@ mod tests {
         assert_eq!(p.node_types().count(), 1);
         assert!(p.get_node_type(nt_id).is_some());
     }
+
+    #[test]
+    fn insert_node_command_succeeds_and_emits_node_inserted_event() {
+        let mut p = Project::new("P", TemplateId::new());
+        let nt = NodeType::new("Task");
+        let kind = nt.id();
+        apply_command(&mut p, Command::RegisterNodeType(nt)).unwrap();
+
+        let node = crate::node::Node::new(kind, "n");
+        let nid = node.id();
+        let ev = apply_command(&mut p, Command::InsertNode(node)).unwrap();
+        assert_eq!(ev, Event::NodeInserted { node_id: nid });
+        assert!(p.graph().get(nid).is_some());
+    }
+
+    #[test]
+    fn insert_node_command_rejects_unknown_kind_and_leaves_graph_unchanged() {
+        let mut p = Project::new("P", TemplateId::new());
+        let stray_kind = crate::ids::NodeTypeId::new();
+        let node = crate::node::Node::new(stray_kind, "n");
+        let err = apply_command(&mut p, Command::InsertNode(node)).expect_err("unknown node kind");
+        assert!(matches!(err, Error::NotFound(_)), "got {err:?}");
+        assert_eq!(p.graph().node_count(), 0);
+    }
 }
