@@ -92,4 +92,14 @@ mod tests {
         assert_eq!(a.schema_version(), NODE_SCHEMA_VERSION);
         assert!(a.properties().is_empty());
     }
+
+    #[test]
+    fn node_roundtrips_through_json() {
+        let nt = crate::ids::NodeTypeId::new();
+        let original = Node::new(nt, "Task A");
+        let json = serde_json::to_string(&original).expect("serialize");
+        let parsed: Node =
+            serde_json::from_str(&json).unwrap_or_else(|e| panic!("deserialize {json}: {e}"));
+        assert_eq!(original, parsed);
+    }
 }
