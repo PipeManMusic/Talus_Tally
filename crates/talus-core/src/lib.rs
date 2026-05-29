@@ -30,6 +30,9 @@ pub mod node_type;
 /// The structural container for a project's nodes and tree edges.
 pub mod graph;
 
+/// Top-level project aggregate: id + name + graph + node-type registry.
+pub mod project;
+
 /// Schema and validation primitives. Phase 1: types only; rules ported per module.
 pub mod schema;
 
