@@ -181,4 +181,34 @@ mod tests {
         let p = Project::new("P", TemplateId::new());
         assert!(p.get_node_type(crate::ids::NodeTypeId::new()).is_none());
     }
+
+    #[test]
+    fn insert_node_with_registered_kind_succeeds() {
+        let mut p = Project::new("P", TemplateId::new());
+        let nt = crate::node_type::NodeType::new("Equipment");
+        let kind = nt.id();
+        p.register_node_type(nt).unwrap();
+
+        let node = crate::node::Node::new(kind, "Excavator");
+        let nid = node.id();
+        p.insert_node(node).unwrap();
+
+        assert_eq!(p.graph().node_count(), 1);
+        assert!(p.graph().get(nid).is_some());
+    }
+
+    #[test]
+    fn insert_node_with_unregistered_kind_is_rejected() {
+        let mut p = Project::new("P", TemplateId::new());
+        let stray_kind = crate::ids::NodeTypeId::new();
+        let node = crate::node::Node::new(stray_kind, "Orphan");
+
+        let err = p.insert_node(node).expect_err("kind not registered");
+        assert!(
+            matches!(err, crate::error::Error::NotFound(_)),
+            "got {err:?}"
+        );
+        // Graph is unchanged on rejection.
+        assert_eq!(p.graph().node_count(), 0);
+    }
 }
