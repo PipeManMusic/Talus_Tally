@@ -81,8 +81,8 @@ impl Graph {
     /// Set `parent` as the parent of `child`. Overwrites any previous parent.
     ///
     /// # Errors
-    /// - [`Error::NotFound`] if either `child` or `parent` is not in the graph.
-    /// - [`Error::InvariantViolation`] if `child == parent`, or if the edge
+    /// - [`crate::error::Error::NotFound`] if either `child` or `parent` is not in the graph.
+    /// - [`crate::error::Error::InvariantViolation`] if `child == parent`, or if the edge
     ///   would create a cycle (i.e. `child` is already an ancestor of `parent`).
     ///
     /// On error the graph is unchanged.

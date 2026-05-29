@@ -78,8 +78,7 @@ pub enum Property {
     ///
     /// Stored as an explicit `(year, month, day)` triple, not as a
     /// string. Any persisted form (JSON, etc.) MUST round-trip through
-    /// [`Property::date_iso`] / [`Property::date_iso_string`] so
-    /// invalid dates cannot exist in memory.
+    /// [`Property::date_iso`] so invalid dates cannot exist in memory.
     DateIso {
         /// Proleptic Gregorian year. May be negative (BCE).
         year: i32,
