@@ -109,4 +109,50 @@ mod tests {
         let parsed: Project = serde_json::from_str(&json).unwrap();
         assert_eq!(p, parsed);
     }
+
+    #[test]
+    fn register_node_type_stores_it_in_the_registry() {
+        let mut p = Project::new("P", TemplateId::new());
+        let nt = crate::node_type::NodeType::new("Equipment");
+        let nt_id = nt.id();
+        p.register_node_type(nt.clone()).unwrap();
+        assert_eq!(p.node_types().count(), 1);
+        assert_eq!(p.get_node_type(nt_id), Some(&nt));
+    }
+
+    #[test]
+    fn register_node_type_preserves_insertion_order() {
+        let mut p = Project::new("P", TemplateId::new());
+        let a = crate::node_type::NodeType::new("A");
+        let b = crate::node_type::NodeType::new("B");
+        let c = crate::node_type::NodeType::new("C");
+        let (aid, bid, cid) = (a.id(), b.id(), c.id());
+        p.register_node_type(a).unwrap();
+        p.register_node_type(b).unwrap();
+        p.register_node_type(c).unwrap();
+        let ids: Vec<_> = p.node_types().map(|nt| nt.id()).collect();
+        assert_eq!(ids, vec![aid, bid, cid]);
+    }
+
+    #[test]
+    fn register_node_type_rejects_duplicate_id() {
+        let mut p = Project::new("P", TemplateId::new());
+        let nt = crate::node_type::NodeType::new("Equipment");
+        p.register_node_type(nt.clone()).unwrap();
+        let err = p
+            .register_node_type(nt)
+            .expect_err("same id registered twice");
+        assert!(
+            matches!(err, crate::error::Error::InvariantViolation(_)),
+            "got {err:?}"
+        );
+        // Registry is unchanged on rejection.
+        assert_eq!(p.node_types().count(), 1);
+    }
+
+    #[test]
+    fn get_node_type_returns_none_for_unknown_id() {
+        let p = Project::new("P", TemplateId::new());
+        assert!(p.get_node_type(crate::ids::NodeTypeId::new()).is_none());
+    }
 }
