@@ -1,4 +1,4 @@
-//! Replay an [`Event`] stream into a [`Project`].
+//! Replay an [`crate::command::Event`] stream into a [`crate::project::Project`].
 //!
 //! Events are facts produced by [`crate::command::apply_command`] on a
 //! valid project. Folding them in order over a freshly-minted project
@@ -15,8 +15,20 @@ use crate::project::Project;
 /// mutators. On a well-formed event stream produced by
 /// [`crate::command::apply_command`], this never errors.
 pub fn apply_event(state: &mut Project, event: Event) -> Result<()> {
-    let _ = (state, event);
-    unimplemented!("apply_event")
+    use crate::error::Error;
+
+    match event {
+        Event::NodeTypeRegistered(nt) => state.register_node_type(nt),
+        Event::NodeInserted(node) => state.insert_node(node),
+        Event::ParentChanged { child, parent } => state.set_parent(child, parent),
+        Event::PropertyChanged { node, pid, value } => state.set_property(node, pid, value),
+        Event::SubtreeRemoved { ids } => {
+            let root = *ids.first().ok_or_else(|| {
+                Error::InvariantViolation("SubtreeRemoved event has empty ids".into())
+            })?;
+            state.remove_node(root).map(|_| ())
+        }
+    }
 }
 
 /// Fold an iterator of [`Event`]s into `state`, in order.
