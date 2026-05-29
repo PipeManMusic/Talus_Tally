@@ -143,7 +143,7 @@ mod tests {
         g.insert_node(parent);
         g.insert_node(child);
 
-        g.set_parent(cid, pid);
+        g.set_parent(cid, pid).expect("valid edge");
 
         assert_eq!(g.parent_of(cid), Parent::Of(pid));
         assert_eq!(g.parent_of(pid), Parent::Root);
@@ -163,11 +163,78 @@ mod tests {
         g.insert_node(b);
         g.insert_node(c);
 
-        g.set_parent(cid, aid);
-        g.set_parent(cid, bid);
+        g.set_parent(cid, aid).expect("valid edge");
+        g.set_parent(cid, bid).expect("valid edge");
 
         assert_eq!(g.parent_of(cid), Parent::Of(bid));
         assert!(g.children_of(aid).is_empty(), "a no longer parents c");
         assert_eq!(g.children_of(bid), vec![cid]);
+    }
+
+    #[test]
+    fn set_parent_rejects_unknown_child() {
+        let mut g = Graph::new(crate::ids::TemplateId::new());
+        let p = crate::node::Node::new(crate::ids::NodeTypeId::new(), "p");
+        let pid = p.id();
+        g.insert_node(p);
+        let ghost = crate::ids::NodeId::new();
+
+        let err = g.set_parent(ghost, pid).expect_err("unknown child");
+        assert!(
+            matches!(err, crate::error::Error::NotFound(_)),
+            "got {err:?}"
+        );
+    }
+
+    #[test]
+    fn set_parent_rejects_unknown_parent() {
+        let mut g = Graph::new(crate::ids::TemplateId::new());
+        let c = crate::node::Node::new(crate::ids::NodeTypeId::new(), "c");
+        let cid = c.id();
+        g.insert_node(c);
+        let ghost = crate::ids::NodeId::new();
+
+        let err = g.set_parent(cid, ghost).expect_err("unknown parent");
+        assert!(
+            matches!(err, crate::error::Error::NotFound(_)),
+            "got {err:?}"
+        );
+    }
+
+    #[test]
+    fn set_parent_rejects_self_parent() {
+        let mut g = Graph::new(crate::ids::TemplateId::new());
+        let n = crate::node::Node::new(crate::ids::NodeTypeId::new(), "n");
+        let id = n.id();
+        g.insert_node(n);
+
+        let err = g.set_parent(id, id).expect_err("self-parent");
+        assert!(
+            matches!(err, crate::error::Error::InvariantViolation(_)),
+            "got {err:?}"
+        );
+    }
+
+    #[test]
+    fn set_parent_rejects_cycle_through_ancestry() {
+        // a -> b -> c, then try to make a a child of c (would form a cycle)
+        let mut g = Graph::new(crate::ids::TemplateId::new());
+        let a = crate::node::Node::new(crate::ids::NodeTypeId::new(), "a");
+        let b = crate::node::Node::new(crate::ids::NodeTypeId::new(), "b");
+        let c = crate::node::Node::new(crate::ids::NodeTypeId::new(), "c");
+        let (aid, bid, cid) = (a.id(), b.id(), c.id());
+        g.insert_node(a);
+        g.insert_node(b);
+        g.insert_node(c);
+        g.set_parent(bid, aid).unwrap();
+        g.set_parent(cid, bid).unwrap();
+
+        let err = g.set_parent(aid, cid).expect_err("would cycle");
+        assert!(
+            matches!(err, crate::error::Error::InvariantViolation(_)),
+            "got {err:?}"
+        );
+        // Graph is unchanged after a rejected mutation.
+        assert_eq!(g.parent_of(aid), Parent::Root);
     }
 }
