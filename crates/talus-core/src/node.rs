@@ -124,4 +124,45 @@ mod tests {
 
         insta::assert_json_snapshot!("node_with_two_properties", node);
     }
+
+    #[test]
+    fn with_property_returns_new_node_with_property_inserted() {
+        let pid = PropertyId::new();
+        let node = Node::new(NodeTypeId::new(), "Task A")
+            .with_property(pid, Property::Text("Alice".into()));
+
+        assert_eq!(node.properties().len(), 1);
+        assert_eq!(
+            node.properties().get(&pid),
+            Some(&Property::Text("Alice".into()))
+        );
+    }
+
+    #[test]
+    fn with_property_overwrites_existing_value_for_same_id() {
+        let pid = PropertyId::new();
+        let node = Node::new(NodeTypeId::new(), "Task A")
+            .with_property(pid, Property::Text("first".into()))
+            .with_property(pid, Property::Text("second".into()));
+
+        assert_eq!(node.properties().len(), 1);
+        assert_eq!(
+            node.properties().get(&pid),
+            Some(&Property::Text("second".into()))
+        );
+    }
+
+    #[test]
+    fn with_property_preserves_insertion_order() {
+        let p1 = PropertyId::new();
+        let p2 = PropertyId::new();
+        let p3 = PropertyId::new();
+        let node = Node::new(NodeTypeId::new(), "Task A")
+            .with_property(p1, Property::Boolean(true))
+            .with_property(p2, Property::Number(1.0))
+            .with_property(p3, Property::Text("x".into()));
+
+        let keys: Vec<_> = node.properties().keys().copied().collect();
+        assert_eq!(keys, vec![p1, p2, p3]);
+    }
 }
