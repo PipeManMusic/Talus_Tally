@@ -124,16 +124,15 @@ mod tests {
         // Deterministic ids so the snapshot is stable across runs.
         let mk =
             |n: u8| Uuid::parse_str(&format!("00000000-0000-4000-8000-0000000000{n:02}")).unwrap();
-        let mut properties = IndexMap::new();
-        properties.insert(PropertyId::from(mk(3)), Property::Text("Alice".into()));
-        properties.insert(PropertyId::from(mk(4)), Property::Boolean(true));
         let node = Node {
             id: NodeId::from(mk(1)),
             kind: NodeTypeId::from(mk(2)),
             name: "Task A".into(),
             schema_version: NODE_SCHEMA_VERSION,
-            properties,
-        };
+            properties: IndexMap::new(),
+        }
+        .with_property(PropertyId::from(mk(3)), Property::Text("Alice".into()))
+        .with_property(PropertyId::from(mk(4)), Property::Boolean(true));
 
         insta::assert_json_snapshot!("node_with_two_properties", node);
     }
