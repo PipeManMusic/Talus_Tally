@@ -269,4 +269,28 @@ mod tests {
         // Graph is unchanged after a rejected mutation.
         assert_eq!(g.parent_of(aid), Parent::Root);
     }
+
+    #[test]
+    fn graph_json_shape_is_locked() {
+        use crate::ids::{NodeId, NodeTypeId, PropertyId, TemplateId};
+        use crate::node::Node;
+        use crate::property::Property;
+        use uuid::Uuid;
+
+        let mk =
+            |n: u8| Uuid::parse_str(&format!("00000000-0000-4000-8000-0000000000{n:02}")).unwrap();
+
+        let kind = NodeTypeId::from(mk(0x20));
+        let root = Node::with_id_for_test(NodeId::from(mk(0x10)), kind, "Root")
+            .with_property(PropertyId::from(mk(0x30)), Property::Boolean(true));
+        let child = Node::with_id_for_test(NodeId::from(mk(0x11)), kind, "Child");
+        let (root_id, child_id) = (root.id(), child.id());
+
+        let mut g = Graph::new(TemplateId::from(mk(0x01)));
+        g.insert_node(root);
+        g.insert_node(child);
+        g.set_parent(child_id, root_id).expect("valid edge");
+
+        insta::assert_json_snapshot!("graph_root_and_child", g);
+    }
 }
