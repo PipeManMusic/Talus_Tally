@@ -81,4 +81,48 @@ mod tests {
         let parsed: NodeType = serde_json::from_str(&json).unwrap();
         assert_eq!(nt, parsed);
     }
+
+    #[test]
+    fn new_node_type_has_no_allowed_properties() {
+        let nt = NodeType::new("Equipment");
+        let pid = crate::ids::PropertyId::new();
+        assert!(!nt.allows_property(pid));
+        assert_eq!(nt.allowed_properties().count(), 0);
+    }
+
+    #[test]
+    fn with_allowed_property_adds_to_allowlist() {
+        let pid = crate::ids::PropertyId::new();
+        let nt = NodeType::new("Equipment").with_allowed_property(pid);
+        assert!(nt.allows_property(pid));
+        assert_eq!(nt.allowed_properties().collect::<Vec<_>>(), vec![pid]);
+    }
+
+    #[test]
+    fn with_allowed_property_is_idempotent() {
+        let pid = crate::ids::PropertyId::new();
+        let nt = NodeType::new("Equipment")
+            .with_allowed_property(pid)
+            .with_allowed_property(pid);
+        assert_eq!(
+            nt.allowed_properties().count(),
+            1,
+            "the same id added twice still counts once"
+        );
+    }
+
+    #[test]
+    fn allowed_properties_preserve_insertion_order() {
+        let pid1 = crate::ids::PropertyId::new();
+        let pid2 = crate::ids::PropertyId::new();
+        let pid3 = crate::ids::PropertyId::new();
+        let nt = NodeType::new("Equipment")
+            .with_allowed_property(pid1)
+            .with_allowed_property(pid2)
+            .with_allowed_property(pid3);
+        assert_eq!(
+            nt.allowed_properties().collect::<Vec<_>>(),
+            vec![pid1, pid2, pid3]
+        );
+    }
 }
