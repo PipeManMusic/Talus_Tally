@@ -44,6 +44,11 @@ pub enum Command {
         /// The new value.
         value: Property,
     },
+    /// Remove a node and its descendants from the graph.
+    RemoveNode {
+        /// The root of the subtree to remove.
+        id: NodeId,
+    },
 }
 
 /// A fact describing a change that was applied to a [`Project`].
@@ -74,6 +79,11 @@ pub enum Event {
         /// The property id whose value was set.
         pid: PropertyId,
     },
+    /// A subtree rooted at the first id was removed from the graph.
+    SubtreeRemoved {
+        /// All removed node ids in BFS order, root first.
+        ids: Vec<NodeId>,
+    },
 }
 
 /// Apply `cmd` to `state`, mutating it in place on success.
@@ -103,6 +113,10 @@ pub fn apply_command(state: &mut Project, cmd: Command) -> Result<Event> {
         Command::SetProperty { node, pid, value } => {
             state.set_property(node, pid, value)?;
             Ok(Event::PropertyChanged { node, pid })
+        }
+        Command::RemoveNode { id } => {
+            let ids = state.remove_node(id)?;
+            Ok(Event::SubtreeRemoved { ids })
         }
     }
 }
