@@ -42,6 +42,9 @@ pub mod replay;
 /// Schema and validation primitives. Phase 1: types only; rules ported per module.
 pub mod schema;
 
+/// Validation rules for untyped YAML/JSON inputs at the system boundary.
+pub mod validation;
+
 /// Re-exports for convenient `use talus_core::prelude::*;`.
 pub mod prelude {
     pub use crate::error::{Error, Result};
