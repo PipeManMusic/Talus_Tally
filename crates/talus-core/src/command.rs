@@ -355,4 +355,35 @@ mod tests {
         ];
         insta::assert_json_snapshot!("command_all_variants", commands);
     }
+
+    #[test]
+    fn event_json_shape_is_locked() {
+        use crate::ids::{NodeId, NodeTypeId, PropertyId};
+        use uuid::Uuid;
+
+        let mk =
+            |n: u8| Uuid::parse_str(&format!("00000000-0000-4000-8000-0000000000{n:02}")).unwrap();
+
+        let kind_id = NodeTypeId::from(mk(0x20));
+        let node_id = NodeId::from(mk(0x10));
+        let parent_id = NodeId::from(mk(0x11));
+        let child_id = NodeId::from(mk(0x12));
+        let pid = PropertyId::from(mk(0x30));
+
+        let events: Vec<Event> = vec![
+            Event::NodeTypeRegistered {
+                node_type_id: kind_id,
+            },
+            Event::NodeInserted { node_id },
+            Event::ParentChanged {
+                child: child_id,
+                parent: parent_id,
+            },
+            Event::PropertyChanged { node: node_id, pid },
+            Event::SubtreeRemoved {
+                ids: vec![parent_id, child_id],
+            },
+        ];
+        insta::assert_json_snapshot!("event_all_variants", events);
+    }
 }
