@@ -90,8 +90,13 @@ impl EventLog {
     /// Returns [`talus_core::error::Error::Io`] if the file cannot be
     /// truncated.
     pub fn truncate(&self) -> Result<()> {
-        let _ = self;
-        unimplemented!("event_log::truncate")
+        OpenOptions::new()
+            .write(true)
+            .truncate(true)
+            .create(true)
+            .open(&self.path)
+            .map_err(|e| io_err(&e))?;
+        Ok(())
     }
 }
 
