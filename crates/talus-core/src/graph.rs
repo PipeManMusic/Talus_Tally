@@ -133,6 +133,43 @@ impl Graph {
             .filter_map(|(child, p)| (*p == parent).then_some(*child))
             .collect()
     }
+
+    /// Remove `id` and every descendant from the graph. Returns the ids of
+    /// all removed nodes in BFS order (root first, then each layer of
+    /// descendants).
+    ///
+    /// Edges touching any removed node are pruned, so the graph remains
+    /// internally consistent: every surviving edge references only
+    /// surviving nodes.
+    ///
+    /// # Errors
+    /// - [`crate::error::Error::NotFound`] if `id` is not in the graph. On
+    ///   error the graph is unchanged.
+    pub fn remove_node(&mut self, id: NodeId) -> crate::error::Result<Vec<NodeId>> {
+        use crate::error::Error;
+
+        if !self.nodes.contains_key(&id) {
+            return Err(Error::NotFound(format!("node {id}")));
+        }
+
+        let mut removed = Vec::new();
+        let mut frontier = vec![id];
+        while let Some(n) = frontier.pop() {
+            removed.push(n);
+            for (child, parent) in &self.edges {
+                if *parent == n {
+                    frontier.push(*child);
+                }
+            }
+        }
+
+        let removed_set: std::collections::HashSet<NodeId> = removed.iter().copied().collect();
+        self.nodes.retain(|nid, _| !removed_set.contains(nid));
+        self.edges
+            .retain(|child, parent| !removed_set.contains(child) && !removed_set.contains(parent));
+
+        Ok(removed)
+    }
 }
 
 #[cfg(test)]
@@ -334,16 +371,16 @@ mod tests {
         // Removing b should drop {b, d}, leave {a, c} intact, and prune
         // every edge that touched the removed set.
         let kind = crate::ids::NodeTypeId::new();
-        let a = Node::new(kind, "A");
-        let b = Node::new(kind, "B");
-        let c = Node::new(kind, "C");
-        let d = Node::new(kind, "D");
-        let (aid, bid, cid, did) = (a.id(), b.id(), c.id(), d.id());
+        let node_a = Node::new(kind, "A");
+        let node_b = Node::new(kind, "B");
+        let node_c = Node::new(kind, "C");
+        let node_d = Node::new(kind, "D");
+        let (aid, bid, cid, did) = (node_a.id(), node_b.id(), node_c.id(), node_d.id());
         let mut g = Graph::new(crate::ids::TemplateId::new());
-        g.insert_node(a);
-        g.insert_node(b);
-        g.insert_node(c);
-        g.insert_node(d);
+        g.insert_node(node_a);
+        g.insert_node(node_b);
+        g.insert_node(node_c);
+        g.insert_node(node_d);
         g.set_parent(bid, aid).unwrap();
         g.set_parent(cid, aid).unwrap();
         g.set_parent(did, bid).unwrap();
