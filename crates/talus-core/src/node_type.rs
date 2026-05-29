@@ -151,4 +151,41 @@ mod tests {
             vec![pid1, pid2, pid3]
         );
     }
+
+    #[test]
+    fn new_node_type_has_no_allowed_children() {
+        let nt = NodeType::new("Project");
+        let child_kind = crate::ids::NodeTypeId::new();
+        assert!(!nt.allows_child(child_kind));
+        assert_eq!(nt.allowed_children().count(), 0);
+    }
+
+    #[test]
+    fn with_allowed_child_adds_to_allowlist() {
+        let child_kind = crate::ids::NodeTypeId::new();
+        let nt = NodeType::new("Project").with_allowed_child(child_kind);
+        assert!(nt.allows_child(child_kind));
+        assert_eq!(nt.allowed_children().collect::<Vec<_>>(), vec![child_kind]);
+    }
+
+    #[test]
+    fn with_allowed_child_is_idempotent() {
+        let child_kind = crate::ids::NodeTypeId::new();
+        let nt = NodeType::new("Project")
+            .with_allowed_child(child_kind)
+            .with_allowed_child(child_kind);
+        assert_eq!(nt.allowed_children().count(), 1);
+    }
+
+    #[test]
+    fn allowed_children_preserve_insertion_order() {
+        let k1 = crate::ids::NodeTypeId::new();
+        let k2 = crate::ids::NodeTypeId::new();
+        let k3 = crate::ids::NodeTypeId::new();
+        let nt = NodeType::new("Project")
+            .with_allowed_child(k1)
+            .with_allowed_child(k2)
+            .with_allowed_child(k3);
+        assert_eq!(nt.allowed_children().collect::<Vec<_>>(), vec![k1, k2, k3]);
+    }
 }
