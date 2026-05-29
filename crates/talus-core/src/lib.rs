@@ -24,6 +24,9 @@ pub mod property;
 /// A single node in a project tree.
 pub mod node;
 
+/// The structural container for a project's nodes and tree edges.
+pub mod graph;
+
 /// Schema and validation primitives. Phase 1: types only; rules ported per module.
 pub mod schema;
 
