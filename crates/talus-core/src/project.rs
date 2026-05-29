@@ -179,6 +179,18 @@ impl Project {
         }
         self.graph.set_parent(child, parent)
     }
+
+    /// Remove a node and its descendants from the project's graph.
+    ///
+    /// Delegates to [`Graph::remove_node`]; see that method for the
+    /// removal order and error semantics.
+    ///
+    /// # Errors
+    /// - [`crate::error::Error::NotFound`] if `id` is not in the graph.
+    ///   On error the graph is unchanged.
+    pub fn remove_node(&mut self, id: NodeId) -> crate::error::Result<Vec<NodeId>> {
+        self.graph.remove_node(id)
+    }
 }
 
 #[cfg(test)]
