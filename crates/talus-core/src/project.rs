@@ -16,7 +16,7 @@ use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
 use crate::graph::Graph;
-use crate::ids::{NodeTypeId, ProjectId, TemplateId};
+use crate::ids::{NodeId, NodeTypeId, ProjectId, TemplateId};
 use crate::node::Node;
 use crate::node_type::NodeType;
 
@@ -140,6 +140,44 @@ impl Project {
         }
         self.graph.insert_node(node);
         Ok(())
+    }
+
+    /// Set `parent` as the parent of `child`, enforcing the
+    /// allowed-children rule from the parent's [`NodeType`].
+    ///
+    /// # Errors
+    /// - [`crate::error::Error::NotFound`] if either id is not in the
+    ///   graph (propagated from [`Graph::set_parent`]), or if the
+    ///   parent node's kind isn't in the registry.
+    /// - [`crate::error::Error::InvariantViolation`] if the parent
+    ///   `NodeType`'s `allowed_children` does not contain the child's
+    ///   kind, or if the edge would violate any structural rule
+    ///   enforced by [`Graph::set_parent`] (self-parent, cycle).
+    ///
+    /// On error the graph is unchanged.
+    pub fn set_parent(&mut self, child: NodeId, parent: NodeId) -> crate::error::Result<()> {
+        use crate::error::Error;
+
+        let child_kind = self
+            .graph
+            .get(child)
+            .ok_or_else(|| Error::NotFound(format!("child node {child}")))?
+            .kind();
+        let parent_kind = self
+            .graph
+            .get(parent)
+            .ok_or_else(|| Error::NotFound(format!("parent node {parent}")))?
+            .kind();
+        let parent_nt = self
+            .node_types
+            .get(&parent_kind)
+            .ok_or_else(|| Error::NotFound(format!("node type {parent_kind} is not registered")))?;
+        if !parent_nt.allows_child(child_kind) {
+            return Err(Error::InvariantViolation(format!(
+                "node type {parent_kind} does not allow child of kind {child_kind}",
+            )));
+        }
+        self.graph.set_parent(child, parent)
     }
 }
 
@@ -282,8 +320,8 @@ mod tests {
         assert_eq!(p.graph().node_count(), 0);
     }
 
-    /// Test helper: register two NodeTypes (parent allowing child) and
-    /// insert one node of each kind. Returns (project, parent_id, child_id).
+    // Test helper: register two NodeTypes (parent allowing child) and
+    // insert one node of each kind. Returns (project, parent_id, child_id).
     fn project_with_two_kinds_and_two_nodes() -> (Project, crate::ids::NodeId, crate::ids::NodeId) {
         let mut p = Project::new("P", TemplateId::new());
         let child_kind = crate::node_type::NodeType::new("Task");
