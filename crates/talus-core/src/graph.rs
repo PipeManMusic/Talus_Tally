@@ -8,6 +8,52 @@
 //!
 //! Built one TDD cycle at a time.
 
+use indexmap::IndexMap;
+use serde::{Deserialize, Serialize};
+
+use crate::ids::{NodeId, TemplateId};
+use crate::node::Node;
+
+/// Schema version of the persisted `Graph` shape.
+pub const GRAPH_SCHEMA_VERSION: u32 = 1;
+
+/// The structural container for a project's nodes and tree edges.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Graph {
+    template: TemplateId,
+    schema_version: u32,
+    nodes: IndexMap<NodeId, Node>,
+}
+
+impl Graph {
+    /// Construct an empty graph bound to a template.
+    #[must_use]
+    pub fn new(template: TemplateId) -> Self {
+        Self {
+            template,
+            schema_version: GRAPH_SCHEMA_VERSION,
+            nodes: IndexMap::new(),
+        }
+    }
+
+    /// Number of nodes currently in the graph.
+    #[must_use]
+    pub fn node_count(&self) -> usize {
+        self.nodes.len()
+    }
+
+    /// Insert (or replace) a node by its id.
+    pub fn insert_node(&mut self, node: Node) {
+        self.nodes.insert(node.id(), node);
+    }
+
+    /// Borrow a node by id.
+    #[must_use]
+    pub fn get(&self, id: NodeId) -> Option<&Node> {
+        self.nodes.get(&id)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
