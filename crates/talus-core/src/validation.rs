@@ -21,8 +21,12 @@ pub mod markup_profile;
 /// Any other value yields a single error `"Unknown schema type: <kind>"`
 /// matching the Python text verbatim.
 pub fn validate_by_kind(kind: &str, data: &Value) -> Vec<String> {
-    let _ = data;
-    vec![format!("Unknown schema type: {kind}")]
+    match kind {
+        "markup" => markup_profile::validate(data),
+        "icon" => icon_catalog::validate(data),
+        "indicator" => indicator_catalog::validate(data),
+        _ => vec![format!("Unknown schema type: {kind}")],
+    }
 }
 
 #[cfg(test)]
