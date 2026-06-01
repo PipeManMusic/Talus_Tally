@@ -13,9 +13,65 @@ use serde_json::Value;
 
 /// Validate the top-level structure of an indicator catalog document.
 #[must_use]
-pub fn validate(_data: &Value) -> Vec<String> {
-    // RED stub — implementation arrives in the GREEN slice.
-    Vec::new()
+pub fn validate(data: &Value) -> Vec<String> {
+    let mut errors = Vec::new();
+
+    match data.get("indicator_sets") {
+        None => {
+            errors.push("indicator_catalog: missing required field 'indicator_sets'".to_string());
+        }
+        Some(v) => match v.as_object() {
+            None => {
+                errors.push("indicator_catalog.indicator_sets: must be object".to_string());
+            }
+            Some(sets) => {
+                for (set_id, set_value) in sets {
+                    errors.extend(validate_set(set_value, set_id));
+                }
+            }
+        },
+    }
+
+    errors
+}
+
+fn validate_set(set: &Value, set_id: &str) -> Vec<String> {
+    let path = format!("indicator_catalog.indicator_sets['{set_id}']");
+    let mut errors = Vec::new();
+
+    if !is_snake_case(set_id) {
+        errors.push(format!(
+            "{path}: id must match snake_case pattern (got '{set_id}')"
+        ));
+    }
+
+    match set.get("description") {
+        None => errors.push(format!("{path}: missing required field 'description'")),
+        Some(v) => {
+            if !v.as_str().is_some_and(|s| !s.trim().is_empty()) {
+                errors.push(format!("{path}.description: must be non-empty string"));
+            }
+        }
+    }
+
+    errors
+}
+
+/// Matches Python's `^[a-z0-9]+(_[a-z0-9]+)*$`: lowercase alphanumerics
+/// in underscore-separated groups, no leading/trailing/double underscore.
+fn is_snake_case(s: &str) -> bool {
+    if s.is_empty() {
+        return false;
+    }
+    let mut prev_sep = true; // forbid leading '_'
+    for c in s.chars() {
+        match c {
+            'a'..='z' | '0'..='9' => prev_sep = false,
+            '_' if !prev_sep => prev_sep = true,
+            _ => return false,
+        }
+    }
+    !prev_sep // forbid trailing '_'
 }
 
 #[cfg(test)]
