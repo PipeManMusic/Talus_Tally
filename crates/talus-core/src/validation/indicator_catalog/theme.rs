@@ -13,10 +13,47 @@ use serde_json::Value;
 /// (`indicator_catalog.indicator_sets['<set_id>']`).
 pub(super) fn validate_map(theme_map: &Value, _set_id: &str, set_path: &str) -> Vec<String> {
     let mut errors = Vec::new();
-    if theme_map.as_object().is_none() {
+    let Some(entries) = theme_map.as_object() else {
         errors.push(format!("{set_path}.default_theme: must be object"));
+        return errors;
+    };
+    for (indicator_id, theme) in entries {
+        errors.extend(validate_one(theme, indicator_id, set_path));
     }
     errors
+}
+
+fn validate_one(theme: &Value, indicator_id: &str, set_path: &str) -> Vec<String> {
+    let path = format!("{set_path}.default_theme['{indicator_id}']");
+    let mut errors = Vec::new();
+
+    let Some(obj) = theme.as_object() else {
+        errors.push(format!("{path}: must be object"));
+        return errors;
+    };
+
+    for field in ["indicator_color", "text_color"] {
+        let Some(v) = obj.get(field) else { continue };
+        match v.as_str() {
+            None => errors.push(format!("{path}.{field}: must be string")),
+            Some(s) => {
+                if !is_hex_color(s) {
+                    errors.push(format!("{path}.{field}: invalid hex color '{s}'"));
+                }
+            }
+        }
+    }
+
+    errors
+}
+
+/// Matches Python `^#[0-9A-F]{3}([0-9A-F]{3})?$` case-insensitively:
+/// `#` followed by exactly 3 or 6 hex digits.
+fn is_hex_color(s: &str) -> bool {
+    let Some(rest) = s.strip_prefix('#') else {
+        return false;
+    };
+    matches!(rest.len(), 3 | 6) && rest.chars().all(|c| c.is_ascii_hexdigit())
 }
 
 #[cfg(test)]
