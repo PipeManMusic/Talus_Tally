@@ -13,6 +13,7 @@
 use serde_json::Value;
 
 mod indicator;
+mod theme;
 
 /// Validate the top-level structure of an indicator catalog document.
 #[must_use]
@@ -59,6 +60,10 @@ fn validate_set(set: &Value, set_id: &str) -> Vec<String> {
 
     if let Some(indicators) = set.get("indicators") {
         errors.extend(indicator::validate_list(indicators, set_id, &path));
+    }
+
+    if let Some(theme_map) = set.get("default_theme") {
+        errors.extend(theme::validate_map(theme_map, set_id, &path));
     }
 
     errors
