@@ -3,7 +3,11 @@
 //! This is the I/O wrapper around [`talus_core::validation::validate_by_kind`].
 //! Mirrors Python `backend/infra/schema_validator.py::validate_yaml_file`.
 
+use std::fs;
 use std::path::Path;
+
+use serde_json::Value;
+use talus_core::validation::validate_by_kind;
 
 /// Validate a YAML file at `path` against the schema named by `kind`
 /// (`"markup"`, `"icon"`, `"indicator"`).
@@ -18,9 +22,32 @@ use std::path::Path;
 /// All error texts match the Python wrapper byte-for-byte to preserve the
 /// existing API/UI contract during the migration.
 pub fn validate_yaml_file<P: AsRef<Path>>(path: P, kind: &str) -> (bool, Vec<String>) {
-    let _ = kind;
-    let display = path.as_ref().display().to_string();
-    (false, vec![format!("File not found: {display}")])
+    let path = path.as_ref();
+    let display = path.display().to_string();
+
+    if !path.exists() {
+        return (false, vec![format!("File not found: {display}")]);
+    }
+
+    let bytes = match fs::read_to_string(path) {
+        Ok(b) => b,
+        Err(e) => return (false, vec![format!("Failed to parse YAML: {e}")]),
+    };
+
+    let data: Value = match serde_yaml::from_str(&bytes) {
+        Ok(v) => v,
+        Err(e) => return (false, vec![format!("Failed to parse YAML: {e}")]),
+    };
+
+    if !data.is_object() {
+        return (
+            false,
+            vec!["YAML content must be an object/dict at root level".to_string()],
+        );
+    }
+
+    let errors = validate_by_kind(kind, &data);
+    (errors.is_empty(), errors)
 }
 
 #[cfg(test)]
