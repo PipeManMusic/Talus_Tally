@@ -45,6 +45,9 @@ pub mod schema;
 /// Validation rules for untyped YAML/JSON inputs at the system boundary.
 pub mod validation;
 
+/// Markup parsing: turn editor text into structured blocks via a profile.
+pub mod markup;
+
 /// Re-exports for convenient `use talus_core::prelude::*;`.
 pub mod prelude {
     pub use crate::error::{Error, Result};
