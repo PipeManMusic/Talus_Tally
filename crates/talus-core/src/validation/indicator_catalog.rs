@@ -6,8 +6,11 @@
 //! byte-for-byte parity with Python.
 //!
 //! This module is built across multiple slices: 57a covers the top-level
-//! `indicator_sets` shape and the per-set identity + description rules.
-//! Per-indicator and per-theme rules ship in follow-up slices.
+//! `indicator_sets` shape and the per-set identity + description rules;
+//! 57b adds per-indicator rules (id, file, in-set uniqueness). Per-theme
+//! rules ship in 57c.
+
+use std::collections::HashSet;
 
 use serde_json::Value;
 
@@ -208,6 +211,141 @@ mod tests {
         assert!(validate(&data).contains(
             &"indicator_catalog.indicator_sets['beta']: \
               missing required field 'description'"
+                .to_string()
+        ));
+    }
+
+    // ----- per-indicator rules (57b) -----
+
+    fn set_with_indicators(indicators: Value) -> Value {
+        json!({"description": "S", "indicators": indicators})
+    }
+
+    fn wrap_set(set: Value) -> Value {
+        json!({"indicator_sets": {"status": set}})
+    }
+
+    #[test]
+    fn indicators_absent_is_allowed() {
+        let data = wrap_set(json!({"description": "S"}));
+        assert_eq!(validate(&data), Vec::<String>::new());
+    }
+
+    #[test]
+    fn indicators_non_array_is_reported() {
+        let data = wrap_set(json!({"description": "S", "indicators": "oops"}));
+        assert!(validate(&data).contains(
+            &"indicator_catalog.indicator_sets['status'].indicators: must be array".to_string()
+        ));
+    }
+
+    #[test]
+    fn indicators_empty_array_is_allowed() {
+        let data = wrap_set(set_with_indicators(json!([])));
+        assert_eq!(validate(&data), Vec::<String>::new());
+    }
+
+    #[test]
+    fn valid_indicator_returns_no_errors() {
+        let data = wrap_set(set_with_indicators(json!([{"id": "go", "file": "go.svg"}])));
+        assert_eq!(validate(&data), Vec::<String>::new());
+    }
+
+    #[test]
+    fn indicator_missing_id_is_reported() {
+        let data = wrap_set(set_with_indicators(json!([{"file": "go.svg"}])));
+        assert!(validate(&data).contains(
+            &"indicator_catalog.indicator_sets['status'].indicators[0]: \
+              missing required field 'id'"
+                .to_string()
+        ));
+    }
+
+    #[test]
+    fn indicator_empty_id_is_reported() {
+        let data = wrap_set(set_with_indicators(
+            json!([{"id": "   ", "file": "go.svg"}]),
+        ));
+        assert!(validate(&data).contains(
+            &"indicator_catalog.indicator_sets['status'].indicators[0].id: \
+              must be non-empty string"
+                .to_string()
+        ));
+    }
+
+    #[test]
+    fn indicator_non_string_id_is_reported() {
+        let data = wrap_set(set_with_indicators(json!([{"id": 7, "file": "go.svg"}])));
+        assert!(validate(&data).contains(
+            &"indicator_catalog.indicator_sets['status'].indicators[0].id: \
+              must be non-empty string"
+                .to_string()
+        ));
+    }
+
+    #[test]
+    fn indicator_missing_file_is_reported() {
+        let data = wrap_set(set_with_indicators(json!([{"id": "go"}])));
+        assert!(validate(&data).contains(
+            &"indicator_catalog.indicator_sets['status'].indicators[0]: \
+              missing required field 'file'"
+                .to_string()
+        ));
+    }
+
+    #[test]
+    fn indicator_empty_file_is_reported() {
+        let data = wrap_set(set_with_indicators(json!([{"id": "go", "file": "  "}])));
+        assert!(validate(&data).contains(
+            &"indicator_catalog.indicator_sets['status'].indicators[0].file: \
+              must be non-empty string"
+                .to_string()
+        ));
+    }
+
+    #[test]
+    fn indicator_non_string_file_is_reported() {
+        let data = wrap_set(set_with_indicators(json!([{"id": "go", "file": 9}])));
+        assert!(validate(&data).contains(
+            &"indicator_catalog.indicator_sets['status'].indicators[0].file: \
+              must be non-empty string"
+                .to_string()
+        ));
+    }
+
+    #[test]
+    fn duplicate_indicator_id_in_same_set_is_reported() {
+        let data = wrap_set(set_with_indicators(json!([
+            {"id": "go", "file": "a.svg"},
+            {"id": "go", "file": "b.svg"}
+        ])));
+        assert!(validate(&data).contains(
+            &"indicator_catalog.indicator_sets['status'].indicators[1].id: \
+              duplicate indicator id 'go' in set 'status'"
+                .to_string()
+        ));
+    }
+
+    #[test]
+    fn duplicate_indicator_id_resets_across_sets() {
+        // 'go' appearing once in each set is fine — uniqueness is per-set.
+        let data = json!({"indicator_sets": {
+            "status": {"description": "S", "indicators": [{"id": "go", "file": "a.svg"}]},
+            "phase":  {"description": "P", "indicators": [{"id": "go", "file": "b.svg"}]}
+        }});
+        assert_eq!(validate(&data), Vec::<String>::new());
+    }
+
+    #[test]
+    fn indicator_index_appears_in_error_path() {
+        let data = wrap_set(set_with_indicators(json!([
+            {"id": "go", "file": "a.svg"},
+            {"id": "wait", "file": "b.svg"},
+            {"file": "c.svg"}
+        ])));
+        assert!(validate(&data).contains(
+            &"indicator_catalog.indicator_sets['status'].indicators[2]: \
+              missing required field 'id'"
                 .to_string()
         ));
     }
