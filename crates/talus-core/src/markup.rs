@@ -6,6 +6,7 @@
 //! used by the existing API contract.
 
 use crate::error::{Error, Result};
+use regex::Regex;
 use serde_json::{json, Value};
 
 /// Parse `text` into a `{raw, blocks, profile_id}` envelope according to
@@ -27,12 +28,9 @@ use serde_json::{json, Value};
 /// valid regex (matching Python's `ValueError` from `re.compile`).
 pub fn parse(text: &str, profile: &Value) -> Result<Value> {
     let profile_id = profile.get("id").cloned().unwrap_or(Value::Null);
-    let prefix_tokens = collect_prefix_tokens(profile);
+    let compiled = compile_tokens(profile)?;
 
-    let blocks: Vec<Value> = text
-        .lines()
-        .map(|line| classify(line, &prefix_tokens))
-        .collect();
+    let blocks: Vec<Value> = text.lines().map(|line| classify(line, &compiled)).collect();
 
     Ok(json!({
         "raw": text,
@@ -41,40 +39,101 @@ pub fn parse(text: &str, profile: &Value) -> Result<Value> {
     }))
 }
 
-struct PrefixToken<'a> {
-    id: &'a str,
-    prefix: &'a str,
+enum CompiledToken {
+    Prefix { id: String, prefix: String },
+    Pattern { id: String, regex: Regex },
 }
 
-fn collect_prefix_tokens(profile: &Value) -> Vec<PrefixToken<'_>> {
+fn compile_tokens(profile: &Value) -> Result<Vec<CompiledToken>> {
     let Some(tokens) = profile.get("tokens").and_then(Value::as_array) else {
-        return Vec::new();
+        return Ok(Vec::new());
     };
-    tokens
-        .iter()
-        .filter_map(|t| {
-            let obj = t.as_object()?;
-            let id = obj.get("id")?.as_str()?;
-            let prefix = obj.get("prefix")?.as_str()?;
-            Some(PrefixToken { id, prefix })
-        })
-        .collect()
+    let mut out = Vec::with_capacity(tokens.len());
+    for t in tokens {
+        let Some(obj) = t.as_object() else { continue };
+        let Some(id) = obj.get("id").and_then(Value::as_str) else {
+            continue;
+        };
+        if let Some(pattern) = obj.get("pattern").and_then(Value::as_str) {
+            if !pattern.is_empty() {
+                let regex = Regex::new(pattern).map_err(|e| {
+                    Error::SchemaValidation(format!("Invalid regex pattern for token '{id}': {e}"))
+                })?;
+                out.push(CompiledToken::Pattern {
+                    id: id.to_string(),
+                    regex,
+                });
+                continue;
+            }
+        }
+        if let Some(prefix) = obj.get("prefix").and_then(Value::as_str) {
+            if !prefix.is_empty() {
+                out.push(CompiledToken::Prefix {
+                    id: id.to_string(),
+                    prefix: prefix.to_string(),
+                });
+            }
+        }
+    }
+    Ok(out)
 }
 
-fn classify(line: &str, prefix_tokens: &[PrefixToken<'_>]) -> Value {
+fn classify(line: &str, tokens: &[CompiledToken]) -> Value {
     if line.trim().is_empty() {
         return json!({ "type": "blank", "text": "" });
     }
-    for token in prefix_tokens {
-        if let Some(rest) = line.strip_prefix(token.prefix) {
-            return json!({
-                "type": token.id,
-                "text": rest.trim(),
-                "prefix": token.prefix,
-            });
+    for token in tokens {
+        match token {
+            CompiledToken::Prefix { id, prefix } => {
+                if let Some(rest) = line.strip_prefix(prefix.as_str()) {
+                    return json!({
+                        "type": id,
+                        "text": rest.trim(),
+                        "prefix": prefix,
+                    });
+                }
+            }
+            CompiledToken::Pattern { id, regex } => {
+                if let Some(block) = match_pattern(line, id, regex) {
+                    return block;
+                }
+            }
         }
     }
     json!({ "type": "text", "text": line })
+}
+
+fn match_pattern(line: &str, id: &str, regex: &Regex) -> Option<Value> {
+    let caps = regex.captures(line)?;
+    if caps.get(0)?.start() != 0 {
+        return None;
+    }
+    let mut block = serde_json::Map::new();
+    block.insert("type".to_string(), json!(id));
+
+    let mut had_named_group = false;
+    let mut text_group: Option<String> = None;
+    for name_opt in regex.capture_names().flatten() {
+        had_named_group = true;
+        let value = match caps.name(name_opt) {
+            Some(m) => {
+                if name_opt == "text" {
+                    text_group = Some(m.as_str().to_string());
+                }
+                json!(m.as_str())
+            }
+            None => Value::Null,
+        };
+        block.insert(name_opt.to_string(), value);
+    }
+
+    let text = if had_named_group {
+        text_group.unwrap_or_default().trim().to_string()
+    } else {
+        line.trim().to_string()
+    };
+    block.insert("text".to_string(), json!(text));
+    Some(Value::Object(block))
 }
 
 #[cfg(test)]
