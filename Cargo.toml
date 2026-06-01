@@ -30,6 +30,7 @@ thiserror = "1"
 anyhow = "1"
 uuid = { version = "1", features = ["v4", "serde"] }
 indexmap = { version = "2", features = ["serde"] }
+regex = "1"
 
 # Test-only
 proptest = "1"
