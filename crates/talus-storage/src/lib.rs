@@ -15,5 +15,6 @@ pub mod filesystem;
 pub mod memory;
 pub mod project_store;
 pub mod session;
+pub mod yaml_validation;
 
 pub use project_store::ProjectStore;
