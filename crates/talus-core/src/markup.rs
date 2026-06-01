@@ -21,12 +21,54 @@ use serde_json::{json, Value};
 /// are skipped. (Regex `pattern` matching is not implemented in this slice.)
 pub fn parse(text: &str, profile: &Value) -> Value {
     let profile_id = profile.get("id").cloned().unwrap_or(Value::Null);
+    let prefix_tokens = collect_prefix_tokens(profile);
+
+    let blocks: Vec<Value> = text
+        .lines()
+        .map(|line| classify(line, &prefix_tokens))
+        .collect();
 
     json!({
         "raw": text,
-        "blocks": Vec::<Value>::new(),
+        "blocks": blocks,
         "profile_id": profile_id,
     })
+}
+
+struct PrefixToken<'a> {
+    id: &'a str,
+    prefix: &'a str,
+}
+
+fn collect_prefix_tokens(profile: &Value) -> Vec<PrefixToken<'_>> {
+    let Some(tokens) = profile.get("tokens").and_then(Value::as_array) else {
+        return Vec::new();
+    };
+    tokens
+        .iter()
+        .filter_map(|t| {
+            let obj = t.as_object()?;
+            let id = obj.get("id")?.as_str()?;
+            let prefix = obj.get("prefix")?.as_str()?;
+            Some(PrefixToken { id, prefix })
+        })
+        .collect()
+}
+
+fn classify(line: &str, prefix_tokens: &[PrefixToken<'_>]) -> Value {
+    if line.trim().is_empty() {
+        return json!({ "type": "blank", "text": "" });
+    }
+    for token in prefix_tokens {
+        if let Some(rest) = line.strip_prefix(token.prefix) {
+            return json!({
+                "type": token.id,
+                "text": rest.trim(),
+                "prefix": token.prefix,
+            });
+        }
+    }
+    json!({ "type": "text", "text": line })
 }
 
 #[cfg(test)]
@@ -34,7 +76,11 @@ mod tests {
     use super::*;
 
     fn profile_with_tokens(tokens: Value) -> Value {
-        json!({ "id": "p1", "tokens": tokens })
+        let mut p = json!({ "id": "p1" });
+        p.as_object_mut()
+            .unwrap()
+            .insert("tokens".to_string(), tokens);
+        p
     }
 
     fn prefix_token(id: &str, prefix: &str) -> Value {
