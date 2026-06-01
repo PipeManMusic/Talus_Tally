@@ -6,4 +6,5 @@
 //! the migration. See `docs/architecture/RUST_MIGRATION_PLAN.md` § Phase 1.
 
 pub mod icon_catalog;
+pub mod indicator_catalog;
 pub mod markup_profile;
