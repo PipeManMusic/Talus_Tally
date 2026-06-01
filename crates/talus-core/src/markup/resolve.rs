@@ -31,7 +31,30 @@ pub fn resolve_markup_definition(
     prop_data: &Value,
     registry: &dyn MarkupRegistry,
 ) -> Result<Option<Value>> {
-    let _ = (prop_data, registry);
+    let Some(obj) = prop_data.as_object() else {
+        return Ok(None);
+    };
+
+    if let Some(inline) = obj.get("markup").and_then(Value::as_object) {
+        let id = inline
+            .get("id")
+            .and_then(Value::as_str)
+            .filter(|s| !s.is_empty())
+            .unwrap_or("inline")
+            .to_string();
+        let tokens = inline
+            .get("tokens")
+            .cloned()
+            .unwrap_or_else(|| Value::Array(Vec::new()));
+        return Ok(Some(serde_json::json!({ "id": id, "tokens": tokens })));
+    }
+
+    if let Some(profile_id) = obj.get("markup_profile").and_then(Value::as_str) {
+        if !profile_id.is_empty() {
+            return Ok(Some(registry.load_profile(profile_id)?));
+        }
+    }
+
     Ok(None)
 }
 
