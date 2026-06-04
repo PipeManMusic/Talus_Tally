@@ -139,8 +139,20 @@ impl FilesystemMarkupRegistry {
     ///   `Markup profile id is required`
     /// * file must exist, otherwise `Markup profile not found: <id>`
     pub fn delete_profile(&self, profile_id: &str) -> Result<()> {
-        let _ = profile_id;
-        Err(Error::NotFound("not implemented".into()))
+        let trimmed = profile_id.trim();
+        if trimmed.is_empty() {
+            return Err(Error::SchemaValidation(
+                "Markup profile id is required".to_string(),
+            ));
+        }
+        let path = self.base_dir.join(format!("{trimmed}.yaml"));
+        if !path.exists() {
+            return Err(Error::NotFound(format!(
+                "Markup profile not found: {trimmed}"
+            )));
+        }
+        std::fs::remove_file(&path).map_err(|e| Error::Io(e.to_string()))?;
+        Ok(())
     }
 }
 
