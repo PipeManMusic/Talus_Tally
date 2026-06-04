@@ -12,6 +12,7 @@ pub mod codec;
 pub mod command_log;
 pub mod event_log;
 pub mod filesystem;
+pub mod markup_registry;
 pub mod memory;
 pub mod project_store;
 pub mod session;
