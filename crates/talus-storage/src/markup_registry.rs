@@ -12,6 +12,7 @@ use std::path::PathBuf;
 use serde_json::Value;
 use talus_core::error::{Error, Result};
 use talus_core::markup::MarkupRegistry;
+use talus_core::validation::validate_by_kind;
 
 /// `MarkupRegistry` that reads `<base_dir>/<profile_id>.yaml`.
 pub struct FilesystemMarkupRegistry {
@@ -29,9 +30,62 @@ impl FilesystemMarkupRegistry {
 
 impl MarkupRegistry for FilesystemMarkupRegistry {
     fn load_profile(&self, profile_id: &str) -> Result<Value> {
-        let _ = &self.base_dir;
-        let _ = profile_id;
-        Err(Error::NotFound("not implemented".into()))
+        let path = self.base_dir.join(format!("{profile_id}.yaml"));
+        if !path.exists() {
+            return Err(Error::NotFound(format!(
+                "Markup profile not found: {profile_id}"
+            )));
+        }
+
+        let bytes =
+            std::fs::read_to_string(&path).map_err(|e| Error::Serialization(e.to_string()))?;
+        let parsed: Value =
+            serde_yaml::from_str(&bytes).map_err(|e| Error::Serialization(e.to_string()))?;
+
+        // Python `yaml.safe_load(f) or {}`: null/non-mapping → empty mapping.
+        let mut data = match parsed {
+            Value::Object(_) => parsed,
+            _ => Value::Object(serde_json::Map::new()),
+        };
+        let obj = data.as_object_mut().expect("ensured object above");
+
+        // id check: Python `data.get('id') != profile_id`, str(None) → "None".
+        let id_display = match obj.get("id") {
+            None | Some(Value::Null) => "None".to_string(),
+            Some(Value::String(s)) => s.clone(),
+            Some(other) => other.to_string(),
+        };
+        if obj.get("id").and_then(Value::as_str) != Some(profile_id) {
+            return Err(Error::SchemaValidation(format!(
+                "Markup profile id mismatch: expected {profile_id}, got {id_display}"
+            )));
+        }
+
+        // tokens: Python `data.get('tokens') or []` then isinstance(list) check.
+        // null is coerced to [] by `or`, so it does NOT trip the type error.
+        let tokens_invalid = matches!(obj.get("tokens"), Some(v) if !v.is_null() && !v.is_array());
+        if tokens_invalid {
+            return Err(Error::SchemaValidation(format!(
+                "Markup profile tokens must be a list: {profile_id}"
+            )));
+        }
+        if !obj.contains_key("tokens") {
+            obj.insert("tokens".to_string(), Value::Array(Vec::new()));
+        }
+
+        let errors = validate_by_kind("markup", &data);
+        if !errors.is_empty() {
+            let bullets = errors
+                .iter()
+                .map(|e| format!("  - {e}"))
+                .collect::<Vec<_>>()
+                .join("\n");
+            return Err(Error::SchemaValidation(format!(
+                "Markup profile validation failed for '{profile_id}':\n{bullets}"
+            )));
+        }
+
+        Ok(data)
     }
 }
 
