@@ -4,7 +4,7 @@
 //! through [`talus_core::validation::validate_by_kind`]. Mirrors Python
 //! `backend/infra/markup.py::MarkupRegistry`.
 //!
-//! Caching and `delete_profile` are tracked for later sub-cycles.
+//! A cache layer is tracked for a later sub-cycle.
 
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
@@ -130,6 +130,17 @@ impl FilesystemMarkupRegistry {
         let yaml = serde_yaml::to_string(data).map_err(|e| Error::Serialization(e.to_string()))?;
         std::fs::write(&path, yaml).map_err(|e| Error::Io(e.to_string()))?;
         Ok(())
+    }
+
+    /// Remove the YAML file backing `profile_id` from `<base_dir>`.
+    ///
+    /// Mirrors Python `MarkupRegistry.delete_profile`:
+    /// * `profile_id` non-empty after `.strip()`, otherwise
+    ///   `Markup profile id is required`
+    /// * file must exist, otherwise `Markup profile not found: <id>`
+    pub fn delete_profile(&self, profile_id: &str) -> Result<()> {
+        let _ = profile_id;
+        Err(Error::NotFound("not implemented".into()))
     }
 }
 

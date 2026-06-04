@@ -329,3 +329,51 @@ fn save_profile_overwrite_replaces_existing() {
     let loaded = registry.load_profile("myprofile").expect("load");
     assert_eq!(loaded["label"], json!("New"));
 }
+
+#[test]
+fn delete_profile_errors_when_id_empty_string() {
+    let (_dir, registry) = make_registry();
+    let err = registry.delete_profile("").unwrap_err();
+    assert!(
+        matches!(err, Error::SchemaValidation(ref m) if m == "Markup profile id is required"),
+        "got {err:?}"
+    );
+}
+
+#[test]
+fn delete_profile_errors_when_id_whitespace_only() {
+    let (_dir, registry) = make_registry();
+    let err = registry.delete_profile("   ").unwrap_err();
+    assert!(
+        matches!(err, Error::SchemaValidation(ref m) if m == "Markup profile id is required"),
+        "got {err:?}"
+    );
+}
+
+#[test]
+fn delete_profile_errors_when_file_missing() {
+    let (_dir, registry) = make_registry();
+    let err = registry.delete_profile("nope").unwrap_err();
+    assert!(
+        matches!(err, Error::NotFound(ref m) if m == "Markup profile not found: nope"),
+        "got {err:?}"
+    );
+}
+
+#[test]
+fn delete_profile_removes_existing_file() {
+    let (dir, registry) = make_registry();
+    write_profile(&dir, "myprofile", "id: myprofile\nlabel: X\ntokens: []\n");
+    let path = dir.path().join("myprofile.yaml");
+    assert!(path.exists());
+    registry.delete_profile("myprofile").expect("delete");
+    assert!(!path.exists(), "file should be gone after delete");
+}
+
+#[test]
+fn delete_profile_strips_whitespace_around_id() {
+    let (dir, registry) = make_registry();
+    write_profile(&dir, "myprofile", "id: myprofile\nlabel: X\ntokens: []\n");
+    registry.delete_profile("  myprofile  ").expect("delete");
+    assert!(!dir.path().join("myprofile.yaml").exists());
+}
