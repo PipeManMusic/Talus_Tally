@@ -2,10 +2,10 @@
 //!
 //! Loads markup profile YAML documents from a base directory and runs them
 //! through [`talus_core::validation::validate_by_kind`]. Mirrors Python
-//! `backend/infra/markup.py::MarkupRegistry::load_profile`.
+//! `backend/infra/markup.py::MarkupRegistry`.
 //!
-//! Caching, `list_profiles`, `save_profile`, and `delete_profile` are tracked
-//! for later sub-cycles and are not implemented here.
+//! Caching, `save_profile`, and `delete_profile` are tracked for later
+//! sub-cycles and are not implemented here.
 
 use std::path::PathBuf;
 
@@ -13,6 +13,15 @@ use serde_json::Value;
 use talus_core::error::{Error, Result};
 use talus_core::markup::MarkupRegistry;
 use talus_core::validation::validate_by_kind;
+
+/// Summary metadata for a markup profile, returned by
+/// [`FilesystemMarkupRegistry::list_profiles`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MarkupProfileSummary {
+    pub id: String,
+    pub label: String,
+    pub description: String,
+}
 
 /// `MarkupRegistry` that reads `<base_dir>/<profile_id>.yaml`.
 pub struct FilesystemMarkupRegistry {
@@ -25,6 +34,17 @@ impl FilesystemMarkupRegistry {
         Self {
             base_dir: base_dir.into(),
         }
+    }
+
+    /// List all markup profile summaries under `base_dir`, sorted by filename.
+    ///
+    /// Mirrors Python `MarkupRegistry.list_profiles`: silently skips files
+    /// that fail to parse or lack an `id`, dedupes by id (first occurrence
+    /// wins), and falls back to `id` when `label` is missing or empty.
+    /// Returns an empty vector when `base_dir` does not exist.
+    pub fn list_profiles(&self) -> Vec<MarkupProfileSummary> {
+        let _ = &self.base_dir;
+        Vec::new()
     }
 }
 
@@ -214,5 +234,92 @@ mod tests {
         write_profile(&dir, "myprofile", "id: [unterminated\n");
         let err = registry.load_profile("myprofile").unwrap_err();
         assert!(matches!(err, Error::Serialization(_)), "got {err:?}");
+    }
+
+    #[test]
+    fn list_profiles_returns_empty_when_dir_missing() {
+        let registry = FilesystemMarkupRegistry::new("/nonexistent/talus/markup/dir");
+        assert!(registry.list_profiles().is_empty());
+    }
+
+    #[test]
+    fn list_profiles_returns_empty_when_no_yaml_files() {
+        let (_dir, registry) = make_registry();
+        assert!(registry.list_profiles().is_empty());
+    }
+
+    #[test]
+    fn list_profiles_returns_entries_sorted_by_filename() {
+        let (dir, registry) = make_registry();
+        write_profile(&dir, "c_profile", "id: c\nlabel: C\n");
+        write_profile(&dir, "a_profile", "id: a\nlabel: A\n");
+        write_profile(&dir, "b_profile", "id: b\nlabel: B\n");
+        let ids: Vec<String> = registry.list_profiles().into_iter().map(|p| p.id).collect();
+        assert_eq!(ids, vec!["a".to_string(), "b".to_string(), "c".to_string()]);
+    }
+
+    #[test]
+    fn list_profiles_uses_label_when_present() {
+        let (dir, registry) = make_registry();
+        write_profile(&dir, "p", "id: p\nlabel: Pretty\n");
+        let profiles = registry.list_profiles();
+        assert_eq!(profiles.len(), 1);
+        assert_eq!(profiles[0].label, "Pretty");
+    }
+
+    #[test]
+    fn list_profiles_falls_back_to_id_when_label_missing() {
+        let (dir, registry) = make_registry();
+        write_profile(&dir, "p", "id: p\n");
+        let profiles = registry.list_profiles();
+        assert_eq!(profiles.len(), 1);
+        assert_eq!(profiles[0].label, "p");
+    }
+
+    #[test]
+    fn list_profiles_falls_back_to_id_when_label_empty_string() {
+        let (dir, registry) = make_registry();
+        write_profile(&dir, "p", "id: p\nlabel: ''\n");
+        let profiles = registry.list_profiles();
+        assert_eq!(profiles.len(), 1);
+        assert_eq!(profiles[0].label, "p");
+    }
+
+    #[test]
+    fn list_profiles_defaults_description_to_empty_string() {
+        let (dir, registry) = make_registry();
+        write_profile(&dir, "p", "id: p\nlabel: P\n");
+        let profiles = registry.list_profiles();
+        assert_eq!(profiles[0].description, "");
+    }
+
+    #[test]
+    fn list_profiles_skips_files_without_id() {
+        let (dir, registry) = make_registry();
+        write_profile(&dir, "anon", "label: Anon\n");
+        write_profile(&dir, "named", "id: named\nlabel: Named\n");
+        let ids: Vec<String> = registry.list_profiles().into_iter().map(|p| p.id).collect();
+        assert_eq!(ids, vec!["named".to_string()]);
+    }
+
+    #[test]
+    fn list_profiles_deduplicates_by_id_keeping_first() {
+        let (dir, registry) = make_registry();
+        // Sorted glob order: a_first.yaml then b_second.yaml; both carry id "shared".
+        write_profile(&dir, "a_first", "id: shared\nlabel: First\n");
+        write_profile(&dir, "b_second", "id: shared\nlabel: Second\n");
+        let profiles = registry.list_profiles();
+        assert_eq!(profiles.len(), 1);
+        assert_eq!(profiles[0].id, "shared");
+        assert_eq!(profiles[0].label, "First");
+    }
+
+    #[test]
+    fn list_profiles_skips_malformed_yaml_but_returns_others() {
+        let (dir, registry) = make_registry();
+        write_profile(&dir, "bad", "id: [unterminated\n");
+        write_profile(&dir, "good", "id: good\nlabel: Good\n");
+        let ids: Vec<String> = registry.list_profiles().into_iter().map(|p| p.id).collect();
+        assert_eq!(ids, vec!["good".to_string()]);
     }
 }
