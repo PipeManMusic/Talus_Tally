@@ -7,7 +7,8 @@
 //! Caching, `save_profile`, and `delete_profile` are tracked for later
 //! sub-cycles and are not implemented here.
 
-use std::path::PathBuf;
+use std::collections::HashSet;
+use std::path::{Path, PathBuf};
 
 use serde_json::Value;
 use talus_core::error::{Error, Result};
@@ -43,9 +44,53 @@ impl FilesystemMarkupRegistry {
     /// wins), and falls back to `id` when `label` is missing or empty.
     /// Returns an empty vector when `base_dir` does not exist.
     pub fn list_profiles(&self) -> Vec<MarkupProfileSummary> {
-        let _ = &self.base_dir;
-        Vec::new()
+        if !self.base_dir.exists() {
+            return Vec::new();
+        }
+        let Ok(entries) = std::fs::read_dir(&self.base_dir) else {
+            return Vec::new();
+        };
+        let mut paths: Vec<PathBuf> = entries
+            .filter_map(std::result::Result::ok)
+            .map(|e| e.path())
+            .filter(|p| p.extension().and_then(|s| s.to_str()) == Some("yaml"))
+            .collect();
+        paths.sort();
+
+        let mut seen: HashSet<String> = HashSet::new();
+        let mut out = Vec::new();
+        for path in &paths {
+            if let Some(summary) = read_summary(path) {
+                if seen.insert(summary.id.clone()) {
+                    out.push(summary);
+                }
+            }
+        }
+        out
     }
+}
+
+/// Read a single profile file into a [`MarkupProfileSummary`], returning
+/// `None` if the file fails to read/parse or lacks a non-empty `id`.
+fn read_summary(path: &Path) -> Option<MarkupProfileSummary> {
+    let bytes = std::fs::read_to_string(path).ok()?;
+    let parsed: Value = serde_yaml::from_str(&bytes).ok()?;
+    let obj = parsed.as_object()?;
+    let id = obj.get("id").and_then(Value::as_str)?;
+    if id.is_empty() {
+        return None;
+    }
+    let label = obj
+        .get("label")
+        .and_then(Value::as_str)
+        .filter(|s| !s.is_empty())
+        .unwrap_or(id);
+    let description = obj.get("description").and_then(Value::as_str).unwrap_or("");
+    Some(MarkupProfileSummary {
+        id: id.to_string(),
+        label: label.to_string(),
+        description: description.to_string(),
+    })
 }
 
 impl MarkupRegistry for FilesystemMarkupRegistry {
