@@ -81,9 +81,63 @@ impl FilesystemMarkupRegistry {
     /// * runs [`validate_by_kind`]; on errors → `Markup profile validation
     ///   failed for '<id>':\n  - <error>`
     pub fn save_profile(&self, data: &Value, overwrite: bool) -> Result<()> {
-        let _ = (data, overwrite);
-        Err(Error::NotFound("not implemented".into()))
+        let raw_id = match data.get("id") {
+            Some(Value::String(s)) => s.as_str(),
+            _ => {
+                return Err(Error::SchemaValidation(
+                    "Markup profile id is required".to_string(),
+                ));
+            }
+        };
+        let profile_id = raw_id.trim();
+        if profile_id.is_empty() {
+            return Err(Error::SchemaValidation(
+                "Markup profile id is required".to_string(),
+            ));
+        }
+        if !is_valid_profile_id(profile_id) {
+            return Err(Error::SchemaValidation(format!(
+                "Invalid markup profile id '{profile_id}'"
+            )));
+        }
+
+        let path = self.base_dir.join(format!("{profile_id}.yaml"));
+        let exists = path.exists();
+        if !overwrite && exists {
+            return Err(Error::InvariantViolation(format!(
+                "Markup profile already exists: {profile_id}"
+            )));
+        }
+        if overwrite && !exists {
+            return Err(Error::NotFound(format!(
+                "Markup profile not found: {profile_id}"
+            )));
+        }
+
+        let errors = validate_by_kind("markup", data);
+        if !errors.is_empty() {
+            let bullets = errors
+                .iter()
+                .map(|e| format!("  - {e}"))
+                .collect::<Vec<_>>()
+                .join("\n");
+            return Err(Error::SchemaValidation(format!(
+                "Markup profile validation failed for '{profile_id}':\n{bullets}"
+            )));
+        }
+
+        std::fs::create_dir_all(&self.base_dir).map_err(|e| Error::Io(e.to_string()))?;
+        let yaml = serde_yaml::to_string(data).map_err(|e| Error::Serialization(e.to_string()))?;
+        std::fs::write(&path, yaml).map_err(|e| Error::Io(e.to_string()))?;
+        Ok(())
     }
+}
+
+fn is_valid_profile_id(id: &str) -> bool {
+    !id.is_empty()
+        && id
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || b == b'_' || b == b'-')
 }
 
 /// Read a single profile file into a [`MarkupProfileSummary`], returning
