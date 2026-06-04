@@ -209,3 +209,123 @@ fn list_profiles_skips_malformed_yaml_but_returns_others() {
     let ids: Vec<String> = registry.list_profiles().into_iter().map(|p| p.id).collect();
     assert_eq!(ids, vec!["good".to_string()]);
 }
+
+fn assert_id_required(err: &Error) {
+    assert!(
+        matches!(err, Error::SchemaValidation(m) if m == "Markup profile id is required"),
+        "got {err:?}"
+    );
+}
+
+#[test]
+fn save_profile_errors_when_id_missing() {
+    let (_dir, registry) = make_registry();
+    let data = json!({ "label": "X" });
+    assert_id_required(&registry.save_profile(&data, false).unwrap_err());
+}
+
+#[test]
+fn save_profile_errors_when_id_empty_string() {
+    let (_dir, registry) = make_registry();
+    let data = json!({ "id": "", "label": "X" });
+    assert_id_required(&registry.save_profile(&data, false).unwrap_err());
+}
+
+#[test]
+fn save_profile_errors_when_id_whitespace_only() {
+    let (_dir, registry) = make_registry();
+    let data = json!({ "id": "   ", "label": "X" });
+    assert_id_required(&registry.save_profile(&data, false).unwrap_err());
+}
+
+#[test]
+fn save_profile_errors_when_id_not_string() {
+    let (_dir, registry) = make_registry();
+    let data = json!({ "id": 42, "label": "X" });
+    assert_id_required(&registry.save_profile(&data, false).unwrap_err());
+}
+
+#[test]
+fn save_profile_errors_when_id_has_invalid_chars() {
+    let (_dir, registry) = make_registry();
+    let data = json!({ "id": "foo bar", "label": "X" });
+    let err = registry.save_profile(&data, false).unwrap_err();
+    assert!(
+        matches!(
+            err,
+            Error::SchemaValidation(ref m) if m == "Invalid markup profile id 'foo bar'"
+        ),
+        "got {err:?}"
+    );
+}
+
+#[test]
+fn save_profile_create_errors_when_file_already_exists() {
+    let (dir, registry) = make_registry();
+    write_profile(&dir, "myprofile", "id: myprofile\nlabel: Existing\n");
+    let data = json!({ "id": "myprofile", "label": "New" });
+    let err = registry.save_profile(&data, false).unwrap_err();
+    assert!(
+        matches!(
+            err,
+            Error::InvariantViolation(ref m) if m == "Markup profile already exists: myprofile"
+        ),
+        "got {err:?}"
+    );
+}
+
+#[test]
+fn save_profile_overwrite_errors_when_file_missing() {
+    let (_dir, registry) = make_registry();
+    let data = json!({ "id": "myprofile", "label": "X" });
+    let err = registry.save_profile(&data, true).unwrap_err();
+    assert!(
+        matches!(
+            err,
+            Error::NotFound(ref m) if m == "Markup profile not found: myprofile"
+        ),
+        "got {err:?}"
+    );
+}
+
+#[test]
+fn save_profile_errors_when_validation_fails() {
+    let (_dir, registry) = make_registry();
+    // missing label triggers validation error
+    let data = json!({ "id": "myprofile", "tokens": [] });
+    let err = registry.save_profile(&data, false).unwrap_err();
+    let msg = match err {
+        Error::SchemaValidation(m) => m,
+        other => panic!("expected SchemaValidation, got {other:?}"),
+    };
+    assert!(
+        msg.starts_with("Markup profile validation failed for 'myprofile':\n"),
+        "got {msg}"
+    );
+    assert!(
+        msg.contains("  - markup_profile: missing required field 'label'"),
+        "got {msg}"
+    );
+}
+
+#[test]
+fn save_profile_create_writes_new_file() {
+    let (dir, registry) = make_registry();
+    let data = json!({ "id": "myprofile", "label": "My Profile", "tokens": [] });
+    registry.save_profile(&data, false).expect("save");
+    let path = dir.path().join("myprofile.yaml");
+    assert!(path.exists(), "expected file to exist at {path:?}");
+    let loaded = registry.load_profile("myprofile").expect("load");
+    assert_eq!(loaded["id"], json!("myprofile"));
+    assert_eq!(loaded["label"], json!("My Profile"));
+}
+
+#[test]
+fn save_profile_overwrite_replaces_existing() {
+    let (dir, registry) = make_registry();
+    write_profile(&dir, "myprofile", "id: myprofile\nlabel: Old\ntokens: []\n");
+    let data = json!({ "id": "myprofile", "label": "New", "tokens": [] });
+    registry.save_profile(&data, true).expect("save");
+    let loaded = registry.load_profile("myprofile").expect("load");
+    assert_eq!(loaded["label"], json!("New"));
+}

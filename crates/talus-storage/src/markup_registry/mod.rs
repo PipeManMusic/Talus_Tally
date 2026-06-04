@@ -4,8 +4,7 @@
 //! through [`talus_core::validation::validate_by_kind`]. Mirrors Python
 //! `backend/infra/markup.py::MarkupRegistry`.
 //!
-//! Caching, `save_profile`, and `delete_profile` are tracked for later
-//! sub-cycles and are not implemented here.
+//! Caching and `delete_profile` are tracked for later sub-cycles.
 
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
@@ -67,6 +66,23 @@ impl FilesystemMarkupRegistry {
             }
         }
         out
+    }
+
+    /// Persist a markup profile YAML at `<base_dir>/<id>.yaml`.
+    ///
+    /// Mirrors Python `MarkupRegistry.save_profile`:
+    /// * `data['id']` must be a non-empty string after `.strip()`, otherwise
+    ///   `Markup profile id is required`
+    /// * stripped id must match `^[a-zA-Z0-9_-]+$`, otherwise
+    ///   `Invalid markup profile id '<id>'`
+    /// * `overwrite=false` + file already exists → `Markup profile already
+    ///   exists: <id>`
+    /// * `overwrite=true` + file missing → `Markup profile not found: <id>`
+    /// * runs [`validate_by_kind`]; on errors → `Markup profile validation
+    ///   failed for '<id>':\n  - <error>`
+    pub fn save_profile(&self, data: &Value, overwrite: bool) -> Result<()> {
+        let _ = (data, overwrite);
+        Err(Error::NotFound("not implemented".into()))
     }
 }
 
