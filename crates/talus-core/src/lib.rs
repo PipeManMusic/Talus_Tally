@@ -48,6 +48,9 @@ pub mod validation;
 /// Markup parsing: turn editor text into structured blocks via a profile.
 pub mod markup;
 
+/// Velocity scoring engine (port of `backend/core/velocity_engine.py`).
+pub mod velocity;
+
 /// Re-exports for convenient `use talus_core::prelude::*;`.
 pub mod prelude {
     pub use crate::error::{Error, Result};
