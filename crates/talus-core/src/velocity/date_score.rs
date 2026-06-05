@@ -40,8 +40,23 @@ pub struct DateVelocityConfig {
 /// window with no overdue accrual).
 #[must_use]
 pub fn date_velocity_contribution(days_until: i32, config: &DateVelocityConfig) -> f64 {
-    let _ = (days_until, config);
-    0.0
+    let window_days = i32::try_from(config.approaching_window).unwrap_or(i32::MAX);
+    let mut contribution = if days_until >= 0 {
+        if window_days > 0 && days_until <= window_days {
+            f64::from(window_days - days_until) * config.approaching_per_day
+        } else {
+            0.0
+        }
+    } else {
+        let full_approaching = f64::from(window_days) * config.approaching_per_day;
+        full_approaching + f64::from(-days_until) * config.overdue_per_day
+    };
+    if let Some(cap) = config.max_score {
+        if cap > 0.0 {
+            contribution = contribution.min(cap);
+        }
+    }
+    contribution
 }
 
 #[cfg(test)]
