@@ -22,8 +22,11 @@ pub struct NumericalVelocityConfig {
 /// Compute the velocity contribution of a single numerical property.
 #[must_use]
 pub fn numerical_contribution(value: f64, config: &NumericalVelocityConfig) -> f64 {
-    let _ = (value, config);
-    0.0
+    if config.penalty_mode {
+        ((100.0 - value) * config.multiplier).max(0.0)
+    } else {
+        value * config.multiplier
+    }
 }
 
 #[cfg(test)]
