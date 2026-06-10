@@ -10,9 +10,12 @@
 //!   accrual, with optional cap).
 //! * `numerical_score` — number / numeric / currency property multiplier
 //!   contribution (with optional penalty-mode inversion).
+//! * `currency` — currency-string parser (`"$1,234.56"` → `1234.56`).
 
+mod currency;
 mod date_score;
 mod numerical_score;
 
+pub use currency::parse_currency_value;
 pub use date_score::{date_velocity_contribution, DateVelocityConfig};
 pub use numerical_score::{numerical_contribution, NumericalVelocityConfig};
