@@ -17,8 +17,12 @@
 /// unparseable.
 #[must_use]
 pub fn parse_currency_value(input: &str) -> Option<f64> {
-    let _ = input;
-    None
+    let stripped: String = input.chars().filter(|c| *c != '$' && *c != ',').collect();
+    let trimmed = stripped.trim();
+    if trimmed.is_empty() {
+        return None;
+    }
+    trimmed.parse::<f64>().ok()
 }
 
 #[cfg(test)]
