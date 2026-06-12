@@ -40,8 +40,20 @@ pub fn status_contribution<S: BuildHasher>(
     options: &[SelectOption],
     status_scores: &HashMap<String, f64, S>,
 ) -> f64 {
-    let _ = (current_value, options, status_scores);
-    0.0
+    let Some(value) = current_value else {
+        return 0.0;
+    };
+    // Python gates UUID->name resolution on a truthy value; an empty string
+    // skips resolution and is looked up as-is.
+    let lookup = if value.is_empty() {
+        value
+    } else {
+        options
+            .iter()
+            .find(|o| o.id == value)
+            .map_or(value, |o| o.name.as_str())
+    };
+    status_scores.get(lookup).copied().unwrap_or(0.0)
 }
 
 #[cfg(test)]
