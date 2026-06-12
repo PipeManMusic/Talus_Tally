@@ -16,8 +16,19 @@ use chrono::NaiveDate;
 ///   `+00:00` to match Python's `replace("Z", "+00:00")` behaviour.
 #[must_use]
 pub fn parse_date_value(input: &str) -> Option<NaiveDate> {
-    let _ = input;
-    None
+    let stripped = input.trim();
+    if stripped.is_empty() {
+        return None;
+    }
+    if stripped.len() >= 10 {
+        if let Ok(date) = NaiveDate::parse_from_str(&stripped[..10], "%Y-%m-%d") {
+            return Some(date);
+        }
+    }
+    let normalised = stripped.replace('Z', "+00:00");
+    chrono::DateTime::parse_from_rfc3339(&normalised)
+        .ok()
+        .map(|dt| dt.date_naive())
 }
 
 #[cfg(test)]
