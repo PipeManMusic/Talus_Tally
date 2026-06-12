@@ -16,8 +16,13 @@ use serde::{Deserialize, Serialize};
 use crate::ids::NodeId;
 
 /// Round a value to two decimal places, ties to even (Python `round(x, 2)`).
+///
+/// Formatting to two decimals and parsing back rounds the *actual* stored
+/// binary value, matching `CPython`'s `round`. A naive `(x * 100).round() / 100`
+/// instead rounds the product, which differs for values like `3.335` whose
+/// scaled form (`333.5000…`) crosses the tie boundary the original never did.
 fn round2(value: f64) -> f64 {
-    value
+    format!("{value:.2}").parse().unwrap_or(value)
 }
 
 /// Velocity score breakdown for a single node.
