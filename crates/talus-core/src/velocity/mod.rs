@@ -17,9 +17,11 @@
 //!   option resolution.
 //! * `mode` — typed `ScoreMode` / `VelocityMode` enums (replace magic strings).
 //! * `calculation` — `VelocityCalculation` per-node result record.
+//! * `config` — node-level `NodeVelocityConfig` wire shape.
 
 mod calculation;
 mod checkbox_score;
+mod config;
 mod currency;
 mod date_parse;
 mod date_score;
@@ -31,6 +33,7 @@ pub use calculation::VelocityCalculation;
 pub use checkbox_score::{
     checkbox_contribution, is_checkbox_checked, CheckboxValue, CheckboxVelocityConfig,
 };
+pub use config::NodeVelocityConfig;
 pub use currency::parse_currency_value;
 pub use date_parse::parse_date_value;
 pub use date_score::{date_velocity_contribution, DateVelocityConfig};

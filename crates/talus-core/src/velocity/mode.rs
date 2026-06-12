@@ -13,12 +13,15 @@ use serde::{Deserialize, Serialize};
 /// How a node-level base score is derived.
 ///
 /// Wire format is the lowercase string used by the Python `ScoreMode` enum.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+/// Defaults to [`ScoreMode::Fixed`], matching the engine behaviour where a
+/// node-level config without an explicit `scoreMode` does **not** inherit.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum ScoreMode {
     /// Inherit the base score from the parent (`"inherit"`).
     Inherit,
     /// Use a fixed base score defined on the node type (`"fixed"`).
+    #[default]
     Fixed,
 }
 
@@ -69,6 +72,11 @@ mod tests {
     #[test]
     fn score_mode_rejects_unknown_value() {
         assert!(serde_json::from_str::<ScoreMode>("\"sideways\"").is_err());
+    }
+
+    #[test]
+    fn score_mode_defaults_to_fixed() {
+        assert_eq!(ScoreMode::default(), ScoreMode::Fixed);
     }
 
     #[test]
