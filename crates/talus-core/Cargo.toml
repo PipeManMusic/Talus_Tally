@@ -16,6 +16,7 @@ thiserror = { workspace = true }
 uuid = { workspace = true }
 indexmap = { workspace = true }
 regex = { workspace = true }
+chrono = { workspace = true }
 
 [dev-dependencies]
 proptest = { workspace = true }
