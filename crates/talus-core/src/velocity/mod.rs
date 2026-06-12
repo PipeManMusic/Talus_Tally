@@ -13,12 +13,15 @@
 //!   contribution (with optional penalty-mode inversion).
 //! * `currency` — currency-string parser (`"$1,234.56"` → `1234.56`).
 //! * `checkbox_score` — checkbox-property contribution (checked / unchecked).
+//! * `status_score` — status (select) property contribution with UUID-backed
+//!   option resolution.
 
 mod checkbox_score;
 mod currency;
 mod date_parse;
 mod date_score;
 mod numerical_score;
+mod status_score;
 
 pub use checkbox_score::{
     checkbox_contribution, is_checkbox_checked, CheckboxValue, CheckboxVelocityConfig,
@@ -27,3 +30,4 @@ pub use currency::parse_currency_value;
 pub use date_parse::parse_date_value;
 pub use date_score::{date_velocity_contribution, DateVelocityConfig};
 pub use numerical_score::{numerical_contribution, NumericalVelocityConfig};
+pub use status_score::{status_contribution, SelectOption};
