@@ -45,15 +45,21 @@ pub struct CheckboxVelocityConfig {
 /// Determine whether a checkbox value counts as checked (Python parity).
 #[must_use]
 pub fn is_checkbox_checked(value: &CheckboxValue) -> bool {
-    let _ = value;
-    false
+    match value {
+        CheckboxValue::Bool(b) => *b,
+        CheckboxValue::Text(s) => s.trim().eq_ignore_ascii_case("true"),
+        CheckboxValue::Unset => false,
+    }
 }
 
 /// Compute the velocity contribution of a checkbox property.
 #[must_use]
 pub fn checkbox_contribution(value: &CheckboxValue, config: &CheckboxVelocityConfig) -> f64 {
-    let _ = (value, config);
-    0.0
+    if is_checkbox_checked(value) {
+        config.checked_score
+    } else {
+        config.unchecked_score
+    }
 }
 
 #[cfg(test)]
