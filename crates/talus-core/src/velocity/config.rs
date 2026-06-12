@@ -19,6 +19,7 @@ use super::mode::ScoreMode;
 
 /// Node-type-level velocity configuration.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct NodeVelocityConfig {
     /// Base score for the node type. `0.0` (the default) is treated as unset
     /// by the engine's truthy check.
