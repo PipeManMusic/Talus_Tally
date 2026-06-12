@@ -16,7 +16,9 @@
 //! * `status_score` — status (select) property contribution with UUID-backed
 //!   option resolution.
 //! * `mode` — typed `ScoreMode` / `VelocityMode` enums (replace magic strings).
+//! * `calculation` — `VelocityCalculation` per-node result record.
 
+mod calculation;
 mod checkbox_score;
 mod currency;
 mod date_parse;
@@ -25,6 +27,7 @@ mod mode;
 mod numerical_score;
 mod status_score;
 
+pub use calculation::VelocityCalculation;
 pub use checkbox_score::{
     checkbox_contribution, is_checkbox_checked, CheckboxValue, CheckboxVelocityConfig,
 };
