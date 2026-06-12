@@ -14,6 +14,7 @@ use serde::{Deserialize, Serialize};
 ///
 /// Wire format is the lowercase string used by the Python `ScoreMode` enum.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum ScoreMode {
     /// Inherit the base score from the parent (`"inherit"`).
     Inherit,
@@ -25,6 +26,7 @@ pub enum ScoreMode {
 ///
 /// Wire format is the lowercase string stored in `velocityConfig.mode`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum VelocityMode {
     /// Select-type property scored by current option name (`"status"`).
     Status,
