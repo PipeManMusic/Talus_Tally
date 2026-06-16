@@ -157,13 +157,13 @@ impl NodeType {
     /// Mirrors Python `_get_node_level_velocity_config`.
     #[must_use]
     pub fn velocity_config(&self) -> Option<&NodeVelocityConfig> {
-        None
+        self.velocity_config.as_ref()
     }
 
     /// The velocity config attached to `pid`, if any.
     #[must_use]
-    pub fn property_velocity_config(&self, _pid: PropertyId) -> Option<&PropertyVelocityConfig> {
-        None
+    pub fn property_velocity_config(&self, pid: PropertyId) -> Option<&PropertyVelocityConfig> {
+        self.property_velocity_configs.get(&pid)
     }
 
     /// `true` iff this node type carries any velocity configuration —
@@ -171,7 +171,7 @@ impl NodeType {
     /// config. Mirrors Python `_has_velocity_config`.
     #[must_use]
     pub fn has_velocity_config(&self) -> bool {
-        self.velocity_config.is_some() && self.property_velocity_configs.values().any(|c| c.enabled)
+        self.velocity_config.is_some() || self.property_velocity_configs.values().any(|c| c.enabled)
     }
 }
 
