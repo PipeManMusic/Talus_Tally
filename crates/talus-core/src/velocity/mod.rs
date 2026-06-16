@@ -18,6 +18,7 @@
 //! * `mode` — typed `ScoreMode` / `VelocityMode` enums (replace magic strings).
 //! * `calculation` — `VelocityCalculation` per-node result record.
 //! * `config` — node-level `NodeVelocityConfig` wire shape.
+//! * `property_config` — per-property `PropertyVelocityConfig` wire shape.
 
 mod calculation;
 mod checkbox_score;
@@ -27,6 +28,7 @@ mod date_parse;
 mod date_score;
 mod mode;
 mod numerical_score;
+mod property_config;
 mod status_score;
 
 pub use calculation::VelocityCalculation;
@@ -39,4 +41,5 @@ pub use date_parse::parse_date_value;
 pub use date_score::{date_velocity_contribution, DateVelocityConfig};
 pub use mode::{ScoreMode, VelocityMode};
 pub use numerical_score::{numerical_contribution, NumericalVelocityConfig};
+pub use property_config::{PropertyVelocityConfig, PropertyVelocityMode};
 pub use status_score::{status_contribution, SelectOption};
