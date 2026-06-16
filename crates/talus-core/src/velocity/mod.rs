@@ -19,6 +19,8 @@
 //! * `calculation` — `VelocityCalculation` per-node result record.
 //! * `config` — node-level `NodeVelocityConfig` wire shape.
 //! * `property_config` — per-property `PropertyVelocityConfig` wire shape.
+//! * `dispatch` — node-level accumulators that fan property configs out to the
+//!   per-property leaf functions.
 
 mod calculation;
 mod checkbox_score;
@@ -26,6 +28,7 @@ mod config;
 mod currency;
 mod date_parse;
 mod date_score;
+mod dispatch;
 mod mode;
 mod numerical_score;
 mod property_config;
@@ -39,6 +42,7 @@ pub use config::NodeVelocityConfig;
 pub use currency::parse_currency_value;
 pub use date_parse::parse_date_value;
 pub use date_score::{date_velocity_contribution, DateVelocityConfig};
+pub use dispatch::numerical_score;
 pub use mode::{ScoreMode, VelocityMode};
 pub use numerical_score::{numerical_contribution, NumericalVelocityConfig};
 pub use property_config::{PropertyVelocityConfig, PropertyVelocityMode};
