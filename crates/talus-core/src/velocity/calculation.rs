@@ -87,6 +87,20 @@ impl VelocityCalculation {
         self.total_velocity = round2(self.total_velocity);
         self
     }
+
+    /// The portion of this node's score that children should inherit.
+    ///
+    /// Port of `_inheritable_total` in `backend/core/velocity_engine.py`:
+    /// `max(base_score, 0) + inherited_score + status_score + numerical_score`.
+    ///
+    /// Nodes without a velocity config use `base_score = -1` as a sentinel so
+    /// they sort to the bottom of the ranking. `max(base, 0)` keeps that
+    /// sentinel transparent to children — otherwise every non-velocity
+    /// ancestor would subtract 1, burying velocity-enabled descendants.
+    #[must_use]
+    pub fn inheritable_total(&self) -> f64 {
+        0.0
+    }
 }
 
 #[cfg(test)]
@@ -186,5 +200,52 @@ mod tests {
         let json = serde_json::to_string(&c).unwrap();
         let back: VelocityCalculation = serde_json::from_str(&json).unwrap();
         assert_eq!(c, back);
+    }
+
+    #[test]
+    fn inheritable_total_sums_components() {
+        let mut c = VelocityCalculation::zeroed(nid());
+        c.base_score = 2.0;
+        c.inherited_score = 3.0;
+        c.status_score = 4.0;
+        c.numerical_score = 5.0;
+        // 2 + 3 + 4 + 5 = 14
+        assert!((c.inheritable_total() - 14.0).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn inheritable_total_clamps_negative_base_to_zero() {
+        let mut c = VelocityCalculation::zeroed(nid());
+        c.base_score = -1.0; // sentinel for nodes without velocity config
+        c.inherited_score = 3.0;
+        c.status_score = 4.0;
+        c.numerical_score = 5.0;
+        // max(-1, 0) + 3 + 4 + 5 = 12 (sentinel does not propagate)
+        assert!((c.inheritable_total() - 12.0).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn inheritable_total_keeps_positive_base() {
+        let mut c = VelocityCalculation::zeroed(nid());
+        c.base_score = 10.0;
+        // 10 + 0 + 0 + 0 = 10
+        assert!((c.inheritable_total() - 10.0).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn inheritable_total_ignores_blocking_fields() {
+        let mut c = VelocityCalculation::zeroed(nid());
+        c.base_score = 1.0;
+        c.blocking_penalty = 100.0;
+        c.blocking_bonus = 50.0;
+        c.total_velocity = 999.0;
+        // Only base/inherited/status/numerical participate: 1 + 0 + 0 + 0 = 1
+        assert!((c.inheritable_total() - 1.0).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn inheritable_total_of_zeroed_is_zero() {
+        let c = VelocityCalculation::zeroed(nid());
+        assert!(c.inheritable_total().abs() < f64::EPSILON);
     }
 }
