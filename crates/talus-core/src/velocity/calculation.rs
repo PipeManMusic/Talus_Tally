@@ -99,7 +99,7 @@ impl VelocityCalculation {
     /// ancestor would subtract 1, burying velocity-enabled descendants.
     #[must_use]
     pub fn inheritable_total(&self) -> f64 {
-        0.0
+        self.base_score.max(0.0) + self.inherited_score + self.status_score + self.numerical_score
     }
 }
 
