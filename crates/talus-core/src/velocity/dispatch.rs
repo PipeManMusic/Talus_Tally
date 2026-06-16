@@ -8,6 +8,10 @@
 
 use crate::node::Node;
 use crate::node_type::NodeType;
+use crate::property::Property;
+use crate::velocity::{
+    numerical_contribution, parse_currency_value, NumericalVelocityConfig, PropertyVelocityMode,
+};
 
 /// Sum the multiplier (numerical) velocity contributions for a node.
 ///
@@ -24,8 +28,37 @@ use crate::node_type::NodeType;
 /// other typed value is skipped (Python's `isinstance(value, (int, float))`
 /// guard).
 #[must_use]
-pub fn numerical_score(_node: &Node, _node_type: &NodeType) -> f64 {
-    0.0
+pub fn numerical_score(node: &Node, node_type: &NodeType) -> f64 {
+    let mut score = 0.0;
+    for (pid, config) in node_type.property_velocity_configs() {
+        if !config.enabled {
+            continue;
+        }
+        let PropertyVelocityMode::Multiplier {
+            multiplier_factor,
+            penalty_mode,
+        } = &config.mode
+        else {
+            continue;
+        };
+        let value = match node.properties().get(&pid) {
+            None => 0.0,
+            Some(Property::Number(n)) => *n,
+            Some(Property::Text(text)) => match parse_currency_value(text) {
+                Some(parsed) => parsed,
+                None => continue,
+            },
+            Some(_) => continue,
+        };
+        score += numerical_contribution(
+            value,
+            &NumericalVelocityConfig {
+                multiplier: *multiplier_factor,
+                penalty_mode: *penalty_mode,
+            },
+        );
+    }
+    score
 }
 
 #[cfg(test)]

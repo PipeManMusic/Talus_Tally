@@ -166,6 +166,18 @@ impl NodeType {
         self.property_velocity_configs.get(&pid)
     }
 
+    /// Iterate the per-property velocity configs in insertion order.
+    ///
+    /// Mirrors the Python engine walking a node type's property definitions
+    /// to find their `velocityConfig` blocks.
+    pub fn property_velocity_configs(
+        &self,
+    ) -> impl Iterator<Item = (PropertyId, &PropertyVelocityConfig)> + '_ {
+        self.property_velocity_configs
+            .iter()
+            .map(|(pid, cfg)| (*pid, cfg))
+    }
+
     /// `true` iff this node type carries any velocity configuration —
     /// either a node-level config or at least one *enabled* per-property
     /// config. Mirrors Python `_has_velocity_config`.
