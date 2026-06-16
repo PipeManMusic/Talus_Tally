@@ -8,10 +8,11 @@
 //! feature flags). This Rust port starts with the irreducible minimum
 //! and layers behaviour in subsequent cycles.
 
-use indexmap::IndexSet;
+use indexmap::{IndexMap, IndexSet};
 use serde::{Deserialize, Serialize};
 
 use crate::ids::{NodeTypeId, PropertyId};
+use crate::velocity::{NodeVelocityConfig, PropertyVelocityConfig};
 
 /// Schema version for serialized `NodeType`. Bump on any breaking shape
 /// change so the migration layer can route old payloads correctly.
@@ -21,7 +22,7 @@ pub const NODE_TYPE_SCHEMA_VERSION: u32 = 1;
 ///
 /// Future cycles will extend this with `allowed_properties` and
 /// `allowed_children` once their behaviour is locked behind tests.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct NodeType {
     id: NodeTypeId,
     name: String,
@@ -30,6 +31,10 @@ pub struct NodeType {
     allowed_properties: IndexSet<PropertyId>,
     #[serde(default)]
     allowed_children: IndexSet<NodeTypeId>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    velocity_config: Option<NodeVelocityConfig>,
+    #[serde(default, skip_serializing_if = "IndexMap::is_empty")]
+    property_velocity_configs: IndexMap<PropertyId, PropertyVelocityConfig>,
 }
 
 impl NodeType {
@@ -46,6 +51,8 @@ impl NodeType {
             schema_version: NODE_TYPE_SCHEMA_VERSION,
             allowed_properties: IndexSet::new(),
             allowed_children: IndexSet::new(),
+            velocity_config: None,
+            property_velocity_configs: IndexMap::new(),
         }
     }
 
@@ -59,6 +66,8 @@ impl NodeType {
             schema_version: NODE_TYPE_SCHEMA_VERSION,
             allowed_properties: IndexSet::new(),
             allowed_children: IndexSet::new(),
+            velocity_config: None,
+            property_velocity_configs: IndexMap::new(),
         }
     }
 
@@ -121,6 +130,48 @@ impl NodeType {
     /// Iterate the allowed-child ids in insertion order.
     pub fn allowed_children(&self) -> impl Iterator<Item = NodeTypeId> + '_ {
         self.allowed_children.iter().copied()
+    }
+
+    /// Return a new `NodeType` carrying a node-level velocity config.
+    #[must_use]
+    pub fn with_velocity_config(mut self, config: NodeVelocityConfig) -> Self {
+        self.velocity_config = Some(config);
+        self
+    }
+
+    /// Return a new `NodeType` with a per-property velocity config attached.
+    ///
+    /// Re-attaching the same `pid` overwrites the previous config.
+    #[must_use]
+    pub fn with_property_velocity_config(
+        mut self,
+        pid: PropertyId,
+        config: PropertyVelocityConfig,
+    ) -> Self {
+        self.property_velocity_configs.insert(pid, config);
+        self
+    }
+
+    /// The node-level velocity config, if any.
+    ///
+    /// Mirrors Python `_get_node_level_velocity_config`.
+    #[must_use]
+    pub fn velocity_config(&self) -> Option<&NodeVelocityConfig> {
+        None
+    }
+
+    /// The velocity config attached to `pid`, if any.
+    #[must_use]
+    pub fn property_velocity_config(&self, _pid: PropertyId) -> Option<&PropertyVelocityConfig> {
+        None
+    }
+
+    /// `true` iff this node type carries any velocity configuration —
+    /// either a node-level config or at least one *enabled* per-property
+    /// config. Mirrors Python `_has_velocity_config`.
+    #[must_use]
+    pub fn has_velocity_config(&self) -> bool {
+        self.velocity_config.is_some() && self.property_velocity_configs.values().any(|c| c.enabled)
     }
 }
 
@@ -224,5 +275,98 @@ mod tests {
             .with_allowed_child(k2)
             .with_allowed_child(k3);
         assert_eq!(nt.allowed_children().collect::<Vec<_>>(), vec![k1, k2, k3]);
+    }
+
+    use std::collections::HashMap;
+
+    use crate::velocity::{
+        NodeVelocityConfig, PropertyVelocityConfig, PropertyVelocityMode, ScoreMode,
+    };
+
+    fn checkbox_config(enabled: bool) -> PropertyVelocityConfig {
+        PropertyVelocityConfig {
+            enabled,
+            mode: PropertyVelocityMode::Checkbox {
+                checked_score: 1.0,
+                unchecked_score: 0.0,
+            },
+        }
+    }
+
+    #[test]
+    fn new_node_type_has_no_velocity_config() {
+        let nt = NodeType::new("Task");
+        assert!(nt.velocity_config().is_none());
+        assert!(!nt.has_velocity_config());
+    }
+
+    #[test]
+    fn with_velocity_config_stores_node_level() {
+        let cfg = NodeVelocityConfig {
+            base_score: 5.0,
+            score_mode: ScoreMode::Inherit,
+        };
+        let nt = NodeType::new("Task").with_velocity_config(cfg.clone());
+        assert_eq!(nt.velocity_config(), Some(&cfg));
+    }
+
+    #[test]
+    fn has_velocity_config_true_for_node_level() {
+        let cfg = NodeVelocityConfig {
+            base_score: 1.0,
+            score_mode: ScoreMode::Fixed,
+        };
+        let nt = NodeType::new("Task").with_velocity_config(cfg);
+        assert!(nt.has_velocity_config());
+    }
+
+    #[test]
+    fn has_velocity_config_true_for_enabled_property() {
+        let pid = crate::ids::PropertyId::new();
+        let nt = NodeType::new("Task").with_property_velocity_config(pid, checkbox_config(true));
+        assert!(nt.has_velocity_config());
+    }
+
+    #[test]
+    fn has_velocity_config_false_for_disabled_property() {
+        let pid = crate::ids::PropertyId::new();
+        let nt = NodeType::new("Task").with_property_velocity_config(pid, checkbox_config(false));
+        assert!(!nt.has_velocity_config());
+    }
+
+    #[test]
+    fn with_property_velocity_config_stores() {
+        let pid = crate::ids::PropertyId::new();
+        let cfg = PropertyVelocityConfig {
+            enabled: true,
+            mode: PropertyVelocityMode::Multiplier {
+                multiplier_factor: 2.0,
+                penalty_mode: false,
+            },
+        };
+        let nt = NodeType::new("Task").with_property_velocity_config(pid, cfg.clone());
+        assert_eq!(nt.property_velocity_config(pid), Some(&cfg));
+    }
+
+    #[test]
+    fn velocity_config_roundtrips_through_json() {
+        let pid = crate::ids::PropertyId::new();
+        let nt = NodeType::new("Task")
+            .with_velocity_config(NodeVelocityConfig {
+                base_score: 3.0,
+                score_mode: ScoreMode::Inherit,
+            })
+            .with_property_velocity_config(
+                pid,
+                PropertyVelocityConfig {
+                    enabled: true,
+                    mode: PropertyVelocityMode::Status {
+                        status_scores: HashMap::new(),
+                    },
+                },
+            );
+        let json = serde_json::to_string(&nt).unwrap();
+        let parsed: NodeType = serde_json::from_str(&json).unwrap();
+        assert_eq!(nt, parsed);
     }
 }
