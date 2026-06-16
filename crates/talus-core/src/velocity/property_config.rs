@@ -31,15 +31,17 @@ fn default_multiplier_factor() -> f64 {
 /// flat dict. Every mode-specific field defaults, mirroring the permissive
 /// `.get(key, default)` access in the engine.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(tag = "mode")]
+#[serde(tag = "mode", rename_all = "lowercase")]
 pub enum PropertyVelocityMode {
     /// Select-type property scored by current option name.
+    #[serde(rename_all = "camelCase")]
     Status {
         /// Score per option name (`statusScores`). Missing keys score 0.
         #[serde(default)]
         status_scores: HashMap<String, f64>,
     },
     /// Boolean toggle scored checked / unchecked.
+    #[serde(rename_all = "camelCase")]
     Checkbox {
         /// Score when checked (`checkedScore`).
         #[serde(default)]
@@ -49,6 +51,7 @@ pub enum PropertyVelocityMode {
         unchecked_score: f64,
     },
     /// Date-typed property scored by an approaching / overdue ramp.
+    #[serde(rename_all = "camelCase")]
     Date {
         /// Days before the target during which approaching points accrue.
         #[serde(default)]
@@ -64,6 +67,7 @@ pub enum PropertyVelocityMode {
         max_score: Option<f64>,
     },
     /// Numeric property scored by a multiplier.
+    #[serde(rename_all = "camelCase")]
     Multiplier {
         /// Multiplier applied to the value (`multiplierFactor`, default 1).
         #[serde(default = "default_multiplier_factor")]
