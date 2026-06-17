@@ -12,7 +12,9 @@ use crate::node::Node;
 use crate::node_type::NodeType;
 use crate::property::Property;
 use crate::velocity::{
-    numerical_contribution, parse_currency_value, NumericalVelocityConfig, PropertyVelocityMode,
+    checkbox_contribution, date_velocity_contribution, numerical_contribution,
+    parse_currency_value, parse_date_value, CheckboxValue, CheckboxVelocityConfig,
+    DateVelocityConfig, NumericalVelocityConfig, PropertyVelocityMode,
 };
 
 /// Sum the multiplier (numerical) velocity contributions for a node.
@@ -81,8 +83,61 @@ pub fn numerical_score(node: &Node, node_type: &NodeType) -> f64 {
 ///   their option lists, so these configs currently contribute nothing.
 /// * `Multiplier` — handled by [`numerical_score`]; skipped here.
 #[must_use]
-pub fn status_score(_node: &Node, _node_type: &NodeType, _today: NaiveDate) -> f64 {
-    0.0
+pub fn status_score(node: &Node, node_type: &NodeType, today: NaiveDate) -> f64 {
+    let mut score = 0.0;
+    for (pid, config) in node_type.property_velocity_configs() {
+        if !config.enabled {
+            continue;
+        }
+        let value = node.properties().get(&pid);
+        match &config.mode {
+            PropertyVelocityMode::Checkbox {
+                checked_score,
+                unchecked_score,
+            } => {
+                let checkbox_value = match value {
+                    Some(Property::Boolean(b)) => CheckboxValue::Bool(*b),
+                    Some(Property::Text(text)) => CheckboxValue::Text(text.clone()),
+                    _ => CheckboxValue::Unset,
+                };
+                score += checkbox_contribution(
+                    &checkbox_value,
+                    &CheckboxVelocityConfig {
+                        checked_score: *checked_score,
+                        unchecked_score: *unchecked_score,
+                    },
+                );
+            }
+            PropertyVelocityMode::Date {
+                approaching_window,
+                approaching_per_day,
+                overdue_per_day,
+                max_score,
+            } => {
+                let target = match value {
+                    Some(Property::DateIso { year, month, day }) => {
+                        NaiveDate::from_ymd_opt(*year, u32::from(*month), u32::from(*day))
+                    }
+                    Some(Property::Text(text)) => parse_date_value(text),
+                    _ => None,
+                };
+                if let Some(target) = target {
+                    let days_until = i32::try_from((target - today).num_days()).unwrap_or(i32::MAX);
+                    score += date_velocity_contribution(
+                        days_until,
+                        &DateVelocityConfig {
+                            approaching_window: *approaching_window,
+                            approaching_per_day: *approaching_per_day,
+                            overdue_per_day: *overdue_per_day,
+                            max_score: *max_score,
+                        },
+                    );
+                }
+            }
+            PropertyVelocityMode::Status { .. } | PropertyVelocityMode::Multiplier { .. } => {}
+        }
+    }
+    score
 }
 
 #[cfg(test)]
