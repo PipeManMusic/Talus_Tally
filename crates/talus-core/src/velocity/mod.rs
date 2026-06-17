@@ -42,7 +42,7 @@ pub use config::NodeVelocityConfig;
 pub use currency::parse_currency_value;
 pub use date_parse::parse_date_value;
 pub use date_score::{date_velocity_contribution, DateVelocityConfig};
-pub use dispatch::numerical_score;
+pub use dispatch::{numerical_score, status_score};
 pub use mode::{ScoreMode, VelocityMode};
 pub use numerical_score::{numerical_contribution, NumericalVelocityConfig};
 pub use property_config::{PropertyVelocityConfig, PropertyVelocityMode};

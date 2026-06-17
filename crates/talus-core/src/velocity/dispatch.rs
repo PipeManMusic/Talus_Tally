@@ -6,6 +6,8 @@
 //! `backend/core/velocity_engine.py` that fan out to the per-property leaf
 //! functions (`numerical_contribution`, etc.).
 
+use chrono::NaiveDate;
+
 use crate::node::Node;
 use crate::node_type::NodeType;
 use crate::property::Property;
@@ -59,6 +61,28 @@ pub fn numerical_score(node: &Node, node_type: &NodeType) -> f64 {
         );
     }
     score
+}
+
+/// Sum the status / checkbox / date velocity contributions for a node.
+///
+/// Ports `_calculate_status_score`, which bundles three velocity modes into
+/// one accumulator. `today` is supplied by the caller so this stays
+/// I/O-free (the engine never reads the clock itself).
+///
+/// * `Checkbox` — the node value is read as a [`CheckboxValue`]
+///   ([`Property::Boolean`] → `Bool`, [`Property::Text`] → `Text`, absent or
+///   any other typed value → `Unset`) and scored via
+///   [`checkbox_contribution`].
+/// * `Date` — the node value is resolved to a date ([`Property::DateIso`]
+///   directly, [`Property::Text`] via [`parse_date_value`], anything else →
+///   no contribution), then `days_until = target - today` feeds
+///   [`date_velocity_contribution`].
+/// * `Status` — select-option scoring is deferred until node types carry
+///   their option lists, so these configs currently contribute nothing.
+/// * `Multiplier` — handled by [`numerical_score`]; skipped here.
+#[must_use]
+pub fn status_score(_node: &Node, _node_type: &NodeType, _today: NaiveDate) -> f64 {
+    0.0
 }
 
 #[cfg(test)]
@@ -187,5 +211,181 @@ mod tests {
             .with_property(pid2, Property::Number(4.0));
         // 3*2 + 4*10 = 46
         approx(numerical_score(&node, &nt), 46.0);
+    }
+
+    // --- status_score (checkbox + date branches) ---
+
+    use chrono::NaiveDate;
+
+    fn checkbox(enabled: bool, checked: f64, unchecked: f64) -> PropertyVelocityConfig {
+        PropertyVelocityConfig {
+            enabled,
+            mode: PropertyVelocityMode::Checkbox {
+                checked_score: checked,
+                unchecked_score: unchecked,
+            },
+        }
+    }
+
+    fn date_cfg(
+        enabled: bool,
+        window: u32,
+        per_day: f64,
+        overdue_per_day: f64,
+        max_score: Option<f64>,
+    ) -> PropertyVelocityConfig {
+        PropertyVelocityConfig {
+            enabled,
+            mode: PropertyVelocityMode::Date {
+                approaching_window: window,
+                approaching_per_day: per_day,
+                overdue_per_day,
+                max_score,
+            },
+        }
+    }
+
+    fn ymd(y: i32, m: u32, d: u32) -> NaiveDate {
+        NaiveDate::from_ymd_opt(y, m, d).unwrap()
+    }
+
+    #[test]
+    fn status_score_no_configs_is_zero() {
+        let nt = NodeType::new("Task");
+        let node = Node::new(nt.id(), "n");
+        approx(status_score(&node, &nt, ymd(2026, 6, 17)), 0.0);
+    }
+
+    #[test]
+    fn checkbox_checked_bool_scores_checked() {
+        let pid = PropertyId::new();
+        let nt = NodeType::new("Task").with_property_velocity_config(pid, checkbox(true, 5.0, 1.0));
+        let node = Node::new(nt.id(), "n").with_property(pid, Property::Boolean(true));
+        approx(status_score(&node, &nt, ymd(2026, 6, 17)), 5.0);
+    }
+
+    #[test]
+    fn checkbox_unchecked_bool_scores_unchecked() {
+        let pid = PropertyId::new();
+        let nt = NodeType::new("Task").with_property_velocity_config(pid, checkbox(true, 5.0, 1.0));
+        let node = Node::new(nt.id(), "n").with_property(pid, Property::Boolean(false));
+        approx(status_score(&node, &nt, ymd(2026, 6, 17)), 1.0);
+    }
+
+    #[test]
+    fn checkbox_missing_value_scores_unchecked() {
+        let pid = PropertyId::new();
+        let nt = NodeType::new("Task").with_property_velocity_config(pid, checkbox(true, 5.0, 2.0));
+        let node = Node::new(nt.id(), "n");
+        approx(status_score(&node, &nt, ymd(2026, 6, 17)), 2.0);
+    }
+
+    #[test]
+    fn checkbox_text_true_scores_checked() {
+        let pid = PropertyId::new();
+        let nt = NodeType::new("Task").with_property_velocity_config(pid, checkbox(true, 7.0, 0.0));
+        let node = Node::new(nt.id(), "n").with_property(pid, Property::Text(" TRUE ".to_string()));
+        approx(status_score(&node, &nt, ymd(2026, 6, 17)), 7.0);
+    }
+
+    #[test]
+    fn checkbox_disabled_is_skipped() {
+        let pid = PropertyId::new();
+        let nt =
+            NodeType::new("Task").with_property_velocity_config(pid, checkbox(false, 5.0, 1.0));
+        let node = Node::new(nt.id(), "n").with_property(pid, Property::Boolean(true));
+        approx(status_score(&node, &nt, ymd(2026, 6, 17)), 0.0);
+    }
+
+    #[test]
+    fn date_iso_overdue_accrues() {
+        let pid = PropertyId::new();
+        let nt = NodeType::new("Task")
+            .with_property_velocity_config(pid, date_cfg(true, 0, 0.0, 3.0, None));
+        // target 2 days before today => days_until = -2 => 2 * 3 = 6
+        let node = Node::new(nt.id(), "n").with_property(
+            pid,
+            Property::DateIso {
+                year: 2026,
+                month: 6,
+                day: 15,
+            },
+        );
+        approx(status_score(&node, &nt, ymd(2026, 6, 17)), 6.0);
+    }
+
+    #[test]
+    fn date_iso_approaching_ramps() {
+        let pid = PropertyId::new();
+        let nt = NodeType::new("Task")
+            .with_property_velocity_config(pid, date_cfg(true, 5, 2.0, 0.0, None));
+        // target 3 days after today => days_until = 3 => (5 - 3) * 2 = 4
+        let node = Node::new(nt.id(), "n").with_property(
+            pid,
+            Property::DateIso {
+                year: 2026,
+                month: 6,
+                day: 20,
+            },
+        );
+        approx(status_score(&node, &nt, ymd(2026, 6, 17)), 4.0);
+    }
+
+    #[test]
+    fn date_text_value_is_parsed() {
+        let pid = PropertyId::new();
+        let nt = NodeType::new("Task")
+            .with_property_velocity_config(pid, date_cfg(true, 0, 0.0, 1.0, None));
+        // "2026-06-12" => 5 days before 2026-06-17 => 5 * 1 = 5
+        let node =
+            Node::new(nt.id(), "n").with_property(pid, Property::Text("2026-06-12".to_string()));
+        approx(status_score(&node, &nt, ymd(2026, 6, 17)), 5.0);
+    }
+
+    #[test]
+    fn date_unparseable_text_contributes_zero() {
+        let pid = PropertyId::new();
+        let nt = NodeType::new("Task")
+            .with_property_velocity_config(pid, date_cfg(true, 0, 0.0, 1.0, None));
+        let node = Node::new(nt.id(), "n").with_property(pid, Property::Text("soon".to_string()));
+        approx(status_score(&node, &nt, ymd(2026, 6, 17)), 0.0);
+    }
+
+    #[test]
+    fn date_missing_value_contributes_zero() {
+        let pid = PropertyId::new();
+        let nt = NodeType::new("Task")
+            .with_property_velocity_config(pid, date_cfg(true, 0, 0.0, 1.0, None));
+        let node = Node::new(nt.id(), "n");
+        approx(status_score(&node, &nt, ymd(2026, 6, 17)), 0.0);
+    }
+
+    #[test]
+    fn checkbox_and_date_accumulate() {
+        let pid_cb = PropertyId::new();
+        let pid_dt = PropertyId::new();
+        let nt = NodeType::new("Task")
+            .with_property_velocity_config(pid_cb, checkbox(true, 10.0, 0.0))
+            .with_property_velocity_config(pid_dt, date_cfg(true, 0, 0.0, 2.0, None));
+        let node = Node::new(nt.id(), "n")
+            .with_property(pid_cb, Property::Boolean(true))
+            .with_property(
+                pid_dt,
+                Property::DateIso {
+                    year: 2026,
+                    month: 6,
+                    day: 16,
+                },
+            );
+        // 10 (checked) + 1 day overdue * 2 = 12
+        approx(status_score(&node, &nt, ymd(2026, 6, 17)), 12.0);
+    }
+
+    #[test]
+    fn multiplier_mode_skipped_by_status_score() {
+        let pid = PropertyId::new();
+        let nt = NodeType::new("Task").with_property_velocity_config(pid, mult(true, 2.0, false));
+        let node = Node::new(nt.id(), "n").with_property(pid, Property::Number(5.0));
+        approx(status_score(&node, &nt, ymd(2026, 6, 17)), 0.0);
     }
 }
