@@ -40,8 +40,8 @@ fn save_mid_stream_then_load_reconstructs_same_state() {
 
         // Pre-snapshot commands.
         for cmd in [
-            Command::RegisterNodeType(leaf_kind),
-            Command::RegisterNodeType(parent_kind),
+            Command::RegisterNodeType(Box::new(leaf_kind)),
+            Command::RegisterNodeType(Box::new(parent_kind)),
             Command::InsertNode(parent_node),
             Command::InsertNode(pre_leaf),
             Command::SetParent {
@@ -117,7 +117,8 @@ fn repeated_save_load_cycles_preserve_state() {
         let log = EventLog::open(&log_path).expect("open log");
         let mut p = Project::new("Cycles", template);
         project_id = p.id();
-        apply_command_logged(&mut p, Command::RegisterNodeType(kind), &log).expect("register");
+        apply_command_logged(&mut p, Command::RegisterNodeType(Box::new(kind)), &log)
+            .expect("register");
         save(&p, &store, &log).expect("save 1");
     }
 

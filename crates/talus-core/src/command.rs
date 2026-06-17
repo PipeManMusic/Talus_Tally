@@ -20,7 +20,11 @@ use crate::property::Property;
 #[serde(tag = "type", content = "data")]
 pub enum Command {
     /// Register a new [`NodeType`] in the project's registry.
-    RegisterNodeType(NodeType),
+    ///
+    /// Boxed because a [`NodeType`] is much larger than the other
+    /// command payloads; keeping it inline would bloat every `Command`
+    /// (clippy `large_enum_variant`).
+    RegisterNodeType(Box<NodeType>),
     /// Insert a new [`Node`] into the project's graph. The node's
     /// kind must already be registered, and every property on the
     /// node must be in the kind's `allowed_properties`.
@@ -56,7 +60,10 @@ pub enum Command {
 #[serde(tag = "type", content = "data")]
 pub enum Event {
     /// A new [`NodeType`] was added to the registry.
-    NodeTypeRegistered(NodeType),
+    ///
+    /// Boxed for the same size reason as
+    /// [`Command::RegisterNodeType`].
+    NodeTypeRegistered(Box<NodeType>),
     /// A new [`Node`] was inserted into the graph.
     NodeInserted(Node),
     /// `child`'s parent was set to `parent`.
@@ -94,7 +101,7 @@ pub fn apply_command(state: &mut Project, cmd: Command) -> Result<Event> {
     match cmd {
         Command::RegisterNodeType(nt) => {
             let nt_clone = nt.clone();
-            state.register_node_type(nt)?;
+            state.register_node_type(*nt)?;
             Ok(Event::NodeTypeRegistered(nt_clone))
         }
         Command::InsertNode(node) => {
@@ -136,8 +143,8 @@ mod tests {
         let nt = NodeType::new("Task");
         let nt_id = nt.id();
         let nt_clone = nt.clone();
-        let ev = apply_command(&mut p, Command::RegisterNodeType(nt)).unwrap();
-        assert_eq!(ev, Event::NodeTypeRegistered(nt_clone));
+        let ev = apply_command(&mut p, Command::RegisterNodeType(Box::new(nt))).unwrap();
+        assert_eq!(ev, Event::NodeTypeRegistered(Box::new(nt_clone)));
         assert!(p.get_node_type(nt_id).is_some());
     }
 
@@ -146,8 +153,8 @@ mod tests {
         let mut p = Project::new("P", TemplateId::new());
         let nt = NodeType::new("Task");
         let nt_id = nt.id();
-        apply_command(&mut p, Command::RegisterNodeType(nt.clone())).unwrap();
-        let err = apply_command(&mut p, Command::RegisterNodeType(nt))
+        apply_command(&mut p, Command::RegisterNodeType(Box::new(nt.clone()))).unwrap();
+        let err = apply_command(&mut p, Command::RegisterNodeType(Box::new(nt)))
             .expect_err("duplicate registration");
         assert!(matches!(err, Error::InvariantViolation(_)), "got {err:?}");
         assert_eq!(p.node_types().count(), 1);
@@ -159,7 +166,7 @@ mod tests {
         let mut p = Project::new("P", TemplateId::new());
         let nt = NodeType::new("Task");
         let kind = nt.id();
-        apply_command(&mut p, Command::RegisterNodeType(nt)).unwrap();
+        apply_command(&mut p, Command::RegisterNodeType(Box::new(nt))).unwrap();
 
         let node = crate::node::Node::new(kind, "n");
         let nid = node.id();
@@ -187,8 +194,8 @@ mod tests {
         let child_kind_id = child_kind.id();
         let parent_kind = NodeType::new("Section").with_allowed_child(child_kind_id);
         let parent_kind_id = parent_kind.id();
-        apply_command(&mut p, Command::RegisterNodeType(child_kind)).unwrap();
-        apply_command(&mut p, Command::RegisterNodeType(parent_kind)).unwrap();
+        apply_command(&mut p, Command::RegisterNodeType(Box::new(child_kind))).unwrap();
+        apply_command(&mut p, Command::RegisterNodeType(Box::new(parent_kind))).unwrap();
         let parent_node = crate::node::Node::new(parent_kind_id, "Root");
         let parent_id = parent_node.id();
         let child_node = crate::node::Node::new(child_kind_id, "Leaf");
@@ -244,7 +251,7 @@ mod tests {
         let pid = crate::ids::PropertyId::new();
         let nt = NodeType::new("Task").with_allowed_property(pid);
         let kind = nt.id();
-        apply_command(&mut p, Command::RegisterNodeType(nt)).unwrap();
+        apply_command(&mut p, Command::RegisterNodeType(Box::new(nt))).unwrap();
         let node = crate::node::Node::new(kind, "n");
         let nid = node.id();
         apply_command(&mut p, Command::InsertNode(node)).unwrap();
@@ -277,7 +284,7 @@ mod tests {
         let mut p = Project::new("P", TemplateId::new());
         let nt = NodeType::new("Task"); // no allowed_properties
         let kind = nt.id();
-        apply_command(&mut p, Command::RegisterNodeType(nt)).unwrap();
+        apply_command(&mut p, Command::RegisterNodeType(Box::new(nt))).unwrap();
         let node = crate::node::Node::new(kind, "n");
         let nid = node.id();
         apply_command(&mut p, Command::InsertNode(node)).unwrap();
@@ -345,7 +352,7 @@ mod tests {
         let node = crate::node::Node::with_id_for_test(node_id, kind_id, "n");
 
         let commands: Vec<Command> = vec![
-            Command::RegisterNodeType(nt),
+            Command::RegisterNodeType(Box::new(nt)),
             Command::InsertNode(node),
             Command::SetParent {
                 child: node_id,
@@ -380,7 +387,7 @@ mod tests {
         let node = crate::node::Node::with_id_for_test(node_id, kind_id, "n");
 
         let events: Vec<Event> = vec![
-            Event::NodeTypeRegistered(nt),
+            Event::NodeTypeRegistered(Box::new(nt)),
             Event::NodeInserted(node),
             Event::ParentChanged {
                 child: child_id,
@@ -403,8 +410,8 @@ mod tests {
         let mut p = Project::new("P", TemplateId::new());
         let nt = NodeType::new("Task");
         let nt_clone = nt.clone();
-        let ev = apply_command(&mut p, Command::RegisterNodeType(nt)).unwrap();
-        assert_eq!(ev, Event::NodeTypeRegistered(nt_clone));
+        let ev = apply_command(&mut p, Command::RegisterNodeType(Box::new(nt))).unwrap();
+        assert_eq!(ev, Event::NodeTypeRegistered(Box::new(nt_clone)));
     }
 
     #[test]
@@ -412,7 +419,7 @@ mod tests {
         let mut p = Project::new("P", TemplateId::new());
         let nt = NodeType::new("Task");
         let kind = nt.id();
-        apply_command(&mut p, Command::RegisterNodeType(nt)).unwrap();
+        apply_command(&mut p, Command::RegisterNodeType(Box::new(nt))).unwrap();
         let node = crate::node::Node::new(kind, "n");
         let node_clone = node.clone();
         let ev = apply_command(&mut p, Command::InsertNode(node)).unwrap();
@@ -425,7 +432,7 @@ mod tests {
         let pid = crate::ids::PropertyId::new();
         let nt = NodeType::new("Task").with_allowed_property(pid);
         let kind = nt.id();
-        apply_command(&mut p, Command::RegisterNodeType(nt)).unwrap();
+        apply_command(&mut p, Command::RegisterNodeType(Box::new(nt))).unwrap();
         let node = crate::node::Node::new(kind, "n");
         let nid = node.id();
         apply_command(&mut p, Command::InsertNode(node)).unwrap();

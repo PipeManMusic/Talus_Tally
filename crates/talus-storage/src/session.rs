@@ -62,7 +62,7 @@ mod tests {
         let mut project = new_project("p");
         let nt = NodeType::new("widget");
         let nt_id = nt.id();
-        apply_command(&mut project, Command::RegisterNodeType(nt)).unwrap();
+        apply_command(&mut project, Command::RegisterNodeType(Box::new(nt))).unwrap();
         let node = Node::new(nt_id, "n");
         let ev = apply_command(&mut project, Command::InsertNode(node)).unwrap();
         log.append(&ev).unwrap();
@@ -79,7 +79,7 @@ mod tests {
         let (store, log, _dir) = fixture();
         let mut project = new_project("p");
         let nt = NodeType::new("widget");
-        apply_command(&mut project, Command::RegisterNodeType(nt)).unwrap();
+        apply_command(&mut project, Command::RegisterNodeType(Box::new(nt))).unwrap();
         save(&project, &store, &log).unwrap();
 
         let loaded = load(project.id(), &store, &log).unwrap();
@@ -94,7 +94,7 @@ mod tests {
         let mut project = new_project("p");
         let nt = NodeType::new("widget");
         let nt_id = nt.id();
-        apply_command(&mut project, Command::RegisterNodeType(nt)).unwrap();
+        apply_command(&mut project, Command::RegisterNodeType(Box::new(nt))).unwrap();
         save(&project, &store, &log).unwrap();
 
         // Mutate after snapshot — these events must replay on load.

@@ -30,8 +30,8 @@ fn project_state_survives_log_close_reopen_and_replay() {
         let log = EventLog::open(&log_path).expect("open log");
         let mut original = Project::new("Durable", template);
         for cmd in [
-            Command::RegisterNodeType(child_kind),
-            Command::RegisterNodeType(parent_kind),
+            Command::RegisterNodeType(Box::new(child_kind)),
+            Command::RegisterNodeType(Box::new(parent_kind)),
             Command::InsertNode(parent_node),
             Command::InsertNode(child_node),
             Command::SetParent {

@@ -71,7 +71,7 @@ proptest! {
                     let id = nt.id();
                     if apply_command_logged(
                         &mut project,
-                        Command::RegisterNodeType(nt),
+                        Command::RegisterNodeType(Box::new(nt)),
                         &log,
                     ).is_ok() {
                         kinds.push(id);

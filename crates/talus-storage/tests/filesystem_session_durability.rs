@@ -40,8 +40,8 @@ fn filesystem_store_plus_log_survives_full_handle_drop() {
         project_id = live.id();
 
         for cmd in [
-            Command::RegisterNodeType(leaf_kind),
-            Command::RegisterNodeType(parent_kind),
+            Command::RegisterNodeType(Box::new(leaf_kind)),
+            Command::RegisterNodeType(Box::new(parent_kind)),
             Command::InsertNode(parent_node),
             Command::InsertNode(pre_leaf),
             Command::SetParent {

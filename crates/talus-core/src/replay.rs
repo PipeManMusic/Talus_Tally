@@ -18,7 +18,7 @@ pub fn apply_event(state: &mut Project, event: Event) -> Result<()> {
     use crate::error::Error;
 
     match event {
-        Event::NodeTypeRegistered(nt) => state.register_node_type(nt),
+        Event::NodeTypeRegistered(nt) => state.register_node_type(*nt),
         Event::NodeInserted(node) => state.insert_node(node),
         Event::ParentChanged { child, parent } => state.set_parent(child, parent),
         Event::PropertyChanged { node, pid, value } => state.set_property(node, pid, value),
@@ -92,8 +92,8 @@ mod tests {
         let events = drive(
             &mut original,
             vec![
-                Command::RegisterNodeType(child_kind),
-                Command::RegisterNodeType(parent_kind),
+                Command::RegisterNodeType(Box::new(child_kind)),
+                Command::RegisterNodeType(Box::new(parent_kind)),
                 Command::InsertNode(parent_node),
                 Command::InsertNode(child_node),
                 Command::SetParent {
@@ -124,7 +124,7 @@ mod tests {
         let events = drive(
             &mut original,
             vec![
-                Command::RegisterNodeType(nt),
+                Command::RegisterNodeType(Box::new(nt)),
                 Command::InsertNode(node),
                 Command::SetProperty {
                     node: nid,
@@ -165,8 +165,8 @@ mod tests {
         let events = drive(
             &mut original,
             vec![
-                Command::RegisterNodeType(child_kind),
-                Command::RegisterNodeType(parent_kind),
+                Command::RegisterNodeType(Box::new(child_kind)),
+                Command::RegisterNodeType(Box::new(parent_kind)),
                 Command::InsertNode(parent_node),
                 Command::InsertNode(child_node),
                 Command::SetParent {

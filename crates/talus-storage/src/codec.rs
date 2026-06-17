@@ -101,7 +101,7 @@ mod tests {
 
     #[test]
     fn encode_then_decode_command_round_trips() {
-        let cmd = Command::RegisterNodeType(NodeType::new("Equipment"));
+        let cmd = Command::RegisterNodeType(Box::new(NodeType::new("Equipment")));
         let bytes = encode_command(&cmd).unwrap();
         let parsed = decode_command(&bytes).unwrap();
         assert_eq!(parsed, cmd);

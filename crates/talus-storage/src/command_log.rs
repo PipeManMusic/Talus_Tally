@@ -43,9 +43,10 @@ mod tests {
         let (mut project, log, _dir) = fixture();
         let nt = NodeType::new("Equipment");
         let nt_clone = nt.clone();
-        let event = apply_command_logged(&mut project, Command::RegisterNodeType(nt), &log)
-            .expect("apply ok");
-        assert_eq!(event, Event::NodeTypeRegistered(nt_clone));
+        let event =
+            apply_command_logged(&mut project, Command::RegisterNodeType(Box::new(nt)), &log)
+                .expect("apply ok");
+        assert_eq!(event, Event::NodeTypeRegistered(Box::new(nt_clone)));
         assert_eq!(log.read_all().unwrap(), vec![event]);
     }
 
@@ -54,9 +55,14 @@ mod tests {
         let (mut project, log, _dir) = fixture();
         let nt = NodeType::new("Equipment");
         // First registration succeeds...
-        apply_command_logged(&mut project, Command::RegisterNodeType(nt.clone()), &log).unwrap();
+        apply_command_logged(
+            &mut project,
+            Command::RegisterNodeType(Box::new(nt.clone())),
+            &log,
+        )
+        .unwrap();
         // ...duplicate registration is rejected.
-        let err = apply_command_logged(&mut project, Command::RegisterNodeType(nt), &log)
+        let err = apply_command_logged(&mut project, Command::RegisterNodeType(Box::new(nt)), &log)
             .expect_err("duplicate should fail");
         let _ = err;
         // Only the first event made it to the log.
@@ -69,13 +75,13 @@ mod tests {
         let a = NodeType::new("A");
         let b = NodeType::new("B");
         let (a_clone, b_clone) = (a.clone(), b.clone());
-        apply_command_logged(&mut project, Command::RegisterNodeType(a), &log).unwrap();
-        apply_command_logged(&mut project, Command::RegisterNodeType(b), &log).unwrap();
+        apply_command_logged(&mut project, Command::RegisterNodeType(Box::new(a)), &log).unwrap();
+        apply_command_logged(&mut project, Command::RegisterNodeType(Box::new(b)), &log).unwrap();
         assert_eq!(
             log.read_all().unwrap(),
             vec![
-                Event::NodeTypeRegistered(a_clone),
-                Event::NodeTypeRegistered(b_clone),
+                Event::NodeTypeRegistered(Box::new(a_clone)),
+                Event::NodeTypeRegistered(Box::new(b_clone)),
             ]
         );
     }
