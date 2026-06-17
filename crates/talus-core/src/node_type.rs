@@ -201,8 +201,10 @@ impl NodeType {
     /// The select-option list attached to `pid`, or an empty slice when the
     /// property has none.
     #[must_use]
-    pub fn property_select_options(&self, _pid: PropertyId) -> &[SelectOption] {
-        &[]
+    pub fn property_select_options(&self, pid: PropertyId) -> &[SelectOption] {
+        self.property_select_options
+            .get(&pid)
+            .map_or(&[], Vec::as_slice)
     }
 
     /// `true` iff this node type carries any velocity configuration —
