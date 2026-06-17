@@ -443,4 +443,90 @@ mod tests {
         let node = Node::new(nt.id(), "n").with_property(pid, Property::Number(5.0));
         approx(status_score(&node, &nt, ymd(2026, 6, 17)), 0.0);
     }
+
+    // --- status_score (status / select sub-mode) ---
+
+    use crate::velocity::SelectOption;
+
+    fn status_cfg(enabled: bool, scores: &[(&str, f64)]) -> PropertyVelocityConfig {
+        PropertyVelocityConfig {
+            enabled,
+            mode: PropertyVelocityMode::Status {
+                status_scores: scores.iter().map(|(k, v)| ((*k).to_string(), *v)).collect(),
+            },
+        }
+    }
+
+    fn select_opt(id: &str, name: &str) -> SelectOption {
+        SelectOption {
+            id: id.to_string(),
+            name: name.to_string(),
+        }
+    }
+
+    #[test]
+    fn status_select_token_resolves_id_to_name_and_scores() {
+        let pid = PropertyId::new();
+        let nt = NodeType::new("Task")
+            .with_property_velocity_config(pid, status_cfg(true, &[("Done", 5.0)]))
+            .with_property_select_options(pid, vec![select_opt("opt-done", "Done")]);
+        let node =
+            Node::new(nt.id(), "n").with_property(pid, Property::select_token("opt-done").unwrap());
+        approx(status_score(&node, &nt, ymd(2026, 6, 17)), 5.0);
+    }
+
+    #[test]
+    fn status_plain_text_name_without_options_scores() {
+        let pid = PropertyId::new();
+        let nt = NodeType::new("Task")
+            .with_property_velocity_config(pid, status_cfg(true, &[("Done", 7.0)]));
+        let node = Node::new(nt.id(), "n").with_property(pid, Property::Text("Done".to_string()));
+        approx(status_score(&node, &nt, ymd(2026, 6, 17)), 7.0);
+    }
+
+    #[test]
+    fn status_unknown_value_scores_zero() {
+        let pid = PropertyId::new();
+        let nt = NodeType::new("Task")
+            .with_property_velocity_config(pid, status_cfg(true, &[("Done", 5.0)]))
+            .with_property_select_options(pid, vec![select_opt("opt-done", "Done")]);
+        let node = Node::new(nt.id(), "n")
+            .with_property(pid, Property::select_token("opt-missing").unwrap());
+        approx(status_score(&node, &nt, ymd(2026, 6, 17)), 0.0);
+    }
+
+    #[test]
+    fn status_missing_value_scores_zero() {
+        let pid = PropertyId::new();
+        let nt = NodeType::new("Task")
+            .with_property_velocity_config(pid, status_cfg(true, &[("Done", 5.0)]));
+        let node = Node::new(nt.id(), "n");
+        approx(status_score(&node, &nt, ymd(2026, 6, 17)), 0.0);
+    }
+
+    #[test]
+    fn status_disabled_is_skipped() {
+        let pid = PropertyId::new();
+        let nt = NodeType::new("Task")
+            .with_property_velocity_config(pid, status_cfg(false, &[("Done", 5.0)]))
+            .with_property_select_options(pid, vec![select_opt("opt-done", "Done")]);
+        let node =
+            Node::new(nt.id(), "n").with_property(pid, Property::select_token("opt-done").unwrap());
+        approx(status_score(&node, &nt, ymd(2026, 6, 17)), 0.0);
+    }
+
+    #[test]
+    fn status_accumulates_with_checkbox() {
+        let pid_status = PropertyId::new();
+        let pid_cb = PropertyId::new();
+        let nt = NodeType::new("Task")
+            .with_property_velocity_config(pid_status, status_cfg(true, &[("Done", 4.0)]))
+            .with_property_select_options(pid_status, vec![select_opt("opt-done", "Done")])
+            .with_property_velocity_config(pid_cb, checkbox(true, 10.0, 0.0));
+        let node = Node::new(nt.id(), "n")
+            .with_property(pid_status, Property::select_token("opt-done").unwrap())
+            .with_property(pid_cb, Property::Boolean(true));
+        // 4 (status) + 10 (checkbox) = 14
+        approx(status_score(&node, &nt, ymd(2026, 6, 17)), 14.0);
+    }
 }
