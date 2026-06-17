@@ -17,9 +17,11 @@
 use std::collections::HashMap;
 use std::hash::BuildHasher;
 
+use serde::{Deserialize, Serialize};
+
 /// A select-property option, used to resolve a UUID-backed stored value to
 /// the option name that `statusScores` is keyed by.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SelectOption {
     /// The option's stable identifier (often a UUID).
     pub id: String,

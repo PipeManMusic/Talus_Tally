@@ -12,7 +12,7 @@ use indexmap::{IndexMap, IndexSet};
 use serde::{Deserialize, Serialize};
 
 use crate::ids::{NodeTypeId, PropertyId};
-use crate::velocity::{NodeVelocityConfig, PropertyVelocityConfig};
+use crate::velocity::{NodeVelocityConfig, PropertyVelocityConfig, SelectOption};
 
 /// Schema version for serialized `NodeType`. Bump on any breaking shape
 /// change so the migration layer can route old payloads correctly.
@@ -35,6 +35,8 @@ pub struct NodeType {
     velocity_config: Option<NodeVelocityConfig>,
     #[serde(default, skip_serializing_if = "IndexMap::is_empty")]
     property_velocity_configs: IndexMap<PropertyId, PropertyVelocityConfig>,
+    #[serde(default, skip_serializing_if = "IndexMap::is_empty")]
+    property_select_options: IndexMap<PropertyId, Vec<SelectOption>>,
 }
 
 impl NodeType {
@@ -53,6 +55,7 @@ impl NodeType {
             allowed_children: IndexSet::new(),
             velocity_config: None,
             property_velocity_configs: IndexMap::new(),
+            property_select_options: IndexMap::new(),
         }
     }
 
@@ -68,6 +71,7 @@ impl NodeType {
             allowed_children: IndexSet::new(),
             velocity_config: None,
             property_velocity_configs: IndexMap::new(),
+            property_select_options: IndexMap::new(),
         }
     }
 
@@ -176,6 +180,29 @@ impl NodeType {
         self.property_velocity_configs
             .iter()
             .map(|(pid, cfg)| (*pid, cfg))
+    }
+
+    /// Return a new `NodeType` with `pid`'s select-option list attached.
+    ///
+    /// These mirror a select property's `options` array in the Python
+    /// schema and let the velocity status mode resolve a stored option id
+    /// to the option name that `statusScores` is keyed by. Re-attaching the
+    /// same `pid` overwrites the previous list.
+    #[must_use]
+    pub fn with_property_select_options(
+        mut self,
+        pid: PropertyId,
+        options: Vec<SelectOption>,
+    ) -> Self {
+        self.property_select_options.insert(pid, options);
+        self
+    }
+
+    /// The select-option list attached to `pid`, or an empty slice when the
+    /// property has none.
+    #[must_use]
+    pub fn property_select_options(&self, _pid: PropertyId) -> &[SelectOption] {
+        &[]
     }
 
     /// `true` iff this node type carries any velocity configuration —
@@ -377,6 +404,58 @@ mod tests {
                     },
                 },
             );
+        let json = serde_json::to_string(&nt).unwrap();
+        let parsed: NodeType = serde_json::from_str(&json).unwrap();
+        assert_eq!(nt, parsed);
+    }
+
+    fn opt(id: &str, name: &str) -> SelectOption {
+        SelectOption {
+            id: id.to_string(),
+            name: name.to_string(),
+        }
+    }
+
+    #[test]
+    fn new_node_type_has_no_select_options() {
+        let nt = NodeType::new("Task");
+        let pid = crate::ids::PropertyId::new();
+        assert!(nt.property_select_options(pid).is_empty());
+    }
+
+    #[test]
+    fn with_property_select_options_stores_list() {
+        let pid = crate::ids::PropertyId::new();
+        let options = vec![opt("id_a", "Alpha"), opt("id_b", "Beta")];
+        let nt = NodeType::new("Task").with_property_select_options(pid, options.clone());
+        assert_eq!(nt.property_select_options(pid), options.as_slice());
+    }
+
+    #[test]
+    fn property_select_options_empty_for_unknown_pid() {
+        let pid = crate::ids::PropertyId::new();
+        let other = crate::ids::PropertyId::new();
+        let nt = NodeType::new("Task").with_property_select_options(pid, vec![opt("x", "X")]);
+        assert!(nt.property_select_options(other).is_empty());
+    }
+
+    #[test]
+    fn with_property_select_options_overwrites_same_pid() {
+        let pid = crate::ids::PropertyId::new();
+        let nt = NodeType::new("Task")
+            .with_property_select_options(pid, vec![opt("old", "Old")])
+            .with_property_select_options(pid, vec![opt("new", "New")]);
+        assert_eq!(
+            nt.property_select_options(pid),
+            [opt("new", "New")].as_slice()
+        );
+    }
+
+    #[test]
+    fn select_options_roundtrip_through_json() {
+        let pid = crate::ids::PropertyId::new();
+        let nt = NodeType::new("Task")
+            .with_property_select_options(pid, vec![opt("id_a", "Alpha"), opt("id_b", "Beta")]);
         let json = serde_json::to_string(&nt).unwrap();
         let parsed: NodeType = serde_json::from_str(&json).unwrap();
         assert_eq!(nt, parsed);
