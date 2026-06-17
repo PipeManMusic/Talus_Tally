@@ -13,8 +13,8 @@ use crate::node_type::NodeType;
 use crate::property::Property;
 use crate::velocity::{
     checkbox_contribution, date_velocity_contribution, numerical_contribution,
-    parse_currency_value, parse_date_value, CheckboxValue, CheckboxVelocityConfig,
-    DateVelocityConfig, NumericalVelocityConfig, PropertyVelocityMode,
+    parse_currency_value, parse_date_value, status_contribution, CheckboxValue,
+    CheckboxVelocityConfig, DateVelocityConfig, NumericalVelocityConfig, PropertyVelocityMode,
 };
 
 /// Sum the multiplier (numerical) velocity contributions for a node.
@@ -79,8 +79,10 @@ pub fn numerical_score(node: &Node, node_type: &NodeType) -> f64 {
 ///   directly, [`Property::Text`] via [`parse_date_value`], anything else →
 ///   no contribution), then `days_until = target - today` feeds
 ///   [`date_velocity_contribution`].
-/// * `Status` — select-option scoring is deferred until node types carry
-///   their option lists, so these configs currently contribute nothing.
+/// * `Status` — the node value (a [`Property::SelectToken`] slug or a plain
+///   [`Property::Text`] name; anything else → no value) is resolved through
+///   the node type's per-property select options and scored via
+///   [`status_contribution`].
 /// * `Multiplier` — handled by [`numerical_score`]; skipped here.
 #[must_use]
 pub fn status_score(node: &Node, node_type: &NodeType, today: NaiveDate) -> f64 {
@@ -134,7 +136,19 @@ pub fn status_score(node: &Node, node_type: &NodeType, today: NaiveDate) -> f64 
                     );
                 }
             }
-            PropertyVelocityMode::Status { .. } | PropertyVelocityMode::Multiplier { .. } => {}
+            PropertyVelocityMode::Status { status_scores } => {
+                let current = match value {
+                    Some(Property::SelectToken(token)) => Some(token.as_str()),
+                    Some(Property::Text(text)) => Some(text.as_str()),
+                    _ => None,
+                };
+                score += status_contribution(
+                    current,
+                    node_type.property_select_options(pid),
+                    status_scores,
+                );
+            }
+            PropertyVelocityMode::Multiplier { .. } => {}
         }
     }
     score
