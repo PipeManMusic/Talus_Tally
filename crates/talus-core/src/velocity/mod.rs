@@ -25,8 +25,11 @@
 //!   sentinel and the truthy-`baseScore` rule).
 //! * `engine` — stateful orchestrator that recursively scores a project's
 //!   graph (inheritance with cycle guard and per-node memoization).
+//! * `blocking` — blocking relationships (a separate input) and their
+//!   cascade-to-descendants rules.
 
 mod base_score;
+mod blocking;
 mod calculation;
 mod checkbox_score;
 mod config;
@@ -41,6 +44,7 @@ mod property_config;
 mod status_score;
 
 pub use base_score::base_score;
+pub use blocking::{BlockingGraph, BlockingRelationship};
 pub use calculation::VelocityCalculation;
 pub use checkbox_score::{
     checkbox_contribution, is_checkbox_checked, CheckboxValue, CheckboxVelocityConfig,
