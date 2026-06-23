@@ -137,8 +137,17 @@ impl<'a> VelocityEngine<'a> {
     /// (its blocking penalty is intentionally ignored so a chain of blockers
     /// still accrues full value).
     fn blocked_nodes_score(&mut self, node_id: NodeId) -> f64 {
-        let _blocked = self.blocking.blocked_node_ids(node_id);
-        0.0
+        let blocked = self.blocking.blocked_node_ids(node_id);
+        let mut score = 0.0;
+        for blocked_id in blocked {
+            let calc = self.calculate_velocity(blocked_id);
+            score += calc.base_score
+                + calc.inherited_score
+                + calc.status_score
+                + calc.numerical_score
+                + calc.blocking_bonus;
+        }
+        score
     }
 
     /// Return the immediate parent's inheritable total, mirroring
