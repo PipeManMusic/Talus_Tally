@@ -140,6 +140,9 @@ impl<'a> VelocityEngine<'a> {
         self.cache.clear();
         self.building.clear();
         self.in_progress_totals.clear();
+        for node_id in self.project.graph().node_ids() {
+            self.calculate_velocity(node_id);
+        }
         &self.cache
     }
 
@@ -150,7 +153,22 @@ impl<'a> VelocityEngine<'a> {
     /// config simply contribute a `0` total.
     #[must_use]
     pub fn get_ranking(&mut self) -> Vec<(NodeId, VelocityCalculation)> {
-        Vec::new()
+        self.calculate_all_velocities();
+        // Build in graph insertion order so the stable sort below preserves
+        // that order for ties, matching the Python dict-ordering parity.
+        let mut ranked: Vec<(NodeId, VelocityCalculation)> = self
+            .project
+            .graph()
+            .node_ids()
+            .into_iter()
+            .filter_map(|id| self.cache.get(&id).map(|calc| (id, calc.clone())))
+            .collect();
+        ranked.sort_by(|a, b| {
+            b.1.total_velocity
+                .partial_cmp(&a.1.total_velocity)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
+        ranked
     }
 
     /// Sum the unpenalized would-be scores of every node this node directly

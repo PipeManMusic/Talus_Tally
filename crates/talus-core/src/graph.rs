@@ -137,6 +137,12 @@ impl Graph {
         Ok(())
     }
 
+    /// All node ids in insertion order.
+    #[must_use]
+    pub fn node_ids(&self) -> Vec<NodeId> {
+        self.nodes.keys().copied().collect()
+    }
+
     /// All node ids with no parent edge, in insertion order.
     #[must_use]
     pub fn roots(&self) -> Vec<NodeId> {
