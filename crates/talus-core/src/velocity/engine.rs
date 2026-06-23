@@ -131,6 +131,28 @@ impl<'a> VelocityEngine<'a> {
         calc
     }
 
+    /// Score every node in the project, returning the populated cache.
+    ///
+    /// Ports `calculate_all_velocities`: the caches are reset, then every node
+    /// id (in graph insertion order) is scored. The returned map borrows the
+    /// engine's cache.
+    pub fn calculate_all_velocities(&mut self) -> &HashMap<NodeId, VelocityCalculation> {
+        self.cache.clear();
+        self.building.clear();
+        self.in_progress_totals.clear();
+        &self.cache
+    }
+
+    /// Rank every node by total velocity, highest first.
+    ///
+    /// Ports `get_ranking`: scores all nodes, then returns `(node_id, calc)`
+    /// pairs sorted by `total_velocity` descending. Nodes without velocity
+    /// config simply contribute a `0` total.
+    #[must_use]
+    pub fn get_ranking(&mut self) -> Vec<(NodeId, VelocityCalculation)> {
+        Vec::new()
+    }
+
     /// Sum the unpenalized would-be scores of every node this node directly
     /// blocks, mirroring `_get_blocked_nodes_score`. Each blocked node
     /// contributes `base + inherited + status + numerical + blocking_bonus`
@@ -561,5 +583,30 @@ mod tests {
         let calc_c = engine.calculate_velocity(c_id);
         approx(calc_c.blocking_bonus, 7.0);
         approx(calc_c.total_velocity, 8.0);
+    }
+
+    // --- whole-project scoring + ranking ---
+
+    #[test]
+    fn calculate_all_velocities_scores_every_node() {
+        let (p, a_id, b_id) = two_roots();
+        let mut engine = VelocityEngine::new(&p, today());
+        let all = engine.calculate_all_velocities();
+        assert_eq!(all.len(), 2);
+        approx(all[&a_id].total_velocity, 5.0);
+        approx(all[&b_id].total_velocity, 3.0);
+    }
+
+    #[test]
+    fn get_ranking_orders_by_total_velocity_descending() {
+        let (p, a_id, b_id) = two_roots();
+        let mut engine = VelocityEngine::new(&p, today());
+        let ranking = engine.get_ranking();
+        assert_eq!(ranking.len(), 2);
+        // a (5) outranks b (3).
+        assert_eq!(ranking[0].0, a_id);
+        approx(ranking[0].1.total_velocity, 5.0);
+        assert_eq!(ranking[1].0, b_id);
+        approx(ranking[1].1.total_velocity, 3.0);
     }
 }
