@@ -12,8 +12,12 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::graph::Graph;
+use crate::graph::{Graph, Parent};
 use crate::ids::NodeId;
+
+/// Maximum ancestor walk depth, mirroring the Python `range(100)` guard. The
+/// project graph forbids cycles structurally, so this is purely defensive.
+const MAX_ANCESTOR_DEPTH: usize = 100;
 
 /// A single "X blocks Y" relationship.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -39,24 +43,69 @@ pub struct BlockingGraph {
 impl BlockingGraph {
     /// Whether `node_id` is blocked, directly or via any ancestor.
     #[must_use]
-    pub fn is_blocked(&self, _graph: &Graph, _node_id: NodeId) -> bool {
-        false
+    pub fn is_blocked(&self, graph: &Graph, node_id: NodeId) -> bool {
+        if self.is_directly_blocked(node_id) {
+            return true;
+        }
+        ancestors(graph, node_id)
+            .into_iter()
+            .any(|ancestor| self.is_directly_blocked(ancestor))
     }
 
     /// The nodes blocking `node_id`, directly first then via each ancestor
     /// (ancestors walked nearest-first, each ancestor's relationships in
     /// list order). Mirrors `_get_blocking_nodes`.
     #[must_use]
-    pub fn blocking_nodes(&self, _graph: &Graph, _node_id: NodeId) -> Vec<NodeId> {
-        Vec::new()
+    pub fn blocking_nodes(&self, graph: &Graph, node_id: NodeId) -> Vec<NodeId> {
+        let mut blocking = self.blockers_of(node_id);
+        for ancestor in ancestors(graph, node_id) {
+            blocking.extend(self.blockers_of(ancestor));
+        }
+        blocking
     }
 
     /// The nodes that `node_id` directly blocks (no cascade). Mirrors
     /// `_get_blocked_node_ids`.
     #[must_use]
-    pub fn blocked_node_ids(&self, _node_id: NodeId) -> Vec<NodeId> {
-        Vec::new()
+    pub fn blocked_node_ids(&self, node_id: NodeId) -> Vec<NodeId> {
+        self.relationships
+            .iter()
+            .filter(|r| r.blocking_node_id == node_id)
+            .map(|r| r.blocked_node_id)
+            .collect()
     }
+
+    /// Whether `node_id` is named as the blocked side of any relationship.
+    fn is_directly_blocked(&self, node_id: NodeId) -> bool {
+        self.relationships
+            .iter()
+            .any(|r| r.blocked_node_id == node_id)
+    }
+
+    /// The nodes directly blocking `node_id`, in relationship order.
+    fn blockers_of(&self, node_id: NodeId) -> Vec<NodeId> {
+        self.relationships
+            .iter()
+            .filter(|r| r.blocked_node_id == node_id)
+            .map(|r| r.blocking_node_id)
+            .collect()
+    }
+}
+
+/// Collect a node's ancestors, nearest first, capped at [`MAX_ANCESTOR_DEPTH`].
+fn ancestors(graph: &Graph, node_id: NodeId) -> Vec<NodeId> {
+    let mut result = Vec::new();
+    let mut current = node_id;
+    for _ in 0..MAX_ANCESTOR_DEPTH {
+        match graph.parent_of(current) {
+            Parent::Root => break,
+            Parent::Of(parent) => {
+                result.push(parent);
+                current = parent;
+            }
+        }
+    }
+    result
 }
 
 #[cfg(test)]
