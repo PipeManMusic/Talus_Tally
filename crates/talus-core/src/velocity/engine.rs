@@ -6,10 +6,10 @@
 //! [`VelocityCalculation`] and guarding against cycles while a node's score is
 //! still being built.
 //!
-//! Blocking relationships are layered on in later cycles; this stage computes
-//! `total = base + inherited + status + numerical` (the blocking term is `0`
-//! when there are no blocking relationships, so this matches the Python total
-//! for unblocked projects).
+//! Blocking relationships ([`BlockingGraph`]) are an optional second input: a
+//! blocked node's total is zeroed (its would-be score is recorded as
+//! `blocking_penalty`), and a blocking node accrues the unpenalized score of
+//! everything it blocks as `blocking_bonus`.
 
 use std::collections::{HashMap, HashSet};
 
@@ -19,7 +19,15 @@ use crate::graph::Parent;
 use crate::ids::NodeId;
 use crate::node_type::NodeType;
 use crate::project::Project;
-use crate::velocity::{base_score, numerical_score, status_score, ScoreMode, VelocityCalculation};
+use crate::velocity::{
+    base_score, numerical_score, status_score, BlockingGraph, ScoreMode, VelocityCalculation,
+};
+
+/// Shared empty blocking graph backing [`VelocityEngine::new`], so the
+/// no-blocking constructor borrows a `'static` rather than owning a clone.
+static EMPTY_BLOCKING: BlockingGraph = BlockingGraph {
+    relationships: Vec::new(),
+};
 
 /// Recursively scores the nodes of a [`Project`].
 ///
@@ -28,6 +36,7 @@ use crate::velocity::{base_score, numerical_score, status_score, ScoreMode, Velo
 /// invalidated, so a fresh engine is needed whenever the project mutates.
 pub struct VelocityEngine<'a> {
     project: &'a Project,
+    blocking: &'a BlockingGraph,
     today: NaiveDate,
     cache: HashMap<NodeId, VelocityCalculation>,
     building: HashSet<NodeId>,
@@ -35,12 +44,24 @@ pub struct VelocityEngine<'a> {
 }
 
 impl<'a> VelocityEngine<'a> {
-    /// Create an engine over `project`, scoring date properties relative to
-    /// `today` (supplied by the caller so the engine stays clock-free).
+    /// Create an engine over `project` with no blocking relationships, scoring
+    /// date properties relative to `today` (supplied by the caller so the
+    /// engine stays clock-free).
     #[must_use]
     pub fn new(project: &'a Project, today: NaiveDate) -> Self {
+        Self::with_blocking(project, &EMPTY_BLOCKING, today)
+    }
+
+    /// Create an engine over `project` and a set of `blocking` relationships.
+    #[must_use]
+    pub fn with_blocking(
+        project: &'a Project,
+        blocking: &'a BlockingGraph,
+        today: NaiveDate,
+    ) -> Self {
         Self {
             project,
+            blocking,
             today,
             cache: HashMap::new(),
             building: HashSet::new(),
@@ -86,13 +107,38 @@ impl<'a> VelocityEngine<'a> {
         self.in_progress_totals
             .insert(node_id, calc.inheritable_total());
 
-        calc.total_velocity =
+        let graph = self.project.graph();
+        let is_blocked = self.blocking.is_blocked(graph, node_id);
+        calc.is_blocked = is_blocked;
+        calc.blocked_by_nodes = self.blocking.blocking_nodes(graph, node_id);
+        calc.blocks_node_ids = self.blocking.blocked_node_ids(node_id);
+
+        let blocked_score = self.blocked_nodes_score(node_id);
+        calc.blocking_bonus = blocked_score;
+
+        let own_score =
             calc.base_score + calc.inherited_score + calc.status_score + calc.numerical_score;
+        if is_blocked {
+            calc.blocking_penalty = own_score;
+            calc.total_velocity = 0.0;
+        } else {
+            calc.total_velocity = own_score + blocked_score;
+        }
 
         self.cache.insert(node_id, calc.clone());
         self.in_progress_totals.remove(&node_id);
         self.building.remove(&node_id);
         calc
+    }
+
+    /// Sum the unpenalized would-be scores of every node this node directly
+    /// blocks, mirroring `_get_blocked_nodes_score`. Each blocked node
+    /// contributes `base + inherited + status + numerical + blocking_bonus`
+    /// (its blocking penalty is intentionally ignored so a chain of blockers
+    /// still accrues full value).
+    fn blocked_nodes_score(&mut self, node_id: NodeId) -> f64 {
+        let _blocked = self.blocking.blocked_node_ids(node_id);
+        0.0
     }
 
     /// Return the immediate parent's inheritable total, mirroring
@@ -393,5 +439,118 @@ mod tests {
         let calc = engine.calculate_velocity(NodeId::new());
         approx(calc.base_score, 0.0);
         approx(calc.total_velocity, 0.0);
+    }
+
+    // --- blocking ---
+
+    use crate::velocity::{BlockingGraph, BlockingRelationship};
+
+    fn rel(blocked: NodeId, blocking: NodeId) -> BlockingRelationship {
+        BlockingRelationship {
+            blocked_node_id: blocked,
+            blocking_node_id: blocking,
+        }
+    }
+
+    /// Two independent fixed-score roots `a` (5) and `b` (3). Returns
+    /// `(project, a_id, b_id)`.
+    fn two_roots() -> (Project, NodeId, NodeId) {
+        let mut p = Project::new("P", TemplateId::new());
+        let nt = NodeType::new("Task").with_velocity_config(fixed_cfg(5.0));
+        let kind_a = nt.id();
+        p.register_node_type(nt).unwrap();
+        let nt_b = NodeType::new("Task2").with_velocity_config(fixed_cfg(3.0));
+        let kind_b = nt_b.id();
+        p.register_node_type(nt_b).unwrap();
+
+        let a = Node::new(kind_a, "A");
+        let a_id = a.id();
+        let b = Node::new(kind_b, "B");
+        let b_id = b.id();
+        p.insert_node(a).unwrap();
+        p.insert_node(b).unwrap();
+        (p, a_id, b_id)
+    }
+
+    #[test]
+    fn blocked_node_total_is_zero_and_penalty_recorded() {
+        let (p, a_id, b_id) = two_roots();
+        // b blocks a.
+        let bg = BlockingGraph {
+            relationships: vec![rel(a_id, b_id)],
+        };
+        let mut engine = VelocityEngine::with_blocking(&p, &bg, today());
+        let calc = engine.calculate_velocity(a_id);
+        assert!(calc.is_blocked);
+        approx(calc.total_velocity, 0.0);
+        approx(calc.blocking_penalty, 5.0);
+        assert_eq!(calc.blocked_by_nodes, vec![b_id]);
+    }
+
+    #[test]
+    fn blocking_node_accrues_blocked_score_as_bonus() {
+        let (p, a_id, b_id) = two_roots();
+        // b blocks a; b should accrue a's would-be score (5) as a bonus.
+        let bg = BlockingGraph {
+            relationships: vec![rel(a_id, b_id)],
+        };
+        let mut engine = VelocityEngine::with_blocking(&p, &bg, today());
+        let calc = engine.calculate_velocity(b_id);
+        assert!(!calc.is_blocked);
+        approx(calc.blocking_bonus, 5.0);
+        // own 3 + bonus 5 = 8
+        approx(calc.total_velocity, 8.0);
+        assert_eq!(calc.blocks_node_ids, vec![a_id]);
+    }
+
+    #[test]
+    fn unblocked_node_has_no_bonus_or_penalty() {
+        let (p, a_id, b_id) = two_roots();
+        let _ = b_id;
+        let bg = BlockingGraph::default();
+        let mut engine = VelocityEngine::with_blocking(&p, &bg, today());
+        let calc = engine.calculate_velocity(a_id);
+        assert!(!calc.is_blocked);
+        approx(calc.blocking_bonus, 0.0);
+        approx(calc.blocking_penalty, 0.0);
+        approx(calc.total_velocity, 5.0);
+    }
+
+    #[test]
+    fn blocking_bonus_chains_through_blockers() {
+        // c blocks b, b blocks a. b is blocked so its total is 0, but its
+        // blocking_bonus (a's 5) still flows up to c via the bonus chain.
+        let mut p = Project::new("P", TemplateId::new());
+        let nt_a = NodeType::new("A").with_velocity_config(fixed_cfg(5.0));
+        let kind_a = nt_a.id();
+        let nt_b = NodeType::new("B").with_velocity_config(fixed_cfg(2.0));
+        let kind_b = nt_b.id();
+        let nt_c = NodeType::new("C").with_velocity_config(fixed_cfg(1.0));
+        let kind_c = nt_c.id();
+        p.register_node_type(nt_a).unwrap();
+        p.register_node_type(nt_b).unwrap();
+        p.register_node_type(nt_c).unwrap();
+        let a = Node::new(kind_a, "A");
+        let a_id = a.id();
+        let b = Node::new(kind_b, "B");
+        let b_id = b.id();
+        let c = Node::new(kind_c, "C");
+        let c_id = c.id();
+        p.insert_node(a).unwrap();
+        p.insert_node(b).unwrap();
+        p.insert_node(c).unwrap();
+
+        let bg = BlockingGraph {
+            relationships: vec![rel(a_id, b_id), rel(b_id, c_id)],
+        };
+        let mut engine = VelocityEngine::with_blocking(&p, &bg, today());
+        // b: own 2, blocked (by c) => total 0, but bonus = a's would-be 5.
+        let calc_b = engine.calculate_velocity(b_id);
+        approx(calc_b.blocking_bonus, 5.0);
+        approx(calc_b.total_velocity, 0.0);
+        // c: own 1 + bonus (b: own 2 + b.bonus 5 = 7) = 8.
+        let calc_c = engine.calculate_velocity(c_id);
+        approx(calc_c.blocking_bonus, 7.0);
+        approx(calc_c.total_velocity, 8.0);
     }
 }
