@@ -42,6 +42,9 @@ pub mod replay;
 /// Schema and validation primitives. Phase 1: types only; rules ported per module.
 pub mod schema;
 
+/// Typed template (schema) definitions: property kinds, node-type blueprints.
+pub mod template;
+
 /// Validation rules for untyped YAML/JSON inputs at the system boundary.
 pub mod validation;
 
