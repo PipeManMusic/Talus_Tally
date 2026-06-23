@@ -25,8 +25,15 @@ use crate::node_type::NodeType;
 ///   is treated as unset and contributes `0.0` (the same as having no
 ///   node-level config).
 #[must_use]
-pub fn base_score(_node_type: &NodeType) -> f64 {
-    0.0
+pub fn base_score(node_type: &NodeType) -> f64 {
+    if !node_type.has_velocity_config() {
+        return -1.0;
+    }
+    match node_type.velocity_config() {
+        // Python gates on truthiness, so an exact 0.0 baseScore is unset.
+        Some(config) if config.base_score != 0.0 => config.base_score,
+        _ => 0.0,
+    }
 }
 
 #[cfg(test)]
