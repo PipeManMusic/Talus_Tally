@@ -23,6 +23,8 @@
 //!   per-property leaf functions.
 //! * `base_score` — node-level base-score derivation (the `-1.0` no-config
 //!   sentinel and the truthy-`baseScore` rule).
+//! * `engine` — stateful orchestrator that recursively scores a project's
+//!   graph (inheritance with cycle guard and per-node memoization).
 
 mod base_score;
 mod calculation;
@@ -32,6 +34,7 @@ mod currency;
 mod date_parse;
 mod date_score;
 mod dispatch;
+mod engine;
 mod mode;
 mod numerical_score;
 mod property_config;
@@ -47,6 +50,7 @@ pub use currency::parse_currency_value;
 pub use date_parse::parse_date_value;
 pub use date_score::{date_velocity_contribution, DateVelocityConfig};
 pub use dispatch::{numerical_score, status_score};
+pub use engine::VelocityEngine;
 pub use mode::{ScoreMode, VelocityMode};
 pub use numerical_score::{numerical_contribution, NumericalVelocityConfig};
 pub use property_config::{PropertyVelocityConfig, PropertyVelocityMode};
