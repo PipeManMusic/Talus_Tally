@@ -21,7 +21,10 @@
 //! * `property_config` — per-property `PropertyVelocityConfig` wire shape.
 //! * `dispatch` — node-level accumulators that fan property configs out to the
 //!   per-property leaf functions.
+//! * `base_score` — node-level base-score derivation (the `-1.0` no-config
+//!   sentinel and the truthy-`baseScore` rule).
 
+mod base_score;
 mod calculation;
 mod checkbox_score;
 mod config;
@@ -34,6 +37,7 @@ mod numerical_score;
 mod property_config;
 mod status_score;
 
+pub use base_score::base_score;
 pub use calculation::VelocityCalculation;
 pub use checkbox_score::{
     checkbox_contribution, is_checkbox_checked, CheckboxValue, CheckboxVelocityConfig,
