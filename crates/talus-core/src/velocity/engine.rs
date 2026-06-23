@@ -11,11 +11,15 @@
 //! when there are no blocking relationships, so this matches the Python total
 //! for unblocked projects).
 
+use std::collections::{HashMap, HashSet};
+
 use chrono::NaiveDate;
 
+use crate::graph::Parent;
 use crate::ids::NodeId;
+use crate::node_type::NodeType;
 use crate::project::Project;
-use crate::velocity::{base_score, VelocityCalculation};
+use crate::velocity::{base_score, numerical_score, status_score, ScoreMode, VelocityCalculation};
 
 /// Recursively scores the nodes of a [`Project`].
 ///
@@ -24,29 +28,102 @@ use crate::velocity::{base_score, VelocityCalculation};
 /// invalidated, so a fresh engine is needed whenever the project mutates.
 pub struct VelocityEngine<'a> {
     project: &'a Project,
+    today: NaiveDate,
+    cache: HashMap<NodeId, VelocityCalculation>,
+    building: HashSet<NodeId>,
+    in_progress_totals: HashMap<NodeId, f64>,
 }
 
 impl<'a> VelocityEngine<'a> {
     /// Create an engine over `project`, scoring date properties relative to
     /// `today` (supplied by the caller so the engine stays clock-free).
     #[must_use]
-    pub fn new(project: &'a Project, _today: NaiveDate) -> Self {
-        Self { project }
+    pub fn new(project: &'a Project, today: NaiveDate) -> Self {
+        Self {
+            project,
+            today,
+            cache: HashMap::new(),
+            building: HashSet::new(),
+            in_progress_totals: HashMap::new(),
+        }
     }
 
     /// Compute the [`VelocityCalculation`] for `node_id`.
     ///
-    /// An unknown node (absent from the graph, or whose kind is not in the
-    /// registry) scores all zeros.
+    /// Results are memoized. A node already being built (reached via its own
+    /// inheritance chain) scores all zeros, breaking the cycle. An unknown
+    /// node (absent from the graph, or whose kind is not in the registry)
+    /// also scores all zeros.
     pub fn calculate_velocity(&mut self, node_id: NodeId) -> VelocityCalculation {
-        let mut calc = VelocityCalculation::zeroed(node_id);
-        if let Some(node) = self.project.graph().get(node_id) {
-            if let Some(node_type) = self.project.get_node_type(node.kind()) {
-                calc.base_score = base_score(node_type);
-                calc.total_velocity = calc.base_score;
-            }
+        if let Some(cached) = self.cache.get(&node_id) {
+            return cached.clone();
         }
+        if self.building.contains(&node_id) {
+            return VelocityCalculation::zeroed(node_id);
+        }
+        // Copy the project reference so node lookups borrow the project, not
+        // `self`; this frees `&mut self` for the recursive inheritance call.
+        let project = self.project;
+        let Some(node) = project.graph().get(node_id) else {
+            return VelocityCalculation::zeroed(node_id);
+        };
+        let Some(node_type) = project.get_node_type(node.kind()) else {
+            return VelocityCalculation::zeroed(node_id);
+        };
+
+        self.building.insert(node_id);
+
+        let mut calc = VelocityCalculation::zeroed(node_id);
+        calc.base_score = base_score(node_type);
+        if should_inherit(node_type) {
+            calc.inherited_score = self.inherited_score(node_id);
+        }
+        calc.status_score = status_score(node, node_type, self.today);
+        calc.numerical_score = numerical_score(node, node_type);
+
+        // Record the inheritable total before recursing further so a child
+        // reached via a cycle can read it from `in_progress_totals`.
+        self.in_progress_totals
+            .insert(node_id, calc.inheritable_total());
+
+        calc.total_velocity =
+            calc.base_score + calc.inherited_score + calc.status_score + calc.numerical_score;
+
+        self.cache.insert(node_id, calc.clone());
+        self.in_progress_totals.remove(&node_id);
+        self.building.remove(&node_id);
         calc
+    }
+
+    /// Return the immediate parent's inheritable total, mirroring
+    /// `_calculate_inherited_score`. A root contributes `0`; a parent still
+    /// being built contributes its in-progress total (cycle path).
+    fn inherited_score(&mut self, node_id: NodeId) -> f64 {
+        let parent = match self.project.graph().parent_of(node_id) {
+            Parent::Root => return 0.0,
+            Parent::Of(parent) => parent,
+        };
+        if self.building.contains(&parent) {
+            return self.in_progress_totals.get(&parent).copied().unwrap_or(0.0);
+        }
+        if let Some(cached) = self.cache.get(&parent) {
+            return cached.inheritable_total();
+        }
+        self.calculate_velocity(parent).inheritable_total()
+    }
+}
+
+/// Whether a node type's children-style inheritance applies: a node with no
+/// velocity config inherits, as does one whose only config is per-property
+/// (no node-level config) or whose node-level config is `inherit` mode.
+/// A node-level `fixed` config counts only its own score.
+fn should_inherit(node_type: &NodeType) -> bool {
+    if !node_type.has_velocity_config() {
+        return true;
+    }
+    match node_type.velocity_config() {
+        None => true,
+        Some(config) => matches!(config.score_mode, ScoreMode::Inherit),
     }
 }
 
