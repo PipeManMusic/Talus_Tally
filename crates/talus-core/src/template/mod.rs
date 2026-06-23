@@ -6,7 +6,8 @@
 //! `docs/architecture/RUST_MIGRATION_PLAN.md` §4b "Data model / schema").
 //! Types arrive one TDD cycle at a time:
 //!
-//! * [`PropertyKind`] — the typed `type:` field of a property definition.
+//! * [`PropertyKind`](crate::template::PropertyKind) — the typed `type:`
+//!   field of a property definition.
 
 mod property_kind;
 

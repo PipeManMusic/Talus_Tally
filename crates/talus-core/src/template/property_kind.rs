@@ -43,16 +43,33 @@ impl PropertyKind {
     /// Parse a template kind string into a [`PropertyKind`]. Unrecognized
     /// strings are kept as [`PropertyKind::Other`].
     #[must_use]
-    pub fn from_kind_str(_kind: &str) -> Self {
-        Self::Other(String::new())
+    pub fn from_kind_str(kind: &str) -> Self {
+        match kind {
+            "text" => Self::Text,
+            "editor" => Self::Editor,
+            "select" => Self::Select,
+            "number" => Self::Number,
+            "currency" => Self::Currency,
+            "date" => Self::Date,
+            "checkbox" => Self::Checkbox,
+            "node_reference" => Self::NodeReference,
+            other => Self::Other(other.to_owned()),
+        }
     }
 
     /// The lowercase kind string this variant serializes to.
     #[must_use]
     pub fn as_str(&self) -> &str {
         match self {
+            Self::Text => "text",
+            Self::Editor => "editor",
+            Self::Select => "select",
+            Self::Number => "number",
+            Self::Currency => "currency",
+            Self::Date => "date",
+            Self::Checkbox => "checkbox",
+            Self::NodeReference => "node_reference",
             Self::Other(raw) => raw,
-            _ => "",
         }
     }
 }
