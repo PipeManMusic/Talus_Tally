@@ -8,7 +8,11 @@
 //!
 //! * [`PropertyKind`](crate::template::PropertyKind) — the typed `type:`
 //!   field of a property definition.
+//! * [`PropertyDefinition`](crate::template::PropertyDefinition) — a single
+//!   template property entry, with its [`SelectOptionDef`] options.
 
+mod property_definition;
 mod property_kind;
 
+pub use property_definition::{PropertyDefinition, SelectOptionDef};
 pub use property_kind::PropertyKind;
