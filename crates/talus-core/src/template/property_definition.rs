@@ -60,15 +60,15 @@ impl PropertyDefinition {
     /// Whether this property is a single-choice `select`.
     #[must_use]
     pub fn is_select(&self) -> bool {
-        false
+        self.kind == PropertyKind::Select
     }
 
     /// Find a select option by its stored id, mirroring the velocity
     /// engine's value→name resolution. Returns `None` for non-select
     /// properties or unknown ids.
     #[must_use]
-    pub fn select_option(&self, _id: &str) -> Option<&SelectOptionDef> {
-        None
+    pub fn select_option(&self, id: &str) -> Option<&SelectOptionDef> {
+        self.options.iter().find(|opt| opt.id == id)
     }
 }
 
