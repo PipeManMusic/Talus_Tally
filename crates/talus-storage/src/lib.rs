@@ -20,4 +20,4 @@ pub mod template_loader;
 pub mod yaml_validation;
 
 pub use project_store::ProjectStore;
-pub use template_loader::load_template;
+pub use template_loader::{load_project, load_template};

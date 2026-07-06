@@ -8,6 +8,7 @@
 use std::path::Path;
 
 use talus_core::error::{Error, Result};
+use talus_core::project::Project;
 use talus_core::template::TemplateDef;
 
 /// Read and parse the template file at `path` into a [`TemplateDef`].
@@ -24,6 +25,24 @@ pub fn load_template<P: AsRef<Path>>(path: P) -> Result<TemplateDef> {
     }
     let contents = std::fs::read_to_string(path).map_err(|e| Error::Io(e.to_string()))?;
     serde_yaml::from_str(&contents).map_err(|e| Error::Serialization(e.to_string()))
+}
+
+/// Load the template at `path` and build a fresh [`Project`] named `name`
+/// with every declared node type registered.
+///
+/// This is the full load path: file → [`TemplateDef`] → [`Project`], the
+/// Rust replacement for Python's schema-load-then-instantiate flow.
+///
+/// # Errors
+/// * [`Error::NotFound`] if no file exists at `path`.
+/// * [`Error::Io`] if the file exists but cannot be read.
+/// * [`Error::Serialization`] if the contents are not a valid template.
+/// * [`Error::InvariantViolation`] if the template declares two node types
+///   with the same `uuid`.
+pub fn load_project<P: AsRef<Path>>(path: P, name: impl Into<String>) -> Result<Project> {
+    let _name: String = name.into();
+    load_template(path)?;
+    Err(Error::Serialization("not yet implemented".to_string()))
 }
 
 #[cfg(test)]
@@ -92,5 +111,19 @@ node_types:
         let file = write_yaml("description: incomplete\nnode_types: []");
         let err = load_template(file.path()).unwrap_err();
         assert!(matches!(err, Error::Serialization(_)), "got {err:?}");
+    }
+
+    #[test]
+    fn load_project_builds_registry_from_file() {
+        let file = write_yaml(TEMPLATE);
+        let project = load_project(file.path(), "My Book").expect("load project");
+        assert_eq!(project.name(), "My Book");
+        assert_eq!(project.node_types().count(), 2);
+    }
+
+    #[test]
+    fn load_project_missing_file_is_not_found() {
+        let err = load_project("/nonexistent/template.yaml", "X").unwrap_err();
+        assert!(matches!(err, Error::NotFound(_)), "got {err:?}");
     }
 }
