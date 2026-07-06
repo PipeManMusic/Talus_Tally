@@ -75,6 +75,27 @@ impl NodeType {
         }
     }
 
+    /// Build a `NodeType` from a template's canonical id and label.
+    ///
+    /// Used only by the template→registry converter (`template::convert`),
+    /// which reuses the id persisted in the template file rather than
+    /// minting a new one. This does not violate §4a "one ID generator": the
+    /// id is canonical data read at the deserialization boundary, not a
+    /// value derived from content.
+    #[must_use]
+    pub(crate) fn from_template(id: NodeTypeId, name: impl Into<String>) -> Self {
+        Self {
+            id,
+            name: name.into(),
+            schema_version: NODE_TYPE_SCHEMA_VERSION,
+            allowed_properties: IndexSet::new(),
+            allowed_children: IndexSet::new(),
+            velocity_config: None,
+            property_velocity_configs: IndexMap::new(),
+            property_select_options: IndexMap::new(),
+        }
+    }
+
     /// The stable identifier for this node type.
     #[must_use]
     pub fn id(&self) -> NodeTypeId {

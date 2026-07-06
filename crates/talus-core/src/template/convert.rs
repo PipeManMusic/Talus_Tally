@@ -8,6 +8,9 @@
 //! slug `id` fields are used only to resolve `allowed_children` references
 //! between node types.
 
+use std::collections::HashMap;
+
+use crate::ids::NodeTypeId;
 use crate::node_type::NodeType;
 use crate::template::TemplateDef;
 
@@ -21,7 +24,30 @@ impl TemplateDef {
     /// node types (unknown slugs are skipped).
     #[must_use]
     pub fn to_node_types(&self) -> Vec<NodeType> {
-        Vec::new()
+        let by_slug = self.slug_to_id();
+        self.node_types
+            .iter()
+            .map(|def| {
+                let mut node_type = NodeType::from_template(def.node_type_id, def.label.clone());
+                for property in &def.properties {
+                    node_type = node_type.with_allowed_property(property.property_id);
+                }
+                for child_slug in &def.allowed_children {
+                    if let Some(&child_id) = by_slug.get(child_slug.as_str()) {
+                        node_type = node_type.with_allowed_child(child_id);
+                    }
+                }
+                node_type
+            })
+            .collect()
+    }
+
+    /// Build a slug → node-type-id map from every node type in this template.
+    fn slug_to_id(&self) -> HashMap<&str, NodeTypeId> {
+        self.node_types
+            .iter()
+            .map(|nt| (nt.id.as_str(), nt.node_type_id))
+            .collect()
     }
 }
 
