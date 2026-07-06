@@ -13,6 +13,7 @@ use std::collections::HashMap;
 use crate::ids::NodeTypeId;
 use crate::node_type::NodeType;
 use crate::template::TemplateDef;
+use crate::velocity::SelectOption;
 
 impl TemplateDef {
     /// Build the runtime [`NodeType`] blueprints declared by this template,
@@ -31,6 +32,18 @@ impl TemplateDef {
                 let mut node_type = NodeType::from_template(def.node_type_id, def.label.clone());
                 for property in &def.properties {
                     node_type = node_type.with_allowed_property(property.property_id);
+                    if property.is_select() {
+                        let options = property
+                            .options
+                            .iter()
+                            .map(|opt| SelectOption {
+                                id: opt.id.clone(),
+                                name: opt.name.clone(),
+                            })
+                            .collect();
+                        node_type =
+                            node_type.with_property_select_options(property.property_id, options);
+                    }
                 }
                 for child_slug in &def.allowed_children {
                     if let Some(&child_id) = by_slug.get(child_slug.as_str()) {
