@@ -14,11 +14,15 @@
 //! * [`NodeTypeDef`](crate::template::NodeTypeDef) — a single template
 //!   node-type entry, holding its
 //!   [`PropertyDefinition`](crate::template::PropertyDefinition)s.
+//! * [`TemplateDef`](crate::template::TemplateDef) — a whole template
+//!   document, holding its [`NodeTypeDef`](crate::template::NodeTypeDef)s.
 
 mod node_type_def;
 mod property_definition;
 mod property_kind;
+mod template_def;
 
 pub use node_type_def::NodeTypeDef;
 pub use property_definition::{PropertyDefinition, SelectOptionDef};
 pub use property_kind::PropertyKind;
+pub use template_def::TemplateDef;
