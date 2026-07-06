@@ -100,6 +100,12 @@ node_types:
         uuid: b1c2d3e4-f5a6-7b8c-9d0e-1f2a3b4c5d6e
         label: Status
         type: select
+        velocityConfig:
+          enabled: true
+          mode: status
+          statusScores:
+            Draft: 1
+            Done: 5
         options:
           - id: opt-draft
             name: Draft
@@ -187,6 +193,33 @@ node_types:
         let types = template().to_node_types();
         let chapter = find(&types, "Chapter");
         assert!(chapter.velocity_config().is_none());
+    }
+
+    #[test]
+    fn property_velocity_config_is_attached() {
+        use crate::velocity::PropertyVelocityMode;
+        let types = template().to_node_types();
+        let chapter = find(&types, "Chapter");
+        let pid = crate::ids::PropertyId::from(uuid::uuid!("b1c2d3e4-f5a6-7b8c-9d0e-1f2a3b4c5d6e"));
+        let cfg = chapter
+            .property_velocity_config(pid)
+            .expect("property velocity config");
+        assert!(cfg.enabled);
+        match &cfg.mode {
+            PropertyVelocityMode::Status { status_scores } => {
+                assert!((status_scores["Done"] - 5.0).abs() < f64::EPSILON);
+                assert!((status_scores["Draft"] - 1.0).abs() < f64::EPSILON);
+            }
+            other => panic!("expected status mode, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn property_without_velocity_config_has_none() {
+        let types = template().to_node_types();
+        let root = find(&types, "Book");
+        let pid = crate::ids::PropertyId::from(uuid::uuid!("fa022033-b113-6c72-9d43-23ffbb36331a"));
+        assert!(root.property_velocity_config(pid).is_none());
     }
 
     #[test]
