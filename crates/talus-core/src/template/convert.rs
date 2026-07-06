@@ -76,7 +76,17 @@ node_types:
   - id: chapter
     uuid: a5a68b68-95f5-f84a-2626-d46603662310
     label: Chapter
-    properties: []
+    properties:
+      - id: status
+        uuid: b1c2d3e4-f5a6-7b8c-9d0e-1f2a3b4c5d6e
+        label: Status
+        type: select
+        options:
+          - id: opt-draft
+            name: Draft
+            indicator_id: ind-draft
+          - id: opt-done
+            name: Done
 ";
 
     fn template() -> TemplateDef {
@@ -120,6 +130,27 @@ node_types:
         let root = find(&types, "Book");
         let chapter = find(&types, "Chapter");
         assert!(root.allows_child(chapter.id()));
+    }
+
+    #[test]
+    fn select_property_options_are_attached() {
+        let types = template().to_node_types();
+        let chapter = find(&types, "Chapter");
+        let pid = crate::ids::PropertyId::from(uuid::uuid!("b1c2d3e4-f5a6-7b8c-9d0e-1f2a3b4c5d6e"));
+        let options = chapter.property_select_options(pid);
+        assert_eq!(options.len(), 2);
+        assert_eq!(options[0].id, "opt-draft");
+        assert_eq!(options[0].name, "Draft");
+        assert_eq!(options[1].id, "opt-done");
+        assert_eq!(options[1].name, "Done");
+    }
+
+    #[test]
+    fn non_select_property_has_no_options() {
+        let types = template().to_node_types();
+        let root = find(&types, "Book");
+        let pid = crate::ids::PropertyId::from(uuid::uuid!("fa022033-b113-6c72-9d43-23ffbb36331a"));
+        assert!(root.property_select_options(pid).is_empty());
     }
 
     #[test]
