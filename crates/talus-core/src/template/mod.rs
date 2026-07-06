@@ -17,6 +17,7 @@
 //! * [`TemplateDef`](crate::template::TemplateDef) — a whole template
 //!   document, holding its [`NodeTypeDef`](crate::template::NodeTypeDef)s.
 
+mod convert;
 mod node_type_def;
 mod property_definition;
 mod property_kind;
