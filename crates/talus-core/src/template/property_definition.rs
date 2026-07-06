@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::ids::PropertyId;
 use crate::template::PropertyKind;
+use crate::velocity::PropertyVelocityConfig;
 
 /// One option of a `select`-typed property.
 ///
@@ -54,6 +55,13 @@ pub struct PropertyDefinition {
     /// The fixed option set, populated only for `select` properties.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub options: Vec<SelectOptionDef>,
+    /// Per-property velocity configuration (`velocityConfig`), if declared.
+    #[serde(
+        rename = "velocityConfig",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub velocity_config: Option<PropertyVelocityConfig>,
 }
 
 impl PropertyDefinition {

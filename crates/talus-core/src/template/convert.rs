@@ -44,6 +44,10 @@ impl TemplateDef {
                         node_type =
                             node_type.with_property_select_options(property.property_id, options);
                     }
+                    if let Some(config) = &property.velocity_config {
+                        node_type = node_type
+                            .with_property_velocity_config(property.property_id, config.clone());
+                    }
                 }
                 for child_slug in &def.allowed_children {
                     if let Some(&child_id) = by_slug.get(child_slug.as_str()) {
