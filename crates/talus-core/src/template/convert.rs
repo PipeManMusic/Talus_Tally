@@ -10,8 +10,10 @@
 
 use std::collections::HashMap;
 
+use crate::error::Result;
 use crate::ids::NodeTypeId;
 use crate::node_type::NodeType;
+use crate::project::Project;
 use crate::template::TemplateDef;
 use crate::velocity::SelectOption;
 
@@ -60,6 +62,20 @@ impl TemplateDef {
                 node_type
             })
             .collect()
+    }
+
+    /// Build an empty [`Project`] bound to this template with every declared
+    /// node type registered.
+    ///
+    /// The project is bound to this template's canonical `uuid` and its
+    /// graph starts empty; the node-type registry is populated from
+    /// [`TemplateDef::to_node_types`].
+    ///
+    /// # Errors
+    /// - [`crate::error::Error::InvariantViolation`] if two node types share
+    ///   a `uuid` (a duplicate registration).
+    pub fn to_project(&self, name: impl Into<String>) -> Result<Project> {
+        Ok(Project::new(name, self.template_id))
     }
 
     /// Build a slug → node-type-id map from every node type in this template.
@@ -232,5 +248,21 @@ node_types:
         let root = find(&types, "Book");
         // "ghost" references no declared node type, so it contributes nothing.
         assert_eq!(root.allowed_children().count(), 1);
+    }
+
+    #[test]
+    fn to_project_binds_name() {
+        let project = template().to_project("My Book").expect("project");
+        assert_eq!(project.name(), "My Book");
+    }
+
+    #[test]
+    fn to_project_registers_every_node_type() {
+        let project = template().to_project("My Book").expect("project");
+        assert_eq!(project.node_types().count(), 2);
+        let root_id =
+            crate::ids::NodeTypeId::from(uuid::uuid!("dda577b6-9f7c-8feb-e893-5e6f32522a56"));
+        let root = project.get_node_type(root_id).expect("root node type");
+        assert_eq!(root.name(), "Book");
     }
 }
