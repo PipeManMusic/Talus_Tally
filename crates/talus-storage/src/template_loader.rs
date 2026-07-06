@@ -124,4 +124,24 @@ node_types:
         let err = load_project("/nonexistent/template.yaml", "X").unwrap_err();
         assert!(matches!(err, Error::NotFound(_)), "got {err:?}");
     }
+
+    /// Parity guard: the real production template must load end-to-end and
+    /// register every declared node type. `project_talus.yaml` exercises the
+    /// full property-type surface (`object`, `node_reference`, both node- and
+    /// property-level `velocityConfig`, etc.).
+    #[test]
+    fn loads_real_project_talus_template() {
+        let path = concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../data/templates/project_talus.yaml"
+        );
+        let project = load_project(path, "Project Talus").expect("load real template");
+        assert_eq!(project.node_types().count(), 23);
+        let root_id =
+            talus_core::ids::NodeTypeId::from(uuid::uuid!("292b9e11-45c7-94f4-20db-7f6085266a4f"));
+        let root = project
+            .get_node_type(root_id)
+            .expect("project_root node type");
+        assert_eq!(root.name(), "Project");
+    }
 }

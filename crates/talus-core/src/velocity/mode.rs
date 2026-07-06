@@ -70,8 +70,19 @@ mod tests {
     }
 
     #[test]
-    fn score_mode_rejects_unknown_value() {
-        assert!(serde_json::from_str::<ScoreMode>("\"sideways\"").is_err());
+    fn score_mode_unknown_value_is_non_inherit() {
+        // Python's engine only special-cases `scoreMode == "inherit"`; every
+        // other value (`"fixed"`, `"standalone"`, or garbage) is non-inherit.
+        // Production templates ship `scoreMode: standalone`, so unknown
+        // values must load rather than reject (§ import compat forever).
+        assert_eq!(
+            serde_json::from_str::<ScoreMode>("\"standalone\"").unwrap(),
+            ScoreMode::Fixed
+        );
+        assert_eq!(
+            serde_json::from_str::<ScoreMode>("\"sideways\"").unwrap(),
+            ScoreMode::Fixed
+        );
     }
 
     #[test]
