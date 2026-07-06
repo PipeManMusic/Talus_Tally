@@ -13,16 +13,35 @@ use serde::{Deserialize, Serialize};
 /// How a node-level base score is derived.
 ///
 /// Wire format is the lowercase string used by the Python `ScoreMode` enum.
-/// Defaults to [`ScoreMode::Fixed`], matching the engine behaviour where a
-/// node-level config without an explicit `scoreMode` does **not** inherit.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+/// Deserialization is permissive to match the engine, which only
+/// special-cases `scoreMode == "inherit"`: the exact string `"inherit"`
+/// becomes [`ScoreMode::Inherit`] and **every** other value (`"fixed"`,
+/// `"standalone"`, or anything else production templates ship) becomes
+/// [`ScoreMode::Fixed`]. A missing `scoreMode` also defaults to
+/// [`ScoreMode::Fixed`] (no inheritance).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum ScoreMode {
     /// Inherit the base score from the parent (`"inherit"`).
     Inherit,
-    /// Use a fixed base score defined on the node type (`"fixed"`).
+    /// Use a fixed base score defined on the node type (any non-`"inherit"`
+    /// value, including `"fixed"` and `"standalone"`).
     #[default]
     Fixed,
+}
+
+impl<'de> Deserialize<'de> for ScoreMode {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let raw = String::deserialize(deserializer)?;
+        Ok(if raw == "inherit" {
+            ScoreMode::Inherit
+        } else {
+            ScoreMode::Fixed
+        })
+    }
 }
 
 /// Which scoring rule a per-property `velocityConfig` applies.
