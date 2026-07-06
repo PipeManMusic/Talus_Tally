@@ -50,6 +50,9 @@ impl TemplateDef {
                         node_type = node_type.with_allowed_child(child_id);
                     }
                 }
+                if let Some(config) = &def.velocity_config {
+                    node_type = node_type.with_velocity_config(config.clone());
+                }
                 node_type
             })
             .collect()

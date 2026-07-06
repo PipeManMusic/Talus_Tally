@@ -3,14 +3,14 @@
 //! Ports a template's `node_types[]` entry (see `data/templates/*.yaml`)
 //! into a typed struct, replacing the Python `NodeTypeDef` dict handling in
 //! `backend/infra/schema_loader.py`. Structural fields are modeled
-//! explicitly; presentation-only extras (`color`, `shape`, `velocityConfig`,
-//! ...) are ignored at this layer and handled by the later template→registry
-//! converter.
+//! explicitly; presentation-only extras (`color`, `shape`, ...) are ignored
+//! at this layer and handled by the later template→registry converter.
 
 use serde::{Deserialize, Serialize};
 
 use crate::ids::NodeTypeId;
 use crate::template::PropertyDefinition;
+use crate::velocity::NodeVelocityConfig;
 
 /// A typed template node-type definition.
 ///
@@ -41,6 +41,13 @@ pub struct NodeTypeDef {
     /// The property definitions declared on this node type.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub properties: Vec<PropertyDefinition>,
+    /// Node-level velocity configuration (`velocityConfig`), if declared.
+    #[serde(
+        rename = "velocityConfig",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub velocity_config: Option<NodeVelocityConfig>,
     /// Slug of the property that drives this node type's primary status
     /// indicator, if any.
     #[serde(default, skip_serializing_if = "Option::is_none")]
