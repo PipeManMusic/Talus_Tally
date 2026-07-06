@@ -77,6 +77,9 @@ node_types:
     label: Book
     features:
       - is_root
+    velocityConfig:
+      baseScore: 5
+      scoreMode: inherit
     allowed_children:
       - chapter
       - ghost
@@ -164,6 +167,23 @@ node_types:
         let root = find(&types, "Book");
         let pid = crate::ids::PropertyId::from(uuid::uuid!("fa022033-b113-6c72-9d43-23ffbb36331a"));
         assert!(root.property_select_options(pid).is_empty());
+    }
+
+    #[test]
+    fn node_velocity_config_is_attached() {
+        use crate::velocity::ScoreMode;
+        let types = template().to_node_types();
+        let root = find(&types, "Book");
+        let cfg = root.velocity_config().expect("velocity config");
+        assert!((cfg.base_score - 5.0).abs() < f64::EPSILON);
+        assert_eq!(cfg.score_mode, ScoreMode::Inherit);
+    }
+
+    #[test]
+    fn node_without_velocity_config_has_none() {
+        let types = template().to_node_types();
+        let chapter = find(&types, "Chapter");
+        assert!(chapter.velocity_config().is_none());
     }
 
     #[test]
