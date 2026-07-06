@@ -18,8 +18,12 @@ use talus_core::template::TemplateDef;
 /// * [`Error::Serialization`] if the contents are not a valid template
 ///   (invalid YAML, or missing required keys such as `name` / `uuid`).
 pub fn load_template<P: AsRef<Path>>(path: P) -> Result<TemplateDef> {
-    let _ = path;
-    Err(Error::Serialization("not implemented".to_string()))
+    let path = path.as_ref();
+    if !path.exists() {
+        return Err(Error::NotFound(path.display().to_string()));
+    }
+    let contents = std::fs::read_to_string(path).map_err(|e| Error::Io(e.to_string()))?;
+    serde_yaml::from_str(&contents).map_err(|e| Error::Serialization(e.to_string()))
 }
 
 #[cfg(test)]
