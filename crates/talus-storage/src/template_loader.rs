@@ -40,9 +40,7 @@ pub fn load_template<P: AsRef<Path>>(path: P) -> Result<TemplateDef> {
 /// * [`Error::InvariantViolation`] if the template declares two node types
 ///   with the same `uuid`.
 pub fn load_project<P: AsRef<Path>>(path: P, name: impl Into<String>) -> Result<Project> {
-    let _name: String = name.into();
-    load_template(path)?;
-    Err(Error::Serialization("not yet implemented".to_string()))
+    load_template(path)?.to_project(name)
 }
 
 #[cfg(test)]
