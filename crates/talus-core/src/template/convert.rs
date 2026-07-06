@@ -75,7 +75,11 @@ impl TemplateDef {
     /// - [`crate::error::Error::InvariantViolation`] if two node types share
     ///   a `uuid` (a duplicate registration).
     pub fn to_project(&self, name: impl Into<String>) -> Result<Project> {
-        Ok(Project::new(name, self.template_id))
+        let mut project = Project::new(name, self.template_id);
+        for node_type in self.to_node_types() {
+            project.register_node_type(node_type)?;
+        }
+        Ok(project)
     }
 
     /// Build a slug → node-type-id map from every node type in this template.
