@@ -12,7 +12,8 @@
 //!   template property entry, with its
 //!   [`SelectOptionDef`](crate::template::SelectOptionDef) options.
 //! * [`NodeTypeDef`](crate::template::NodeTypeDef) — a single template
-//!   node-type entry, holding its [`PropertyDefinition`]s.
+//!   node-type entry, holding its
+//!   [`PropertyDefinition`](crate::template::PropertyDefinition)s.
 
 mod node_type_def;
 mod property_definition;

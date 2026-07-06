@@ -54,14 +54,14 @@ impl NodeTypeDef {
     /// Find a property definition by its slug `id`. Returns `None` if no
     /// property on this node type has that id.
     #[must_use]
-    pub fn property(&self, _id: &str) -> Option<&PropertyDefinition> {
-        None
+    pub fn property(&self, id: &str) -> Option<&PropertyDefinition> {
+        self.properties.iter().find(|prop| prop.id == id)
     }
 
     /// Whether this node type declares the given feature flag.
     #[must_use]
-    pub fn has_feature(&self, _feature: &str) -> bool {
-        false
+    pub fn has_feature(&self, feature: &str) -> bool {
+        self.features.iter().any(|f| f == feature)
     }
 }
 
