@@ -39,14 +39,17 @@ impl TemplateDef {
     /// Find a node-type definition by its slug `id`. Returns `None` if no
     /// node type in this template has that id.
     #[must_use]
-    pub fn node_type(&self, _id: &str) -> Option<&NodeTypeDef> {
-        None
+    pub fn node_type(&self, id: &str) -> Option<&NodeTypeDef> {
+        self.node_types.iter().find(|nt| nt.id == id)
     }
 
     /// The node types flagged as roots (declaring the `is_root` feature).
     #[must_use]
     pub fn root_node_types(&self) -> Vec<&NodeTypeDef> {
-        Vec::new()
+        self.node_types
+            .iter()
+            .filter(|nt| nt.has_feature("is_root"))
+            .collect()
     }
 }
 
