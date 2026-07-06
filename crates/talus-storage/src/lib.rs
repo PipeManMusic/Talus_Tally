@@ -16,6 +16,8 @@ pub mod markup_registry;
 pub mod memory;
 pub mod project_store;
 pub mod session;
+pub mod template_loader;
 pub mod yaml_validation;
 
 pub use project_store::ProjectStore;
+pub use template_loader::load_template;
