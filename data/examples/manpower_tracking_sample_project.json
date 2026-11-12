@@ -65,9 +65,10 @@
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Engine Teardown",
+          "0be32bfa-1a1f-b648-2fc9-a5ec1e6db36d": {},
           "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "32325919-25d0-4d3c-e75b-8a437f6f96ee",
           "26ec34d3-4b5f-e946-cbd4-d74d19820ca5": "0",
-          "29127f82-3f89-4b74-1e41-da626fba5e63": "Planning",
+          "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "2a657481-c4de-443b-9100-bab8d36cfdb6": "2026-04-10",
           "3f78e521-337d-90f3-cf74-a7caa32d44e6": 20,
           "3fac8eeb-a982-515d-724b-717f5fc1f38b": "",
@@ -97,9 +98,10 @@
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Brake Fitment",
+          "0be32bfa-1a1f-b648-2fc9-a5ec1e6db36d": {},
           "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "26ec34d3-4b5f-e946-cbd4-d74d19820ca5": 0,
-          "29127f82-3f89-4b74-1e41-da626fba5e63": "Planning",
+          "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "2a657481-c4de-443b-9100-bab8d36cfdb6": "2026-03-31",
           "3f78e521-337d-90f3-cf74-a7caa32d44e6": 12,
           "6fbc3751-46f1-41d5-71da-6a00886e686c": "2026-04-10",
@@ -131,9 +133,10 @@
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Wiring Diagnosis",
+          "0be32bfa-1a1f-b648-2fc9-a5ec1e6db36d": {},
           "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "453611e8-44c7-a633-0264-dcb7fe690269",
           "26ec34d3-4b5f-e946-cbd4-d74d19820ca5": 0,
-          "29127f82-3f89-4b74-1e41-da626fba5e63": "Planning",
+          "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "2a657481-c4de-443b-9100-bab8d36cfdb6": "2026-04-13",
           "3f78e521-337d-90f3-cf74-a7caa32d44e6": 10,
           "6fbc3751-46f1-41d5-71da-6a00886e686c": "2026-04-15",
@@ -162,9 +165,23 @@
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Paint Prep",
+          "0be32bfa-1a1f-b648-2fc9-a5ec1e6db36d": {
+            "2026-04-13": {
+              "5a4e7080-ea15-5873-965f-9004c5a1455e": 6
+            },
+            "2026-04-14": {
+              "5a4e7080-ea15-5873-965f-9004c5a1455e": 6
+            },
+            "2026-04-15": {
+              "5a4e7080-ea15-5873-965f-9004c5a1455e": 6
+            },
+            "2026-04-16": {
+              "5a4e7080-ea15-5873-965f-9004c5a1455e": 6
+            }
+          },
           "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "26ec34d3-4b5f-e946-cbd4-d74d19820ca5": 0,
-          "29127f82-3f89-4b74-1e41-da626fba5e63": "Shooting",
+          "29127f82-3f89-4b74-1e41-da626fba5e63": "3094f28b-3fc3-2667-5ae1-933b041d78ed",
           "2a657481-c4de-443b-9100-bab8d36cfdb6": "2026-04-13",
           "3f78e521-337d-90f3-cf74-a7caa32d44e6": 24,
           "6fbc3751-46f1-41d5-71da-6a00886e686c": "2026-04-16",
@@ -193,9 +210,10 @@
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Weekend Rollover Check",
-          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
+          "0be32bfa-1a1f-b648-2fc9-a5ec1e6db36d": {},
+          "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "32325919-25d0-4d3c-e75b-8a437f6f96ee",
           "26ec34d3-4b5f-e946-cbd4-d74d19820ca5": 0,
-          "29127f82-3f89-4b74-1e41-da626fba5e63": "Planning",
+          "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "2a657481-c4de-443b-9100-bab8d36cfdb6": "2026-04-17",
           "3f78e521-337d-90f3-cf74-a7caa32d44e6": 8,
           "6fbc3751-46f1-41d5-71da-6a00886e686c": "2026-04-20",
@@ -224,9 +242,23 @@
         "type": "32f6b4b7-b425-73c3-3332-769bdb5af2f8",
         "properties": {
           "name": "Calibration Pass",
+          "0be32bfa-1a1f-b648-2fc9-a5ec1e6db36d": {
+            "2026-04-15": {
+              "5a4e7080-ea15-5873-965f-9004c5a1455e": 3,
+              "61a5785e-741d-53b8-8973-edf5708d4a7f": 3
+            },
+            "2026-04-16": {
+              "5a4e7080-ea15-5873-965f-9004c5a1455e": 3,
+              "61a5785e-741d-53b8-8973-edf5708d4a7f": 3
+            },
+            "2026-04-17": {
+              "5a4e7080-ea15-5873-965f-9004c5a1455e": 3,
+              "61a5785e-741d-53b8-8973-edf5708d4a7f": 3
+            }
+          },
           "21a07b17-c7a0-aa65-85b7-814f94e04fb6": "226e3070-bda2-86ca-2e46-401776a8983f",
           "26ec34d3-4b5f-e946-cbd4-d74d19820ca5": 0,
-          "29127f82-3f89-4b74-1e41-da626fba5e63": "Planning",
+          "29127f82-3f89-4b74-1e41-da626fba5e63": "5acffa6e-c572-103b-853b-5e944af46cea",
           "2a657481-c4de-443b-9100-bab8d36cfdb6": "2026-04-15",
           "3f78e521-337d-90f3-cf74-a7caa32d44e6": 18,
           "6fbc3751-46f1-41d5-71da-6a00886e686c": "2026-04-17",
@@ -648,7 +680,12 @@
     "4ca90444-9d26-5ad1-9a38-644485479b5a": true,
     "6f2fa0ae-8053-5ae7-ba01-881e9866ce77": true
   },
-  "blocking_relationships": [],
+  "blocking_relationships": [
+    {
+      "blockedNodeId": "bd09c5f2-6a90-5e98-8bd6-93512f177f57",
+      "blockingNodeId": "4ca90444-9d26-5ad1-9a38-644485479b5a"
+    }
+  ],
   "filter_sets": [
     {
       "id": "fset-1773246022456-ier6p9b",
@@ -664,5 +701,15 @@
       "filterMode": "hide",
       "createdAt": "2026-03-11T16:20:22.456Z"
     }
-  ]
+  ],
+  "enabled_tools": {
+    "velocity": true,
+    "blocking": true,
+    "budget": true,
+    "gantt": true,
+    "manpower": true,
+    "charts": true,
+    "agile": true
+  },
+  "node_templates": []
 }

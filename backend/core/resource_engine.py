@@ -891,3 +891,182 @@ def calculate_manpower_load(nodes: Iterable[Any], _today: Optional[date] = None,
         "person_tasks": person_tasks,
         "unassigned_tasks": _iter_unassigned_tasks(node_list, people, pr=pr),
     }
+
+
+# ---------------------------------------------------------------------------
+# Multi-week lookahead aggregation
+# ---------------------------------------------------------------------------
+
+
+def _monday_of(d: date) -> date:
+    return d - timedelta(days=d.weekday())
+
+
+def slice_manpower_load_into_weeks(
+    manpower_load: Dict[str, Any],
+    start: Optional[date] = None,
+    weeks: int = 4,
+    overload_threshold: float = 1.0,
+) -> Dict[str, Any]:
+    """Aggregate ``calculate_manpower_load`` output into a per-week,
+    per-person view suitable for short-range manpower planning reports.
+
+    Args:
+        manpower_load: Result dict from :func:`calculate_manpower_load`.
+        start: Any date inside the first week to include.  Snapped to the
+            Monday of that week.  Defaults to today.
+        weeks: Number of consecutive weeks to summarize.
+        overload_threshold: Ratio of allocated/capacity at which a week is
+            considered "full" (default 1.0 = 100%).
+
+    Returns:
+        ``{
+            "window": {"start", "end", "weeks": [{"start","end"}, ...]},
+            "people": [
+                {"person_id", "name", "weeks": [...], "totals": {...},
+                 "has_load_in_window": bool},
+                ...
+            ],
+            "unassigned_tasks": [...],
+            "unallocated_tasks": [...],
+        }``
+    """
+    weeks = max(1, int(weeks))
+    start = start or date.today()
+    start_monday = _monday_of(start)
+    week_ranges: List[Tuple[date, date]] = [
+        (start_monday + timedelta(days=7 * w), start_monday + timedelta(days=7 * w + 6))
+        for w in range(weeks)
+    ]
+    window_start = week_ranges[0][0]
+    window_end = week_ranges[-1][1]
+    window_start_iso = window_start.isoformat()
+    window_end_iso = window_end.isoformat()
+
+    resources: Dict[str, Dict[str, Any]] = manpower_load.get("resources") or {}
+
+    people_report: List[Dict[str, Any]] = []
+    for person_id, person in resources.items():
+        load_by_day: Dict[str, Any] = person.get("load") or {}
+        capacity_by_day: Dict[str, float] = person.get("capacity_by_day") or {}
+        ot_by_day: Dict[str, float] = person.get("overtime_capacity_by_day") or {}
+
+        weeks_out: List[Dict[str, Any]] = []
+        person_total_alloc = 0.0
+        person_total_cap = 0.0
+        has_load = False
+
+        for ws, we in week_ranges:
+            week_days = [
+                (ws + timedelta(days=i)).isoformat() for i in range(7)
+            ]
+            allocated = 0.0
+            capacity = 0.0
+            overtime = 0.0
+            task_hours: Dict[str, Dict[str, Any]] = {}
+
+            for day in week_days:
+                capacity += float(capacity_by_day.get(day, 0.0) or 0.0)
+                overtime += float(ot_by_day.get(day, 0.0) or 0.0)
+                bucket = load_by_day.get(day) or {}
+                hours = float(bucket.get("total", 0.0) or 0.0)
+                allocated += hours
+                for t in bucket.get("tasks", []) or []:
+                    name = t.get("name") or t.get("id") or "(unnamed)"
+                    entry = task_hours.setdefault(
+                        t.get("id") or name,
+                        {"name": name, "hours": 0.0, "days": set()},
+                    )
+                    entry["hours"] += float(t.get("hours") or 0.0)
+                    entry["days"].add(day)
+
+            person_total_alloc += allocated
+            person_total_cap += capacity
+            if allocated > 0 or task_hours:
+                has_load = True
+
+            tasks_list = sorted(
+                (
+                    {
+                        "name": v["name"],
+                        "hours": round(v["hours"], 2),
+                        "day_count": len(v["days"]),
+                    }
+                    for v in task_hours.values()
+                ),
+                key=lambda x: -x["hours"],
+            )
+
+            over_by = allocated - capacity
+            if capacity <= 0 and allocated > 0:
+                status = "no_capacity"
+            elif over_by > ALLOCATION_TOLERANCE_HOURS:
+                status = "over"
+            elif (
+                capacity > 0
+                and allocated >= capacity * overload_threshold - ALLOCATION_TOLERANCE_HOURS
+            ):
+                status = "full"
+            elif allocated > 0:
+                status = "ok"
+            else:
+                status = "idle"
+
+            weeks_out.append({
+                "week_start": ws.isoformat(),
+                "week_end": we.isoformat(),
+                "allocated_hours": round(allocated, 2),
+                "capacity_hours": round(capacity, 2),
+                "overtime_capacity_hours": round(overtime, 2),
+                "over_by": round(over_by, 2),
+                "utilization": (
+                    round(allocated / capacity, 2) if capacity > 0 else None
+                ),
+                "utilization_pct": (
+                    int(round(allocated / capacity * 100)) if capacity > 0 else None
+                ),
+                "status": status,
+                "tasks": tasks_list,
+            })
+
+        people_report.append({
+            "person_id": person_id,
+            "name": person.get("name") or person_id,
+            "weeks": weeks_out,
+            "totals": {
+                "allocated_hours": round(person_total_alloc, 2),
+                "capacity_hours": round(person_total_cap, 2),
+                "over_by": round(person_total_alloc - person_total_cap, 2),
+            },
+            "has_load_in_window": has_load,
+        })
+
+    people_report.sort(key=lambda p: (p["name"] or "").lower())
+
+    def _in_window(t: Dict[str, Any]) -> bool:
+        s = t.get("start_date")
+        e = t.get("end_date")
+        if not s or not e:
+            return False
+        return not (e < window_start_iso or s > window_end_iso)
+
+    unassigned_in_window = [
+        t for t in (manpower_load.get("unassigned_tasks") or []) if _in_window(t)
+    ]
+    unallocated_in_window = [
+        t for t in (manpower_load.get("unallocated_tasks") or []) if _in_window(t)
+    ]
+
+    return {
+        "window": {
+            "start": window_start_iso,
+            "end": window_end_iso,
+            "weeks": [
+                {"start": ws.isoformat(), "end": we.isoformat()}
+                for ws, we in week_ranges
+            ],
+        },
+        "people": people_report,
+        "unassigned_tasks": unassigned_in_window,
+        "unallocated_tasks": unallocated_in_window,
+    }

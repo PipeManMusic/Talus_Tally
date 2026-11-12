@@ -1,0 +1,13 @@
+{# Four-week manpower lookahead — CSV form, one row per (person, week). #}
+{%- set ml = manpower_lookahead or {} -%}
+Person,Week #,Week Start,Week End,Allocated Hours,Capacity Hours,Overtime Capacity,Over By,Utilization %,Status,Tasks
+{% for person in (ml.people or []) -%}
+{% for w in person.weeks -%}
+{% set tasks_str = w.tasks | map(attribute='name') | join('; ') -%}
+{% set tasks_with_hours = [] -%}
+{% for t in w.tasks -%}
+  {% set _ = tasks_with_hours.append(t.name ~ ' (' ~ t.hours ~ 'h)') -%}
+{% endfor -%}
+{{ person.name|csv }},{{ loop.index }},{{ w.week_start|csv }},{{ w.week_end|csv }},{{ w.allocated_hours|csv }},{{ w.capacity_hours|csv }},{{ w.overtime_capacity_hours|csv }},{{ w.over_by|csv }},{{ (w.utilization_pct if w.utilization_pct is not none else '')|csv }},{{ w.status|csv }},{{ (tasks_with_hours | join('; '))|csv }}
+{% endfor -%}
+{% endfor -%}

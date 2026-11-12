@@ -403,7 +403,52 @@ def download_export(session_id):
 
         if filtered_node_ids:
             velocity_nodes = [entry for entry in velocity_nodes if str(entry.get('nodeId')) in filtered_node_ids]
-        
+
+        # Compute manpower load so manpower-oriented templates (e.g. the
+        # 4-week lookahead) have ready-to-render data in their context.
+        manpower_load: Dict[str, Any] = {}
+        manpower_lookahead: Dict[str, Any] = {}
+        try:
+            from backend.core.resource_engine import (
+                calculate_manpower_load,
+                slice_manpower_load_into_weeks,
+            )
+            person_type_ids: Set[str] = set()
+            if blueprint and hasattr(blueprint, 'node_types'):
+                for nt in blueprint.node_types:
+                    if hasattr(nt, 'has_feature') and nt.has_feature('is_person'):
+                        if nt.uuid:
+                            person_type_ids.add(nt.uuid)
+                        if getattr(nt, 'id', None):
+                            person_type_ids.add(nt.id)
+            manpower_load = calculate_manpower_load(
+                list(graph.nodes.values()),
+                person_type_ids=person_type_ids or None,
+                blueprint=blueprint,
+            ) or {}
+
+            # Optional user overrides: lookahead_start (YYYY-MM-DD) and lookahead_weeks
+            from datetime import date as _date, datetime as _dt
+            start_value = user_context.get('lookahead_start')
+            start_date_obj: Optional[_date] = None
+            if isinstance(start_value, str) and start_value.strip():
+                try:
+                    start_date_obj = _dt.strptime(start_value.strip(), '%Y-%m-%d').date()
+                except ValueError:
+                    start_date_obj = None
+            try:
+                weeks_value = int(user_context.get('lookahead_weeks') or 4)
+            except (TypeError, ValueError):
+                weeks_value = 4
+
+            manpower_lookahead = slice_manpower_load_into_weeks(
+                manpower_load, start=start_date_obj, weeks=weeks_value
+            )
+        except Exception as manpower_error:
+            logger.warning(f"[EXPORT] Manpower data unavailable: {manpower_error}")
+            manpower_load = manpower_load or {}
+            manpower_lookahead = manpower_lookahead or {}
+
         from datetime import datetime
 
         context = {
@@ -415,6 +460,8 @@ def download_export(session_id):
             'generated_date': datetime.now().date().isoformat(),
             'blocking_relationships': blocking_relationships,
             'velocity_nodes': velocity_nodes,
+            'manpower': manpower_load,
+            'manpower_lookahead': manpower_lookahead,
             # Include user-provided context (can override defaults)
             **user_context
         }

@@ -1,0 +1,5 @@
+Person,Week #,Week Start,Week End,Allocated Hours,Capacity Hours,Overtime Capacity,Over By,Utilization %,Status,Tasks
+Daniel Worth,1,2026-05-04,2026-05-10,12.0,16.0,22.0,-4.0,75,ok,L1 Spools (12.0h)
+Daniel Worth,2,2026-05-11,2026-05-17,12.0,16.0,22.0,-4.0,75,ok,L2 Spools (8.0h); L3 Pass 3 (4.0h)
+Daniel Worth,3,2026-05-18,2026-05-24,16.0,16.0,22.0,0.0,100,full,L2 Spools (12.0h); L4 Pass 3 (4.0h)
+Daniel Worth,4,2026-05-25,2026-05-31,16.0,16.0,22.0,0.0,100,full,L4 Point Loads (4.0h); L4 Deck Inserts (4.0h); L4 Hanger Fab (4.0h); L5 Point Loads (4.0h)
